@@ -1,0 +1,13 @@
+[package]
+name = "eigen-aggregator"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "eigen layer aggregator utils "
+    
+[lints]
+workspace = true
+
+[dependencies]
