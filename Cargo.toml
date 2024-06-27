@@ -1,5 +1,9 @@
 [workspace]
-members = ["crates/aggregator"]
+members = ["crates/aggregator",
+"crates/operator",
+"bin/incredible",
+"crates/cli"
+]
 
 resolver = "2"
 
@@ -7,7 +11,7 @@ resolver = "2"
 version = "0.0.1-alpha"
 edition = "2021"
 rust-version = "1.79"
-repository = "https://github.com/Layr-Labs/incredible-squaring-avs/tree/rust"
+repository = "https://github.com/Layr-Labs/incredible-squaring-avs-rust"
 homepage = ""
 license = "Business Source License 1.1"
 
@@ -22,10 +26,18 @@ rustdoc.all = "warn"
 
 
 [workspace.dependencies]
-
+clap = "4"
+eyre = "0.6.12"
+tokio = { version = "1.21", default-features = false }
+tracing = "0.1.0"
 
 
 #alloy
 alloy = { version = "0.1", features = ["full"] }
 
 
+
+incredible-operator = {path = "crates/operator/"}
+incredible-aggregator = {path = "crates/aggregator/"}
+incredible-avs = {path = "bin/incredible/"}
+incredible-cli-runner = {path = "crates/cli/"}

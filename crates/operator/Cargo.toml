@@ -1,11 +1,11 @@
 [package]
-name = "incredible-aggregator"
+name = "incredible-operator"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
-description = "eigen layer aggregator utils "
+description = "eigen layer operator"
     
 [lints]
 workspace = true

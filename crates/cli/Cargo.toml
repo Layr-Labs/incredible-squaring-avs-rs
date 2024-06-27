@@ -1,13 +1,15 @@
 [package]
-name = "incredible-aggregator"
+name = "incredible-cli-runner"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
-description = "eigen layer aggregator utils "
+description = "=incredible cli runner utils "
     
 [lints]
 workspace = true
 
 [dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
+tracing.workspace = true

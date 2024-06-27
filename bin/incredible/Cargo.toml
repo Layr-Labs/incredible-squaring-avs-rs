@@ -1,0 +1,22 @@
+[package]
+name = "incredible"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "incredible squaring avs in rust"
+    
+[lints]
+workspace = true
+
+[dependencies]
+incredible-aggregator.workspace = true
+incredible-operator.workspace = true
+incredible-cli-runner.workspace = true
+clap = { workspace = true, features = ["derive", "env"] }
+eyre.workspace = true
+
+[[bin]]
+name = "incredible"
+path = "src/main.rs"
