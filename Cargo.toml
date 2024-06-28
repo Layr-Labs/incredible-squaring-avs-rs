@@ -2,7 +2,8 @@
 members = ["crates/aggregator",
 "crates/operator",
 "bin/incredible-squaring-avs",
-"crates/cli"
+"crates/cli",
+"crates/config"
 ]
 
 resolver = "2"
@@ -33,7 +34,7 @@ tracing = "0.1.0"
 
 
 #alloy
-alloy = { version = "0.1", features = ["full"] }
+alloy = { version = "0.1", features = ["full", "signer-keystore"] }
 
 
 
@@ -41,3 +42,4 @@ incredible-operator = {path = "crates/operator/"}
 incredible-aggregator = {path = "crates/aggregator/"}
 incredible-avs = {path = "bin/incredible/"}
 incredible-cli-runner = {path = "crates/cli/"}
+incredible-config = {path = "crates/config/"}

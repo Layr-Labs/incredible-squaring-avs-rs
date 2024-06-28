@@ -1,15 +1,15 @@
 [package]
-name = "incredible-operator"
+name = "incredible-config"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
-description = "eigen layer operator"
+description = " incredible squaring configuration "
     
 [lints]
 workspace = true
 
 [dependencies]
-alloy.workspace = true
-incredible-config.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
+tracing.workspace = true

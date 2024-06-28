@@ -14,8 +14,10 @@ workspace = true
 incredible-aggregator.workspace = true
 incredible-operator.workspace = true
 incredible-cli-runner.workspace = true
+incredible-config.workspace = true
 clap = { workspace = true, features = ["derive", "env"] }
 eyre.workspace = true
+
 
 [[bin]]
 name = "incredible-squaring-avs"
