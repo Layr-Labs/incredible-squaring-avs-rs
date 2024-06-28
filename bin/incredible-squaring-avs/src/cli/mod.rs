@@ -6,7 +6,7 @@ use std::fmt;
 
 /// Incredible squaring main entry point interface
 #[derive(Debug, Parser)]
-#[command(author, about = "Incredible", long_about = None)]
+#[command(author, about = "Incredible squaring avs", long_about = None)]
 pub struct Cli<Ext: clap::Args + fmt::Debug = NoArgs> {
     #[command(subcommand)]
     command: Commands<Ext>,
@@ -47,6 +47,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> Cli<Ext> {
 #[derive(Debug, Subcommand)]
 pub enum Commands<Ext: Args + fmt::Debug = NoArgs> {
     /// Avs command
-    #[command(name = "avs")]
+    #[command(name = "start")]
     Avs(AvsCommand<Ext>),
 }

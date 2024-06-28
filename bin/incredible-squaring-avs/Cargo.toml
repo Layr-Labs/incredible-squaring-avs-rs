@@ -1,5 +1,5 @@
 [package]
-name = "incredible"
+name = "incredible-squaring-avs"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -18,5 +18,5 @@ clap = { workspace = true, features = ["derive", "env"] }
 eyre.workspace = true
 
 [[bin]]
-name = "incredible"
+name = "incredible-squaring-avs"
 path = "src/main.rs"

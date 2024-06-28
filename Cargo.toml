@@ -1,7 +1,7 @@
 [workspace]
 members = ["crates/aggregator",
 "crates/operator",
-"bin/incredible",
+"bin/incredible-squaring-avs",
 "crates/cli"
 ]
 

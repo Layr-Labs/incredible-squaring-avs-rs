@@ -168,17 +168,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
 
 [[package]]
-name = "incredible"
-version = "0.0.1-alpha"
-dependencies = [
- "clap",
- "eyre",
- "incredible-aggregator",
- "incredible-cli-runner",
- "incredible-operator",
-]
-
-[[package]]
 name = "incredible-aggregator"
 version = "0.0.1-alpha"
 
@@ -193,6 +182,17 @@ dependencies = [
 [[package]]
 name = "incredible-operator"
 version = "0.0.1-alpha"
+
+[[package]]
+name = "incredible-squaring-avs"
+version = "0.0.1-alpha"
+dependencies = [
+ "clap",
+ "eyre",
+ "incredible-aggregator",
+ "incredible-cli-runner",
+ "incredible-operator",
+]
 
 [[package]]
 name = "indenter"
