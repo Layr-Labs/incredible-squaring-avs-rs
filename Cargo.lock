@@ -1682,6 +1682,13 @@ name = "incredible-aggregator"
 version = "0.0.1-alpha"
 
 [[package]]
+name = "incredible-bindings"
+version = "0.0.1-alpha"
+dependencies = [
+ "alloy",
+]
+
+[[package]]
 name = "incredible-cli-runner"
 version = "0.0.1-alpha"
 dependencies = [
@@ -1702,7 +1709,9 @@ name = "incredible-operator"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
+ "incredible-bindings",
  "incredible-config",
+ "thiserror",
 ]
 
 [[package]]

@@ -1,8 +1,8 @@
 use clap::{value_parser, Args, Parser};
 use incredible_config::IncredibleConfig;
+use incredible_operator::builder::OperatorBuilder;
 use std::ffi::OsString;
 use std::fmt;
-use incredible_operator::builder::OperatorBuilder;
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -30,7 +30,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "ECDSA_KEYSTORE_PATH")]
     ecdsa_keystore_path: String,
 
-    /// ECDSA keystore path  password 
+    /// ECDSA keystore path  password
     #[arg(long, value_name = "ECDSA_KEYSTORE_PASSWORD")]
     ecdsa_keystore_password: String,
 
@@ -60,8 +60,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         println!("Executing AVS command");
         println!("chain id : {:?}", self.chain_id);
         println!("rpc url : {:?}", self.rpc_url);
-        println!("ecdsa key store path {:?}",self.ecdsa_keystore_path);
-        println!("ecdsa key password:{:?}",self.ecdsa_keystore_password);
+        println!("ecdsa key store path {:?}", self.ecdsa_keystore_path);
+        println!("ecdsa key password:{:?}", self.ecdsa_keystore_password);
         let mut config = IncredibleConfig::default();
         config.set_chain_id(self.chain_id);
         config.set_rpc_url(self.rpc_url);

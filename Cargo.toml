@@ -3,7 +3,8 @@ members = ["crates/aggregator",
 "crates/operator",
 "bin/incredible-squaring-avs",
 "crates/cli",
-"crates/config"
+"crates/config",
+"crates/bindings"
 ]
 
 resolver = "2"
@@ -31,10 +32,10 @@ clap = "4"
 eyre = "0.6.12"
 tokio = { version = "1.21", default-features = false }
 tracing = "0.1.0"
-
+thiserror = "1.0.61"
 
 #alloy
-alloy = { version = "0.1", features = ["full", "signer-keystore"] }
+alloy = { version = "0.1", features = ["full","signer-keystore"] }
 
 
 
@@ -43,3 +44,4 @@ incredible-aggregator = {path = "crates/aggregator/"}
 incredible-avs = {path = "bin/incredible/"}
 incredible-cli-runner = {path = "crates/cli/"}
 incredible-config = {path = "crates/config/"}
+incredible-bindings = {path = "crates/bindings/"}

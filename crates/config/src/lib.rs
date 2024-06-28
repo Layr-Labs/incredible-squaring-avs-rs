@@ -7,7 +7,7 @@ pub struct IncredibleConfig {
 
     ecdsa_keystore_path: String,
 
-    ecdsa_keystore_password: String
+    ecdsa_keystore_password: String,
 }
 
 #[derive(Debug)]
@@ -25,23 +25,36 @@ impl Network {
     }
 }
 
-
-
 impl IncredibleConfig {
     pub fn set_chain_id(&mut self, chain_id: u16) {
-            self.chain_id = chain_id;
+        self.chain_id = chain_id;
     }
 
     pub fn set_rpc_url(&mut self, rpc_url: String) {
         self.rpc_url = rpc_url;
     }
 
-    pub fn set_ecdsa_keystore_path(&mut self,path:String) {
+    pub fn set_ecdsa_keystore_path(&mut self, path: String) {
         self.ecdsa_keystore_path = path;
     }
 
-    pub fn set_ecdsa_keystore_pasword(&mut self,password:String) {
+    pub fn set_ecdsa_keystore_pasword(&mut self, password: String) {
         self.ecdsa_keystore_password = password;
     }
 
+    pub fn chain_id(&self) -> u16 {
+        self.chain_id
+    }
+
+    pub fn rpc_url(&self) -> String {
+        self.rpc_url.clone()
+    }
+
+    pub fn ecdsa_keystore_path(&self) -> String {
+        self.ecdsa_keystore_path.clone()
+    }
+
+    pub fn ecdsa_keystore_password(&self) -> String {
+        self.ecdsa_keystore_password.clone()
+    }
 }
