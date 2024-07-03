@@ -16,4 +16,7 @@ pub enum OperatorError {
 
     #[error("Could not sign the hash using keypair")]
     SignUsingBlsKeyPair,
+
+    #[error("Failed to create Encoded bls keystore ")]
+    EncodedKeystore,
 }

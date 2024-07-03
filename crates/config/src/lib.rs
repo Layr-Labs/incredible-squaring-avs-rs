@@ -1,3 +1,7 @@
+use alloy::primitives::Address;
+use eigen_types::operator::OperatorId;
+use std::ops::Add;
+
 /// Configurations for running the avs
 #[derive(Debug, Default)]
 pub struct IncredibleConfig {
@@ -8,6 +12,14 @@ pub struct IncredibleConfig {
     ecdsa_keystore_path: String,
 
     ecdsa_keystore_password: String,
+
+    bls_keystore_path: String,
+
+    bls_keystore_password: String,
+
+    operator_addr: Address,
+
+    operator_id: OperatorId,
 }
 
 #[derive(Debug)]
@@ -56,5 +68,21 @@ impl IncredibleConfig {
 
     pub fn ecdsa_keystore_password(&self) -> String {
         self.ecdsa_keystore_password.clone()
+    }
+
+    pub fn bls_keystore_path(&self) -> String {
+        self.bls_keystore_path.clone()
+    }
+
+    pub fn bls_keystore_password(&self) -> String {
+        self.bls_keystore_password.clone()
+    }
+
+    pub fn operator_address(&self) -> Address {
+        self.operator_addr
+    }
+
+    pub fn operator_id(&self) -> OperatorId {
+        self.operator_id
     }
 }

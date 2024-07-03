@@ -13,3 +13,8 @@ workspace = true
 [dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 tracing.workspace = true
+alloy.workspace = true
+
+
+#eigen
+eigen-types.workspace = true

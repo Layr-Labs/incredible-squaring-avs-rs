@@ -6,9 +6,13 @@ use alloy::{
     signers::local::LocalSigner,
     sol_types::{SolEvent, SolValue},
 };
+use std::fs;
+use std::path::PathBuf;
+
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_crypto_bls::attestation::KeyPair;
+use eigen_crypto_bls::BlsKeypair;
+use eigen_crypto_keystore::EncodedKeystore;
 use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::stream::StreamExt;
@@ -18,20 +22,20 @@ use incredible_config::IncredibleConfig;
 use rust_bls_bn254::sign;
 
 /// Main Operator
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct OperatorBuilder {
     rpc_url: String,
 
     operator_addr: Address,
 
-    key_pair: KeyPair,
+    key_pair: BlsKeypair,
 
     operator_id: OperatorId,
 }
 
 impl OperatorBuilder {
     /// Build the Operator Builder
-    pub fn build(&self, config: IncredibleConfig) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
         // Read ECDSA private key from path
 
         println!("key store path file : {:?}", config.ecdsa_keystore_path());
@@ -43,15 +47,32 @@ impl OperatorBuilder {
         match signer_result {
             Ok(signer) => {
                 println!("signer : {signer:?}");
+                let path = PathBuf::from(config.bls_keystore_path());
+                let contents =
+                    fs::read_to_string(path).expect("Should have been able to read the file");
 
-                // TODO Bls keystore
-                // 2335, 2333, 2334 eips for bls keystore wip
+                let encoded_keystore_result =
+                    EncodedKeystore::from_string(contents, Some(config.bls_keystore_password()));
 
-                todo!()
+                match encoded_keystore_result {
+                    Ok(encoded_keystore) => {
+                        let bls_keypair = encoded_keystore
+                            .into_bls_keypair()
+                            .expect("failed to convert keystore into blskeypair");
+
+                        Ok(Self {
+                            rpc_url: config.rpc_url(),
+                            operator_addr: config.operator_address(),
+                            key_pair: bls_keypair,
+                            operator_id: config.operator_id(),
+                        });
+                    }
+                    Err(_) => Err(OperatorError::EncodedKeystore),
+                }
             }
             Err(e) => {
                 println!("Error is {e:?}");
-                Err(Box::new(ECDSAKeystoreSigner))
+                Err(ECDSAKeystoreSigner)
             }
         }
     }

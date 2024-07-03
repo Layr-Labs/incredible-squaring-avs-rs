@@ -51,7 +51,9 @@ incredible-bindings = {path = "crates/bindings/"}
 
 
 # eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}
-eigen-testing-utils =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}
-eigen-crypto-bls =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}
-eigen-types =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}
+eigen-client-avsregistry  = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
+eigen-testing-utils =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
+eigen-crypto-bls =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
+eigen-types =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
+eigen-crypto-keystore = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
+
