@@ -33,11 +33,14 @@ eyre = "0.6.12"
 tokio = { version = "1.21", default-features = false }
 tracing = "0.1.0"
 thiserror = "1.0.61"
+ark-bn254 = { version = "0.4.0", features = ["curve"], default-features = false }
+futures-util = "0.3"
 
 #alloy
 alloy = { version = "0.1", features = ["full","signer-keystore"] }
-
-
+alloy-provider = { version = "0.1", default-features = false, features = [
+    "reqwest",
+] }
 
 incredible-operator = {path = "crates/operator/"}
 incredible-aggregator = {path = "crates/aggregator/"}
@@ -45,3 +48,10 @@ incredible-avs = {path = "bin/incredible/"}
 incredible-cli-runner = {path = "crates/cli/"}
 incredible-config = {path = "crates/config/"}
 incredible-bindings = {path = "crates/bindings/"}
+
+
+# eigen-rs 
+eigen-client-avsregistry  = {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}
+eigen-testing-utils =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}
+eigen-crypto-bls =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}
+eigen-types =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "9f31de3"}

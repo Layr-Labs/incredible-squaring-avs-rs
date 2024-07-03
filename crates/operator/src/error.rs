@@ -10,4 +10,10 @@ pub enum OperatorError {
     /// Failed to derive Cargo Manfest Dir
     #[error("Could not derive cargo manifest path")]
     CargoManifestDir,
+
+    #[error("Failed to build avsregistry reader")]
+    AvsRegistryChainReader,
+
+    #[error("Could not sign the hash using keypair")]
+    SignUsingBlsKeyPair,
 }

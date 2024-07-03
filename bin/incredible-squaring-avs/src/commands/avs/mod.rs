@@ -1,3 +1,4 @@
+use alloy::primitives::Address;
 use clap::{value_parser, Args, Parser};
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
@@ -33,6 +34,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     /// ECDSA keystore path  password
     #[arg(long, value_name = "ECDSA_KEYSTORE_PASSWORD")]
     ecdsa_keystore_password: String,
+
+    /// Registry coordinator address
+    #[arg(long, value_name = "REGISTRY_COORDINATOR_ADDR")]
+    registry_coordinator_address: Address,
 
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]

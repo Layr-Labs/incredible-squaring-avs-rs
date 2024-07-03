@@ -17,6 +17,7 @@ incredible-cli-runner.workspace = true
 incredible-config.workspace = true
 clap = { workspace = true, features = ["derive", "env"] }
 eyre.workspace = true
+alloy.workspace = true
 
 
 [[bin]]
