@@ -22,6 +22,8 @@ pub struct IncredibleConfig {
     operator_id: OperatorId,
 
     aggregator_ip_addr: String,
+
+    ws_url: String,
 }
 
 #[derive(Debug)]
@@ -72,6 +74,10 @@ impl IncredibleConfig {
         self.bls_keystore_password = password;
     }
 
+    pub fn set_ws_url(&mut self, ws: String) {
+        self.ws_url = ws;
+    }
+
     /// get appropriate chainid where incredible squaring will run
     pub fn chain_id(&self) -> u16 {
         self.chain_id
@@ -115,5 +121,9 @@ impl IncredibleConfig {
     /// get aggregator port addr
     pub fn aggregator_ip_addr(&self) -> String {
         self.aggregator_ip_addr.clone()
+    }
+
+    pub fn ws_url(&self) -> String {
+        self.ws_url.clone()
     }
 }

@@ -2746,6 +2746,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "incredible-challenger"
+version = "0.0.1-alpha"
+dependencies = [
+ "alloy",
+ "alloy-provider",
+ "eyre",
+ "futures-util",
+ "incredible-bindings",
+ "incredible-config",
+ "tokio",
+]
+
+[[package]]
 name = "incredible-cli-runner"
 version = "0.0.1-alpha"
 dependencies = [
@@ -2759,6 +2772,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "eigen-types",
+ "incredible-bindings",
  "tokio",
  "tracing",
 ]

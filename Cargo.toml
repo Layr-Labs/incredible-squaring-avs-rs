@@ -4,7 +4,8 @@ members = ["crates/aggregator",
 "bin/incredible-squaring-avs",
 "crates/cli",
 "crates/config",
-"crates/bindings"
+"crates/bindings",
+"crates/challenger"
 ]
 
 resolver = "2"
@@ -52,6 +53,7 @@ incredible-cli-runner = {path = "crates/cli/"}
 incredible-config = {path = "crates/config/"}
 incredible-bindings = {path = "crates/bindings/"}
 incredible-metrics  = {path = "crates/metrics/"}
+incredible-challenger = {path = "crates/challenger/"}
 
 
 # eigen-rs 
