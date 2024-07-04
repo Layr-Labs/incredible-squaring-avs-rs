@@ -35,12 +35,15 @@ tracing = "0.1.0"
 thiserror = "1.0.61"
 ark-bn254 = { version = "0.4.0", features = ["curve"], default-features = false }
 futures-util = "0.3"
-
+metrics = "0.21.1"
+reqwest = "0.12.5"
+serde_json = "1.0.120"
 #alloy
 alloy = { version = "0.1", features = ["full","signer-keystore"] }
 alloy-provider = { version = "0.1", default-features = false, features = [
     "reqwest",
 ] }
+serde = "1.0.203"
 
 incredible-operator = {path = "crates/operator/"}
 incredible-aggregator = {path = "crates/aggregator/"}
@@ -48,6 +51,7 @@ incredible-avs = {path = "bin/incredible/"}
 incredible-cli-runner = {path = "crates/cli/"}
 incredible-config = {path = "crates/config/"}
 incredible-bindings = {path = "crates/bindings/"}
+incredible-metrics  = {path = "crates/metrics/"}
 
 
 # eigen-rs 
@@ -56,4 +60,5 @@ eigen-testing-utils =  {git = "https://github.com/supernovahs/eigen-rs" , rev = 
 eigen-crypto-bls =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
 eigen-types =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
 eigen-crypto-keystore = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
-
+eigen-metrics = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
+eigen-metrics-derive = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}

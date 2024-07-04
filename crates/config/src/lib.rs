@@ -20,6 +20,8 @@ pub struct IncredibleConfig {
     operator_addr: Address,
 
     operator_id: OperatorId,
+
+    aggregator_ip_addr: String,
 }
 
 #[derive(Debug)]
@@ -38,51 +40,80 @@ impl Network {
 }
 
 impl IncredibleConfig {
+    /// Set chainid
     pub fn set_chain_id(&mut self, chain_id: u16) {
         self.chain_id = chain_id;
     }
 
+    /// Set rpc url
     pub fn set_rpc_url(&mut self, rpc_url: String) {
         self.rpc_url = rpc_url;
     }
 
+    /// set ecdsa keystoe file path
     pub fn set_ecdsa_keystore_path(&mut self, path: String) {
         self.ecdsa_keystore_path = path;
     }
 
+    /// set ecdsa keystore password
     pub fn set_ecdsa_keystore_pasword(&mut self, password: String) {
         self.ecdsa_keystore_password = password;
     }
 
+    pub fn set_aggregator_ip_address(&mut self, port: String) {
+        self.aggregator_ip_addr = port;
+    }
+
+    pub fn set_bls_keystore_path(&mut self, path: String) {
+        self.bls_keystore_path = path;
+    }
+
+    pub fn set_bls_keystore_password(&mut self, password: String) {
+        self.bls_keystore_password = password;
+    }
+
+    /// get appropriate chainid where incredible squaring will run
     pub fn chain_id(&self) -> u16 {
         self.chain_id
     }
 
+    /// get rpc url
     pub fn rpc_url(&self) -> String {
         self.rpc_url.clone()
     }
 
+    /// get ecdsa keystore path
     pub fn ecdsa_keystore_path(&self) -> String {
         self.ecdsa_keystore_path.clone()
     }
 
+    /// get ecdsa keystore password
     pub fn ecdsa_keystore_password(&self) -> String {
         self.ecdsa_keystore_password.clone()
     }
 
+    /// get bls keystore path
     pub fn bls_keystore_path(&self) -> String {
         self.bls_keystore_path.clone()
     }
 
+    /// get bls keystore file password
     pub fn bls_keystore_password(&self) -> String {
         self.bls_keystore_password.clone()
     }
 
+    /// get operator address
     pub fn operator_address(&self) -> Address {
         self.operator_addr
     }
 
+    /// get operator id
     pub fn operator_id(&self) -> OperatorId {
         self.operator_id
+    }
+
+    /// get aggregator port addr
+    pub fn aggregator_ip_addr(&self) -> String {
+        self.aggregator_ip_addr.clone()
     }
 }

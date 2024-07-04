@@ -14,3 +14,6 @@ workspace = true
 incredible-bindings.workspace = true
 ark-bn254.workspace = true
 eigen-types.workspace = true
+serde.workspace = true
+ark-serialize = "0.4.2"
+hex = "0.4.3"

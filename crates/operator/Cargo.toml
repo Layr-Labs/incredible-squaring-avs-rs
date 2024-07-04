@@ -24,9 +24,15 @@ eigen-client-avsregistry.workspace = true
 eigen-crypto-bls.workspace = true
 eigen-types.workspace = true
 eigen-crypto-keystore.workspace = true
+incredible-metrics.workspace = true
 
 #bn254
 rust-bls-bn254 = {git = "ssh://git@github.com/Layr-Labs/rust-bls-bn254.git", rev = "2ebe5f4", features = ["std"] }
 
 #incredible
 incredible-aggregator.workspace = true
+reqwest.workspace = true
+
+
+tokio.workspace = true
+serde_json.workspace = true

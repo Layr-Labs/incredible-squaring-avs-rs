@@ -39,6 +39,18 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "REGISTRY_COORDINATOR_ADDR")]
     registry_coordinator_address: Address,
 
+    /// Aggregator Ip address
+    #[arg(long, value_name = "AGGREGATOR_IP_ADDRESS")]
+    aggregator_ip_address: String,
+
+    /// bls keystore path
+    #[arg(long, value_name = "BLS_KEYSTORE_PATH")]
+    bls_keystore_path: String,
+
+    /// bls keystore password
+    #[arg(long, value_name = "BLS_KEYSTORE_PASSWORD")]
+    bls_keystore_password: String,
+
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
     pub ext: Ext,
@@ -72,8 +84,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_rpc_url(self.rpc_url);
         config.set_ecdsa_keystore_path(self.ecdsa_keystore_path);
         config.set_ecdsa_keystore_pasword(self.ecdsa_keystore_password);
-        let operator = OperatorBuilder::default();
-        let _ = operator.build(config);
+        config.set_aggregator_ip_address(self.aggregator_ip_address);
+        config.set_bls_keystore_path(self.bls_keystore_path);
+        config.set_bls_keystore_password(self.bls_keystore_password);
+        let operator = OperatorBuilder::build(config);
         Ok(())
     }
 }

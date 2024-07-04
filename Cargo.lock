@@ -1659,6 +1659,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-metrics-derive"
+version = "0.0.1-alpha"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=11727d8#11727d85f7e5265e653f6aef07356223c4794b42"
+dependencies = [
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "syn 2.0.68",
+]
+
+[[package]]
 name = "eigen-types"
 version = "0.0.1-alpha"
 source = "git+https://github.com/supernovahs/eigen-rs?rev=11727d8#11727d85f7e5265e653f6aef07356223c4794b42"
@@ -2718,8 +2730,11 @@ name = "incredible-aggregator"
 version = "0.0.1-alpha"
 dependencies = [
  "ark-bn254",
+ "ark-serialize 0.4.2",
  "eigen-types",
+ "hex",
  "incredible-bindings",
+ "serde",
 ]
 
 [[package]]
@@ -2727,6 +2742,7 @@ name = "incredible-bindings"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
+ "serde",
 ]
 
 [[package]]
@@ -2748,6 +2764,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "incredible-metrics"
+version = "0.0.1-alpha"
+dependencies = [
+ "alloy",
+ "alloy-provider",
+ "eigen-metrics-derive",
+ "eyre",
+ "futures-util",
+ "incredible-bindings",
+ "incredible-config",
+ "metrics",
+ "thiserror",
+]
+
+[[package]]
 name = "incredible-operator"
 version = "0.0.1-alpha"
 dependencies = [
@@ -2762,8 +2793,12 @@ dependencies = [
  "incredible-aggregator",
  "incredible-bindings",
  "incredible-config",
+ "incredible-metrics",
+ "reqwest 0.12.5",
  "rust-bls-bn254",
+ "serde_json",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -3057,6 +3092,28 @@ name = "memchr"
 version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
+
+[[package]]
+name = "metrics"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fde3af1a009ed76a778cb84fdef9e7dbbdf5775ae3e4cc1f434a6a307f6f76c5"
+dependencies = [
+ "ahash",
+ "metrics-macros",
+ "portable-atomic",
+]
+
+[[package]]
+name = "metrics-macros"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38b4faf00617defe497754acde3024865bc143d44a86799b24e191ecff91354f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.68",
+]
 
 [[package]]
 name = "mime"
@@ -3517,6 +3574,12 @@ name = "pkg-config"
 version = "0.3.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
+
+[[package]]
+name = "portable-atomic"
+version = "1.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7170ef9988bc169ba16dd36a7fa041e5c4cbeb6a35b76d4c03daded371eae7c0"
 
 [[package]]
 name = "powerfmt"
@@ -4330,9 +4393,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.118"
+version = "1.0.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d947f6b3163d8857ea16c4fa0dd4840d52f3041039a85decd46867eb1abef2e4"
+checksum = "4e0d21c9a8cae1235ad58a00c11cb40d4b1e5c784f1ef2c537876ed6ffd8b7c5"
 dependencies = [
  "itoa",
  "ryu",

@@ -12,3 +12,4 @@ workspace = true
 
 [dependencies]
 alloy.workspace = true
+serde.workspace = true

@@ -21,6 +21,9 @@ use incredible_bindings::IncredibleSquaringTaskManager::{self, NewTaskCreated, T
 use incredible_config::IncredibleConfig;
 use rust_bls_bn254::sign;
 
+use crate::client::ClientAggregator;
+use incredible_metrics::IncredibleMetrics;
+
 /// Main Operator
 #[derive(Debug)]
 pub struct OperatorBuilder {
@@ -31,6 +34,12 @@ pub struct OperatorBuilder {
     key_pair: BlsKeypair,
 
     operator_id: OperatorId,
+
+    client: ClientAggregator,
+
+    aggregator_ip_addr: String,
+
+    metrics: IncredibleMetrics,
 }
 
 impl OperatorBuilder {
@@ -46,7 +55,6 @@ impl OperatorBuilder {
 
         match signer_result {
             Ok(signer) => {
-                println!("signer : {signer:?}");
                 let path = PathBuf::from(config.bls_keystore_path());
                 let contents =
                     fs::read_to_string(path).expect("Should have been able to read the file");
@@ -60,12 +68,16 @@ impl OperatorBuilder {
                             .into_bls_keypair()
                             .expect("failed to convert keystore into blskeypair");
 
+                        let metrics = IncredibleMetrics::new();
                         Ok(Self {
                             rpc_url: config.rpc_url(),
                             operator_addr: config.operator_address(),
                             key_pair: bls_keypair,
                             operator_id: config.operator_id(),
-                        });
+                            client: ClientAggregator::new(config.aggregator_ip_addr()),
+                            metrics,
+                            aggregator_ip_addr: config.aggregator_ip_addr(),
+                        })
                     }
                     Err(_) => Err(OperatorError::EncodedKeystore),
                 }
@@ -117,7 +129,6 @@ impl OperatorBuilder {
             let mut stream = sub.into_stream();
 
             while let Some(log) = stream.next().await {
-                println!("logs : {log:?}");
                 let task_option = log
                     .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
                     .ok();
@@ -128,6 +139,7 @@ impl OperatorBuilder {
                         task: data.task.clone(),
                         taskIndex: data.taskIndex,
                     };
+                    self.metrics.increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
                 }
             }
