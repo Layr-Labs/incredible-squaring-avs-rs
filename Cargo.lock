@@ -2813,6 +2813,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -2826,6 +2827,7 @@ dependencies = [
  "incredible-cli-runner",
  "incredible-config",
  "incredible-operator",
+ "tracing",
 ]
 
 [[package]]

@@ -24,6 +24,10 @@ pub struct IncredibleConfig {
     aggregator_ip_addr: String,
 
     ws_url: String,
+
+    registry_coordinator_addr: Address,
+
+    operator_state_retriever_addr: Address,
 }
 
 #[derive(Debug)]
@@ -78,6 +82,14 @@ impl IncredibleConfig {
         self.ws_url = ws;
     }
 
+    pub fn set_registry_coordinator_addr(&mut self, address: Address) {
+        self.registry_coordinator_addr = address;
+    }
+
+    pub fn set_operator_state_retriever(&mut self, address: Address) {
+        self.operator_state_retriever_addr = address;
+    }
+
     /// get appropriate chainid where incredible squaring will run
     pub fn chain_id(&self) -> u16 {
         self.chain_id
@@ -125,5 +137,13 @@ impl IncredibleConfig {
 
     pub fn ws_url(&self) -> String {
         self.ws_url.clone()
+    }
+
+    pub fn operator_state_retriever_addr(&self) -> Address {
+        self.operator_state_retriever_addr
+    }
+
+    pub fn registry_coordinator_addr(&self) -> Address {
+        self.registry_coordinator_addr
     }
 }

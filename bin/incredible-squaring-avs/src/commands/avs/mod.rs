@@ -4,6 +4,8 @@ use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
 use std::ffi::OsString;
 use std::fmt;
+use tracing::debug;
+use tracing::field::debug;
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -24,7 +26,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     chain_id: u16,
 
     /// The RPC URL of the node.
-    #[arg(long, value_name = "RPC_URL")]
+    #[arg(long, value_name = "RPC_URL",default_value = "http://localhost:8545", value_parser = clap::value_parser!(String))]
     rpc_url: String,
 
     /// ECDSA key store path file
@@ -73,12 +75,15 @@ impl AvsCommand {
 }
 
 impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
+    /// Execute function
     pub async fn execute(self: Box<Self>) -> eyre::Result<()> {
-        println!("Executing AVS command");
-        println!("chain id : {:?}", self.chain_id);
-        println!("rpc url : {:?}", self.rpc_url);
-        println!("ecdsa key store path {:?}", self.ecdsa_keystore_path);
-        println!("ecdsa key password:{:?}", self.ecdsa_keystore_password);
+        debug!("Executing AVS command");
+        debug!("chain id : {:?}", self.chain_id);
+        debug!("rpc url : {:?}", self.rpc_url);
+        debug!("ecdsa key store path {:?}", self.ecdsa_keystore_path);
+        debug!("ecdsa key password:{:?}", self.ecdsa_keystore_password);
+        debug!("bls keystore path : {:?}", self.bls_keystore_path);
+        debug!("bls keystore password : {:?}", self.bls_keystore_password);
         let mut config = IncredibleConfig::default();
         config.set_chain_id(self.chain_id);
         config.set_rpc_url(self.rpc_url);
@@ -87,7 +92,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_aggregator_ip_address(self.aggregator_ip_address);
         config.set_bls_keystore_path(self.bls_keystore_path);
         config.set_bls_keystore_password(self.bls_keystore_password);
-        let operator = OperatorBuilder::build(config);
+        let _ = OperatorBuilder::build(config);
         Ok(())
     }
 }
