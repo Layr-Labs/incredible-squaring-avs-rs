@@ -19,4 +19,7 @@ pub enum OperatorError {
 
     #[error("Failed to create Encoded bls keystore ")]
     EncodedKeystore,
+
+    #[error("failed to parse bls keystore path ")]
+    BlsKeystorePath,
 }

@@ -1,0 +1,19 @@
+[package]
+name = "incredible-chainio"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "incredible squaring chainio "
+    
+[lints]
+workspace = true
+
+[dependencies]
+eyre.workspace = true
+alloy-provider.workspace = true
+incredible-bindings.workspace = true
+futures-util.workspace = true
+alloy.workspace = true
+tokio.workspace = true

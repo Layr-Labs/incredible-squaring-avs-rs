@@ -1,16 +1,20 @@
 use eyre::Result;
 use incredible_aggregator::SignedTaskResponse;
-use incredible_metrics::IncredibleMetrics;
 use reqwest::Client;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
-#[derive(Debug)]
+
+use tracing::{debug, error, info};
+
+/// Client Aggregator
+#[derive(Debug, Clone)]
 pub struct ClientAggregator {
     rpc_url: String,
     client: Client,
 }
 
 impl ClientAggregator {
+    /// new
     pub fn new(url: String) -> Self {
         Self {
             rpc_url: url,
@@ -18,10 +22,13 @@ impl ClientAggregator {
         }
     }
 
+    /// Send signed task response
     pub async fn send_signed_task_response(
         &self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<()> {
+        let mut delay = Duration::from_secs(1);
+
         for _ in 0..5 {
             let response = self
                 .client
@@ -38,20 +45,24 @@ impl ClientAggregator {
             match response {
                 Ok(res) => {
                     if res.status().is_success() {
-                        println!("Signed task response header accepted by aggregator.");
+                        info!("Signed task response accepted by aggregator.");
                         return Ok(());
                     } else {
-                        println!("Received error from aggregator: {:?}", res.text().await?);
+                        info!("Received error from aggregator: {:?}", res.text().await?);
                     }
                 }
                 Err(err) => {
-                    println!("Error sending request: {:?}", err);
+                    error!("Error sending request: {:?}", err);
                 }
             }
-            println!("Retrying in 2 seconds...");
-            sleep(Duration::from_secs(2)).await;
+
+            // Exponential backoff
+            info!("Retrying in {} seconds...", delay.as_secs());
+            sleep(delay).await;
+            delay *= 2; // Double the delay for the next retry
         }
-        println!("Could not send signed task response to aggregator. Tried 5 times.");
+
+        debug!("Could not send signed task response to aggregator. Tried 5 times.");
         Ok(())
     }
 }
