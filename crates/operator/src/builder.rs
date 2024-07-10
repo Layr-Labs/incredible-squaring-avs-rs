@@ -19,7 +19,6 @@ use incredible_config::IncredibleConfig;
 use rust_bls_bn254::sign;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::Arc;
 use tracing::{debug, info};
 
 use crate::client::ClientAggregator;

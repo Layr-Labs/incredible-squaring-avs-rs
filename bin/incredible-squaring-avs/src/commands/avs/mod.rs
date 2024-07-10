@@ -5,7 +5,6 @@ use incredible_operator::builder::OperatorBuilder;
 use std::ffi::OsString;
 use std::fmt;
 use tracing::debug;
-use tracing::field::debug;
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]

@@ -14,7 +14,12 @@ workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 tracing.workspace = true
 alloy.workspace = true
-
+serde.workspace = true
+confy = "0.6.1"
 
 #eigen
 eigen-types.workspace = true
+
+
+[dev-dependencies]
+tempfile = "3.10.1"
