@@ -1,3 +1,4 @@
+//! Challenger crate
 use std::collections::HashMap;
 
 use alloy::rpc::types::{serde_helpers::num, BlockNumberOrTag, Filter};
@@ -9,7 +10,9 @@ use incredible_bindings::IncredibleSquaringTaskManager::{
     G1Point, NewTaskCreated, Task, TaskResponded, TaskResponse, TaskResponseMetadata,
 };
 use incredible_config::IncredibleConfig;
+use tracing::info;
 
+/// Task Response Data
 #[derive(Debug)]
 pub struct TaskResponseData {
     task_response: TaskResponse,
@@ -33,9 +36,10 @@ impl Challenger {
         todo!()
     }
 
+    /// Start the challenger
     pub async fn start_challenger(&mut self) -> Result<()> {
-        println!("Starting Challenger.");
-        println!("Subscribed to new tasks");
+        info!("Starting Challenger.");
+        info!("Subscribed to new tasks");
 
         let ws = WsConnect::new(self.ws_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;

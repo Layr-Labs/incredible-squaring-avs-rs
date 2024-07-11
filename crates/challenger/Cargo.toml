@@ -18,3 +18,4 @@ incredible-bindings.workspace = true
 futures-util.workspace = true
 alloy.workspace = true
 tokio.workspace = true
+tracing.workspace = true

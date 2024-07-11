@@ -1562,7 +1562,7 @@ dependencies = [
 [[package]]
 name = "eigen-chainio-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "ark-bn254",
  "ark-ff 0.4.2",
@@ -1574,7 +1574,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "alloy-network",
  "alloy-primitives",
@@ -1599,7 +1599,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "alloy-primitives",
  "eigen-types",
@@ -1611,12 +1611,12 @@ dependencies = [
 [[package]]
 name = "eigen-contract-bindings"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1634,7 +1634,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1645,7 +1645,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-keystore"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "aes",
  "ark-bn254",
@@ -1666,7 +1666,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-derive"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "once_cell",
  "proc-macro2",
@@ -1678,7 +1678,7 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "alloy-primitives",
  "eigen-crypto-bls",
@@ -1690,7 +1690,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=b81e065#b81e065263fb99b3ca54a8f5c2417553696eb16d"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=a8d726f#a8d726ffa442bdb38f98364a73babefbf92a78f4"
 dependencies = [
  "alloy-contract",
  "alloy-network",
@@ -2779,6 +2779,7 @@ dependencies = [
  "incredible-bindings",
  "incredible-config",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

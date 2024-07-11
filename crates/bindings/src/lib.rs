@@ -1,3 +1,4 @@
+//! alloy bindings which are publicly exportable
 use alloy::sol;
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +9,6 @@ sol!(
     IncredibleSquaringTaskManager,
     "IncredibleSquaringTaskManager.json"
 );
-
 
 sol!(
     #[allow(missing_docs)]
