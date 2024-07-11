@@ -2777,6 +2777,7 @@ dependencies = [
  "eyre",
  "futures-util",
  "incredible-bindings",
+ "incredible-chainio",
  "incredible-config",
  "tokio",
  "tracing",

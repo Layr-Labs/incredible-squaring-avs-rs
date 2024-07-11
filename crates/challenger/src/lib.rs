@@ -1,14 +1,18 @@
 //! Challenger crate
 use std::collections::HashMap;
 
+pub mod error;
+use alloy::rpc::types::TransactionReceipt;
 use alloy::rpc::types::{serde_helpers::num, BlockNumberOrTag, Filter};
 use alloy::sol_types::SolEvent;
 use alloy_provider::{Provider, ProviderBuilder, WsConnect};
+use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
 use incredible_bindings::IncredibleSquaringTaskManager::{
     G1Point, NewTaskCreated, Task, TaskResponded, TaskResponse, TaskResponseMetadata,
 };
+use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use tracing::info;
 
@@ -17,11 +21,13 @@ use tracing::info;
 pub struct TaskResponseData {
     task_response: TaskResponse,
     task_response_metadata: TaskResponseMetadata,
-    non_signing_operator_pub_keys: G1Point,
+    non_signing_operator_pub_keys: Vec<G1Point>,
 }
 
 #[derive(Debug)]
 pub struct Challenger {
+    avs_writer: AvsWriter,
+
     ws_url: String,
 
     rpc_url: String,
@@ -33,6 +39,7 @@ pub struct Challenger {
 
 impl Challenger {
     pub fn new(config: IncredibleConfig) -> Self {
+        // let avs_writer
         todo!()
     }
 
@@ -118,5 +125,26 @@ impl Challenger {
         todo!();
     }
 
-    pub fn raise_challenge(&self, task_index: u32) {}
+    pub async fn raise_challenge(
+        &self,
+        task_index: u32,
+    ) -> Result<TransactionReceipt, ChallengerError> {
+        let raise_challenge_result = self
+            .avs_writer
+            .raise_challenge(
+                self.tasks[&task_index].clone(),
+                self.task_responses[&task_index].task_response.clone(),
+                self.task_responses[&task_index]
+                    .task_response_metadata
+                    .clone(),
+                self.task_responses[&task_index]
+                    .non_signing_operator_pub_keys
+                    .clone(),
+            )
+            .await;
+        match raise_challenge_result {
+            Ok(raise_challenge) => Ok(raise_challenge),
+            Err(e) => Err(error::ChallengerError::ChainIo(e)),
+        }
+    }
 }
