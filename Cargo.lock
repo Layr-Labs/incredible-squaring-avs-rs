@@ -2774,6 +2774,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "alloy-provider",
+ "eigen-utils",
  "eyre",
  "futures-util",
  "incredible-bindings",

@@ -23,3 +23,6 @@ thiserror.workspace = true
 
 #incredible
 incredible-chainio.workspace = true
+
+#eigen-rs
+eigen-utils.workspace = true

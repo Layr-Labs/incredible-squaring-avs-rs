@@ -1,4 +1,5 @@
 use alloy::contract::Error as AlloyError;
+use alloy::sol_types::Error as AlloySolTypeError;
 use incredible_chainio::error::ChainIoError;
 use thiserror::Error;
 
@@ -19,4 +20,20 @@ pub enum ChallengerError {
 
     #[error("Task Response not found")]
     TaskNotFound,
+
+    #[error("Alloy sol types error :{0}")]
+    AlloySolType(#[from] AlloySolTypeError),
+
+    #[error("Tx hash not found")]
+    TransactionHashNotFound,
+
+    #[error("Decoded data empty")]
+    EmptyDecodedData,
+
+    #[error("Failed to decode event ")]
+    DecodeEvent,
+
+    /// Failed to parse ECDSA keystore signer
+    #[error("Failed to parse ecdsa keystore signer")]
+    ECDSAKeystoreSigner,
 }

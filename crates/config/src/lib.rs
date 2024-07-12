@@ -28,6 +28,8 @@ pub struct IncredibleConfig {
     registry_coordinator_addr: Address,
 
     operator_state_retriever_addr: Address,
+
+    signer: String,
 }
 
 #[derive(Debug)]
@@ -78,6 +80,10 @@ impl IncredibleConfig {
         self.bls_keystore_password = password;
     }
 
+    pub fn set_signer_pvt_key_string(&mut self, signer: String) {
+        self.signer = signer;
+    }
+
     pub fn set_ws_url(&mut self, ws: String) {
         self.ws_url = ws;
     }
@@ -93,6 +99,10 @@ impl IncredibleConfig {
     /// get appropriate chainid where incredible squaring will run
     pub fn chain_id(&self) -> u16 {
         self.chain_id
+    }
+
+    pub fn get_signer(&self) -> String {
+        self.signer.clone()
     }
 
     /// get rpc url
