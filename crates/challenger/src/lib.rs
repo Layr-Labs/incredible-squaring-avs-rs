@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 pub mod error;
 use alloy::rpc::types::TransactionReceipt;
-use alloy::rpc::types::{serde_helpers::num, BlockNumberOrTag, Filter};
+use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::sol_types::SolEvent;
 use alloy_provider::{Provider, ProviderBuilder, WsConnect};
 use error::ChallengerError;
@@ -44,7 +44,7 @@ impl Challenger {
     }
 
     /// Start the challenger
-    pub async fn start_challenger(&mut self) -> Result<()> {
+    pub async fn start_challenger(&mut self) -> Result<(), ChallengerError> {
         info!("Starting Challenger.");
         info!("Subscribed to new tasks");
 
@@ -93,6 +93,16 @@ impl Challenger {
                         };
 
                         let t_index = self.process_new_task_created_log(new_task_cr);
+
+                        if let Some(_) = self.task_responses.get(&t_index) {
+                            let call_c_result = self.call_challenge(t_index);
+                            match call_c_result {
+                                Ok(call_c) => continue,
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                            }
+                        }
                     }
                 } else if *tp == task_responded_log {
                 }
@@ -109,7 +119,7 @@ impl Challenger {
         new_task_created_log.taskIndex
     }
 
-    pub fn call_challenge_module(&self, task_index: u32) -> Result<()> {
+    pub fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
         if let Some(number_to_be_squared) = self.tasks.get(&task_index) {
             let num_to_square = number_to_be_squared.numberToBeSquared;
 
@@ -118,11 +128,16 @@ impl Challenger {
 
                 if answer != (num_to_square * num_to_square) {
                     self.raise_challenge(task_index);
+                    return Ok(());
                 }
-            }
-        }
 
-        todo!();
+                return Err(ChallengerError::TaskResponseisCorrect);
+            } else {
+                return Err(ChallengerError::TaskResponseNotFound);
+            }
+        } else {
+            return Err(ChallengerError::TaskNotFound);
+        }
     }
 
     pub async fn raise_challenge(

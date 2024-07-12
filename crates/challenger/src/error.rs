@@ -10,4 +10,13 @@ pub enum ChallengerError {
 
     #[error("Alloy contract error: {0}")]
     AlloyContractError(#[from] AlloyError),
+
+    #[error("Task Response is not wrong")]
+    TaskResponseisCorrect,
+
+    #[error("Task Response not found")]
+    TaskResponseNotFound,
+
+    #[error("Task Response not found")]
+    TaskNotFound,
 }
