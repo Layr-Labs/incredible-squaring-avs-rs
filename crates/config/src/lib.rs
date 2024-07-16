@@ -1,32 +1,68 @@
 //! config
-use alloy::primitives::Address;
+use alloy::hex::FromHex;
+use alloy::primitives::{Address, FixedBytes};
 use eigen_types::operator::OperatorId;
+use error::ConfigError;
 use serde::{Deserialize, Serialize};
 
-use std::path::{Path, PathBuf};
-
+/// Config Error
+pub mod error;
+use std::path::PathBuf;
 /// Configurations for running the avs
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[serde(default)]
 pub struct IncredibleConfig {
-    chain_id: u16,
+    rpc_config: RpcConfig,
 
-    rpc_url: String,
-
-    ecdsa_keystore_path: String,
-
-    ecdsa_keystore_password: String,
+    ecdsa_config: EcdsaConfig,
 
     bls_config: BlsConfig,
 
-    operator_addr: Address,
+    operator_config: OperatorConfig,
 
-    operator_id: OperatorId,
+    aggregator_config: AggregatorConfig,
 
-    aggregator_ip_addr: String,
+    el_config: ELConfig,
+}
 
-    registry_coordinator_addr: Address,
+/// Rpc Configurations
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct RpcConfig {
+    /// chainid
+    pub chain_id: u64,
 
-    operator_state_retriever_addr: Address,
+    /// http rpc url
+    pub http_rpc_url: String,
+
+    /// ws rpc url
+    pub ws_rpc_url: String,
+}
+
+/// Operator Configurations
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct OperatorConfig {
+    /// Operator Address
+    pub operator_address: String,
+
+    /// Operator Id
+    pub operator_id: String,
+}
+
+/// Eigen Layer Configuration
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct ELConfig {
+    /// Registry Coordinator Address
+    pub registry_coordinator_addr: String,
+
+    /// Operator State retriever Address
+    pub operator_state_retriever_addr: String,
+}
+
+/// AggregatorConfig
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct AggregatorConfig {
+    /// Aggregator Ip address
+    ip_address: String,
 }
 
 /// Bls Configuration
@@ -34,6 +70,17 @@ pub struct IncredibleConfig {
 #[serde(default)]
 pub struct BlsConfig {
     /// keystore path
+    pub keystore_path: String,
+
+    /// keysotre password
+    pub keystore_password: String,
+}
+
+/// ECDSA keysotre configuration
+#[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(default)]
+pub struct EcdsaConfig {
+    /// keysotre path
     pub keystore_path: String,
 
     /// keysotre password
@@ -53,27 +100,36 @@ impl IncredibleConfig {
     }
 
     /// Set chainid
-    pub fn set_chain_id(&mut self, chain_id: u16) {
-        self.chain_id = chain_id;
+    pub fn set_chain_id(&mut self, chain_id: u64) {
+        self.rpc_config.chain_id = chain_id;
     }
 
-    /// Set rpc url
-    pub fn set_rpc_url(&mut self, rpc_url: String) {
-        self.rpc_url = rpc_url;
+    pub fn set_operator_id(&mut self, id: String) {
+        self.operator_config.operator_id = id;
+    }
+
+    /// Set http rpc url
+    pub fn set_http_rpc_url(&mut self, rpc_url: String) {
+        self.rpc_config.http_rpc_url = rpc_url;
+    }
+
+    /// Set ws rpc url
+    pub fn set_ws_rpc_url(&mut self, ws_url: String) {
+        self.rpc_config.ws_rpc_url = ws_url;
     }
 
     /// set ecdsa keystoe file path
     pub fn set_ecdsa_keystore_path(&mut self, path: String) {
-        self.ecdsa_keystore_path = path;
+        self.ecdsa_config.keystore_path = path;
     }
 
     /// set ecdsa keystore password
     pub fn set_ecdsa_keystore_pasword(&mut self, password: String) {
-        self.ecdsa_keystore_password = password;
+        self.ecdsa_config.keystore_password = password;
     }
 
     pub fn set_aggregator_ip_address(&mut self, port: String) {
-        self.aggregator_ip_addr = port;
+        self.aggregator_config.ip_address = port;
     }
 
     pub fn set_bls_keystore_path(&mut self, path: String) {
@@ -85,31 +141,36 @@ impl IncredibleConfig {
     }
 
     pub fn set_registry_coordinator_addr(&mut self, address: Address) {
-        self.registry_coordinator_addr = address;
+        self.el_config.registry_coordinator_addr = address.to_string();
     }
 
     pub fn set_operator_state_retriever(&mut self, address: Address) {
-        self.operator_state_retriever_addr = address;
+        (self.el_config.operator_state_retriever_addr) = address.to_string();
     }
 
     /// get appropriate chainid where incredible squaring will run
-    pub fn chain_id(&self) -> u16 {
-        self.chain_id
+    pub fn chain_id(&self) -> u64 {
+        self.rpc_config.chain_id
     }
 
-    /// get rpc url
-    pub fn rpc_url(&self) -> String {
-        self.rpc_url.clone()
+    /// get http rpc url
+    pub fn http_rpc_url(&self) -> String {
+        self.rpc_config.http_rpc_url.clone()
+    }
+
+    /// get ws rpc url
+    pub fn get_rpc_url(&self) -> String {
+        self.rpc_config.ws_rpc_url.clone()
     }
 
     /// get ecdsa keystore path
     pub fn ecdsa_keystore_path(&self) -> String {
-        self.ecdsa_keystore_path.clone()
+        self.ecdsa_config.keystore_path.clone()
     }
 
     /// get ecdsa keystore password
     pub fn ecdsa_keystore_password(&self) -> String {
-        self.ecdsa_keystore_password.clone()
+        self.ecdsa_config.keystore_password.clone()
     }
 
     /// get bls keystore path
@@ -124,36 +185,57 @@ impl IncredibleConfig {
 
     /// get operator address
     pub fn operator_address(&self) -> Address {
-        self.operator_addr
+        Address::from_slice(&self.operator_config.operator_address.as_bytes())
     }
 
     /// get operator id
-    pub fn operator_id(&self) -> OperatorId {
-        self.operator_id
+    pub fn get_operator_id(&self) -> Result<OperatorId, error::ConfigError> {
+        let s = FixedBytes::from_hex(self.operator_config.operator_id.as_bytes());
+        match s {
+            Ok(id) => Ok(id),
+            Err(e) => Err(error::ConfigError::HexParse(e)),
+        }
     }
 
     /// get aggregator port addr
     pub fn aggregator_ip_addr(&self) -> String {
-        self.aggregator_ip_addr.clone()
+        self.aggregator_config.ip_address.clone()
     }
 
     /// Operator state retriever
-    pub fn operator_state_retriever_addr(&self) -> Address {
-        self.operator_state_retriever_addr
+    pub fn operator_state_retriever_addr(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(self.el_config.operator_state_retriever_addr.as_bytes());
+
+        match s {
+            Ok(operator_state_retriever_addr) => Ok(operator_state_retriever_addr),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
     }
 
     /// Registry coordinator addr
-    pub fn registry_coordinator_addr(&self) -> Address {
-        self.registry_coordinator_addr
+    pub fn registry_coordinator_addr(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(self.el_config.registry_coordinator_addr.as_bytes());
+
+        match s {
+            Ok(registry_coordinator_addr) => Ok(registry_coordinator_addr),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
 
+    use alloy::primitives::{address, FixedBytes};
+
     use super::BlsConfig;
     use super::PathBuf;
+    use crate::AggregatorConfig;
+    use crate::ELConfig;
+    use crate::EcdsaConfig;
     use crate::IncredibleConfig;
+    use crate::OperatorConfig;
+    use crate::RpcConfig;
     const EXTENSION: &str = "toml";
 
     fn with_tempdir(filename: &str, proc: fn(&std::path::Path)) {
@@ -166,7 +248,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bls_config() {
+    fn test_bls_config_load() {
         with_tempdir("blsconfig-load", |config_path| {
             let mut config = BlsConfig::default();
             config.keystore_password = "djsfl".to_string();
@@ -188,5 +270,163 @@ mod tests {
                 IncredibleConfig::load(&PathBuf::from(config_path)).unwrap();
             assert_eq!(config, loaded_config);
         })
+    }
+
+    #[test]
+    fn test_rpc_config_load() {
+        let config_file = r#"
+        chain_id = 17000
+        http_rpc_url = 'https://holesky'
+        ws_rpc_url = 'wsholeskyurl'
+        "#;
+
+        let _config: RpcConfig = toml::from_str(config_file).unwrap();
+        assert_eq!(_config.chain_id, 17000);
+        assert_eq!(_config.http_rpc_url, "https://holesky");
+        assert_eq!(_config.ws_rpc_url, "wsholeskyurl");
+    }
+
+    #[test]
+    fn test_operator_config_load() {
+        let config_file = r#"
+        operator_address = "https://localhost:3001"
+        operator_id = "0x0202020202020202020202020202020202020202020202020202020202020202"
+        "#;
+
+        let _config: OperatorConfig = toml::from_str(config_file).unwrap();
+
+        assert_eq!(_config.operator_address, "https://localhost:3001");
+        assert_eq!(
+            _config.operator_id,
+            "0x0202020202020202020202020202020202020202020202020202020202020202"
+        );
+    }
+
+    #[test]
+    fn test_bls_config() {
+        let config_file = r#"
+        keystore_path = "eigenblskeystorepath"
+        keystore_password = "eigenlovesblskeystorepassword"
+        "#;
+        let _config: BlsConfig = toml::from_str(config_file).unwrap();
+
+        let incredible_config_file = r#"
+        [bls_config]
+        keystore_path = "eigenblskeystorepath"
+        keystore_password = "eigenlovesblskeystorepassword"
+        "#;
+
+        let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
+        assert_eq!(
+            incredible_config.bls_keystore_password(),
+            "eigenlovesblskeystorepassword"
+        );
+        assert_eq!(
+            incredible_config.bls_keystore_path(),
+            "eigenblskeystorepath"
+        );
+    }
+
+    #[test]
+    fn test_check_operator_id_deserialize() {
+        let id = "0x0202020202020202020202020202020202020202020202020202020202020202";
+        let bytes: FixedBytes<32> = FixedBytes::from([
+            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+            0x02, 0x02, 0x02, 0x02,
+        ]);
+
+        let mut incredible_config = IncredibleConfig::default();
+
+        incredible_config.set_operator_id(id.to_string());
+        assert_eq!(incredible_config.get_operator_id().unwrap(), bytes);
+    }
+
+    #[test]
+    fn test_elconfig() {
+        let config_file = r#"
+        registry_coordinator_addr = "0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326"
+        operator_state_retriever_addr  = "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"
+        "#;
+
+        let _config: ELConfig = toml::from_str(config_file).unwrap();
+
+        assert_eq!(
+            _config.registry_coordinator_addr,
+            "0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326"
+        );
+        assert_eq!(
+            _config.operator_state_retriever_addr,
+            "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"
+        );
+
+        let incredible_config_file = r#"
+        [el_config]
+        registry_coordinator_addr = "0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326"
+        operator_state_retriever_addr  = "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"
+        "#;
+        let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
+
+        assert_eq!(
+            incredible_config.registry_coordinator_addr().unwrap(),
+            address!("1f9090aaE28b8a3dCeaDf281B0F12828e676c326")
+        );
+
+        assert_eq!(
+            incredible_config.operator_state_retriever_addr().unwrap(),
+            address!("4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97")
+        );
+    }
+
+    #[test]
+    fn test_aggregator_config() {
+        let config_file = r#"
+        ip_address = "https://localhost:3001"
+        "#;
+
+        let _config: AggregatorConfig = toml::from_str(config_file).unwrap();
+
+        assert_eq!(_config.ip_address, "https://localhost:3001");
+
+        let incredible_config_file = r#"
+        [aggregator_config]
+        ip_address = "https://localhost:3001"
+        "#;
+
+        let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
+
+        assert_eq!(
+            incredible_config.aggregator_ip_addr(),
+            "https://localhost:3001"
+        );
+    }
+
+    #[test]
+    fn test_ecdsa_config() {
+        let _config = r#"
+        keystore_path = "incredibleecdsakeystorepath"
+        keystore_password  = "eigenlovesecdsakeystore"
+        "#;
+
+        let ecdsa_config: EcdsaConfig = toml::from_str(_config).unwrap();
+
+        assert_eq!(ecdsa_config.keystore_password, "eigenlovesecdsakeystore");
+        assert_eq!(ecdsa_config.keystore_path, "incredibleecdsakeystorepath");
+
+        let incredible_config_file = r#"
+        [ecdsa_config]
+        keystore_path = "incredibleecdsakeystorepath"
+        keystore_password  = "eigenlovesecdsakeystore"
+        "#;
+        let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
+        assert_eq!(
+            incredible_config.ecdsa_keystore_path(),
+            "incredibleecdsakeystorepath"
+        );
+
+        assert_eq!(
+            incredible_config.ecdsa_keystore_password(),
+            "eigenlovesecdsakeystore"
+        );
     }
 }

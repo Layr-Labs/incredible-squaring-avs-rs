@@ -77,19 +77,51 @@ impl OperatorBuilder {
                                     .expect("failed to convert keystore into blskeypair");
 
                                 let metrics = IncredibleMetrics::new();
-                                Ok(Self {
-                                    rpc_url: config.rpc_url(),
-                                    operator_addr: config.operator_address(),
-                                    key_pair: bls_keypair,
-                                    operator_id: config.operator_id(),
-                                    client: ClientAggregator::new(config.aggregator_ip_addr()),
-                                    metrics,
-                                    aggregator_ip_addr: config.aggregator_ip_addr(),
-                                    signer,
-                                    registry_coordinator: config.registry_coordinator_addr(),
-                                    operator_state_retriever: config
-                                        .operator_state_retriever_addr(),
-                                })
+
+                                let operator_id_result = config.get_operator_id();
+
+                                match operator_id_result {
+                                    Ok(operator_id) => {
+                                        let registry_coordinator_addr_result =
+                                            config.registry_coordinator_addr();
+                                        let operator_statr_retriever_addr_result =
+                                            config.operator_state_retriever_addr();
+
+                                        match registry_coordinator_addr_result {
+                                            Ok(registry_coordinator_addr) => {
+                                                match operator_statr_retriever_addr_result {
+                                                    Ok(operator_statr_retriever_addr) => Ok(Self {
+                                                        rpc_url: config.get_rpc_url(),
+                                                        operator_addr: config.operator_address(),
+                                                        key_pair: bls_keypair,
+                                                        operator_id: operator_id,
+                                                        client: ClientAggregator::new(
+                                                            config.aggregator_ip_addr(),
+                                                        ),
+                                                        metrics,
+                                                        aggregator_ip_addr: config
+                                                            .aggregator_ip_addr(),
+                                                        signer,
+                                                        registry_coordinator:
+                                                            registry_coordinator_addr,
+                                                        operator_state_retriever:
+                                                            operator_statr_retriever_addr,
+                                                    }),
+
+                                                    Err(e) => {
+                                                        return Err(
+                                                            OperatorError::ConfigParseError(e),
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            Err(e) => {
+                                                return Err(OperatorError::ConfigParseError(e));
+                                            }
+                                        }
+                                    }
+                                    Err(e) => Err(OperatorError::ConfigParseError(e)),
+                                }
                             }
                             Err(_) => Err(OperatorError::EncodedKeystore),
                         }
@@ -166,7 +198,7 @@ impl OperatorBuilder {
 
                 Ok(())
             }
-            Err(e) => Err(AvsRegistryError::BuildElChainReader.into()),
+            Err(_) => Err(AvsRegistryError::BuildElChainReader.into()),
         }
     }
 

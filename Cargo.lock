@@ -2781,9 +2781,12 @@ dependencies = [
  "alloy",
  "confy",
  "eigen-types",
+ "hex",
  "serde",
  "tempfile",
+ "thiserror",
  "tokio",
+ "toml",
  "tracing",
 ]
 

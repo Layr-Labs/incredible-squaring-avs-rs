@@ -22,7 +22,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     default_value_t = 1,
     value_parser = value_parser!(u16).range(1..)
 )]
-    chain_id: u16,
+    chain_id: u64,
 
     /// The RPC URL of the node.
     #[arg(long, value_name = "RPC_URL",default_value = "http://localhost:8545", value_parser = clap::value_parser!(String))]
@@ -85,7 +85,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         debug!("bls keystore password : {:?}", self.bls_keystore_password);
         let mut config = IncredibleConfig::default();
         config.set_chain_id(self.chain_id);
-        config.set_rpc_url(self.rpc_url);
+        config.set_http_rpc_url(self.rpc_url);
         config.set_ecdsa_keystore_path(self.ecdsa_keystore_path);
         config.set_ecdsa_keystore_pasword(self.ecdsa_keystore_password);
         config.set_aggregator_ip_address(self.aggregator_ip_address);

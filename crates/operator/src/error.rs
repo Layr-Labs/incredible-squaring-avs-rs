@@ -1,3 +1,4 @@
+use incredible_config::error::ConfigError;
 use thiserror::Error;
 
 /// Error returned by AvsRegistry
@@ -22,4 +23,7 @@ pub enum OperatorError {
 
     #[error("failed to parse bls keystore path ")]
     BlsKeystorePath,
+
+    #[error("Config error {0}")]
+    ConfigParseError(#[from] ConfigError),
 }

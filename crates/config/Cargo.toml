@@ -16,6 +16,12 @@ tracing.workspace = true
 alloy.workspace = true
 serde.workspace = true
 confy = "0.6.1"
+thiserror.workspace = true
+
+#config
+toml = "0.8"
+hex = "0.4.3"
+
 
 #eigen
 eigen-types.workspace = true
