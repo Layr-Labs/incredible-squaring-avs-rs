@@ -1,5 +1,6 @@
 use alloy::primitives::Address;
 use clap::{value_parser, Args, Parser};
+use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
 use std::ffi::OsString;
@@ -22,7 +23,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     default_value_t = 1,
     value_parser = value_parser!(u16).range(1..)
 )]
-    chain_id: u64,
+    chain_id: u16,
 
     /// The RPC URL of the node.
     #[arg(long, value_name = "RPC_URL",default_value = "http://localhost:8545", value_parser = clap::value_parser!(String))]
@@ -84,14 +85,33 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         debug!("bls keystore path : {:?}", self.bls_keystore_path);
         debug!("bls keystore password : {:?}", self.bls_keystore_password);
         let mut config = IncredibleConfig::default();
-        config.set_chain_id(self.chain_id);
-        config.set_http_rpc_url(self.rpc_url);
-        config.set_ecdsa_keystore_path(self.ecdsa_keystore_path);
-        config.set_ecdsa_keystore_pasword(self.ecdsa_keystore_password);
-        config.set_aggregator_ip_address(self.aggregator_ip_address);
-        config.set_bls_keystore_path(self.bls_keystore_path);
-        config.set_bls_keystore_password(self.bls_keystore_password);
-        let _ = OperatorBuilder::build(config);
+
+        let Self {
+            chain_id,
+            rpc_url,
+            ecdsa_keystore_path,
+            ecdsa_keystore_password,
+            registry_coordinator_address,
+            aggregator_ip_address,
+            bls_keystore_path,
+            bls_keystore_password,
+            ext,
+        } = *self;
+        config.set_chain_id(chain_id);
+        config.set_http_rpc_url(rpc_url);
+        config.set_ecdsa_keystore_path(ecdsa_keystore_path);
+        config.set_ecdsa_keystore_pasword(ecdsa_keystore_password);
+        config.set_aggregator_ip_address(aggregator_ip_address);
+        config.set_bls_keystore_path(bls_keystore_path);
+        config.set_bls_keystore_password(bls_keystore_password);
+        config.set_registry_coordinator_addr(registry_coordinator_address);
+
+        let avs_launcher = DefaultAvsLauncher::new();
+        let avs_builder = AvsBuilder::new(config);
+        let s = avs_launcher.launch_avs(avs_builder).await;
+
+        println!("launch avs result: {:?}", s);
+
         Ok(())
     }
 }

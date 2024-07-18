@@ -15,10 +15,12 @@ incredible-aggregator.workspace = true
 incredible-operator.workspace = true
 incredible-cli-runner.workspace = true
 incredible-config.workspace = true
+incredible-avs.workspace = true
 clap = { workspace = true, features = ["derive", "env"] }
 eyre.workspace = true
 alloy.workspace = true
 tracing.workspace = true
+
 
 
 [[bin]]

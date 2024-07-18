@@ -4,7 +4,10 @@ members = ["crates/aggregator",
 "bin/incredible-squaring-avs",
 "crates/cli",
 "crates/config",
-"crates/bindings"
+"crates/bindings",
+"crates/avs",
+"crates/challenger",
+"crates/chainio"
 ]
 
 resolver = "2"
@@ -47,18 +50,22 @@ tracing = "0.1.40"
 
 incredible-operator = {path = "crates/operator/"}
 incredible-aggregator = {path = "crates/aggregator/"}
-incredible-avs = {path = "bin/incredible/"}
+incredible-squaring-avs = {path = "bin/incredible-squaring-avs/"}
 incredible-cli-runner = {path = "crates/cli/"}
 incredible-config = {path = "crates/config/"}
 incredible-bindings = {path = "crates/bindings/"}
 incredible-metrics  = {path = "crates/metrics/"}
-
+incredible-avs = {path = "crates/avs/"}
+incredible-challenger = {path = "crates/challenger/"}
+incredible-chainio = {path = "crates/chainio/"}
 
 # eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
-eigen-testing-utils =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
-eigen-crypto-bls =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
-eigen-types =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
-eigen-crypto-keystore = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
-eigen-metrics = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
-eigen-metrics-derive = {git = "https://github.com/supernovahs/eigen-rs" , rev = "11727d8"}
+eigen-client-avsregistry  = {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-testing-utils =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-crypto-bls =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-types =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-crypto-keystore = {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-metrics = {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-metrics-derive = {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-utils = {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}
+eigen-contract-bindings = {git = "https://github.com/supernovahs/eigen-rs" , rev = "29e17a6"}

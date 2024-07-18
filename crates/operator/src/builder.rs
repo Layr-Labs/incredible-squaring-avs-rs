@@ -225,3 +225,18 @@ impl OperatorBuilder {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_process_new_task() {}
+
+    #[test]
+    fn test_build_operator() {}
+
+    #[test]
+    fn test_sign_task_response() {}
+}

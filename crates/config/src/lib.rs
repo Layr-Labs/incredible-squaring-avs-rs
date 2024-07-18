@@ -29,13 +29,16 @@ pub struct IncredibleConfig {
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct RpcConfig {
     /// chainid
-    pub chain_id: u64,
+    pub chain_id: u16,
 
     /// http rpc url
     pub http_rpc_url: String,
 
     /// ws rpc url
     pub ws_rpc_url: String,
+
+    /// signer pvt key
+    pub signer: String,
 }
 
 /// Operator Configurations
@@ -100,12 +103,18 @@ impl IncredibleConfig {
     }
 
     /// Set chainid
-    pub fn set_chain_id(&mut self, chain_id: u64) {
+    pub fn set_chain_id(&mut self, chain_id: u16) {
         self.rpc_config.chain_id = chain_id;
     }
 
+    /// Set operatorid
     pub fn set_operator_id(&mut self, id: String) {
         self.operator_config.operator_id = id;
+    }
+
+    /// Set signer
+    pub fn set_signer(&mut self, pvt_key: String) {
+        self.rpc_config.signer = pvt_key;
     }
 
     /// Set http rpc url
@@ -128,28 +137,33 @@ impl IncredibleConfig {
         self.ecdsa_config.keystore_password = password;
     }
 
+    /// set the aggregator ip address
     pub fn set_aggregator_ip_address(&mut self, port: String) {
         self.aggregator_config.ip_address = port;
     }
 
+    /// set the bls keystore path directory
     pub fn set_bls_keystore_path(&mut self, path: String) {
         self.bls_config.keystore_path = path;
     }
 
+    /// set the bls keystore file password to decrypt it
     pub fn set_bls_keystore_password(&mut self, password: String) {
         self.bls_config.keystore_password = password;
     }
 
+    /// set the registry coordinator address
     pub fn set_registry_coordinator_addr(&mut self, address: Address) {
         self.el_config.registry_coordinator_addr = address.to_string();
     }
 
+    /// set the operator state retriever address
     pub fn set_operator_state_retriever(&mut self, address: Address) {
         (self.el_config.operator_state_retriever_addr) = address.to_string();
     }
 
     /// get appropriate chainid where incredible squaring will run
-    pub fn chain_id(&self) -> u64 {
+    pub fn chain_id(&self) -> u16 {
         self.rpc_config.chain_id
     }
 
@@ -161,6 +175,11 @@ impl IncredibleConfig {
     /// get ws rpc url
     pub fn get_rpc_url(&self) -> String {
         self.rpc_config.ws_rpc_url.clone()
+    }
+
+    /// get pvt key
+    pub fn get_signer(&self) -> String {
+        self.rpc_config.signer.clone()
     }
 
     /// get ecdsa keystore path
@@ -278,12 +297,17 @@ mod tests {
         chain_id = 17000
         http_rpc_url = 'https://holesky'
         ws_rpc_url = 'wsholeskyurl'
+        signer = '0x337edbf6fef9af147f49c04c1004da47a8bf9f88c01022b7dd108e31c037f075'
         "#;
 
         let _config: RpcConfig = toml::from_str(config_file).unwrap();
         assert_eq!(_config.chain_id, 17000);
         assert_eq!(_config.http_rpc_url, "https://holesky");
         assert_eq!(_config.ws_rpc_url, "wsholeskyurl");
+        assert_eq!(
+            _config.signer,
+            "0x337edbf6fef9af147f49c04c1004da47a8bf9f88c01022b7dd108e31c037f075"
+        );
     }
 
     #[test]
