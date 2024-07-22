@@ -28,3 +28,5 @@ futures = "0.3.30"
 
 #thiserror
 thiserror.workspace = true
+
+clap.workspace = true

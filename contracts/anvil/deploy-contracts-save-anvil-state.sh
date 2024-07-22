@@ -12,6 +12,9 @@ set -a
 source ./utils.sh
 set +a
 
+
+root_dir=$(realpath $parent_path/../..)
+
 cleanup() {
     echo "Executing cleanup function..."
     set +e
@@ -26,7 +29,12 @@ trap 'cleanup $LINENO "$BASH_COMMAND"' EXIT
 # start an empty anvil chain in the background and dump its state to a json file upon exit
 start_anvil_docker "" $parent_path/eigenlayer-deployed-anvil-state.json
 
-cd ../../contracts/lib/eigenlayer-middleware.git/lib/eigenlayer-contracts
+
+# DEPLOY CONTRACT REGISTRY
+cd $root_dir/contracts
+forge create src/ContractsRegistry.sol:ContractsRegistry --rpc-url $ETH_HTTP_URL --private-key $DEPLOYER_PRIVATE_KEY
+
+cd ./lib/eigenlayer-middleware.git/lib/eigenlayer-contracts
 # deployment overwrites this file, so we save it as backup, because we want that output in our local files, and not in the eigenlayer-contracts submodule files
 mv script/output/devnet/M2_from_scratch_deployment_data.json script/output/devnet/M2_from_scratch_deployment_data.json.bak
 # M2_Deploy_From_Scratch.s.sol prepends "script/testing/" to the configFile passed as input (M2_deploy_from_scratch.anvil.config.json)

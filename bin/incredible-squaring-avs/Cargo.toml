@@ -21,7 +21,8 @@ eyre.workspace = true
 alloy.workspace = true
 tracing.workspace = true
 
-
+# eigen-rs
+eigen-testing-utils.workspace = true
 
 [[bin]]
 name = "incredible-squaring-avs"

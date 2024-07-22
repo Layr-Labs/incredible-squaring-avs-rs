@@ -39,20 +39,22 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
 
         /// start operator
         let operator_builder = OperatorBuilder::build(avs.config.clone())?;
-        println!("operator built");
         let mut challenge = Challenger::new(avs.config).await?;
+        println!("challengeer");
+        // let operator_task = operator_builder
+        //     .start_operator()
+        //     .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
-        let operator_task = operator_builder
-            .start_operator()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+        // let c = challenge
+        //     .start_challenger()
+        //     .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
-        let c = challenge
-            .start_challenger()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+        // let _ = futures::future::try_join(operator_task, c).await?;
+        // /// start aggregator
 
-        let _ = futures::future::try_join(operator_task, c).await?;
-        /// start aggregator
-        println!("end");
+        // println!("end");
         Ok(())
     }
 }
+
+

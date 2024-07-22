@@ -1556,7 +1556,7 @@ dependencies = [
 [[package]]
 name = "eigen-chainio-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "ark-bn254",
  "ark-ff 0.4.2",
@@ -1568,7 +1568,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "alloy-contract",
  "alloy-network",
@@ -1594,7 +1594,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -1607,12 +1607,12 @@ dependencies = [
 [[package]]
 name = "eigen-contract-bindings"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1630,7 +1630,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1641,7 +1641,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-keystore"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "aes",
  "ark-ec",
@@ -1660,7 +1660,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-derive"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "once_cell",
  "proc-macro2",
@@ -1670,9 +1670,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-testing-utils"
+version = "0.0.1-alpha"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
+dependencies = [
+ "alloy-network",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-transport-http",
+ "eigen-utils",
+ "once_cell",
+]
+
+[[package]]
 name = "eigen-types"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "alloy-primitives",
  "eigen-crypto-bls",
@@ -1684,7 +1697,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/supernovahs/eigen-rs?rev=29e17a6#29e17a6cf74f2df8972166a5f168702f13b36d30"
+source = "git+https://github.com/supernovahs/eigen-rs?rev=53ef744#53ef744da47eedf273c7129e1b430e8782cbd0d1"
 dependencies = [
  "alloy-contract",
  "alloy-network",
@@ -2741,6 +2754,7 @@ name = "incredible-avs"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
+ "clap",
  "eyre",
  "futures",
  "incredible-challenger",
@@ -2863,6 +2877,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "clap",
+ "eigen-testing-utils",
  "eyre",
  "incredible-aggregator",
  "incredible-avs",
@@ -2871,6 +2886,10 @@ dependencies = [
  "incredible-operator",
  "tracing",
 ]
+
+[[package]]
+name = "incredible-testing-utils"
+version = "0.0.1-alpha"
 
 [[package]]
 name = "indenter"

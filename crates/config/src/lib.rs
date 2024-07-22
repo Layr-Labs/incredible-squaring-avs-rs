@@ -75,8 +75,11 @@ pub struct BlsConfig {
     /// keystore path
     pub keystore_path: String,
 
-    /// keysotre password
+    /// keystore password
     pub keystore_password: String,
+
+    /// ignore bls related code or not. This is a temporary way till bls keystore is implemented
+    pub no_bls: bool,
 }
 
 /// ECDSA keysotre configuration
@@ -122,6 +125,11 @@ impl IncredibleConfig {
         self.rpc_config.http_rpc_url = rpc_url;
     }
 
+    /// Set if bls code is enabled or not
+    pub fn set_no_bls(&mut self, no_bls: bool) {
+        self.bls_config.no_bls = no_bls;
+    }
+
     /// Set ws rpc url
     pub fn set_ws_rpc_url(&mut self, ws_url: String) {
         self.rpc_config.ws_rpc_url = ws_url;
@@ -153,13 +161,18 @@ impl IncredibleConfig {
     }
 
     /// set the registry coordinator address
-    pub fn set_registry_coordinator_addr(&mut self, address: Address) {
-        self.el_config.registry_coordinator_addr = address.to_string();
+    pub fn set_registry_coordinator_addr(&mut self, address: String) {
+        self.el_config.registry_coordinator_addr = address;
     }
 
     /// set the operator state retriever address
-    pub fn set_operator_state_retriever(&mut self, address: Address) {
-        (self.el_config.operator_state_retriever_addr) = address.to_string();
+    pub fn set_operator_state_retriever(&mut self, address: String) {
+        (self.el_config.operator_state_retriever_addr) = address;
+    }
+
+    /// set the operator address
+    pub fn set_operator_address(&mut self,address : String) {
+        self.operator_config.operator_address = address;
     }
 
     /// get appropriate chainid where incredible squaring will run
@@ -170,6 +183,11 @@ impl IncredibleConfig {
     /// get http rpc url
     pub fn http_rpc_url(&self) -> String {
         self.rpc_config.http_rpc_url.clone()
+    }
+
+    /// get no bls bool
+    pub fn get_no_bls_bool(&self) -> bool {
+        self.bls_config.no_bls
     }
 
     /// get ws rpc url
@@ -203,8 +221,13 @@ impl IncredibleConfig {
     }
 
     /// get operator address
-    pub fn operator_address(&self) -> Address {
-        Address::from_slice(&self.operator_config.operator_address.as_bytes())
+    pub fn operator_address(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(self.operator_config.operator_address.as_bytes());
+
+        match s {
+            Ok(operator_address) => Ok(operator_address),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
     }
 
     /// get operator id
@@ -331,6 +354,7 @@ mod tests {
         let config_file = r#"
         keystore_path = "eigenblskeystorepath"
         keystore_password = "eigenlovesblskeystorepassword"
+        no_bls = true
         "#;
         let _config: BlsConfig = toml::from_str(config_file).unwrap();
 
@@ -338,6 +362,7 @@ mod tests {
         [bls_config]
         keystore_path = "eigenblskeystorepath"
         keystore_password = "eigenlovesblskeystorepassword"
+        no_bls = true
         "#;
 
         let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
@@ -349,6 +374,7 @@ mod tests {
             incredible_config.bls_keystore_path(),
             "eigenblskeystorepath"
         );
+        assert_eq!(incredible_config.get_no_bls_bool(), true);
     }
 
     #[test]

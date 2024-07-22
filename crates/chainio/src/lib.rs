@@ -38,22 +38,23 @@ impl AvsWriter {
             RegistryCoordinator::new(registry_coordinator_addr, &provider);
         let service_manager_addr_return_result =
             contract_registry_coordinator.serviceManager().call().await;
-
-        let res = match service_manager_addr_return_result {
-            Ok(service_manager_addr_return) => {
-                let serviceManagerReturn {
-                    _0: service_manager_addr,
-                } = service_manager_addr_return;
-                let contract_service_manager =
+            
+            let res = match service_manager_addr_return_result {
+                Ok(service_manager_addr_return) => {
+                    let serviceManagerReturn {
+                        _0: service_manager_addr,
+                    } = service_manager_addr_return;
+                    let contract_service_manager =
                     IncredibleSquaringServiceManager::new(service_manager_addr, &provider);
-
-                let task_manager_addr_result = contract_service_manager
+                    
+                    let task_manager_addr_result = contract_service_manager
                     .incredibleSquaringTaskManager()
                     .call()
                     .await;
-
+                
                 match task_manager_addr_result {
                     Ok(task_manager_addr_return) => {
+                    println!("encoded result: ");
                         let incredibleSquaringTaskManagerReturn {
                             _0: task_manager_addr,
                         } = task_manager_addr_return;

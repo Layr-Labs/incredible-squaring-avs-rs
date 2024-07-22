@@ -60,6 +60,7 @@ impl OperatorBuilder {
 
         match signer_result {
             Ok(signer) => {
+                println!("signer key{:?} ",signer.address());
                 let path = PathBuf::from(config.bls_keystore_path());
                 let contents_result = fs::read_to_string(path);
 
@@ -75,11 +76,9 @@ impl OperatorBuilder {
                                 let bls_keypair = encoded_keystore
                                     .into_bls_keypair()
                                     .expect("failed to convert keystore into blskeypair");
-
                                 let metrics = IncredibleMetrics::new();
 
                                 let operator_id_result = config.get_operator_id();
-
                                 match operator_id_result {
                                     Ok(operator_id) => {
                                         let registry_coordinator_addr_result =
@@ -90,23 +89,36 @@ impl OperatorBuilder {
                                         match registry_coordinator_addr_result {
                                             Ok(registry_coordinator_addr) => {
                                                 match operator_statr_retriever_addr_result {
-                                                    Ok(operator_statr_retriever_addr) => Ok(Self {
-                                                        rpc_url: config.get_rpc_url(),
-                                                        operator_addr: config.operator_address(),
-                                                        key_pair: bls_keypair,
-                                                        operator_id: operator_id,
-                                                        client: ClientAggregator::new(
-                                                            config.aggregator_ip_addr(),
-                                                        ),
-                                                        metrics,
-                                                        aggregator_ip_addr: config
-                                                            .aggregator_ip_addr(),
-                                                        signer,
-                                                        registry_coordinator:
-                                                            registry_coordinator_addr,
-                                                        operator_state_retriever:
-                                                            operator_statr_retriever_addr,
-                                                    }),
+                                                    Ok(operator_statr_retriever_addr) => {
+                                                        let operator_address_result =
+                                                            config.operator_address();
+
+                                                        match operator_address_result {
+                                                            Ok(operator_address) => {
+                                                                
+                                                                Ok(Self {
+                                                                rpc_url: config.get_rpc_url(),
+                                                                operator_addr: operator_address,
+                                                                key_pair: bls_keypair,
+                                                                operator_id: operator_id,
+                                                                client: ClientAggregator::new(
+                                                                    config.aggregator_ip_addr(),
+                                                                ),
+                                                                metrics,
+                                                                aggregator_ip_addr: config
+                                                                    .aggregator_ip_addr(),
+                                                                signer,
+                                                                registry_coordinator:
+                                                                    registry_coordinator_addr,
+                                                                operator_state_retriever:
+                                                                    operator_statr_retriever_addr,
+                                                            })},
+
+                                                            Err(e) => Err(
+                                                                OperatorError::ConfigParseError(e),
+                                                            ),
+                                                        }
+                                                    }
 
                                                     Err(e) => {
                                                         return Err(
@@ -123,7 +135,72 @@ impl OperatorBuilder {
                                     Err(e) => Err(OperatorError::ConfigParseError(e)),
                                 }
                             }
-                            Err(_) => Err(OperatorError::EncodedKeystore),
+                            Err(_) => {
+                                if config.get_no_bls_bool() {
+                                    let metrics = IncredibleMetrics::new();
+                                    
+                                    let operator_id_result = config.get_operator_id();
+                                    
+                                    match operator_id_result {
+                                        Ok(operator_id) => {
+                                            let registry_coordinator_addr_result =
+                                            config.registry_coordinator_addr();
+                                            let operator_statr_retriever_addr_result =
+                                            config.operator_state_retriever_addr();
+                                            
+                                            match registry_coordinator_addr_result {
+                                                Ok(registry_coordinator_addr) => {
+                                                    match operator_statr_retriever_addr_result {
+                                                        Ok(operator_statr_retriever_addr) => {
+                                                            let operator_address_result =
+                                                            config.operator_address();
+                                                            
+                                                            match operator_address_result{
+                                                                
+                                                                Ok(operator_address) =>{
+                                                                    Ok(Self {
+                                                                        rpc_url: config.get_rpc_url(),
+                                                                        operator_addr: operator_address,
+                                                                        key_pair: BlsKeypair::default(),
+                                                                        operator_id: operator_id,
+                                                                        client: ClientAggregator::new(
+                                                                            config.aggregator_ip_addr(),
+                                                                        ),
+                                                                        metrics,
+                                                                        aggregator_ip_addr: config
+                                                                            .aggregator_ip_addr(),
+                                                                        signer,
+                                                                        registry_coordinator:
+                                                                            registry_coordinator_addr,
+                                                                        operator_state_retriever:
+                                                                            operator_statr_retriever_addr,
+                                                                    })
+                                                                }
+                                                                Err(e) =>{
+                                                                    return Err(OperatorError::ConfigParseError(e))
+                                                                }
+
+                                                            }
+                                                        }
+
+                                                        Err(e) => {
+                                                            return Err(
+                                                                OperatorError::ConfigParseError(e),
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                                Err(e) => {
+                                                    return Err(OperatorError::ConfigParseError(e));
+                                                }
+                                            }
+                                        }
+                                        Err(e) => Err(OperatorError::ConfigParseError(e)),
+                                    }
+                                } else {
+                                    Err(OperatorError::EncodedKeystore)
+                                }
+                            }
                         }
                     }
                     Err(_) => Err(OperatorError::BlsKeystorePath),
