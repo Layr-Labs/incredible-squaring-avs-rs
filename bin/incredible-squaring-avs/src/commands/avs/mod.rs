@@ -1,11 +1,11 @@
 use alloy::primitives::Address;
 use clap::{value_parser, Args, Parser};
+use eigen_testing_utils::anvil_constants;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use std::ffi::OsString;
 use std::fmt;
 use tracing::debug;
-use eigen_testing_utils::anvil_constants;
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -81,18 +81,19 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
 
 /// Default Anvil configuration
 #[derive(Debug)]
-pub struct AnvilValues{
+pub struct AnvilValues {
     registry_coordinator_address: Address,
-    operator_state_retriever_address: Address
+    operator_state_retriever_address: Address,
 }
 
-impl AnvilValues{
-
+impl AnvilValues {
     /// new
-    pub fn new(registry_coordinator:Address,operator_state_retriever_address:Address) ->Self{
-        Self{registry_coordinator_address: registry_coordinator,operator_state_retriever_address}
+    pub fn new(registry_coordinator: Address, operator_state_retriever_address: Address) -> Self {
+        Self {
+            registry_coordinator_address: registry_coordinator,
+            operator_state_retriever_address,
+        }
     }
-
 }
 
 impl AvsCommand {
@@ -114,10 +115,14 @@ impl AvsCommand {
 impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     /// Execute function
     pub async fn execute(self: Box<Self>) -> eyre::Result<()> {
-        let registry_coordinator_address_anvil = anvil_constants::get_registry_coordinator_address().await;
-        let operator_state_retriever_address_anvil = anvil_constants::get_operator_state_retriever_address().await;
-        let default_anvil = AnvilValues::new(registry_coordinator_address_anvil,operator_state_retriever_address_anvil);
-        
+        let registry_coordinator_address_anvil =
+            anvil_constants::get_registry_coordinator_address().await;
+        let operator_state_retriever_address_anvil =
+            anvil_constants::get_operator_state_retriever_address().await;
+        let default_anvil = AnvilValues::new(
+            registry_coordinator_address_anvil,
+            operator_state_retriever_address_anvil,
+        );
 
         debug!("Executing AVS command");
         debug!("chain id : {:?}", self.chain_id);
@@ -150,17 +155,17 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_aggregator_ip_address(aggregator_ip_address);
         config.set_bls_keystore_path(bls_keystore_path);
         config.set_bls_keystore_password(bls_keystore_password);
-        // use value from config , if None , then use anvil 
-        config.set_registry_coordinator_addr(registry_coordinator_address.unwrap_or(default_anvil.registry_coordinator_address.to_string()));
-        config.set_operator_state_retriever(operator_state_retriever_addr.unwrap_or(default_anvil.operator_state_retriever_address.to_string()));
+        // use value from config , if None , then use anvil
+        config.set_registry_coordinator_addr(
+            registry_coordinator_address
+                .unwrap_or(default_anvil.registry_coordinator_address.to_string()),
+        );
+        config.set_operator_state_retriever(
+            operator_state_retriever_addr
+                .unwrap_or(default_anvil.operator_state_retriever_address.to_string()),
+        );
         config.set_operator_id(operator_id);
         config.set_operator_address(operator_address);
-
-        if no_bls.eq(&0) {
-            config.set_no_bls(false);
-        } else {
-            config.set_no_bls(true)
-        }
 
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);

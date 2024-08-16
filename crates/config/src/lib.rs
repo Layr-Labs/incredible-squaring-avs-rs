@@ -77,9 +77,6 @@ pub struct BlsConfig {
 
     /// keystore password
     pub keystore_password: String,
-
-    /// ignore bls related code or not. This is a temporary way till bls keystore is implemented
-    pub no_bls: bool,
 }
 
 /// ECDSA keysotre configuration
@@ -125,11 +122,6 @@ impl IncredibleConfig {
         self.rpc_config.http_rpc_url = rpc_url;
     }
 
-    /// Set if bls code is enabled or not
-    pub fn set_no_bls(&mut self, no_bls: bool) {
-        self.bls_config.no_bls = no_bls;
-    }
-
     /// Set ws rpc url
     pub fn set_ws_rpc_url(&mut self, ws_url: String) {
         self.rpc_config.ws_rpc_url = ws_url;
@@ -171,7 +163,7 @@ impl IncredibleConfig {
     }
 
     /// set the operator address
-    pub fn set_operator_address(&mut self,address : String) {
+    pub fn set_operator_address(&mut self, address: String) {
         self.operator_config.operator_address = address;
     }
 
@@ -183,11 +175,6 @@ impl IncredibleConfig {
     /// get http rpc url
     pub fn http_rpc_url(&self) -> String {
         self.rpc_config.http_rpc_url.clone()
-    }
-
-    /// get no bls bool
-    pub fn get_no_bls_bool(&self) -> bool {
-        self.bls_config.no_bls
     }
 
     /// get ws rpc url
@@ -354,7 +341,6 @@ mod tests {
         let config_file = r#"
         keystore_path = "eigenblskeystorepath"
         keystore_password = "eigenlovesblskeystorepassword"
-        no_bls = true
         "#;
         let _config: BlsConfig = toml::from_str(config_file).unwrap();
 
@@ -362,7 +348,6 @@ mod tests {
         [bls_config]
         keystore_path = "eigenblskeystorepath"
         keystore_password = "eigenlovesblskeystorepassword"
-        no_bls = true
         "#;
 
         let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
@@ -374,7 +359,6 @@ mod tests {
             incredible_config.bls_keystore_path(),
             "eigenblskeystorepath"
         );
-        assert_eq!(incredible_config.get_no_bls_bool(), true);
     }
 
     #[test]

@@ -32,7 +32,7 @@ rustdoc.all = "warn"
 
 
 [workspace.dependencies]
-clap = "4"
+clap = "4.5.11"
 eyre = "0.6.12"
 tokio = { version = "1.21", default-features = false }
 thiserror = "1.0.61"
@@ -48,6 +48,8 @@ alloy-provider = { version = "0.1", default-features = false, features = [
 ] }
 serde = "1.0.203"
 tracing = "0.1.40"
+rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
+
 
 incredible-operator = {path = "crates/operator/"}
 incredible-aggregator = {path = "crates/aggregator/"}
@@ -61,13 +63,14 @@ incredible-challenger = {path = "crates/challenger/"}
 incredible-chainio = {path = "crates/chainio/"}
 incredible-testing-utils = {path = "crates/testing-utils/"}
 
+# TODO(supernova): Change sdk git 
 # eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-testing-utils =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-crypto-bls =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-types =  {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-crypto-keystore = {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-metrics = {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-metrics-derive = {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-utils = {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
-eigen-contract-bindings = {git = "https://github.com/supernovahs/eigen-rs" , rev = "53ef744"}
+eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
