@@ -39,7 +39,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
 
         /// start operator
         let operator_builder = OperatorBuilder::build(avs.config.clone())?;
-        let mut challenge = Challenger::new(avs.config).await?;
+        // let mut challenge = Challenger::new(avs.config).await?;
         // let operator_task = operator_builder
         //     .start_operator()
         //     .map_err(|e| eyre::eyre!("Operator error: {:?}", e));

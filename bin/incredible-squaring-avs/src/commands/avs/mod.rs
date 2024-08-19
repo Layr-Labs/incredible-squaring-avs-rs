@@ -53,15 +53,6 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "BLS_KEYSTORE_PASSWORD")]
     bls_keystore_password: String,
 
-    /// No BLS flag to skip BLS keystore loading
-    #[arg(
-        long,
-        value_name = "NO_BLS",
-        help = "Skip BLS keystore loading",
-        default_value_t = 1
-    )]
-    no_bls: u64,
-
     /// Operator Id
     #[arg(long, value_name = "OPERATOR_ID")]
     operator_id: String,
@@ -142,7 +133,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             aggregator_ip_address,
             bls_keystore_path,
             bls_keystore_password,
-            no_bls,
             operator_id,
             operator_state_retriever_addr,
             operator_address,

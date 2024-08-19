@@ -36,44 +36,33 @@ impl AvsWriter {
         let provider = get_provider(&rpc_url);
         let contract_registry_coordinator =
             RegistryCoordinator::new(registry_coordinator_addr, &provider);
-        let service_manager_addr_return_result =
-            contract_registry_coordinator.serviceManager().call().await;
+        let service_manager_addr_return = contract_registry_coordinator
+            .serviceManager()
+            .call()
+            .await?;
+        let serviceManagerReturn {
+            _0: service_manager_addr,
+        } = service_manager_addr_return;
 
-        let res = match service_manager_addr_return_result {
-            Ok(service_manager_addr_return) => {
-                let serviceManagerReturn {
-                    _0: service_manager_addr,
-                } = service_manager_addr_return;
-                let contract_service_manager =
-                    IncredibleSquaringServiceManager::new(service_manager_addr, &provider);
+        let contract_service_manager =
+            IncredibleSquaringServiceManager::new(service_manager_addr, &provider);
 
-                let task_manager_addr_result = contract_service_manager
-                    .incredibleSquaringTaskManager()
-                    .call()
-                    .await;
+        println!("service manager addr {}",service_manager_addr);
 
-                match task_manager_addr_result {
-                    Ok(task_manager_addr_return) => {
-                        println!("encoded result: ");
-                        let incredibleSquaringTaskManagerReturn {
-                            _0: task_manager_addr,
-                        } = task_manager_addr_return;
+        let task_manager_address_return = contract_service_manager
+            .incredibleSquaringTaskManager()
+            .call()
+            .await?;
+        let incredibleSquaringTaskManagerReturn {
+            _0: task_manager_address,
+        } = task_manager_address_return;
+        println!("task manager addr {}",service_manager_addr);
 
-                        Ok(AvsWriter {
-                            task_manager_addr: task_manager_addr,
-                            signer,
-                            rpc_url,
-                        })
-                    }
-                    Err(e) => Err(ChainIoError::AlloyContractError(e)),
-                }
-            }
-            Err(e) => Err(ChainIoError::AvsWriterBuildFail {
-                reason: e.to_string(),
-            }),
-        };
-
-        res
+        Ok(AvsWriter {
+            task_manager_addr: task_manager_address,
+            signer,
+            rpc_url,
+        })
     }
 
     /// Send task number to square. Return tx receipt and the task index

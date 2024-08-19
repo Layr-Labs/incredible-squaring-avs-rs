@@ -7,7 +7,6 @@ use alloy::{
     sol_types::{SolEvent, SolValue},
 };
 use alloy_provider::{Provider, ProviderBuilder};
-use eigen_cli::bls::BlsKeystore;
 use eigen_client_avsregistry::{error::AvsRegistryError, reader::AvsRegistryChainReader};
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_types::operator::OperatorId;
@@ -22,12 +21,12 @@ use rust_bls_bn254::{
     sign,
 };
 
-use std::fs;
-use std::path::PathBuf;
-use tracing::{debug, info};
-
 use crate::client::ClientAggregator;
 use incredible_metrics::IncredibleMetrics;
+use rand_core::OsRng;
+use std::path::PathBuf;
+use std::{env::temp_dir, fs};
+use tracing::{debug, info};
 
 /// Main Operator
 #[derive(Debug)]
@@ -57,21 +56,20 @@ impl OperatorBuilder {
     /// Build the Operator Builder
     pub fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
         // Read ECDSA private key from path
-
+        // let key = KeyGenerator::ECDSAKeyGenerator.random_ecdsa_key();
+        // let new_keystore = LocalSigner::encrypt_keystore(config.ecdsa_keystore_path(),&mut OsRng , key,config.ecdsa_keystore_password(), Some("ecdsakey"));
         let signer = LocalSigner::decrypt_keystore(
             config.ecdsa_keystore_path(),
             config.ecdsa_keystore_password(),
         )?;
 
-        println!("signer key{:?} ", signer.address());
-        let keystore = Keystore::from_file(&"./key.json")
+        let keystore = Keystore::from_file(&config.bls_keystore_path())
             .unwrap()
-            .decrypt(&"testpassword")?;
+            .decrypt(&config.bls_keystore_password())?;
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
 
         let key_pair = BlsKeyPair::new(fr_key)?;
-        println!("bls key pair {:?}", key_pair);
 
         let metrics = IncredibleMetrics::new();
         let operator_id = config.get_operator_id()?;
@@ -91,6 +89,10 @@ impl OperatorBuilder {
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
         })
+    }
+
+    pub fn bls_key_pair(&self) -> BlsKeyPair {
+        self.key_pair.clone()
     }
 
     /// Processes new task
@@ -189,6 +191,37 @@ impl OperatorBuilder {
 mod tests {
 
     use super::*;
+    use alloy::primitives::U256;
+    use ark_ec::AffineRepr;
+    use ark_ff::PrimeField;
+    use std::str::FromStr;
+    use tempfile::tempdir;
+
+    #[tokio::test]
+    async fn test_bls_keystore() {
+        let output_path = "../testing-utils/src/blskeystore.json";
+        let mut config = IncredibleConfig::default();
+        config.set_bls_keystore_path(output_path.to_string());
+        config.set_bls_keystore_password("testpassword".to_string());
+        let operator_builder = OperatorBuilder::build(config).unwrap();
+
+        assert_eq!(
+            U256::from_limbs(
+                operator_builder
+                    .key_pair
+                    .public_key()
+                    .g1()
+                    .x()
+                    .unwrap()
+                    .into_bigint()
+                    .0
+            ),
+            U256::from_str(
+                "277950648056014144722774518899051149098728246263316284984520891067822832300"
+            )
+            .unwrap()
+        );
+    }
 
     #[test]
     fn test_process_new_task() {}

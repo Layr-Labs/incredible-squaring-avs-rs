@@ -48,7 +48,9 @@ alloy-provider = { version = "0.1", default-features = false, features = [
 ] }
 serde = "1.0.203"
 tracing = "0.1.40"
+tempfile = "3"
 rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
+rand_core = "0.6"
 
 
 incredible-operator = {path = "crates/operator/"}
@@ -63,14 +65,13 @@ incredible-challenger = {path = "crates/challenger/"}
 incredible-chainio = {path = "crates/chainio/"}
 incredible-testing-utils = {path = "crates/testing-utils/"}
 
-# TODO(supernova): Change sdk git 
 # eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
-eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "69b9a8b"}
+eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}

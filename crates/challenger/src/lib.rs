@@ -44,30 +44,21 @@ pub struct Challenger {
 impl Challenger {
     /// New instance of Challenger
     pub async fn new(config: IncredibleConfig) -> Result<Self, ChallengerError> {
-        match config.registry_coordinator_addr() {
-            Ok(regisry_coordinator_addr) => {
-                let avs_writer_result = AvsWriter::new(
-                    regisry_coordinator_addr,
-                    config.http_rpc_url(),
-                    config.get_signer(),
-                )
-                .await;
+        let registry_coordinator_address = config.registry_coordinator_addr()?;
+        let avs_writer = AvsWriter::new(
+            registry_coordinator_address,
+            config.http_rpc_url(),
+            config.get_signer(),
+        )
+        .await?;
 
-                match avs_writer_result {
-                    Ok(avs_writer) => Ok(Self {
-                        avs_writer,
-                        ws_url: config.get_rpc_url(),
-                        rpc_url: config.http_rpc_url(),
-                        tasks: HashMap::new(),
-                        task_responses: HashMap::new(),
-                    }),
-                    Err(e) => {
-                        return Err(ChallengerError::ChainIo(e));
-                    }
-                }
-            }
-            Err(e) => Err(ChallengerError::ConfigParseError(e)),
-        }
+        Ok(Self {
+            avs_writer,
+            ws_url: config.get_rpc_url(),
+            rpc_url: config.http_rpc_url(),
+            tasks: HashMap::new(),
+            task_responses: HashMap::new(),
+        })
     }
 
     /// Start the challenger
