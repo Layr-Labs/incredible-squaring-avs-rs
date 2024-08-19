@@ -9,8 +9,10 @@ use alloy::{
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::{error::AvsRegistryError, reader::AvsRegistryChainReader};
 use eigen_crypto_bls::BlsKeyPair;
+use eigen_logging::{get_logger, logger::SharedLogger};
 use eigen_types::operator::OperatorId;
 use eyre::Result;
+use futures_util::StreamExt;
 use incredible_aggregator::SignedTaskResponse;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NewTaskCreated, TaskResponse};
 use incredible_config::IncredibleConfig;
@@ -109,57 +111,51 @@ impl OperatorBuilder {
 
     /// Start the operator
     pub async fn start_operator(&self) -> Result<()> {
-        todo!()
-        // let avs_registry_reader_result = AvsRegistryChainReader::new(
-        //     self.registry_coordinator,
-        //     self.operator_state_retriever,
-        //     self.rpc_url.clone(),
-        // )
-        // .await;
+        let avs_registry_reader = AvsRegistryChainReader::new(
+            get_logger(),
+            self.registry_coordinator,
+            self.operator_state_retriever,
+            self.rpc_url.clone(),
+        )
+        .await?;
 
-        // match avs_registry_reader_result {
-        //     Ok(avs_registry_reader) => {
-        //         let is_registered_result = avs_registry_reader
-        //             .is_operator_registered(self.operator_addr.clone())
-        //             .await;
+        let is_registered = avs_registry_reader
+            .is_operator_registered(self.operator_addr.clone())
+            .await?;
 
-        //         if is_registered_result.is_ok() {
-        //             info!("Starting operator");
+        if is_registered {
+            info!("Starting operator");
 
-        //             let ws = WsConnect::new(self.rpc_url.clone());
-        //             let provider = ProviderBuilder::new().on_ws(ws).await?;
+            let ws = WsConnect::new(self.rpc_url.clone());
+            let provider = ProviderBuilder::new().on_ws(ws).await?;
 
-        //             let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
-        //             let sub = provider.subscribe_logs(&filter).await?;
-        //             let mut stream = sub.into_stream();
+            let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
+            let sub = provider.subscribe_logs(&filter).await?;
+            let mut stream = sub.into_stream();
 
-        //             while let Some(log) = stream.next().await {
-        //                 let task_option = log
-        //                     .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
-        //                     .ok();
+            while let Some(log) = stream.next().await {
+                let task_option = log
+                    .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
+                    .ok();
 
-        //                 if let Some(task) = task_option {
-        //                     let data = task.data();
-        //                     let new_task_created = NewTaskCreated {
-        //                         task: data.task.clone(),
-        //                         taskIndex: data.taskIndex,
-        //                     };
-        //                     self.metrics.increment_num_tasks_received();
-        //                     let task_response = self.process_new_task(new_task_created);
-        //                     let signed_task_response = self.sign_task_response(task_response)?;
+                if let Some(task) = task_option {
+                    let data = task.data();
+                    let new_task_created = NewTaskCreated {
+                        task: data.task.clone(),
+                        taskIndex: data.taskIndex,
+                    };
+                    self.metrics.increment_num_tasks_received();
+                    let task_response = self.process_new_task(new_task_created);
+                    let signed_task_response = self.sign_task_response(task_response)?;
 
-        //                     let _ = self
-        //                         .client
-        //                         .send_signed_task_response(signed_task_response)
-        //                         .await;
-        //                 }
-        //             }
-        //         }
-
-        //         Ok(())
-        //     }
-        //     Err(_) => Err(AvsRegistryError::BuildElChainReader.into()),
-        // }
+                    let _ = self
+                        .client
+                        .send_signed_task_response(signed_task_response)
+                        .await;
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Sign the task response

@@ -30,6 +30,8 @@ import "forge-std/Script.sol";
 import "forge-std/StdJson.sol";
 import "forge-std/console.sol";
 
+import {ContractsRegistry} from "../src/ContractsRegistry.sol";
+
 // # To deploy and verify our contract
 // forge script script/CredibleSquaringDeployer.s.sol:CredibleSquaringDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
 contract IncredibleSquaringDeployer is Script, Utils {
@@ -42,6 +44,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
         0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
     address public constant TASK_GENERATOR_ADDR =
         0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
+    ContractsRegistry contractsRegistry = ContractsRegistry(0x5FbDB2315678afecb367f032d93F642f64180aa3);
 
     // ERC20 and Strategy: we need to deploy this erc20, create a strategy for it, and whitelist this strategy in the strategymanager
 
@@ -212,6 +215,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 )
             )
         );
+        contractsRegistry.registerContract("incredible_squaring_service_manager", address(incredibleSquaringServiceManager));
+
         incredibleSquaringTaskManager = IncredibleSquaringTaskManager(
             address(
                 new TransparentUpgradeableProxy(
@@ -221,6 +226,9 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 )
             )
         );
+
+        contractsRegistry.registerContract("incredible_squaring_task_manager", address(incredibleSquaringTaskManager));
+
         registryCoordinator = regcoord.RegistryCoordinator(
             address(
                 new TransparentUpgradeableProxy(
@@ -230,6 +238,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 )
             )
         );
+        contractsRegistry.registerContract("incredible_squaring_registry_coordinator", address(registryCoordinator));
+
         blsApkRegistry = IBLSApkRegistry(
             address(
                 new TransparentUpgradeableProxy(

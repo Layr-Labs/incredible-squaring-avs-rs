@@ -25,7 +25,7 @@ hex = "0.4.3"
 
 #eigen
 eigen-types.workspace = true
-
+eigen-logging.workspace = true
 
 [dev-dependencies]
 tempfile = "3.10.1"

@@ -1,10 +1,10 @@
 //! config
 use alloy::hex::FromHex;
 use alloy::primitives::{Address, FixedBytes};
+use eigen_logging::logger::SharedLogger;
 use eigen_types::operator::OperatorId;
 use error::ConfigError;
 use serde::{Deserialize, Serialize};
-
 /// Config Error
 pub mod error;
 use std::path::PathBuf;
@@ -101,6 +101,9 @@ impl IncredibleConfig {
         confy::store_path(path, config)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
     }
+
+    /// Set chainid
+    pub fn set_logger(&mut self) {}
 
     /// Set chainid
     pub fn set_chain_id(&mut self, chain_id: u16) {

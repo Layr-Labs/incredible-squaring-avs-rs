@@ -51,7 +51,6 @@ impl Challenger {
             config.get_signer(),
         )
         .await?;
-
         Ok(Self {
             avs_writer,
             ws_url: config.get_rpc_url(),

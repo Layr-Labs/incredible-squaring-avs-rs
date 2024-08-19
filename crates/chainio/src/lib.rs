@@ -47,7 +47,7 @@ impl AvsWriter {
         let contract_service_manager =
             IncredibleSquaringServiceManager::new(service_manager_addr, &provider);
 
-        println!("service manager addr {}",service_manager_addr);
+        println!("service manager addr {}", service_manager_addr);
 
         let task_manager_address_return = contract_service_manager
             .incredibleSquaringTaskManager()
@@ -56,7 +56,7 @@ impl AvsWriter {
         let incredibleSquaringTaskManagerReturn {
             _0: task_manager_address,
         } = task_manager_address_return;
-        println!("task manager addr {}",service_manager_addr);
+        println!("task manager addr {}", service_manager_addr);
 
         Ok(AvsWriter {
             task_manager_addr: task_manager_address,

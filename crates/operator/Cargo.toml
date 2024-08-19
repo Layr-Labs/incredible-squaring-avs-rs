@@ -38,6 +38,7 @@ tokio.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
 rand_core.workspace = true
+eigen-logging.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

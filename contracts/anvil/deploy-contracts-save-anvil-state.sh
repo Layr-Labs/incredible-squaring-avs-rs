@@ -43,3 +43,23 @@ mv script/output/devnet/M2_from_scratch_deployment_data.json script/output/devne
 forge script script/deploy/devnet/M2_Deploy_From_Scratch.s.sol --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast --sig "run(string memory configFile)" -- M2_deploy_from_scratch.anvil.config.json
 mv script/output/devnet/M2_from_scratch_deployment_data.json ../../../../script/output/31337/eigenlayer_deployment_output.json
 mv script/output/devnet/M2_from_scratch_deployment_data.json.bak script/output/devnet/M2_from_scratch_deployment_data.json
+
+# DEPLOY MOCKAVS
+cd $root_dir/contracts
+forge script script/DeployMockAvs.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast
+
+# DEPLOY TOKENS AND STRATEGIES
+cd $root_dir/contracts
+# DO NOT REMOVE THE SLOW DIRECTIVE FROM THIS SCRIPT INVOCATION
+# slow ensures that the transaction reciept is successful and recieved before sending the next transaction
+# this should prevent the strategies deploying/registering in a flakey manner,
+forge script script/DeployTokensStrategiesCreateQuorums.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
+
+# REGISTER OPERATORS WITH EIGENLAYER
+cd $root_dir/contracts
+# DO NOT REMOVE THE SLOW DIRECTIVE FROM THIS SCRIPT INVOCATION
+# slow ensures that the transaction receipt is successful and recieved before sending the next transaction
+# this should prevent the operators registering in a flakey manner, the operators registered will change from run to run without this
+forge script script/RegisterOperatorsWithEigenlayer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
+
+forge script script/UpdateOperators.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow

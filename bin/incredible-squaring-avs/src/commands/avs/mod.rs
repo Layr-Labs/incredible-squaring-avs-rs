@@ -1,12 +1,13 @@
 use alloy::primitives::Address;
 use clap::{value_parser, Args, Parser};
+use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_testing_utils::anvil_constants;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
+use incredible_testing_utils::get_incredible_squaring_registry_coordinator;
 use std::ffi::OsString;
 use std::fmt;
 use tracing::debug;
-
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
 #[non_exhaustive]
@@ -28,6 +29,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     /// The RPC URL of the node.
     #[arg(long, value_name = "RPC_URL",default_value = "http://localhost:8545", value_parser = clap::value_parser!(String))]
     rpc_url: String,
+
+    /// The RPC URL of the node.
+    #[arg(long, value_name = "WS_RPC_URL",default_value = "wss://localhost:8545", value_parser = clap::value_parser!(String))]
+    ws_rpc_url: String,
 
     /// ECDSA key store path file
     #[arg(long, value_name = "ECDSA_KEYSTORE_PATH")]
@@ -106,8 +111,9 @@ impl AvsCommand {
 impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     /// Execute function
     pub async fn execute(self: Box<Self>) -> eyre::Result<()> {
+        init_logger(LogLevel::Debug);
         let registry_coordinator_address_anvil =
-            anvil_constants::get_registry_coordinator_address().await;
+            get_incredible_squaring_registry_coordinator().await;
         let operator_state_retriever_address_anvil =
             anvil_constants::get_operator_state_retriever_address().await;
         let default_anvil = AnvilValues::new(
@@ -125,6 +131,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let mut config = IncredibleConfig::default();
 
         let Self {
+            ws_rpc_url,
             chain_id,
             rpc_url,
             ecdsa_keystore_path,
@@ -140,6 +147,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         } = *self;
         config.set_chain_id(chain_id);
         config.set_http_rpc_url(rpc_url);
+        config.set_ws_rpc_url(ws_rpc_url);
         config.set_ecdsa_keystore_path(ecdsa_keystore_path);
         config.set_ecdsa_keystore_pasword(ecdsa_keystore_password);
         config.set_aggregator_ip_address(aggregator_ip_address);

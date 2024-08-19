@@ -11,4 +11,6 @@ description = "eigen layer operator"
 workspace = true
 
 [dependencies]
-
+eigen-utils.workspace = true
+eigen-testing-utils.workspace = true
+alloy.workspace = true

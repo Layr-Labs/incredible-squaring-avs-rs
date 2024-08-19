@@ -2864,6 +2864,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "confy",
+ "eigen-logging",
  "eigen-types",
  "hex",
  "serde",
@@ -2900,6 +2901,7 @@ dependencies = [
  "eigen-cli",
  "eigen-client-avsregistry",
  "eigen-crypto-bls",
+ "eigen-logging",
  "eigen-types",
  "eyre",
  "futures-util",
@@ -2924,6 +2926,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "clap",
+ "eigen-logging",
  "eigen-testing-utils",
  "eyre",
  "incredible-aggregator",
@@ -2931,12 +2934,18 @@ dependencies = [
  "incredible-cli-runner",
  "incredible-config",
  "incredible-operator",
+ "incredible-testing-utils",
  "tracing",
 ]
 
 [[package]]
 name = "incredible-testing-utils"
 version = "0.0.1-alpha"
+dependencies = [
+ "alloy",
+ "eigen-testing-utils",
+ "eigen-utils",
+]
 
 [[package]]
 name = "indenter"

@@ -16,6 +16,7 @@ incredible-operator.workspace = true
 incredible-cli-runner.workspace = true
 incredible-config.workspace = true
 incredible-avs.workspace = true
+incredible-testing-utils.workspace = true
 clap = { workspace = true, features = ["derive", "env"] }
 eyre.workspace = true
 alloy.workspace = true
@@ -23,6 +24,8 @@ tracing.workspace = true
 
 # eigen-rs
 eigen-testing-utils.workspace = true
+eigen-logging.workspace = true
+
 
 [[bin]]
 name = "incredible-squaring-avs"
