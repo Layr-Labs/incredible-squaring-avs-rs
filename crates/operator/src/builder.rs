@@ -16,15 +16,10 @@ use futures_util::StreamExt;
 use incredible_aggregator::SignedTaskResponse;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NewTaskCreated, TaskResponse};
 use incredible_config::IncredibleConfig;
-use rust_bls_bn254::keystores::{
-    base_keystore::Keystore, pbkdf2_keystore::Pbkdf2Keystore, scrypt_keystore::ScryptKeystore,
-};
+use rust_bls_bn254::keystores::base_keystore::Keystore;
 
 use crate::client::ClientAggregator;
 use incredible_metrics::IncredibleMetrics;
-use rand_core::OsRng;
-use std::path::PathBuf;
-use std::{env::temp_dir, fs};
 use tracing::{debug, info};
 
 /// Main Operator
@@ -56,7 +51,6 @@ pub struct OperatorBuilder {
 impl OperatorBuilder {
     /// Build the Operator Builder
     pub fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
-        println!("opbuilder");
         // Read ECDSA private key from path
         let signer = LocalSigner::decrypt_keystore(
             config.ecdsa_keystore_path(),
@@ -75,7 +69,6 @@ impl OperatorBuilder {
         let operator_id = config.get_operator_id()?;
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
-        println!("opop");
         let operator_address = config.operator_address()?;
 
         Ok(Self {
@@ -111,9 +104,6 @@ impl OperatorBuilder {
 
     /// Start the operator
     pub async fn start_operator(&self) -> Result<()> {
-        println!("11{}", self.registry_coordinator);
-        println!("22{}", self.operator_state_retriever);
-        println!("33{}", self.http_rpc_url.clone());
         let avs_registry_reader = AvsRegistryChainReader::new(
             get_logger(),
             self.registry_coordinator,
@@ -122,8 +112,6 @@ impl OperatorBuilder {
         )
         .await
         .unwrap();
-
-        println!("avs regitstry reader {:?}", avs_registry_reader);
 
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr.clone())
@@ -212,8 +200,8 @@ mod tests {
     operator_id = "0x0202020202020202020202020202020202020202020202020202020202020202"
 
     [el_config]
-    registry_coordinator_addr = "0x3aAde2dCD2Df6a8cAc689EE797591b2913658659"
-    operator_state_retriever_addr = "0x276C216D241856199A83bf27b2286659e5b877D3"
+    registry_coordinator_addr = "0x276c216d241856199a83bf27b2286659e5b877d3"
+    operator_state_retriever_addr = "0x3aAde2dCD2Df6a8cAc689EE797591b2913658659"
     "#;
 
     #[tokio::test]
@@ -253,7 +241,6 @@ mod tests {
 
         let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
 
-        println!("incredible config {:?}", incredible_config);
         let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
 
         let task_response = operator_builder.process_new_task(new_task_created);

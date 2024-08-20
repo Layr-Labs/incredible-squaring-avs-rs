@@ -36,6 +36,7 @@ impl AvsWriter {
         let provider = get_provider(&rpc_url);
         let contract_registry_coordinator =
             RegistryCoordinator::new(registry_coordinator_addr, &provider);
+        println!("4444");
         let service_manager_addr_return = contract_registry_coordinator
             .serviceManager()
             .call()

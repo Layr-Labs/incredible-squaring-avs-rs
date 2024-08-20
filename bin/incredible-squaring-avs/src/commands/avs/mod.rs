@@ -193,6 +193,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_state_retriever_addr
                 .unwrap_or(default_anvil.operator_state_retriever_address.to_string()),
         );
+        println!(
+            "registry coordinator address config {:?}",
+            config.registry_coordinator_addr().unwrap()
+        );
         config.set_operator_id(operator_id);
         config.set_operator_address(operator_address);
 
