@@ -19,7 +19,7 @@ confy = "0.6.1"
 thiserror.workspace = true
 
 #config
-toml = "0.8"
+toml.workspace = true
 hex = "0.4.3"
 
 

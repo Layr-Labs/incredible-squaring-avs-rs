@@ -51,6 +51,7 @@ tracing = "0.1.40"
 tempfile = "3"
 rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
 rand_core = "0.6"
+toml = "0.8"
 
 
 incredible-operator = {path = "crates/operator/"}

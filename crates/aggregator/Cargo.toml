@@ -17,3 +17,4 @@ eigen-types.workspace = true
 serde.workspace = true
 ark-serialize = "0.4.2"
 hex = "0.4.3"
+eigen-crypto-bls.workspace = true

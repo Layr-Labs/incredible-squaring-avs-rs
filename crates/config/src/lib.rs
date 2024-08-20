@@ -181,7 +181,7 @@ impl IncredibleConfig {
     }
 
     /// get ws rpc url
-    pub fn get_rpc_url(&self) -> String {
+    pub fn ws_rpc_url(&self) -> String {
         self.rpc_config.ws_rpc_url.clone()
     }
 

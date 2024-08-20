@@ -1,5 +1,5 @@
 //! Challenger crate
-use eigen_utils::get_provider;
+use eigen_utils::{get_provider, get_ws_provider};
 use std::collections::HashMap;
 /// Challenger Error
 pub mod error;
@@ -53,7 +53,7 @@ impl Challenger {
         .await?;
         Ok(Self {
             avs_writer,
-            ws_url: config.get_rpc_url(),
+            ws_url: config.ws_rpc_url(),
             rpc_url: config.http_rpc_url(),
             tasks: HashMap::new(),
             task_responses: HashMap::new(),
@@ -65,124 +65,90 @@ impl Challenger {
         info!("Starting Challenger.");
         info!("Subscribed to new tasks");
 
-        let ws = WsConnect::new(self.ws_url.clone());
-        let provider_result = ProviderBuilder::new().on_ws(ws).await;
+        let wa = get_ws_provider(&self.ws_url).await?;
 
-        match provider_result {
-            Ok(provider) => {
-                let new_task_created_filter = Filter::new()
-                    .event("NewTaskCreated(uint32,(uint256,uint32,bytes,uint32))")
-                    .from_block(BlockNumberOrTag::Latest);
-                let new_task_created_sub_result =
-                    provider.subscribe_logs(&new_task_created_filter).await;
+        let new_task_created_filter = Filter::new()
+            .event("NewTaskCreated(uint32,(uint256,uint32,bytes,uint32))")
+            .from_block(BlockNumberOrTag::Latest);
+        let new_task_created_sub = wa.subscribe_logs(&new_task_created_filter).await?;
 
-                match new_task_created_sub_result {
-                    Ok(new_task_created_sub) => {
-                        let mut new_task_created_stream = new_task_created_sub.into_stream();
+        info!("new task created");
+        let mut new_task_created_stream = new_task_created_sub.into_stream();
 
-                        let new_task_created_log = NewTaskCreated::SIGNATURE_HASH;
+        let new_task_created_log = NewTaskCreated::SIGNATURE_HASH;
 
-                        let task_responded_filter = Filter::new()
-                            .event("TaskResponded((uint32,uint256),(uint32,bytes32))")
-                            .from_block(BlockNumberOrTag::Latest);
-                        let task_responded_sub_result =
-                            provider.subscribe_logs(&task_responded_filter).await;
+        let task_responded_filter = Filter::new()
+            .event("TaskResponded((uint32,uint256),(uint32,bytes32))")
+            .from_block(BlockNumberOrTag::Latest);
+        let task_responded_sub = wa.subscribe_logs(&task_responded_filter).await?;
 
-                        match task_responded_sub_result {
-                            Ok(task_responded_sub) => {
-                                let mut task_responded_stream = task_responded_sub.into_stream();
+        let mut task_responded_stream = task_responded_sub.into_stream();
 
-                                let task_responded_log = TaskResponded::SIGNATURE_HASH;
+        let task_responded_log = TaskResponded::SIGNATURE_HASH;
 
-                                for _ in 0..2 {
-                                    let log = tokio::select! {
+        for _ in 0..2 {
+            let log = tokio::select! {
 
-                                        Some(log) = task_responded_stream.next() =>{
-                                           log
-                                        },
-                                        Some(log) = new_task_created_stream.next() =>{
-                                            log
-                                        }
+                Some(log) = task_responded_stream.next() =>{
+                   log
+                },
+                Some(log) = new_task_created_stream.next() =>{
+                    log
+                }
 
-                                    };
+            };
 
-                                    let topic = log.topic0();
+            let topic = log.topic0();
 
-                                    if let Some(tp) = topic {
-                                        if *tp == new_task_created_log {
-                                            let new_task_created_option =
-                                                log.log_decode::<NewTaskCreated>().ok();
+            if let Some(tp) = topic {
+                if *tp == new_task_created_log {
+                    let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
 
-                                            if let Some(data) = new_task_created_option {
-                                                let m = data.data();
-                                                let new_task_cr = NewTaskCreated {
-                                                    taskIndex: m.taskIndex,
-                                                    task: m.task.clone(),
-                                                };
+                    if let Some(data) = new_task_created_option {
+                        let m = data.data();
+                        let new_task_cr = NewTaskCreated {
+                            taskIndex: m.taskIndex,
+                            task: m.task.clone(),
+                        };
 
-                                                let t_index =
-                                                    self.process_new_task_created_log(new_task_cr);
+                        let t_index = self.process_new_task_created_log(new_task_cr);
 
-                                                if let Some(_) = self.task_responses.get(&t_index) {
-                                                    let call_c_result =
-                                                        self.call_challenge(t_index).await;
-                                                    match call_c_result {
-                                                        Ok(_) => continue,
-                                                        Err(e) => {
-                                                            return Err(e.into());
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        } else if *tp == task_responded_log {
-                                            info!(
-                                                "Task response log received {:?}",
-                                                task_responded_log
-                                            );
-
-                                            let task_index_result =
-                                                self.process_task_response_log(log).await;
-
-                                            match task_index_result {
-                                                Ok(task_index) => {
-                                                    if let Some(_) = self.tasks.get(&task_index) {
-                                                        let call_c_result =
-                                                            self.call_challenge(task_index).await;
-                                                        match call_c_result {
-                                                            Ok(_) => continue,
-                                                            Err(e) => {
-                                                                return Err(e.into());
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                Err(e) => {
-                                                    return Err(e.into());
-                                                }
-                                            }
-                                        }
-                                    }
+                        if let Some(_) = self.task_responses.get(&t_index) {
+                            let call_c_result = self.call_challenge(t_index).await;
+                            match call_c_result {
+                                Ok(_) => continue,
+                                Err(e) => {
+                                    return Err(e.into());
                                 }
-
-                                Ok(())
                             }
-                            Err(e) => Err(ChallengerError::AlloyContractError(
-                                alloy::contract::Error::TransportError(e),
-                            )
-                            .into()),
                         }
                     }
-                    Err(e) => Err(ChallengerError::AlloyContractError(
-                        alloy::contract::Error::TransportError(e),
-                    )
-                    .into()),
+                } else if *tp == task_responded_log {
+                    info!("Task response log received {:?}", task_responded_log);
+
+                    let task_index_result = self.process_task_response_log(log).await;
+
+                    match task_index_result {
+                        Ok(task_index) => {
+                            if let Some(_) = self.tasks.get(&task_index) {
+                                let call_c_result = self.call_challenge(task_index).await;
+                                match call_c_result {
+                                    Ok(_) => continue,
+                                    Err(e) => {
+                                        return Err(e.into());
+                                    }
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            return Err(e.into());
+                        }
+                    }
                 }
             }
-            Err(e) => Err(ChallengerError::AlloyContractError(
-                alloy::contract::Error::TransportError(e),
-            )
-            .into()),
         }
+        info!("ended");
+        Ok(())
     }
 
     /// Process new task created log

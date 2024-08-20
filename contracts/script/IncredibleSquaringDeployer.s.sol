@@ -270,6 +270,9 @@ contract IncredibleSquaringDeployer is Script, Utils {
 
         operatorStateRetriever = new OperatorStateRetriever();
 
+        contractsRegistry.registerContract("incredible_squaring_operator_state_retriever", address(operatorStateRetriever));
+
+
         // Second, deploy the *implementation* contracts, using the *proxy contracts* as inputs
         {
             stakeRegistryImplementation = new StakeRegistry(

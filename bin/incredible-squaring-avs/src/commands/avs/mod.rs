@@ -1,10 +1,15 @@
 use alloy::primitives::Address;
 use clap::{value_parser, Args, Parser};
+use eigen_client_avsregistry::{error::AvsRegistryError, reader::AvsRegistryChainReader};
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_testing_utils::anvil_constants;
+use eigen_utils::binding::RegistryCoordinator;
+use eigen_utils::get_provider;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
-use incredible_testing_utils::get_incredible_squaring_registry_coordinator;
+use incredible_testing_utils::{
+    get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
+};
 use std::ffi::OsString;
 use std::fmt;
 use tracing::debug;
@@ -31,7 +36,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     rpc_url: String,
 
     /// The RPC URL of the node.
-    #[arg(long, value_name = "WS_RPC_URL",default_value = "wss://localhost:8545", value_parser = clap::value_parser!(String))]
+    #[arg(long, value_name = "WS_RPC_URL",default_value = "ws://localhost:8545", value_parser = clap::value_parser!(String))]
     ws_rpc_url: String,
 
     /// ECDSA key store path file
@@ -114,8 +119,34 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         init_logger(LogLevel::Debug);
         let registry_coordinator_address_anvil =
             get_incredible_squaring_registry_coordinator().await;
+        let provider = get_provider(&self.rpc_url);
+        println!(
+            "registry coordinator address {:?}",
+            registry_coordinator_address_anvil
+        ); // 0x276c216d241856199a83bf27b2286659e5b877d3
+        let registry_coordinator_address =
+            RegistryCoordinator::new(registry_coordinator_address_anvil, provider);
+
+        let s = registry_coordinator_address
+            .blsApkRegistry()
+            .call()
+            .await
+            .map_err(|e| e.to_string())
+            .unwrap();
+        println!("bls apk return {:?}", s);
+
         let operator_state_retriever_address_anvil =
-            anvil_constants::get_operator_state_retriever_address().await;
+            get_incredible_squaring_operator_state_retriever().await;
+
+        let w = AvsRegistryChainReader::new(
+            get_logger(),
+            registry_coordinator_address_anvil,
+            operator_state_retriever_address_anvil,
+            self.rpc_url.clone(),
+        )
+        .await
+        .map_err(|e| e.to_string())
+        .unwrap();
         let default_anvil = AnvilValues::new(
             registry_coordinator_address_anvil,
             operator_state_retriever_address_anvil,

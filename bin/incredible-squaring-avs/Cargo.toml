@@ -25,7 +25,8 @@ tracing.workspace = true
 # eigen-rs
 eigen-testing-utils.workspace = true
 eigen-logging.workspace = true
-
+eigen-utils.workspace = true
+eigen-client-avsregistry.workspace = true
 
 [[bin]]
 name = "incredible-squaring-avs"

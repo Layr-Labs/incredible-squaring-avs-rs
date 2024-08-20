@@ -27,42 +27,42 @@ impl ClientAggregator {
         &self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<()> {
-        let mut delay = Duration::from_secs(1);
+        // let mut delay = Duration::from_secs(1);
 
-        for _ in 0..5 {
-            let response = self
-                .client
-                .post(&self.rpc_url)
-                .json(&json!({
-                    "method": "Aggregator.ProcessSignedTaskResponse",
-                    "params": [signed_task_response],
-                    "id": 1,
-                    "jsonrpc": "2.0"
-                }))
-                .send()
-                .await;
+        // for _ in 0..5 {
+        //     let response = self
+        //         .client
+        //         .post(&self.rpc_url)
+        //         .json(&json!({
+        //             "method": "Aggregator.ProcessSignedTaskResponse",
+        //             "params": [signed_task_response],
+        //             "id": 1,
+        //             "jsonrpc": "2.0"
+        //         }))
+        //         .send()
+        //         .await;
 
-            match response {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        info!("Signed task response accepted by aggregator.");
-                        return Ok(());
-                    } else {
-                        info!("Received error from aggregator: {:?}", res.text().await?);
-                    }
-                }
-                Err(err) => {
-                    error!("Error sending request: {:?}", err);
-                }
-            }
+        //     match response {
+        //         Ok(res) => {
+        //             if res.status().is_success() {
+        //                 info!("Signed task response accepted by aggregator.");
+        //                 return Ok(());
+        //             } else {
+        //                 info!("Received error from aggregator: {:?}", res.text().await?);
+        //             }
+        //         }
+        //         Err(err) => {
+        //             error!("Error sending request: {:?}", err);
+        //         }
+        //     }
 
-            // Exponential backoff
-            info!("Retrying in {} seconds...", delay.as_secs());
-            sleep(delay).await;
-            delay *= 2; // Double the delay for the next retry
-        }
+        //     // Exponential backoff
+        //     info!("Retrying in {} seconds...", delay.as_secs());
+        //     sleep(delay).await;
+        //     delay *= 2; // Double the delay for the next retry
+        // }
 
-        debug!("Could not send signed task response to aggregator. Tried 5 times.");
+        // debug!("Could not send signed task response to aggregator. Tried 5 times.");
         Ok(())
     }
 }

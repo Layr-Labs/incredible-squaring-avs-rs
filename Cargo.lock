@@ -2785,6 +2785,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "ark-bn254",
  "ark-serialize 0.4.2",
+ "eigen-crypto-bls",
  "eigen-types",
  "hex",
  "incredible-bindings",
@@ -2917,6 +2918,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
+ "toml",
  "tracing",
 ]
 
@@ -2926,8 +2928,10 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "clap",
+ "eigen-client-avsregistry",
  "eigen-logging",
  "eigen-testing-utils",
+ "eigen-utils",
  "eyre",
  "incredible-aggregator",
  "incredible-avs",
