@@ -77,3 +77,4 @@ eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476
 eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
 eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
 eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}
+eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "bde9476"}

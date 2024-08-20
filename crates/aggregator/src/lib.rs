@@ -46,4 +46,8 @@ impl SignedTaskResponse {
             operator_id,
         }
     }
+
+    pub fn signature(&self) -> Signature {
+        self.signature.clone()
+    }
 }

@@ -2902,6 +2902,7 @@ dependencies = [
  "eigen-cli",
  "eigen-client-avsregistry",
  "eigen-crypto-bls",
+ "eigen-crypto-bn254",
  "eigen-logging",
  "eigen-types",
  "eyre",

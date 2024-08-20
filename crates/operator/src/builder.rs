@@ -188,16 +188,38 @@ mod tests {
     use alloy::primitives::U256;
     use ark_ec::AffineRepr;
     use ark_ff::PrimeField;
+    use eigen_crypto_bn254::utils::verify_message;
     use std::str::FromStr;
     use IncredibleSquaringTaskManager::Task;
 
+    const INCREDIBLE_CONFIG_FILE: &str = r#"
+    [rpc_config]
+    chain_id = 31337
+    http_rpc_url = "http://localhost:8545"
+    ws_rpc_url = "ws://localhost:8546"
+    signer = "0x337edbf6fef9af147f49c04c1004da47a8bf9f88c01022b7dd108e31c037f075"
+
+    [ecdsa_config]
+    keystore_path = "../testing-utils/src/ecdsakeystore.json"
+    keystore_password = "test"
+
+    [bls_config]
+    keystore_path = "../testing-utils/src/blskeystore.json"
+    keystore_password = "testpassword"
+
+    [operator_config]
+    operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+    operator_id = "0x0202020202020202020202020202020202020202020202020202020202020202"
+
+    [el_config]
+    registry_coordinator_addr = "0x3aAde2dCD2Df6a8cAc689EE797591b2913658659"
+    operator_state_retriever_addr = "0x276C216D241856199A83bf27b2286659e5b877D3"
+    "#;
+
     #[tokio::test]
     async fn test_bls_keystore() {
-        let output_path = "../testing-utils/src/blskeystore.json";
-        let mut config = IncredibleConfig::default();
-        config.set_bls_keystore_path(output_path.to_string());
-        config.set_bls_keystore_password("testpassword".to_string());
-        let operator_builder = OperatorBuilder::build(config).unwrap();
+        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
 
         assert_eq!(
             U256::from_limbs(
@@ -229,31 +251,7 @@ mod tests {
             },
         };
 
-        let incredible_config_file = r#"
-        [rpc_config]
-        chain_id = 31337
-        http_rpc_url = "http://localhost:8545"
-        ws_rpc_url = "ws://localhost:8546"
-        signer = "0x337edbf6fef9af147f49c04c1004da47a8bf9f88c01022b7dd108e31c037f075"
-    
-        [ecdsa_config]
-        keystore_path = "../testing-utils/src/ecdsakeystore.json"
-        keystore_password = "test"
-    
-        [bls_config]
-        keystore_path = "../testing-utils/src/blskeystore.json"
-        keystore_password = "testpassword"
-
-        [operator_config]
-        operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-        operator_id = "0x0202020202020202020202020202020202020202020202020202020202020202"
-
-        [el_config]
-        registry_coordinator_addr = "0x3aAde2dCD2Df6a8cAc689EE797591b2913658659"
-        operator_state_retriever_addr = "0x276C216D241856199A83bf27b2286659e5b877D3"
-        "#;
-
-        let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
+        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
 
         println!("incredible config {:?}", incredible_config);
         let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
@@ -265,8 +263,31 @@ mod tests {
     }
 
     #[test]
-    fn test_build_operator() {}
+    fn test_build_operator() {
+        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let _ = OperatorBuilder::build(incredible_config).unwrap();
+    }
 
     #[test]
-    fn test_sign_task_response() {}
+    fn test_sign_task_response() {
+        let task_response = TaskResponse {
+            referenceTaskIndex: 1,
+            numberSquared: U256::from(16),
+        };
+
+        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
+        let signed_task_response = operator_builder
+            .sign_task_response(task_response.clone())
+            .unwrap();
+
+        let bls_key_pair = operator_builder.bls_key_pair();
+        let encoded_response = TaskResponse::abi_encode(&task_response);
+        let hash_msg = keccak256(encoded_response);
+        assert!(verify_message(
+            bls_key_pair.public_key_g2().g2(),
+            hash_msg.as_slice(),
+            signed_task_response.signature().g1_point().g1()
+        ));
+    }
 }
