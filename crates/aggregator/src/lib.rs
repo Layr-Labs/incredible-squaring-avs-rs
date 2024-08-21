@@ -1,8 +1,18 @@
+use std::collections::HashMap;
+use std::hash::Hash;
+
 use ark_bn254::G1Affine;
 use ark_serialize::CanonicalSerialize;
 use eigen_crypto_bls::Signature;
+use eigen_types::avs::TaskResponseDigest;
 use eigen_types::operator::OperatorId;
+use incredible_bindings::IncredibleSquaringTaskManager;
 use incredible_bindings::IncredibleSquaringTaskManager::TaskResponse;
+use incredible_bindings::IncredibleSquaringTaskManager::{
+    respondToTaskCall, G1Point, NewTaskCreated, Task, TaskResponded, TaskResponseMetadata,
+};
+use incredible_chainio::AvsWriter;
+use incredible_config::IncredibleConfig;
 use serde::Serialize;
 use serde::Serializer;
 
@@ -50,4 +60,22 @@ impl SignedTaskResponse {
     pub fn signature(&self) -> Signature {
         self.signature.clone()
     }
+}
+
+pub struct Aggregator {
+    port_address: String,
+
+    avs_writer: AvsWriter,
+
+    // bls_aggregation_service:,
+    tasks: HashMap<u32, IncredibleSquaringTaskManager::Task>,
+
+    tasks_responses:
+        HashMap<u32, HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>>,
+}
+
+impl Aggregator {
+    // pub fn new(config:IncredibleConfig) -> Self{
+
+    // }
 }

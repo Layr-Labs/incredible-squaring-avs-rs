@@ -18,3 +18,5 @@ serde.workspace = true
 ark-serialize = "0.4.2"
 hex = "0.4.3"
 eigen-crypto-bls.workspace = true
+incredible-chainio.workspace = true
+incredible-config.workspace = true

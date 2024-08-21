@@ -25,3 +25,4 @@ eigen-client-avsregistry.workspace = true
 eigen-types.workspace = true
 eigen-contract-bindings.workspace = true
 eigen-utils.workspace = true
+eigen-logging.workspace = true

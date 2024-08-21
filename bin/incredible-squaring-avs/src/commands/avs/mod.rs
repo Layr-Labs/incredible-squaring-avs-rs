@@ -1,18 +1,36 @@
-use alloy::primitives::Address;
+use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use alloy::providers::Provider;
+use alloy::rpc;
+use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::{value_parser, Args, Parser};
-use eigen_client_avsregistry::{error::AvsRegistryError, reader::AvsRegistryChainReader};
+use eigen_client_avsregistry::{
+    error::AvsRegistryError, reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter,
+};
+use eigen_client_elcontracts::reader::ELChainReader;
+use eigen_client_elcontracts::writer::ELChainWriter;
+use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
-use eigen_testing_utils::anvil_constants;
+use eigen_testing_utils::anvil_constants::{
+    self, get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
+};
+use eigen_types::operator::Operator;
 use eigen_utils::binding::RegistryCoordinator;
 use eigen_utils::get_provider;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
-use incredible_config::IncredibleConfig;
+use incredible_config::{ELConfig, IncredibleConfig};
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
 };
+use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
+use std::io::Read;
+use std::ops::Add;
+use std::str::FromStr;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::debug;
+
+use crate::commands::avs;
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
 #[non_exhaustive]
@@ -51,6 +69,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "REGISTRY_COORDINATOR_ADDR")]
     registry_coordinator_address: Option<String>,
 
+    /// Delegation Manager address
+    #[arg(long, value_name = "DELEGATION_MANAGER_ADDRESS")]
+    delegation_manager_address: Option<String>,
+
     /// Aggregator Ip address
     #[arg(long, value_name = "AGGREGATOR_IP_ADDRESS")]
     aggregator_ip_address: String,
@@ -71,9 +93,32 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "OPERATOR_STATE_RETRIEVER_ADDRESS")]
     operator_state_retriever_addr: Option<String>,
 
+    /// Avs Directory
+    #[arg(long, value_name = "AVS_DIRECTORY_ADDRESS")]
+    avs_directory_addr: Option<String>,
+
+    /// Strategy Manager
+    #[arg(long, value_name = "STRATEGY_MANAGER_ADDRESS")]
+    strategy_manager_addr: Option<String>,
+
     /// Operator Address
     #[arg(long, value_name = "OPERATOR_ADDRESS")]
     operator_address: String,
+
+    #[arg(long, value_name = "REGISTER_OPERATOR")]
+    register_operator: bool,
+
+    #[arg(long, value_name = "OPERATOR_TO_AVS_REGISTRATION_SIG_SALT")]
+    operator_to_avs_registration_sig_salt: Option<String>,
+
+    #[arg(long, value_name = "SOCKET")]
+    socket: Option<String>,
+
+    #[arg(long, value_name = "QUORUM_NUMBER")]
+    quorum_number: Option<String>,
+
+    #[arg(long, value_name = "SIG_EXPIRY")]
+    sig_expiry: Option<String>,
 
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
@@ -116,7 +161,7 @@ impl AvsCommand {
 impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     /// Execute function
     pub async fn execute(self: Box<Self>) -> eyre::Result<()> {
-        init_logger(LogLevel::Debug);
+        init_logger(LogLevel::Info);
         let registry_coordinator_address_anvil =
             get_incredible_squaring_registry_coordinator().await;
         let provider = get_provider(&self.rpc_url);
@@ -138,6 +183,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let operator_state_retriever_address_anvil =
             get_incredible_squaring_operator_state_retriever().await;
 
+        let delegation_manager_address_anvil = get_delegation_manager_address().await;
+        let avs_directory_address_anvil = get_avs_directory_address().await;
+
+        let strategy_manager_address_anvil = get_strategy_manager_address().await;
         let w = AvsRegistryChainReader::new(
             get_logger(),
             registry_coordinator_address_anvil,
@@ -168,22 +217,51 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             ecdsa_keystore_path,
             ecdsa_keystore_password,
             registry_coordinator_address,
+            delegation_manager_address,
             aggregator_ip_address,
             bls_keystore_path,
             bls_keystore_password,
             operator_id,
             operator_state_retriever_addr,
+            avs_directory_addr,
+            strategy_manager_addr,
             operator_address,
+            register_operator,
+            operator_to_avs_registration_sig_salt,
+            socket,
+            quorum_number,
+            sig_expiry,
             ext,
         } = *self;
+
+        let now = SystemTime::now();
+        let mut expiry: U256 = U256::from(0);
+        // Convert SystemTime to a Duration since the UNIX epoch
+        if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
+            // Convert the duration to seconds
+            let seconds = duration_since_epoch.as_secs(); // Returns a u64
+
+            // Convert seconds to U256
+            expiry = U256::from(seconds) + U256::from(10000);
+        } else {
+            println!("System time seems to be before the UNIX epoch.");
+        }
         config.set_chain_id(chain_id);
-        config.set_http_rpc_url(rpc_url);
+        config.set_http_rpc_url(rpc_url.clone());
         config.set_ws_rpc_url(ws_rpc_url);
-        config.set_ecdsa_keystore_path(ecdsa_keystore_path);
-        config.set_ecdsa_keystore_pasword(ecdsa_keystore_password);
+        config.set_ecdsa_keystore_path(ecdsa_keystore_path.clone());
+        config.set_ecdsa_keystore_pasword(ecdsa_keystore_password.clone());
         config.set_aggregator_ip_address(aggregator_ip_address);
-        config.set_bls_keystore_path(bls_keystore_path);
-        config.set_bls_keystore_password(bls_keystore_password);
+        config.set_bls_keystore_path(bls_keystore_path.clone());
+        config.set_bls_keystore_password(bls_keystore_password.clone());
+        config.set_delegation_manager_addr(
+            delegation_manager_address
+                .clone()
+                .unwrap_or(delegation_manager_address_anvil.to_string()),
+        );
+        config.set_avs_directory_address(
+            avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
+        );
         // use value from config , if None , then use anvil
         config.set_registry_coordinator_addr(
             registry_coordinator_address
@@ -193,13 +271,46 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_state_retriever_addr
                 .unwrap_or(default_anvil.operator_state_retriever_address.to_string()),
         );
+        config.set_delegation_manager_addr(
+            delegation_manager_address.unwrap_or(delegation_manager_address_anvil.to_string()),
+        );
+        config.set_strategy_manager_addr(
+            strategy_manager_addr.unwrap_or(strategy_manager_address_anvil.to_string()),
+        );
+        config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt.unwrap());
+        config.set_socket(socket.unwrap());
+        config.set_quorum_number(quorum_number.unwrap());
+
         println!(
             "registry coordinator address config {:?}",
             config.registry_coordinator_addr().unwrap()
         );
         config.set_operator_id(operator_id);
         config.set_operator_address(operator_address);
-
+        config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
+        println!("sig expiry {}", config.sig_expiry().unwrap());
+        if register_operator {
+            println!("register operator");
+            let s = register_operator_with_el_and_avs(
+                rpc_url.clone(),
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                config.registry_coordinator_addr().unwrap(),
+                config.operator_state_retriever_addr().unwrap(),
+                config.delegation_manager_addr().unwrap(),
+                config.avs_directory_addr().unwrap(),
+                config.strategy_manager_addr().unwrap(),
+                &bls_keystore_path,
+                &bls_keystore_password,
+                config.operator_to_avs_registration_sig_salt().unwrap(),
+                config.sig_expiry().unwrap(),
+                config.quorum_number().unwrap(),
+                config.socket().to_string(),
+            )
+            .await;
+        } else {
+            println!("nono");
+        }
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
         let s = avs_launcher.launch_avs(avs_builder).await;
@@ -208,4 +319,75 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
         Ok(())
     }
+}
+
+pub async fn register_operator_with_el_and_avs(
+    rpc_url: String,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    registry_coordinator_address: Address,
+    operator_state_retriever_address: Address,
+    delegation_manager_address: Address,
+    avs_directory_address: Address,
+    strategy_manager_address: Address,
+    bls_keystore_path: &str,
+    bls_keystore_password: &str,
+    operator_to_avs_registration_sig_salt: FixedBytes<32>,
+    operator_to_avs_registration_sig_expiry: U256,
+    quorum_numbers: Bytes,
+    socket: String,
+) -> eyre::Result<()> {
+    println!("start registering ");
+    let signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    let s = signer.to_field_bytes();
+    let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
+        get_logger(),
+        rpc_url.clone(),
+        hex::encode(s).to_string(),
+        registry_coordinator_address,
+        operator_state_retriever_address,
+    )
+    .await?;
+
+    // Read BlsKey from path
+    let keystore = Keystore::from_file(&bls_keystore_path)
+        .unwrap()
+        .decrypt(&bls_keystore_password)?;
+    let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
+
+    let key_pair = BlsKeyPair::new(fr_key)?;
+    let el_chain_reader = ELChainReader::new(
+        get_logger(),
+        Address::ZERO,
+        delegation_manager_address,
+        avs_directory_address,
+        rpc_url.clone(),
+    );
+    let el_chain_writer = ELChainWriter::new(
+        delegation_manager_address,
+        strategy_manager_address,
+        el_chain_reader,
+        rpc_url,
+        hex::encode(s).to_string(),
+    );
+
+    // println!("rgrg before");
+    // let operator_details = Operator::new(signer.address(),signer.address(),Address::ZERO,200,Some("url".to_string()));
+    // let register_to_eigen_layer = el_chain_writer.register_as_operator(operator_details).await.unwrap();
+    // println!("register to eigen layer hash {:?}",register_to_eigen_layer);
+    let tx_hash = avs_registry_writer
+        .register_operator_in_quorum_with_avs_registry_coordinator(
+            key_pair,
+            operator_to_avs_registration_sig_salt,
+            operator_to_avs_registration_sig_expiry,
+            quorum_numbers,
+            socket,
+        )
+        .await?;
+    println!(
+        "tx hash for registering operator in quorum with avs registry coordinator {}",
+        tx_hash
+    );
+
+    Ok(())
 }

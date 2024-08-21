@@ -7,7 +7,7 @@ pub mod error;
 use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::rpc::types::{Log, TransactionReceipt};
 use alloy::sol_types::{SolCall, SolEvent};
-use alloy_provider::{Provider, ProviderBuilder, WsConnect};
+use alloy_provider::Provider;
 use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
@@ -44,9 +44,7 @@ pub struct Challenger {
 impl Challenger {
     /// New instance of Challenger
     pub async fn build(config: IncredibleConfig) -> Result<Self, ChallengerError> {
-        println!("gggg");
         let registry_coordinator_address = config.registry_coordinator_addr()?;
-        println!("rrrr");
         let avs_writer = AvsWriter::new(
             registry_coordinator_address,
             config.http_rpc_url(),
@@ -153,7 +151,6 @@ impl Challenger {
                 }
             }
         }
-        info!("ended");
         Ok(())
     }
 

@@ -21,13 +21,16 @@ clap = { workspace = true, features = ["derive", "env"] }
 eyre.workspace = true
 alloy.workspace = true
 tracing.workspace = true
-
+hex = "0.4.3"
+rust-bls-bn254.workspace = true
+eigen-crypto-bls.workspace = true
 # eigen-rs
 eigen-testing-utils.workspace = true
 eigen-logging.workspace = true
 eigen-utils.workspace = true
 eigen-client-avsregistry.workspace = true
-
+eigen-client-elcontracts.workspace = true
+eigen-types.workspace = true
 [[bin]]
 name = "incredible-squaring-avs"
 path = "src/main.rs"

@@ -1,10 +1,11 @@
 //! config
 use alloy::hex::FromHex;
-use alloy::primitives::{Address, FixedBytes};
+use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use eigen_logging::logger::SharedLogger;
 use eigen_types::operator::OperatorId;
 use error::ConfigError;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 /// Config Error
 pub mod error;
 use std::path::PathBuf;
@@ -23,6 +24,8 @@ pub struct IncredibleConfig {
     aggregator_config: AggregatorConfig,
 
     el_config: ELConfig,
+
+    operator_registration_config: OperatorRegistrationConfig,
 }
 
 /// Rpc Configurations
@@ -39,6 +42,24 @@ pub struct RpcConfig {
 
     /// signer pvt key
     pub signer: String,
+}
+
+/// Rpc Configurations
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct OperatorRegistrationConfig {
+    /// Register operator on startup
+    register_operator: bool,
+    ///
+    pub operator_to_avs_registration_sig_salt: String,
+
+    ///
+    pub socket: String,
+
+    ///
+    pub quorum_number: String,
+
+    ///
+    pub sig_expiry: String,
 }
 
 /// Operator Configurations
@@ -59,6 +80,15 @@ pub struct ELConfig {
 
     /// Operator State retriever Address
     pub operator_state_retriever_addr: String,
+
+    /// Delegation Manager Address
+    pub delegation_manager_addr: String,
+
+    /// Avs Directory Address
+    pub avs_directory_addr: String,
+
+    /// Strategy Manager Address
+    pub strategy_manager_addr: String,
 }
 
 /// AggregatorConfig
@@ -102,7 +132,7 @@ impl IncredibleConfig {
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
     }
 
-    /// Set chainid
+    ///
     pub fn set_logger(&mut self) {}
 
     /// Set chainid
@@ -160,6 +190,15 @@ impl IncredibleConfig {
         self.el_config.registry_coordinator_addr = address;
     }
 
+    /// set the delegation manager address
+    pub fn set_delegation_manager_addr(&mut self, address: String) {
+        self.el_config.delegation_manager_addr = address;
+    }
+    /// set the strategy manager address
+    pub fn set_strategy_manager_addr(&mut self, address: String) {
+        self.el_config.strategy_manager_addr = address;
+    }
+
     /// set the operator state retriever address
     pub fn set_operator_state_retriever(&mut self, address: String) {
         (self.el_config.operator_state_retriever_addr) = address;
@@ -168,6 +207,30 @@ impl IncredibleConfig {
     /// set the operator address
     pub fn set_operator_address(&mut self, address: String) {
         self.operator_config.operator_address = address;
+    }
+
+    /// set operator registration signature salt
+    pub fn set_operator_registration_sig_salt(&mut self, salt: String) {
+        self.operator_registration_config
+            .operator_to_avs_registration_sig_salt = salt;
+    }
+
+    /// set quorum number
+    pub fn set_quorum_number(&mut self, quorum_num: String) {
+        self.operator_registration_config.quorum_number = quorum_num;
+    }
+
+    /// set socket
+    pub fn set_socket(&mut self, socket: String) {
+        self.operator_registration_config.socket = socket;
+    }
+
+    pub fn set_sig_expiry(&mut self, expiry: String) {
+        self.operator_registration_config.sig_expiry = expiry;
+    }
+
+    pub fn set_avs_directory_address(&mut self, address: String) {
+        self.el_config.avs_directory_addr = address;
     }
 
     /// get appropriate chainid where incredible squaring will run
@@ -253,12 +316,82 @@ impl IncredibleConfig {
             Err(e) => Err(ConfigError::HexParse(e)),
         }
     }
+
+    /// get operator to avs registration sig salt
+    pub fn operator_to_avs_registration_sig_salt(&self) -> Result<FixedBytes<32>, ConfigError> {
+        let s = FixedBytes::<32>::from_str(
+            &self
+                .operator_registration_config
+                .operator_to_avs_registration_sig_salt,
+        );
+        match s {
+            Ok(salt) => Ok(salt),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
+    }
+
+    /// get quorum number
+    pub fn quorum_number(&self) -> Result<Bytes, ConfigError> {
+        let s = Bytes::from_str(&self.operator_registration_config.quorum_number);
+        println!("quorum number {:?}", s);
+        match s {
+            Ok(quorum_num) => Ok(quorum_num),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
+    }
+
+    ///
+    pub fn socket(&self) -> &String {
+        &self.operator_registration_config.socket
+    }
+
+    ///
+    pub fn sig_expiry(&self) -> Result<U256, ConfigError> {
+        let s = U256::from_str(&self.operator_registration_config.sig_expiry);
+
+        match s {
+            Ok(expiry) => Ok(expiry),
+            Err(e) => Err(ConfigError::ParseError(e)),
+        }
+    }
+
+    /// delegation manager address
+    pub fn delegation_manager_addr(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(self.el_config.delegation_manager_addr.as_bytes());
+
+        match s {
+            Ok(delegation_manager_addr) => Ok(delegation_manager_addr),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
+    }
+
+    /// Avs Directory manager address
+    pub fn avs_directory_addr(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(self.el_config.avs_directory_addr.as_bytes());
+
+        match s {
+            Ok(avs_directory_addr) => Ok(avs_directory_addr),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
+    }
+
+    /// Strategy Manager address
+    pub fn strategy_manager_addr(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(self.el_config.strategy_manager_addr.as_bytes());
+
+        match s {
+            Ok(strategy_manager_addr) => Ok(strategy_manager_addr),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use alloy::primitives::{address, FixedBytes};
+    use std::str::FromStr;
+
+    use alloy::primitives::{address, Bytes, FixedBytes};
 
     use super::BlsConfig;
     use super::PathBuf;
@@ -267,6 +400,7 @@ mod tests {
     use crate::EcdsaConfig;
     use crate::IncredibleConfig;
     use crate::OperatorConfig;
+    use crate::OperatorRegistrationConfig;
     use crate::RpcConfig;
     const EXTENSION: &str = "toml";
 
@@ -464,6 +598,53 @@ mod tests {
         assert_eq!(
             incredible_config.ecdsa_keystore_password(),
             "eigenlovesecdsakeystore"
+        );
+    }
+
+    #[test]
+    fn test_operator_registration_config() {
+        let _config = r#"
+        register_operator = true
+        operator_to_avs_registration_sig_salt  = "0202020202020202020202020202020202020202020202020202020202020202"
+        socket = "sockett"
+        quorum_number = "0x40"
+        sig_expiry = "3333"
+        "#;
+
+        let ecdsa_config: OperatorRegistrationConfig = toml::from_str(_config).unwrap();
+
+        assert_eq!(ecdsa_config.register_operator, true);
+        assert_eq!(
+            ecdsa_config.operator_to_avs_registration_sig_salt,
+            "0202020202020202020202020202020202020202020202020202020202020202"
+        );
+        assert_eq!(ecdsa_config.socket, "sockett");
+        assert_eq!(ecdsa_config.quorum_number, "0x40");
+
+        let incredible_config_file = r#"
+        [operator_registration_config]
+        register_operator = true
+        operator_to_avs_registration_sig_salt  = "0202020202020202020202020202020202020202020202020202020202020202"
+        socket = "sockett"
+        quorum_number = "0x40"
+        sig_expiry = "3333"
+        "#;
+        let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
+        assert_eq!(
+            incredible_config
+                .operator_to_avs_registration_sig_salt()
+                .unwrap(),
+            FixedBytes::from([
+                0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                0x02, 0x02, 0x02, 0x02,
+            ])
+        );
+
+        assert_eq!(incredible_config.socket(), "sockett");
+        assert_eq!(
+            incredible_config.quorum_number().unwrap(),
+            Bytes::from_str("0x40").unwrap()
         );
     }
 }

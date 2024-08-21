@@ -214,5 +214,6 @@ contract DeployMockAvsRegistries is Script, ConfigsReadWriter, EigenlayerContrac
         );
         contractsRegistry.registerContract("delegationManager", address(eigenlayerContracts.delegationManager));
         contractsRegistry.registerContract("strategyManager", address(eigenlayerContracts.strategyManager));
+        contractsRegistry.registerContract("avsDirectory",address(eigenlayerContracts.avsDirectory));
     }
 }
