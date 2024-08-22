@@ -81,3 +81,4 @@ eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = 
 eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
 eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
 eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
+eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}

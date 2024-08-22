@@ -1,14 +1,12 @@
 //! Aggregator crate
 use std::collections::HashMap;
-use std::hash::Hash;
 
-use ark_bn254::G1Affine;
-use ark_serialize::CanonicalSerialize;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::Signature;
 use eigen_logging::get_logger;
 use eigen_logging::logger::SharedLogger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
+use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
 use eigen_types::operator::OperatorId;
@@ -71,11 +69,13 @@ impl SignedTaskResponse {
 
 ///
 #[derive(Debug)]
-pub struct Aggregator {
+pub struct Aggregator<A: eigen_services_avsregistry::AvsRegistryService + Clone> {
     logger: SharedLogger,
     port_address: String,
 
     avs_writer: AvsWriter,
+
+    bls_aggregation_service: BlsAggregatorService<A>,
 
     // bls_aggregation_service:,
     tasks: HashMap<u32, IncredibleSquaringTaskManager::Task>,
@@ -84,13 +84,21 @@ pub struct Aggregator {
         HashMap<u32, HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>>,
 }
 
-impl Aggregator {
+impl Aggregator<AvsRegistryServiceChainCaller> {
     pub async fn new(config: IncredibleConfig) -> Self {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
             config.registry_coordinator_addr().unwrap(),
             config.operator_state_retriever_addr().unwrap(),
             config.http_rpc_url(),
+        )
+        .await
+        .unwrap();
+
+        let avs_writer = AvsWriter::new(
+            config.registry_coordinator_addr().unwrap(),
+            config.http_rpc_url(),
+            config.get_signer(),
         )
         .await
         .unwrap();
@@ -103,6 +111,17 @@ impl Aggregator {
         .await;
 
         let avs_registry_service_chaincaller =
-            AvsRegistryServiceChainCaller::new(avs_registry_chain_reader, operators_info_service);
+            AvsRegistryServiceChainCaller::new(operators_info_service);
+
+        let bls_aggregation_service = BlsAggregatorService::new(avs_registry_service_chaincaller);
+
+        Self {
+            logger: get_logger(),
+            port_address: config.aggregator_ip_addr(),
+            avs_writer,
+            tasks_responses: HashMap::new(),
+            tasks: HashMap::new(),
+            bls_aggregation_service,
+        }
     }
 }
