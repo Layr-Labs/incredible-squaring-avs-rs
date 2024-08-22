@@ -321,6 +321,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     }
 }
 
+/// Register operator in eigenlayer and avs
 pub async fn register_operator_with_el_and_avs(
     rpc_url: String,
     ecdsa_keystore_path: String,
@@ -371,10 +372,18 @@ pub async fn register_operator_with_el_and_avs(
         hex::encode(s).to_string(),
     );
 
-    // println!("rgrg before");
-    // let operator_details = Operator::new(signer.address(),signer.address(),Address::ZERO,200,Some("url".to_string()));
-    // let register_to_eigen_layer = el_chain_writer.register_as_operator(operator_details).await.unwrap();
-    // println!("register to eigen layer hash {:?}",register_to_eigen_layer);
+    let operator_details = Operator::new(
+        signer.address(),
+        signer.address(),
+        Address::ZERO,
+        200,
+        Some("url".to_string()),
+    );
+    let register_to_eigen_layer = el_chain_writer
+        .register_as_operator(operator_details)
+        .await
+        .unwrap();
+    println!("register to eigen layer hash {:?}", register_to_eigen_layer);
     let tx_hash = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             key_pair,

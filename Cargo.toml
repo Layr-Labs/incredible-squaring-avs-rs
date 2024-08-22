@@ -67,15 +67,16 @@ incredible-chainio = {path = "crates/chainio/"}
 incredible-testing-utils = {path = "crates/testing-utils/"}
 
 # eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
-eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "6e03cc9"}
+eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}
+eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "af7752a"}

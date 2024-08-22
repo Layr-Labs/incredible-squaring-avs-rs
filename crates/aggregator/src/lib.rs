@@ -1,9 +1,14 @@
+//! Aggregator crate
 use std::collections::HashMap;
 use std::hash::Hash;
 
 use ark_bn254::G1Affine;
 use ark_serialize::CanonicalSerialize;
+use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::Signature;
+use eigen_logging::get_logger;
+use eigen_logging::logger::SharedLogger;
+use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
 use eigen_types::operator::OperatorId;
 use incredible_bindings::IncredibleSquaringTaskManager;
@@ -45,6 +50,7 @@ pub struct SignedTaskResponse {
 }
 
 impl SignedTaskResponse {
+    /// new
     pub fn new(
         task_response: TaskResponse,
         bls_signature: Signature,
@@ -62,7 +68,10 @@ impl SignedTaskResponse {
     }
 }
 
+///
+#[derive(Debug)]
 pub struct Aggregator {
+    logger: SharedLogger,
     port_address: String,
 
     avs_writer: AvsWriter,
@@ -75,7 +84,21 @@ pub struct Aggregator {
 }
 
 impl Aggregator {
-    // pub fn new(config:IncredibleConfig) -> Self{
+    pub async fn new(config: IncredibleConfig) -> Self {
+        let avs_registry_chain_reader = AvsRegistryChainReader::new(
+            get_logger(),
+            config.registry_coordinator_addr().unwrap(),
+            config.operator_state_retriever_addr().unwrap(),
+            config.http_rpc_url(),
+        )
+        .await
+        .unwrap();
 
-    // }
+        let operators_info_memory = OperatorInfoServiceInMemory::new(
+            get_logger(),
+            avs_registry_chain_reader,
+            config.ws_rpc_url(),
+        )
+        .await;
+    }
 }

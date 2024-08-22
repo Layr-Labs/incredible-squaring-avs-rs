@@ -20,3 +20,6 @@ hex = "0.4.3"
 eigen-crypto-bls.workspace = true
 incredible-chainio.workspace = true
 incredible-config.workspace = true
+eigen-services-operatorsinfo.workspace = true
+eigen-logging.workspace = true
+eigen-client-avsregistry.workspace = true
