@@ -8,6 +8,7 @@ use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::Signature;
 use eigen_logging::get_logger;
 use eigen_logging::logger::SharedLogger;
+use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
 use eigen_types::operator::OperatorId;
@@ -94,11 +95,14 @@ impl Aggregator {
         .await
         .unwrap();
 
-        let operators_info_memory = OperatorInfoServiceInMemory::new(
+        let operators_info_service = OperatorInfoServiceInMemory::new(
             get_logger(),
             avs_registry_chain_reader,
             config.ws_rpc_url(),
         )
         .await;
+
+        let avs_registry_service_chaincaller =
+            AvsRegistryServiceChainCaller::new(avs_registry_chain_reader, operators_info_service);
     }
 }

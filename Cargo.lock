@@ -1707,6 +1707,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-services-avsregistry"
+version = "0.0.1-alpha"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=af7752a#af7752a8b6ddaa68f34193b8f7f64f7009aac519"
+dependencies = [
+ "alloy-primitives",
+ "ark-bn254",
+ "ark-ec",
+ "eigen-client-avsregistry",
+ "eigen-crypto-bls",
+ "eigen-services-operatorsinfo",
+ "eigen-types",
+ "eigen-utils",
+]
+
+[[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.0.1-alpha"
 source = "git+https://github.com/layr-labs/eigensdk-rs?rev=af7752a#af7752a8b6ddaa68f34193b8f7f64f7009aac519"
@@ -2818,6 +2833,7 @@ dependencies = [
  "eigen-client-avsregistry",
  "eigen-crypto-bls",
  "eigen-logging",
+ "eigen-services-avsregistry",
  "eigen-services-operatorsinfo",
  "eigen-types",
  "hex",

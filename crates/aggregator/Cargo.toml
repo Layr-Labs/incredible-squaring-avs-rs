@@ -23,3 +23,4 @@ incredible-config.workspace = true
 eigen-services-operatorsinfo.workspace = true
 eigen-logging.workspace = true
 eigen-client-avsregistry.workspace = true
+eigen-services-avsregistry.workspace = true
