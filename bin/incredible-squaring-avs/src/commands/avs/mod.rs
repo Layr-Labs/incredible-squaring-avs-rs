@@ -20,6 +20,7 @@ use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::{ELConfig, IncredibleConfig};
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
+    get_incredible_squaring_task_manager,
 };
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
@@ -74,7 +75,11 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     delegation_manager_address: Option<String>,
 
     /// Aggregator Ip address
-    #[arg(long, value_name = "AGGREGATOR_IP_ADDRESS")]
+    #[arg(
+        long,
+        value_name = "AGGREGATOR_IP_ADDRESS",
+        default_value = "127.0.0.1:8546"
+    )]
     aggregator_ip_address: String,
 
     /// bls keystore path
@@ -119,6 +124,12 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
 
     #[arg(long, value_name = "SIG_EXPIRY")]
     sig_expiry: Option<String>,
+
+    #[arg(long, value_name = "TASK_MANAGER")]
+    task_manager_addr: Option<String>,
+
+    #[arg(long, value_name = "SIGNER")]
+    signer: Option<String>,
 
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
@@ -187,6 +198,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let avs_directory_address_anvil = get_avs_directory_address().await;
 
         let strategy_manager_address_anvil = get_strategy_manager_address().await;
+        let incredible_squaring_task_manager_address_anvil =
+            get_incredible_squaring_task_manager().await;
         let w = AvsRegistryChainReader::new(
             get_logger(),
             registry_coordinator_address_anvil,
@@ -231,6 +244,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             socket,
             quorum_number,
             sig_expiry,
+            task_manager_addr,
+            signer,
             ext,
         } = *self;
 
@@ -246,6 +261,9 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         } else {
             println!("System time seems to be before the UNIX epoch.");
         }
+        config.set_signer(signer.unwrap_or(
+            "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6".to_string(),
+        ));
         config.set_chain_id(chain_id);
         config.set_http_rpc_url(rpc_url.clone());
         config.set_ws_rpc_url(ws_rpc_url);
@@ -277,10 +295,13 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_strategy_manager_addr(
             strategy_manager_addr.unwrap_or(strategy_manager_address_anvil.to_string()),
         );
+        config.set_task_manager_address(
+            task_manager_addr.unwrap_or(incredible_squaring_task_manager_address_anvil.to_string()),
+        );
         config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt.unwrap());
         config.set_socket(socket.unwrap());
         config.set_quorum_number(quorum_number.unwrap());
-
+        // config.
         println!(
             "registry coordinator address config {:?}",
             config.registry_coordinator_addr().unwrap()

@@ -8,7 +8,8 @@ members = ["crates/aggregator",
 "crates/avs",
 "crates/challenger",
 "crates/chainio",
-"crates/testing-utils"
+"crates/testing-utils",
+"crates/task_generator"
 ]
 
 resolver = "2"
@@ -65,20 +66,21 @@ incredible-avs = {path = "crates/avs/"}
 incredible-challenger = {path = "crates/challenger/"}
 incredible-chainio = {path = "crates/chainio/"}
 incredible-testing-utils = {path = "crates/testing-utils/"}
+incredible-task-generator = {path = "crates/task_generator/"}
 
 # eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
-eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "9ace27b"}
+eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}
+eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8612053"}

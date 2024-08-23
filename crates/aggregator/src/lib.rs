@@ -1,71 +1,26 @@
 //! Aggregator crate
+pub mod rpc_server;
 use std::collections::HashMap;
 
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_crypto_bls::Signature;
 use eigen_logging::get_logger;
 use eigen_logging::logger::SharedLogger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
-use eigen_types::operator::OperatorId;
 use incredible_bindings::IncredibleSquaringTaskManager;
-use incredible_bindings::IncredibleSquaringTaskManager::TaskResponse;
 use incredible_bindings::IncredibleSquaringTaskManager::{
     respondToTaskCall, G1Point, NewTaskCreated, Task, TaskResponded, TaskResponseMetadata,
 };
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
+use jsonrpc_core::{Error, IoHandler, Params, Value};
+use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
+use rpc_server::{handle_signed_task_response, SignedTaskResponse};
 use serde::Serialize;
 use serde::Serializer;
-
-// /// Wrapper on G1AFfine , as G1AFfine does not implement Serialize
-// #[derive(Debug)]
-// struct G1AffineWrapper(pub G1Affine);
-
-// impl Serialize for G1AffineWrapper {
-//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-//     where
-//         S: Serializer,
-//     {
-//         let mut serialized_bytes = vec![];
-//         // using ark
-//         self.0
-//             .serialize_uncompressed(&mut serialized_bytes)
-//             .map_err(serde::ser::Error::custom)?;
-//         let hex_string = hex::encode(serialized_bytes);
-//         // Serialize the hex string
-//         serializer.serialize_str(&hex_string)
-//     }
-// }
-
-/// Signed Task Response
-#[derive(Debug)]
-pub struct SignedTaskResponse {
-    task_response: TaskResponse,
-    signature: Signature,
-    operator_id: OperatorId,
-}
-
-impl SignedTaskResponse {
-    /// new
-    pub fn new(
-        task_response: TaskResponse,
-        bls_signature: Signature,
-        operator_id: OperatorId,
-    ) -> Self {
-        Self {
-            task_response,
-            signature: bls_signature,
-            operator_id,
-        }
-    }
-
-    pub fn signature(&self) -> Signature {
-        self.signature.clone()
-    }
-}
+use tracing::info;
 
 ///
 #[derive(Debug)]
@@ -123,5 +78,25 @@ impl Aggregator<AvsRegistryServiceChainCaller> {
             tasks: HashMap::new(),
             bls_aggregation_service,
         }
+    }
+
+    /// Starts the aggregator service
+    pub async fn start(&self) -> eyre::Result<()> {
+        info!("Starting aggregator");
+        let mut io = IoHandler::new();
+
+        io.add_method("process_signed_task_response", move |params: Params| {
+            async move {
+                let signed_task_response: SignedTaskResponse = params.parse()?;
+
+                // Call the handle_signed_task_response function
+                match handle_signed_task_response(signed_task_response) {
+                    Ok(res) => Ok(Value::Bool(res)),
+                    Err(err) => Err(Error::invalid_params(err)),
+                }
+            }
+        });
+
+        Ok(())
     }
 }

@@ -1,7 +1,6 @@
 //! config
 use alloy::hex::FromHex;
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
-use eigen_logging::logger::SharedLogger;
 use eigen_types::operator::OperatorId;
 use error::ConfigError;
 use serde::{Deserialize, Serialize};
@@ -26,6 +25,8 @@ pub struct IncredibleConfig {
     el_config: ELConfig,
 
     operator_registration_config: OperatorRegistrationConfig,
+
+    incredible_contracts_config: IncredibleContractsConfig,
 }
 
 /// Rpc Configurations
@@ -42,6 +43,16 @@ pub struct RpcConfig {
 
     /// signer pvt key
     pub signer: String,
+}
+
+/// Rpc Configurations
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct IncredibleContractsConfig {
+    /// Task manager
+    pub task_manager_addr: String,
+
+    /// Service manager
+    pub service_manager_addr: String,
 }
 
 /// Rpc Configurations
@@ -233,6 +244,10 @@ impl IncredibleConfig {
         self.el_config.avs_directory_addr = address;
     }
 
+    pub fn set_task_manager_address(&mut self, address: String) {
+        self.incredible_contracts_config.task_manager_addr = address;
+    }
+
     /// get appropriate chainid where incredible squaring will run
     pub fn chain_id(&self) -> u16 {
         self.rpc_config.chain_id
@@ -381,6 +396,20 @@ impl IncredibleConfig {
 
         match s {
             Ok(strategy_manager_addr) => Ok(strategy_manager_addr),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
+    }
+
+    /// Incredible Task Manager address
+    pub fn task_manager_addr(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(
+            self.incredible_contracts_config
+                .task_manager_addr
+                .as_bytes(),
+        );
+
+        match s {
+            Ok(task_manager_addr) => Ok(task_manager_addr),
             Err(e) => Err(ConfigError::HexParse(e)),
         }
     }
