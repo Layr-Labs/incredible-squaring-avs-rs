@@ -86,7 +86,7 @@ mod tests {
         ];
 
         // Parse the arguments into the `Cli` struct
-        let cli: Cli = Cli::try_parse_args_from(args).unwrap();
+        let _: Cli = Cli::try_parse_args_from(args).unwrap();
 
       
     }
