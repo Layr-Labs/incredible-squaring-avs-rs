@@ -76,7 +76,6 @@ impl Challenger {
             .from_block(BlockNumberOrTag::Latest);
         let new_task_created_sub = wa.subscribe_logs(&new_task_created_filter).await?;
 
-        info!("new task created");
         let mut new_task_created_stream = new_task_created_sub.into_stream();
 
         let new_task_created_log = NewTaskCreated::SIGNATURE_HASH;
@@ -90,22 +89,26 @@ impl Challenger {
 
         let task_responded_log = TaskResponded::SIGNATURE_HASH;
 
-        for _ in 0..2 {
+        loop {
             let log = tokio::select! {
-
-                Some(log) = task_responded_stream.next() =>{
-                   log
-                },
-                Some(log) = new_task_created_stream.next() =>{
+                Some(log) = task_responded_stream.next() => {
                     log
+                },
+                Some(log) = new_task_created_stream.next() => {
+                    log
+                },
+                else => {
+                    // If both streams are exhausted, break the loop.
+                    info!("No more logs to process, exiting loop.");
+                    break;
                 }
-
             };
 
             let topic = log.topic0();
 
             if let Some(tp) = topic {
                 if *tp == new_task_created_log {
+                    info!("challenger picked up a new task ");
                     let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
 
                     if let Some(data) = new_task_created_option {
@@ -128,7 +131,10 @@ impl Challenger {
                         }
                     }
                 } else if *tp == task_responded_log {
-                    info!("Task response log received {:?}", task_responded_log);
+                    info!(
+                        "Task response log received by challenger {:?}",
+                        task_responded_log
+                    );
 
                     let task_index_result = self.process_task_response_log(log).await;
 
@@ -151,6 +157,7 @@ impl Challenger {
                 }
             }
         }
+
         Ok(())
     }
 
@@ -174,8 +181,8 @@ impl Challenger {
                     let _ = self.raise_challenge(task_index).await;
                     return Ok(());
                 }
-
-                return Err(ChallengerError::TaskResponseisCorrect);
+                info!("task response is correct, no challenge");
+                Ok(())
             } else {
                 return Err(ChallengerError::TaskResponseNotFound);
             }

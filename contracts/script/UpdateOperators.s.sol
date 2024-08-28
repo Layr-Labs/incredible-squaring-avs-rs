@@ -56,9 +56,16 @@ contract UpdateOperators is ConfigsReadWriter, EigenlayerContractsParser, TokenA
             (, uint256 privateKey) = deriveRememberKey(mnemonic, uint32(i));
             vm.startBroadcast(privateKey);
             contractsRegistry.store_test("test_modify_operator_details", int256(i), block.number, block.timestamp);
+            if (operators[i] == address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)){
+            
+            
+            }else{
+
             eigenlayerContracts.delegationManager.modifyOperatorDetails(
                 IDelegationManager.OperatorDetails(operators[i], delegationApprover, stakerOptOutWindowBlocks)
             );
+
+            }
             vm.stopBroadcast();
         }
     }

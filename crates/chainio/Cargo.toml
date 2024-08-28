@@ -19,6 +19,7 @@ futures-util.workspace = true
 alloy.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
 
 #eigen-rs
 eigen-client-avsregistry.workspace = true

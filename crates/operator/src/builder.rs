@@ -70,7 +70,7 @@ impl OperatorBuilder {
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
         let operator_address = config.operator_address()?;
-
+        println!("aggregator ip addresss {:?}", config.aggregator_ip_addr());
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
             ws_rpc_url: config.ws_rpc_url(),
@@ -112,10 +112,13 @@ impl OperatorBuilder {
         )
         .await
         .unwrap();
-
+        println!("operator_addr {:?}",self.operator_addr.clone());
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr.clone())
             .await?;
+
+        info!("is_operaotor_registered {}", is_registered);
+        
         self.client.dial_aggregator_rpc_client();
         if is_registered {
             info!("Starting operator");
@@ -131,21 +134,25 @@ impl OperatorBuilder {
                 let task_option = log
                     .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
                     .ok();
-
                 if let Some(task) = task_option {
                     let data = task.data();
                     let new_task_created = NewTaskCreated {
                         task: data.task.clone(),
                         taskIndex: data.taskIndex,
                     };
+                    info!("operator picked up a new task , index: {} ", data.taskIndex);
                     self.metrics.increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
                     let signed_task_response = self.sign_task_response(task_response)?;
-
+                    info!(
+                        "before sending response to client {:?}",
+                        signed_task_response
+                    );
                     let _ = self
                         .client
                         .send_signed_task_response(signed_task_response)
                         .await;
+                    info!("sent signed task response to client");
                 }
             }
         }

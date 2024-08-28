@@ -60,6 +60,16 @@ contract RegisterOperators is ConfigsReadWriter, EigenlayerContractsParser, Toke
                     if (block.chainid == 31337 || block.chainid == 1337) {
             contractsRegistry.store_test("test_register_operator",int(i),block.number,block.timestamp);
                     }
+                if (operators[i] == address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)){
+                     eigenlayerContracts.delegationManager.registerAsOperator(
+                IDelegationManager.OperatorDetails(operators[i], delegationApprover, stakerOptOutWindowBlocks),
+                metadataURI
+            );
+            eigenlayerContracts.strategyManager.depositIntoStrategy(
+                tokenAndStrategy.strategy, IERC20(tokenAndStrategy.token), operatorTokenAmounts[i]
+            );
+                }else{
+
             eigenlayerContracts.delegationManager.registerAsOperator(
                 IDelegationManager.OperatorDetails(operators[i], delegationApprover, stakerOptOutWindowBlocks),
                 metadataURI
@@ -67,6 +77,7 @@ contract RegisterOperators is ConfigsReadWriter, EigenlayerContractsParser, Toke
             eigenlayerContracts.strategyManager.depositIntoStrategy(
                 tokenAndStrategy.strategy, IERC20(tokenAndStrategy.token), operatorTokenAmounts[i]
             );
+                }
             vm.stopBroadcast();
         }
     }

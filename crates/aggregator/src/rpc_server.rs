@@ -1,13 +1,14 @@
+use alloy::primitives::U256;
 use eigen_crypto_bls::Signature;
 use eigen_types::operator::OperatorId;
-
-use incredible_bindings::IncredibleSquaringTaskManager::TaskResponse;
+use incredible_bindings::IncredibleSquaringTaskManager::{self, TaskResponse};
 use serde::{Deserialize, Serialize};
-
+use tracing::info;
+// use alloy::sol_types::SolCall;
 /// Signed Task Response
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignedTaskResponse {
-    task_response: TaskResponse,
+    pub task_response: TaskResponse,
     signature: Signature,
     operator_id: OperatorId,
 }
@@ -29,11 +30,21 @@ impl SignedTaskResponse {
     pub fn signature(&self) -> Signature {
         self.signature.clone()
     }
+
+    pub fn operator_id(&self) -> OperatorId {
+        self.operator_id
+    }
 }
 
-pub fn handle_signed_task_response(
-    signed_task_response: SignedTaskResponse,
-) -> Result<bool, String> {
-    println!("received signed task response {:?}", signed_task_response);
-    todo!()
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RawTaskResponse {
+    referenceTaskIndex: String,
+    numberSquared: U256,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RawSignedTaskResponse {
+    task_response: RawTaskResponse,
+    signature: Signature,
+    operator_id: String,
 }

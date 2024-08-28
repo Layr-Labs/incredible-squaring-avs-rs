@@ -44,3 +44,19 @@ pub async fn get_incredible_squaring_task_manager() -> Address {
     let contractsReturn { _0: address } = val;
     address
 }
+
+
+
+
+pub async fn get_incredible_squaring_strategy_address() -> Address {
+    let contracts_registry = ContractsRegistry::new(CONTRACTS_REGISTRY, (*ANVIL_RPC_URL).clone());
+
+    let val = contracts_registry
+        .contracts("erc20MockStrategy".to_string())
+        .call()
+        .await
+        .unwrap();
+
+    let contractsReturn { _0: address } = val;
+    address
+}

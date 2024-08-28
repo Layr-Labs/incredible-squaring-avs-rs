@@ -49,16 +49,19 @@ impl TaskManager {
                 .createNewTask(
                     number_to_be_squared,
                     quorum_threshold_percentage,
-                    quorum_numbers,
+                    quorum_numbers.clone(),
                 )
                 .send()
                 .await?
                 .get_receipt()
                 .await?;
+            println!("receipt for task created {:?}", s.transaction_hash);
 
+            let task_quorum = quorum_numbers.len();
+            println!("quorum num length {:?}", task_quorum);
             // Increment the task number for the next iteration
             task_num += *TASK_NUMBER_INCREMENT_VALUE;
-
+            println!("task created for num {:?}", task_num);
             // Wait for 10 seconds before the next iteration
             sleep(Duration::from_secs(10)).await;
         }

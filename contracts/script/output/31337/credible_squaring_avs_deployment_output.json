@@ -1,13 +1,13 @@
 {
   "addresses": {
-    "credibleSquaringServiceManager": "0x22753E4264FDDc6181dc7cce468904A80a363E44",
+    "credibleSquaringServiceManager": "0xD0141E899a65C95a556fE2B27e5982A6DE7fDD7A",
     "credibleSquaringServiceManagerImplementation": "0x8A93d247134d91e0de6f96547cB0204e5BE8e5D8",
-    "credibleSquaringTaskManager": "0xfaAddC93baf78e89DCf37bA67943E1bE8F37Bb8c",
+    "credibleSquaringTaskManager": "0x22753E4264FDDc6181dc7cce468904A80a363E44",
     "credibleSquaringTaskManagerImplementation": "0xF32D39ff9f6Aa7a7A64d7a4F00a54826Ef791a55",
-    "erc20Mock": "0xF8e31cb472bc70500f08Cd84917E5A1912Ec8397",
-    "erc20MockStrategy": "0xc0F115A19107322cFBf1cDBC7ea011C19EbDB4F8",
-    "operatorStateRetriever": "0xab16A69A5a8c12C732e0DEFF4BE56A70bb64c926",
-    "registryCoordinator": "0x3347B4d90ebe72BeFb30444C9966B2B990aE9FcB",
+    "erc20Mock": "0xCace1b78160AE76398F486c8a18044da0d66d86D",
+    "erc20MockStrategy": "0xD5ac451B0c50B9476107823Af206eD814a2e2580",
+    "operatorStateRetriever": "0xffa7CA1AEEEbBc30C874d32C7e22F052BbEa0429",
+    "registryCoordinator": "0xfaAddC93baf78e89DCf37bA67943E1bE8F37Bb8c",
     "registryCoordinatorImplementation": "0x2a810409872AfC346F9B5b26571Fd6eC42EA4849"
   }
 }

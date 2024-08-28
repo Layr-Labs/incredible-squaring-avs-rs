@@ -3,6 +3,8 @@
 mod avs_reader;
 /// error
 pub mod error;
+use core::task;
+use tracing::info;
 pub use avs_reader::AvsReader;
 
 use alloy::{
@@ -150,5 +152,29 @@ impl AvsWriter {
 
             Err(e) => Err(ChainIoError::AlloyContractError(e)),
         }
+    }
+
+    pub async fn send_aggregated_response(
+        &self,
+        task: Task,
+        task_response: TaskResponse,
+        non_signer_stakes_and_signature: IncredibleSquaringTaskManager::NonSignerStakesAndSignature,
+    ) {
+        let signer = get_signer(self.signer.clone(), &self.rpc_url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+
+        println!("non signer staker indices len {:?}",non_signer_stakes_and_signature.nonSignerStakeIndices.len());
+        println!("quorums apk indices g1{:?}",non_signer_stakes_and_signature.quorumApkIndices.len());
+        println!("total stake indices{:?}",non_signer_stakes_and_signature.totalStakeIndices.len());
+        println!("quorum apk{:?} ",non_signer_stakes_and_signature.quorumApks.len());
+
+
+        let tx = task_manager_contract.respondToTask(
+            task,
+            task_response,
+            non_signer_stakes_and_signature,
+        ).send().await.unwrap().get_receipt().await.unwrap();
+        println!("tx for sending response to task to contract {:?}",tx);
     }
 }

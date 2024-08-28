@@ -228,7 +228,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
         );
 
         contractsRegistry.registerContract("incredible_squaring_task_manager", address(incredibleSquaringTaskManager));
-
+        
         registryCoordinator = regcoord.RegistryCoordinator(
             address(
                 new TransparentUpgradeableProxy(
@@ -269,7 +269,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
         );
 
         operatorStateRetriever = new OperatorStateRetriever();
-
+        erc20Mock.mint(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,10e18);
+        contractsRegistry.registerContract("erc20MockStrategy", address(erc20MockStrategy));
         contractsRegistry.registerContract("incredible_squaring_operator_state_retriever", address(operatorStateRetriever));
 
 

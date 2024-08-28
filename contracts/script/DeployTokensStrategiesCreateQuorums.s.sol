@@ -40,7 +40,6 @@ contract DeployTokensStrategiesCreateQuorums is Script, EigenlayerContractsParse
                 eigenlayerContracts.baseStrategyImplementation,
                 eigenlayerContracts.strategyManager
             );
-            contractsRegistry.registerContract("erc20MockStrategy", address(strat));
         } else if (block.chainid == 17000) {
             strat = IStrategy(0x5C8b55722f421556a2AAfb7A3EA63d4c3e514312);
             /// Whitelisted stETH strat

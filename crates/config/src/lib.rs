@@ -53,6 +53,9 @@ pub struct IncredibleContractsConfig {
 
     /// Service manager
     pub service_manager_addr: String,
+
+    pub erc20_mock_strategy_addr: String,
+
 }
 
 /// Rpc Configurations
@@ -100,6 +103,7 @@ pub struct ELConfig {
 
     /// Strategy Manager Address
     pub strategy_manager_addr: String,
+
 }
 
 /// AggregatorConfig
@@ -246,6 +250,10 @@ impl IncredibleConfig {
 
     pub fn set_task_manager_address(&mut self, address: String) {
         self.incredible_contracts_config.task_manager_addr = address;
+    }
+
+    pub fn set_erc20_mock_strategy_address(&mut self, address: String) {
+        self.incredible_contracts_config.erc20_mock_strategy_addr = address;
     }
 
     /// get appropriate chainid where incredible squaring will run
@@ -410,6 +418,20 @@ impl IncredibleConfig {
 
         match s {
             Ok(task_manager_addr) => Ok(task_manager_addr),
+            Err(e) => Err(ConfigError::HexParse(e)),
+        }
+    }
+
+     /// Incredible ERC20 mock strategy address
+     pub fn erc20_mock_strategy_addr(&self) -> Result<Address, ConfigError> {
+        let s = Address::from_hex(
+            self.incredible_contracts_config
+                .erc20_mock_strategy_addr
+                .as_bytes(),
+        );
+
+        match s {
+            Ok(erc20_mock_strategy_addr) => Ok(erc20_mock_strategy_addr),
             Err(e) => Err(ConfigError::HexParse(e)),
         }
     }

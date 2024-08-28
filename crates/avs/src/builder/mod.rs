@@ -53,7 +53,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let mut aggregator = Aggregator::new(avs.config.clone()).await;
 
         let a = aggregator
-            .start()
+            .start(avs.config.ws_rpc_url().clone())
             .map_err(|e| eyre::eyre!("aggregator error {e:?}"));
 
         let task_manager = TaskManager::new(

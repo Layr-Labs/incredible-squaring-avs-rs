@@ -31,6 +31,7 @@ impl ClientAggregator {
     pub fn dial_aggregator_rpc_client(&mut self) {
         let url =
             reqwest::Url::parse(&format!("http://{}", &self.aggregator_ip_port_address)).unwrap();
+        println!("rpc client url {:?}", url);
         let client = ReqwestClient::new_http(url);
 
         self.client = Some(client)
@@ -41,42 +42,46 @@ impl ClientAggregator {
         &self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<()> {
+        info!("Received signed task response");
         let mut delay = Duration::from_secs(1);
 
-        for _ in 0..5 {
-            let params = &json!({
-                "params": [signed_task_response],
-                "id": 1,
-                "jsonrpc": "2.0"
-            });
-            let request = self
-                .client
-                .as_ref()
-                .unwrap()
-                .request("process_signed_task_response", params);
+        // for _ in 0..5 {
+        let params = &json!({
+            "params": signed_task_response,
+            "id": 1,
+            "jsonrpc": "2.0"
+        });
+        println!("params before sending response {}", params);
+        let request = self
+            .client
+            .as_ref()
+            .unwrap()
+            .request("process_signed_task_response", params)
+            .await?;
+        println!("params {:?}", request);
+        // let res: bool = request.await.unwrap();
+        // println!("response sent bool {:?}", res);
+        // match response {
+        //     Ok(res) => {
+        //         if res.status().is_success() {
+        //             info!("Signed task response accepted by aggregator.");
+        //             return Ok(());
+        //         } else {
+        //             info!("Received error from aggregator: {:?}", res.text().await?);
+        //         }
+        //     }
+        //     Err(err) => {
+        //         error!("Error sending request: {:?}", err);
+        //     }
+        // }
 
-            let res: bool = request.await.unwrap();
-            // match response {
-            //     Ok(res) => {
-            //         if res.status().is_success() {
-            //             info!("Signed task response accepted by aggregator.");
-            //             return Ok(());
-            //         } else {
-            //             info!("Received error from aggregator: {:?}", res.text().await?);
-            //         }
-            //     }
-            //     Err(err) => {
-            //         error!("Error sending request: {:?}", err);
-            //     }
-            // }
+        // Exponential backoff
+        // info!("Retrying in {} seconds...", delay.as_secs());
+        // sleep(delay).await;
+        // delay *= 2; // Double the delay for the next retry
+        // }
 
-            // Exponential backoff
-            info!("Retrying in {} seconds...", delay.as_secs());
-            sleep(delay).await;
-            delay *= 2; // Double the delay for the next retry
-        }
-
-        debug!("Could not send signed task response to aggregator. Tried 5 times.");
+        // debug!("Could not send signed task response to aggregator. Tried 5 times.");
         Ok(())
     }
 }
