@@ -50,3 +50,45 @@ pub enum Commands<Ext: Args + fmt::Debug = NoArgs> {
     #[command(name = "start")]
     Avs(AvsCommand<Ext>),
 }
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_cli_parse_avs_command() {
+        let args = vec![
+            "incredible-squaring-avs",
+            "start",
+            "--chain-id",
+            "31337",
+            "--ecdsa-keystore-path",
+            "./crates/testing-utils/src/ecdsakeystore.json",
+            "--ecdsa-keystore-password",
+            "test",
+            "--bls-keystore-path",
+            "./crates/testing-utils/src/blskeystore.json",
+            "--bls-keystore-password",
+            "testpassword",
+            "--operator-id",
+            "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3",
+            "--operator-address",
+            "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+            "--register-operator",
+            "--operator-to-avs-registration-sig-salt",
+            "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3",
+            "--socket",
+            "hello",
+            "--quorum-number",
+            "00"
+        ];
+
+        // Parse the arguments into the `Cli` struct
+        let cli: Cli = Cli::try_parse_from(args).unwrap();
+
+      
+    }
+
+}

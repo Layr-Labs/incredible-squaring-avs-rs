@@ -31,6 +31,10 @@ eigen-utils.workspace = true
 eigen-client-avsregistry.workspace = true
 eigen-client-elcontracts.workspace = true
 eigen-types.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+
 [[bin]]
 name = "incredible-squaring-avs"
 path = "src/main.rs"

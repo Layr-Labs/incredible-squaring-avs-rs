@@ -3049,6 +3049,7 @@ dependencies = [
  "incredible-operator",
  "incredible-testing-utils",
  "rust-bls-bn254",
+ "tokio",
  "tracing",
 ]
 

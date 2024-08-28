@@ -69,20 +69,34 @@ incredible-testing-utils = {path = "crates/testing-utils/"}
 incredible-task-generator = {path = "crates/task_generator/"}
 
 # eigen-rs 
- eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
-eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
- eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-metrics-derive = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
+# eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "774aaa8"}
 
-
+eigen-client-avsregistry  = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/chainio/clients/avsregistry"}
+eigen-testing-utils =  {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/testing/testing-utils"}
+eigen-crypto-bls =  {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/crypto/bls"}
+eigen-types =  {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/types"}
+eigen-metrics = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs"}
+eigen-metrics-derive = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/metrics/metrics-derive"}
+eigen-utils = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/utils"}
+eigen-contract-bindings = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/contracts/bindings"}
+eigen-cli = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/eigen-cli"}
+eigen-logging = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/logging"}
+eigen-crypto-bn254  = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/crypto/bn254"}
+eigen-client-elcontracts = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/chainio/clients/elcontracts"}
+eigen-services-operatorsinfo =  {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/services/operatorsinfo"}
+eigen-services-avsregistry =  {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/services/avsregistry"}
+eigen-services-blsaggregation = {path = "/Users/supernovahs/Desktop/eigenlabs/eigensdk-rs/crates/services/bls_aggregation"}

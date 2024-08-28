@@ -132,6 +132,9 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
 
     #[arg(long, value_name = "ERC20_MOCK_STRATEGY_ADDRESS")]
     erc20_mock_strategy_address: Option<String>,
+    // default is no.2 of anvil
+    #[arg(long,value_name = "TASK_MANAGER_SIGNER",default_value = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d")]
+    task_manager_signer: Option<String>,
 
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
@@ -206,6 +209,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
         let incredible_squaring_task_manager_address_anvil =
             get_incredible_squaring_task_manager().await;
+            let task_manager_signer_anvil = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string();
         let w = AvsRegistryChainReader::new(
             get_logger(),
             registry_coordinator_address_anvil,
@@ -253,6 +257,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             task_manager_addr,
             signer,
             erc20_mock_strategy_address,
+            task_manager_signer,
             ext,
         } = *self;
 
@@ -268,6 +273,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         } else {
             println!("System time seems to be before the UNIX epoch.");
         }
+        config.set_task_manager_signer(task_manager_signer.unwrap_or(task_manager_signer_anvil));
         config.set_signer(signer.unwrap_or(
             "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6".to_string(),
         ));
@@ -472,3 +478,4 @@ pub async  fn deposit_into_strategy(operator_address:Address,strategy_address: A
 // "SignersApkG2":{"X":{"A0":"15669747281918965782125375489377843702338327900115142954223823046525120542933","A1":"10049360286681290772545787829932277430329130488480401390150843123809685996135"},"Y":{"A0":"14982008408420160629923179444218881558075572058100484023255790835506797851583","A1":"4979648979879607838890666154119282514313691814432950078096789133613246212107"}},
 // "TaskIndex":1,"TaskResponseDigest":[204,105,136,95,218,107,204,26,74,206,5,139,74,98,191,94,23,158,167,143,213,138,28,205,113,194,44,201,182,136,121,47],
 // "TotalStakeIndices":[1]}}
+

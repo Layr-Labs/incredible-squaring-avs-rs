@@ -27,6 +27,8 @@ pub struct IncredibleConfig {
     operator_registration_config: OperatorRegistrationConfig,
 
     incredible_contracts_config: IncredibleContractsConfig,
+
+    task_manager_config: TaskManagerConfig
 }
 
 /// Rpc Configurations
@@ -57,6 +59,15 @@ pub struct IncredibleContractsConfig {
     pub erc20_mock_strategy_addr: String,
 
 }
+
+/// Rpc Configurations
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct TaskManagerConfig {
+    /// Task manager private key 
+   pub signer : String
+
+}
+
 
 /// Rpc Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -256,6 +267,10 @@ impl IncredibleConfig {
         self.incredible_contracts_config.erc20_mock_strategy_addr = address;
     }
 
+    pub fn set_task_manager_signer(&mut self, signer: String) {
+        self.task_manager_config.signer = signer;
+    }
+
     /// get appropriate chainid where incredible squaring will run
     pub fn chain_id(&self) -> u16 {
         self.rpc_config.chain_id
@@ -434,6 +449,11 @@ impl IncredibleConfig {
             Ok(erc20_mock_strategy_addr) => Ok(erc20_mock_strategy_addr),
             Err(e) => Err(ConfigError::HexParse(e)),
         }
+    }
+
+    /// Task manager signer 
+    pub fn task_manager_signer(&self) -> String{
+        self.task_manager_config.signer.clone()
     }
 }
 

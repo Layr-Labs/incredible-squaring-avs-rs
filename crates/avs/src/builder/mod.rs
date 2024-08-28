@@ -59,7 +59,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr().unwrap(),
             avs.config.http_rpc_url(),
-            avs.config.get_signer(),
+            avs.config.task_manager_signer(),
         );
 
         let t = task_manager
