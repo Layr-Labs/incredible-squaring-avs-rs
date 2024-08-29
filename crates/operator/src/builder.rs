@@ -184,9 +184,13 @@ mod tests {
     use ark_ec::AffineRepr;
     use ark_ff::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
+    use incredible_testing_utils::{
+        get_incredible_squaring_operator_state_retriever,
+        get_incredible_squaring_registry_coordinator, get_incredible_squaring_strategy_address,
+        get_incredible_squaring_task_manager,
+    };
     use std::str::FromStr;
     use IncredibleSquaringTaskManager::Task;
-
     const INCREDIBLE_CONFIG_FILE: &str = r#"
     [rpc_config]
     chain_id = 31337
@@ -204,16 +208,24 @@ mod tests {
 
     [operator_config]
     operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-    operator_id = "0x0202020202020202020202020202020202020202020202020202020202020202"
+    operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
 
-    [el_config]
-    registry_coordinator_addr = "0x276c216d241856199a83bf27b2286659e5b877d3"
-    operator_state_retriever_addr = "0x3aAde2dCD2Df6a8cAc689EE797591b2913658659"
     "#;
 
     #[tokio::test]
     async fn test_bls_keystore() {
-        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let mut incredible_config: IncredibleConfig =
+            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        incredible_config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        incredible_config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
         let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
 
         assert_eq!(
@@ -246,8 +258,18 @@ mod tests {
             },
         };
 
-        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
-
+        let mut incredible_config: IncredibleConfig =
+            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        incredible_config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        incredible_config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
         let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
 
         let task_response = operator_builder.process_new_task(new_task_created);
@@ -256,20 +278,42 @@ mod tests {
         assert_eq!(task_response.referenceTaskIndex, 1u32);
     }
 
-    #[test]
-    fn test_build_operator() {
-        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+    #[tokio::test]
+    async fn test_build_operator() {
+        let mut incredible_config: IncredibleConfig =
+            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        incredible_config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        incredible_config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
         let _ = OperatorBuilder::build(incredible_config).unwrap();
     }
 
-    #[test]
-    fn test_sign_task_response() {
+    #[tokio::test]
+    async fn test_sign_task_response() {
         let task_response = TaskResponse {
             referenceTaskIndex: 1,
             numberSquared: U256::from(16),
         };
 
-        let incredible_config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let mut incredible_config: IncredibleConfig =
+            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        incredible_config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        incredible_config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
         let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
         let signed_task_response = operator_builder
             .sign_task_response(task_response.clone())

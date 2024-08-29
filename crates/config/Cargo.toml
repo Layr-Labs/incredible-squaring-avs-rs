@@ -28,5 +28,7 @@ ruint = "1.12.3"
 eigen-types.workspace = true
 eigen-logging.workspace = true
 
+
 [dev-dependencies]
 tempfile = "3.10.1"
+incredible-testing-utils.workspace = true

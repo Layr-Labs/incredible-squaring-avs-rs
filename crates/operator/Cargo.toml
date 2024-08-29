@@ -42,6 +42,7 @@ rand_core.workspace = true
 eigen-logging.workspace = true
 eigen-crypto-bn254.workspace = true
 [dev-dependencies]
+incredible-testing-utils.workspace = true
 tempfile.workspace = true
 ark-ec = "0.4.2"
 ark-ff = "0.4.0"

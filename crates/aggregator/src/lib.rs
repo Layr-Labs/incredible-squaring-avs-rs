@@ -8,7 +8,6 @@ pub mod error;
 use alloy::dyn_abi::SolType;
 use alloy::sol_types::SolEvent;
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_services_operatorsinfo::operator_info::OperatorInfoService;
 use eigen_utils::{get_provider, get_ws_provider};
 use futures_util::StreamExt;
 
@@ -17,7 +16,6 @@ use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use eigen_client_avsregistry::reader::{AvsRegistryChainReader, AvsRegistryReader};
 use eigen_logging::get_logger;
-use eigen_logging::logger::SharedLogger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::{
     BlsAggregationServiceError, BlsAggregationServiceResponse, BlsAggregatorService,

@@ -469,6 +469,11 @@ mod tests {
     use crate::OperatorConfig;
     use crate::OperatorRegistrationConfig;
     use crate::RpcConfig;
+    use incredible_testing_utils::{
+        get_incredible_squaring_operator_state_retriever,
+        get_incredible_squaring_registry_coordinator, get_incredible_squaring_strategy_address,
+        get_incredible_squaring_task_manager,
+    };
     const EXTENSION: &str = "toml";
 
     fn with_tempdir(filename: &str, proc: fn(&std::path::Path)) {
@@ -580,11 +585,14 @@ mod tests {
         assert_eq!(incredible_config.get_operator_id().unwrap(), bytes);
     }
 
-    #[test]
-    fn test_elconfig() {
+    #[tokio::test]
+    async fn test_elconfig() {
         let config_file = r#"
         registry_coordinator_addr = "0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326"
         operator_state_retriever_addr  = "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"
+        delegation_manager_addr ="0xA44151489861Fe9e3055d95adC98FbD462B948e7"
+        avs_directory_addr ="0x055733000064333CaDDbC92763c58BF0192fFeBf"
+        strategy_manager_addr ="0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6"
         "#;
 
         let _config: ELConfig = toml::from_str(config_file).unwrap();
@@ -597,22 +605,41 @@ mod tests {
             _config.operator_state_retriever_addr,
             "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"
         );
+        assert_eq!(
+            _config.delegation_manager_addr,
+            "0xA44151489861Fe9e3055d95adC98FbD462B948e7"
+        );
+        assert_eq!(
+            _config.avs_directory_addr,
+            "0x055733000064333CaDDbC92763c58BF0192fFeBf"
+        );
+        assert_eq!(
+            _config.strategy_manager_addr,
+            "0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6"
+        );
 
         let incredible_config_file = r#"
-        [el_config]
-        registry_coordinator_addr = "0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326"
-        operator_state_retriever_addr  = "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"
         "#;
-        let incredible_config: IncredibleConfig = toml::from_str(incredible_config_file).unwrap();
-
+        let mut incredible_config: IncredibleConfig =
+            toml::from_str(incredible_config_file).unwrap();
+        incredible_config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        incredible_config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
         assert_eq!(
             incredible_config.registry_coordinator_addr().unwrap(),
-            address!("1f9090aaE28b8a3dCeaDf281B0F12828e676c326")
+            get_incredible_squaring_registry_coordinator().await
         );
 
         assert_eq!(
             incredible_config.operator_state_retriever_addr().unwrap(),
-            address!("4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97")
+            get_incredible_squaring_operator_state_retriever().await
         );
     }
 
