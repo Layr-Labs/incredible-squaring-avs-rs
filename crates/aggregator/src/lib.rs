@@ -8,17 +8,20 @@ pub mod error;
 use alloy::dyn_abi::SolType;
 use alloy::sol_types::SolEvent;
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
+use eigen_services_operatorsinfo::operator_info::OperatorInfoService;
 use eigen_utils::{get_provider, get_ws_provider};
 use futures_util::StreamExt;
 
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_client_avsregistry::reader::{AvsRegistryChainReader, AvsRegistryReader};
 use eigen_logging::get_logger;
 use eigen_logging::logger::SharedLogger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_blsaggregation::bls_agg::{BlsAggregationServiceResponse, BlsAggregatorService};
+use eigen_services_blsaggregation::bls_agg::{
+    BlsAggregationServiceError, BlsAggregationServiceResponse, BlsAggregatorService,
+};
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
 pub use error::AggregatorError;
@@ -41,18 +44,18 @@ pub const BLOCK_TIME_SECONDS: u32 = 12;
 
 ///
 #[derive(Debug)]
-pub struct Aggregator<
-    A: eigen_services_avsregistry::AvsRegistryService + Clone + Send + Sync + 'static,
-> {
+pub struct Aggregator {
     port_address: String,
     avs_writer: AvsWriter,
-    bls_aggregation_service: BlsAggregatorService<A>,
+    bls_aggregation_service: BlsAggregatorService<
+        AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
+    >,
     pub tasks: HashMap<u32, IncredibleSquaringTaskManager::Task>,
     pub tasks_responses:
         HashMap<u32, HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>>,
 }
 
-impl Aggregator<AvsRegistryServiceChainCaller> {
+impl Aggregator {
     pub async fn new(config: IncredibleConfig) -> Self {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
@@ -71,6 +74,15 @@ impl Aggregator<AvsRegistryServiceChainCaller> {
         .await
         .unwrap();
 
+        let avs_reader = AvsRegistryChainReader::new(
+            get_logger(),
+            config.registry_coordinator_addr().unwrap(),
+            config.operator_state_retriever_addr().unwrap(),
+            config.http_rpc_url(),
+        )
+        .await
+        .unwrap();
+
         let operators_info_service = OperatorInfoServiceInMemory::new(
             get_logger(),
             avs_registry_chain_reader,
@@ -79,7 +91,7 @@ impl Aggregator<AvsRegistryServiceChainCaller> {
         .await;
         let token = tokio_util::sync::CancellationToken::new().clone();
         let avs_registry_service_chaincaller =
-            AvsRegistryServiceChainCaller::new(operators_info_service.clone());
+            AvsRegistryServiceChainCaller::new(avs_reader, operators_info_service.clone());
         let provider = get_ws_provider(config.ws_rpc_url().as_str()).await.unwrap();
 
         tokio::spawn(async move {
@@ -231,8 +243,7 @@ impl Aggregator<AvsRegistryServiceChainCaller> {
                     time_to_expiry,
                 )
                 .await
-                .map_err(|e| eyre::eyre!((e)));
-
+                .map_err(|e: BlsAggregationServiceError| eyre::eyre!((e)));
 
             info!("initialized new task in bls aggregation service");
         }
@@ -274,7 +285,7 @@ impl Aggregator<AvsRegistryServiceChainCaller> {
             )
             .await
             .unwrap();
-        info!("processed signature for index {:?}",task_index);
+        info!("processed signature for index {:?}", task_index);
         if let Some(aggregated_response) = self
             .bls_aggregation_service
             .aggregated_response_receiver
@@ -283,45 +294,65 @@ impl Aggregator<AvsRegistryServiceChainCaller> {
             .recv()
             .await
         {
-            self.send_aggregated_response_to_contract(aggregated_response.unwrap()).await;
+            self.send_aggregated_response_to_contract(aggregated_response.unwrap())
+                .await;
         }
         Ok(())
     }
 
     ///
-    pub async fn send_aggregated_response_to_contract(&self,response: BlsAggregationServiceResponse) {
-
-        info!("blsaggregationserviceresponse for index {:?} {:?}",response,response.task_index);
+    pub async fn send_aggregated_response_to_contract(
+        &self,
+        response: BlsAggregationServiceResponse,
+    ) {
+        info!(
+            "blsaggregationserviceresponse for index {:?} {:?}",
+            response, response.task_index
+        );
         let mut non_signer_pub_keys = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
             let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
-            non_signer_pub_keys.push( IncredibleSquaringTaskManager::G1Point{ X : g1.X, Y : g1.Y})
-
+            non_signer_pub_keys.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
         }
 
         let mut quorum_apks = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
-            info!("g1_quorum_apks{:?}",pub_key.g1());
+            info!("g1_quorum_apks{:?}", pub_key.g1());
             let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
-            quorum_apks.push( IncredibleSquaringTaskManager::G1Point{ X : g1.X, Y : g1.Y})
-
+            quorum_apks.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
         }
 
-        let non_signer_stakes_and_signature = NonSignerStakesAndSignature{
-            nonSignerPubkeys:non_signer_pub_keys ,
+        let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
+            nonSignerPubkeys: non_signer_pub_keys,
             nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
-            quorumApks:quorum_apks ,
-            apkG2:  IncredibleSquaringTaskManager::G2Point {X: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().X,Y: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().Y},
-            sigma: IncredibleSquaringTaskManager::G1Point{ X : convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1()).unwrap().X, Y : convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1()).unwrap().Y} ,
+            quorumApks: quorum_apks,
+            apkG2: IncredibleSquaringTaskManager::G2Point {
+                X: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().X,
+                Y: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().Y,
+            },
+            sigma: IncredibleSquaringTaskManager::G1Point {
+                X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
+                    .unwrap()
+                    .X,
+                Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
+                    .unwrap()
+                    .Y,
+            },
             quorumApkIndices: response.quorum_apk_indices,
-            totalStakeIndices:response.total_stake_indices,
-   nonSignerStakeIndices: response.non_signer_stake_indices,
+            totalStakeIndices: response.total_stake_indices,
+            nonSignerStakeIndices: response.non_signer_stake_indices,
         };
 
         let task = &self.tasks[&response.task_index];
-        let task_response = &self.tasks_responses[&response.task_index][&response.task_response_digest];
-        self.avs_writer.send_aggregated_response(task.clone(),task_response.clone(),non_signer_stakes_and_signature).await;
-
+        let task_response =
+            &self.tasks_responses[&response.task_index][&response.task_response_digest];
+        self.avs_writer
+            .send_aggregated_response(
+                task.clone(),
+                task_response.clone(),
+                non_signer_stakes_and_signature,
+            )
+            .await;
     }
 }
 

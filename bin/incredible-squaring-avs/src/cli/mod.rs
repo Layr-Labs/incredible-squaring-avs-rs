@@ -51,12 +51,10 @@ pub enum Commands<Ext: Args + fmt::Debug = NoArgs> {
     Avs(AvsCommand<Ext>),
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_cli_parse_avs_command() {
         let args = vec![
@@ -82,13 +80,10 @@ mod tests {
             "--socket",
             "hello",
             "--quorum-number",
-            "00"
+            "00",
         ];
 
         // Parse the arguments into the `Cli` struct
         let _: Cli = Cli::try_parse_args_from(args).unwrap();
-
-      
     }
-
 }

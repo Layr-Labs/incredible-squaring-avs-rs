@@ -45,9 +45,6 @@ pub async fn get_incredible_squaring_task_manager() -> Address {
     address
 }
 
-
-
-
 pub async fn get_incredible_squaring_strategy_address() -> Address {
     let contracts_registry = ContractsRegistry::new(CONTRACTS_REGISTRY, (*ANVIL_RPC_URL).clone());
 

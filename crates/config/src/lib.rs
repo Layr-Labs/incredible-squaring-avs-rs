@@ -28,7 +28,7 @@ pub struct IncredibleConfig {
 
     incredible_contracts_config: IncredibleContractsConfig,
 
-    task_manager_config: TaskManagerConfig
+    task_manager_config: TaskManagerConfig,
 }
 
 /// Rpc Configurations
@@ -57,17 +57,14 @@ pub struct IncredibleContractsConfig {
     pub service_manager_addr: String,
 
     pub erc20_mock_strategy_addr: String,
-
 }
 
 /// Rpc Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct TaskManagerConfig {
-    /// Task manager private key 
-   pub signer : String
-
+    /// Task manager private key
+    pub signer: String,
 }
-
 
 /// Rpc Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -114,7 +111,6 @@ pub struct ELConfig {
 
     /// Strategy Manager Address
     pub strategy_manager_addr: String,
-
 }
 
 /// AggregatorConfig
@@ -437,8 +433,8 @@ impl IncredibleConfig {
         }
     }
 
-     /// Incredible ERC20 mock strategy address
-     pub fn erc20_mock_strategy_addr(&self) -> Result<Address, ConfigError> {
+    /// Incredible ERC20 mock strategy address
+    pub fn erc20_mock_strategy_addr(&self) -> Result<Address, ConfigError> {
         let s = Address::from_hex(
             self.incredible_contracts_config
                 .erc20_mock_strategy_addr
@@ -451,8 +447,8 @@ impl IncredibleConfig {
         }
     }
 
-    /// Task manager signer 
-    pub fn task_manager_signer(&self) -> String{
+    /// Task manager signer
+    pub fn task_manager_signer(&self) -> String {
         self.task_manager_config.signer.clone()
     }
 }

@@ -3,9 +3,9 @@
 mod avs_reader;
 /// error
 pub mod error;
+pub use avs_reader::AvsReader;
 use core::task;
 use tracing::info;
-pub use avs_reader::AvsReader;
 
 use alloy::{
     primitives::{Address, U256},
@@ -164,17 +164,31 @@ impl AvsWriter {
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
 
-        println!("non signer staker indices len {:?}",non_signer_stakes_and_signature.nonSignerStakeIndices.len());
-        println!("quorums apk indices g1{:?}",non_signer_stakes_and_signature.quorumApkIndices.len());
-        println!("total stake indices{:?}",non_signer_stakes_and_signature.totalStakeIndices.len());
-        println!("quorum apk{:?} ",non_signer_stakes_and_signature.quorumApks.len());
+        println!(
+            "non signer staker indices len {:?}",
+            non_signer_stakes_and_signature.nonSignerStakeIndices.len()
+        );
+        println!(
+            "quorums apk indices g1{:?}",
+            non_signer_stakes_and_signature.quorumApkIndices.len()
+        );
+        println!(
+            "total stake indices{:?}",
+            non_signer_stakes_and_signature.totalStakeIndices.len()
+        );
+        println!(
+            "quorum apk{:?} ",
+            non_signer_stakes_and_signature.quorumApks.len()
+        );
 
-
-        let tx = task_manager_contract.respondToTask(
-            task,
-            task_response,
-            non_signer_stakes_and_signature,
-        ).send().await.unwrap().get_receipt().await.unwrap();
-        println!("tx for sending response to task to contract {:?}",tx);
+        let tx = task_manager_contract
+            .respondToTask(task, task_response, non_signer_stakes_and_signature)
+            .send()
+            .await
+            .unwrap()
+            .get_receipt()
+            .await
+            .unwrap();
+        println!("tx for sending response to task to contract {:?}", tx);
     }
 }

@@ -112,13 +112,13 @@ impl OperatorBuilder {
         )
         .await
         .unwrap();
-        println!("operator_addr {:?}",self.operator_addr.clone());
+        println!("operator_addr {:?}", self.operator_addr.clone());
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr.clone())
             .await?;
 
         info!("is_operaotor_registered {}", is_registered);
-        
+
         self.client.dial_aggregator_rpc_client();
         if is_registered {
             info!("Starting operator");
