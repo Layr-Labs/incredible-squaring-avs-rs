@@ -353,35 +353,35 @@ operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa
                 .to_string(),
         );
         let mut challenger = Challenger::build(config).await.unwrap();
-        // let new_task_created = NewTaskCreated {
-        //     taskIndex: 1,
-        //     task: Task {
-        //         numberToBeSquared: U256::from(4),
-        //         taskCreatedBlock: 105,
-        //         quorumNumbers: Bytes::from_str("0x40").unwrap(),
-        //         quorumThresholdPercentage: 5,
-        //     },
-        // };
-        // challenger.process_new_task_created_log(new_task_created.clone());
-        // let task = challenger
-        //     .tasks()
-        //     .get(&new_task_created.clone().taskIndex)
-        //     .unwrap();
-        // assert_eq!(
-        //     task.numberToBeSquared,
-        //     new_task_created.clone().task.numberToBeSquared
-        // );
-        // assert_eq!(
-        //     task.taskCreatedBlock,
-        //     new_task_created.clone().task.taskCreatedBlock
-        // );
-        // assert_eq!(
-        //     task.quorumNumbers,
-        //     new_task_created.clone().task.quorumNumbers
-        // );
-        // assert_eq!(
-        //     task.quorumThresholdPercentage,
-        //     new_task_created.clone().task.quorumThresholdPercentage
-        // );
+        let new_task_created = NewTaskCreated {
+            taskIndex: 1,
+            task: Task {
+                numberToBeSquared: U256::from(4),
+                taskCreatedBlock: 105,
+                quorumNumbers: Bytes::from_str("0x40").unwrap(),
+                quorumThresholdPercentage: 5,
+            },
+        };
+        challenger.process_new_task_created_log(new_task_created.clone());
+        let task = challenger
+            .tasks()
+            .get(&new_task_created.clone().taskIndex)
+            .unwrap();
+        assert_eq!(
+            task.numberToBeSquared,
+            new_task_created.clone().task.numberToBeSquared
+        );
+        assert_eq!(
+            task.taskCreatedBlock,
+            new_task_created.clone().task.taskCreatedBlock
+        );
+        assert_eq!(
+            task.quorumNumbers,
+            new_task_created.clone().task.quorumNumbers
+        );
+        assert_eq!(
+            task.quorumThresholdPercentage,
+            new_task_created.clone().task.quorumThresholdPercentage
+        );
     }
 }
