@@ -1,7 +1,12 @@
 //! Generates a new task every 10 seconds
-use alloy::primitives::{Address, Bytes, U256};
+use alloy::{
+    primitives::{Address, Bytes, U256},
+    rpc::types::TransactionReceipt,
+};
 use eigen_utils::{get_provider, get_signer};
-use incredible_bindings::IncredibleSquaringTaskManager;
+use incredible_bindings::IncredibleSquaringTaskManager::{
+    self, NonSignerStakesAndSignature, Task, TaskResponse,
+};
 use lazy_static::lazy_static;
 use std::str::FromStr;
 use tokio::time::{sleep, Duration};
@@ -65,5 +70,52 @@ impl TaskManager {
             // Wait for 10 seconds before the next iteration
             sleep(Duration::from_secs(10)).await;
         }
+    }
+
+    pub async fn create_new_task(
+        &self,
+        task_num: U256,
+    ) -> eyre::Result<(TransactionReceipt), eyre::Error> {
+        let task_manager_contract = (IncredibleSquaringTaskManager::new(
+            self.task_manager_address,
+            get_signer(self.signer.clone(), &self.rpc_url),
+        ));
+
+        let number_to_be_squared = task_num;
+        let quorum_threshold_percentage = 100;
+        let quorum_numbers = Bytes::from_str("0x00").unwrap();
+        let s = task_manager_contract
+            .createNewTask(
+                number_to_be_squared,
+                quorum_threshold_percentage,
+                quorum_numbers.clone(),
+            )
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+        println!("receipt for task created {:?}", s.transaction_hash);
+        Ok(s)
+    }
+
+    pub async fn respond_to_task(
+        &self,
+        task: Task,
+        task_response: TaskResponse,
+        non_signer_stakes_and_signature: NonSignerStakesAndSignature,
+    ) -> eyre::Result<(TransactionReceipt), eyre::Error> {
+        let task_manager_contract = (IncredibleSquaringTaskManager::new(
+            self.task_manager_address,
+            get_signer(self.signer.clone(), &self.rpc_url),
+        ));
+
+        let s = task_manager_contract
+            .respondToTask(task, task_response, non_signer_stakes_and_signature)
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+        println!("task response {:?}", s.transaction_hash);
+        Ok((s))
     }
 }

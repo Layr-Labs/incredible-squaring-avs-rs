@@ -2962,6 +2962,7 @@ dependencies = [
  "incredible-bindings",
  "incredible-chainio",
  "incredible-config",
+ "incredible-task-generator",
  "incredible-testing-utils",
  "thiserror",
  "tokio",
@@ -3128,6 +3129,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0242819d153cba4b4b05a5a8f2a7e9bbf97b6055b2a002b395c96b5ff3c0222"
 dependencies = [
  "cfg-if 1.0.0",
+]
+
+[[package]]
+name = "integration-tests"
+version = "0.0.1-alpha"
+dependencies = [
+ "alloy",
+ "tokio",
 ]
 
 [[package]]

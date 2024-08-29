@@ -109,6 +109,7 @@ impl Challenger {
             if let Some(tp) = topic {
                 if *tp == new_task_created_log {
                     info!("challenger picked up a new task ");
+                    println!("challengerlog {:?}", log);
                     let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
 
                     if let Some(data) = new_task_created_option {
@@ -173,7 +174,11 @@ impl Challenger {
     pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
         if let Some(number_to_be_squared) = self.tasks.get(&task_index) {
             let num_to_square = number_to_be_squared.numberToBeSquared;
-
+            println!(
+                "task response for index {:?} {:?}",
+                task_index,
+                self.task_responses.get(&task_index)
+            );
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
 
@@ -223,11 +228,14 @@ impl Challenger {
         let non_signing_operator_pub_keys_result = self
             .get_non_signing_operator_pub_keys(task_response_log.clone())
             .await;
-
+        println!(
+            "non signing operator pub keys result {:?}",
+            non_signing_operator_pub_keys_result
+        );
         match non_signing_operator_pub_keys_result {
             Ok(non_signing_operator_pub_key) => {
                 let decoded_event = task_response_log.log_decode::<TaskResponded>().ok();
-
+                println!("decoded event {:?}", decoded_event);
                 if let Some(decoded) = decoded_event {
                     let data = decoded.data();
 
@@ -239,6 +247,13 @@ impl Challenger {
 
                     self.task_responses
                         .insert(data.taskResponse.referenceTaskIndex, task_response_data);
+                    println!(
+                        "process task response log for index {:?}  , number squared {:?}, {:?}",
+                        data.taskResponse.referenceTaskIndex,
+                        data.taskResponse.numberSquared,
+                        task_response_log
+                    );
+
                     Ok(data.taskResponse.referenceTaskIndex)
                 } else {
                     Err(ChallengerError::DecodeEvent)
@@ -254,18 +269,19 @@ impl Challenger {
         log: Log,
     ) -> Result<Vec<G1Point>, ChallengerError> {
         let decoded_event = log.log_decode::<TaskResponded>().ok();
-
+        println!("decoded event {:?}", decoded_event);
         if let Some(task_responded) = decoded_event {
             let tx_hash_result = task_responded.transaction_hash;
             if let Some(tx_hash) = tx_hash_result {
                 let provider = get_provider(&self.rpc_url);
 
                 let transaction_data_result = provider.get_transaction_by_hash(tx_hash).await;
-
+                println!("tx hash res {:?}", transaction_data_result);
                 match transaction_data_result {
                     Ok(transaction_data_option) => {
                         if let Some(transaction_data) = transaction_data_option {
                             let calldata = transaction_data.input;
+                            println!("calldata {:?}", calldata);
                             let decoded = respondToTaskCall::abi_decode(&calldata, false);
 
                             match decoded {
@@ -311,13 +327,23 @@ impl Challenger {
 mod tests {
 
     use super::*;
-    use alloy::primitives::{Bytes, U256};
+    use alloy::{
+        hex::FromHex,
+        primitives::{address, Bytes, FixedBytes, LogData, B256, U256},
+        sol_types::SolValue,
+    };
+    use core::task;
+    use eigen_utils::get_signer;
+    use incredible_bindings::IncredibleSquaringTaskManager::{
+        self, G2Point, NonSignerStakesAndSignature,
+    };
+    use incredible_task_generator::TaskManager;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator, get_incredible_squaring_strategy_address,
         get_incredible_squaring_task_manager,
     };
-    use std::str::FromStr;
+    use std::{io::Read, str::FromStr};
     const INCREDIBLE_CONFIG_FILE: &str = r#"
 [rpc_config]
 chain_id = 31337
@@ -337,10 +363,12 @@ keystore_password = "testpassword"
 operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
 
+[task_manager_config]
+signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 "#;
 
-    #[tokio::test]
-    async fn test_process_new_task_created_log() {
+    ///
+    pub async fn build_challenger() -> Challenger {
         let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
         config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
@@ -352,7 +380,12 @@ operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa
                 .await
                 .to_string(),
         );
-        let mut challenger = Challenger::build(config).await.unwrap();
+        Challenger::build(config).await.unwrap()
+    }
+
+    #[tokio::test]
+    async fn test_process_new_task_created_log() {
+        let mut challenger = build_challenger().await;
         let new_task_created = NewTaskCreated {
             taskIndex: 1,
             task: Task {

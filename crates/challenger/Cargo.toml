@@ -27,3 +27,6 @@ incredible-chainio.workspace = true
 
 #eigen-rs
 eigen-utils.workspace = true
+
+[dev-dependencies]
+incredible-task-generator.workspace = true

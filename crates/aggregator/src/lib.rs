@@ -340,6 +340,10 @@ impl Aggregator {
             totalStakeIndices: response.total_stake_indices,
             nonSignerStakeIndices: response.non_signer_stake_indices,
         };
+        println!(
+            "non_signer_stakes_and_signature {:?}",
+            non_signer_stakes_and_signature
+        );
 
         let task = &self.tasks[&response.task_index];
         let task_response =

@@ -70,7 +70,6 @@ impl OperatorBuilder {
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
         let operator_address = config.operator_address()?;
-        println!("aggregator ip addresss {:?}", config.aggregator_ip_addr());
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
             ws_rpc_url: config.ws_rpc_url(),
