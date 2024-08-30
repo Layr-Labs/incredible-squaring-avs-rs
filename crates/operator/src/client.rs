@@ -1,10 +1,4 @@
-use alloy::{
-    rpc::{
-        client::{ReqwestClient, RpcClient},
-        types::request,
-    },
-    transports::{RpcError, TransportErrorKind},
-};
+use alloy::rpc::client::{ReqwestClient, RpcClient};
 use eyre::Result;
 use incredible_aggregator::rpc_server::SignedTaskResponse;
 use reqwest::Client;
@@ -15,6 +9,7 @@ use tracing::{debug, error, info};
 /// Client Aggregator
 #[derive(Debug, Clone)]
 pub struct ClientAggregator {
+    /// Alloy rpc client to send requests to aggregator
     pub client: Option<RpcClient<alloy::transports::http::Http<Client>>>,
     aggregator_ip_port_address: String,
 }
@@ -28,6 +23,7 @@ impl ClientAggregator {
         }
     }
 
+    /// new http rpc client instance using the aggregator ip port address
     pub fn dial_aggregator_rpc_client(&mut self) {
         let url =
             reqwest::Url::parse(&format!("http://{}", &self.aggregator_ip_port_address)).unwrap();
@@ -76,10 +72,9 @@ impl ClientAggregator {
 
 mod tests {
 
-
     #[test]
     fn test_new_client() {
-        let mut client = ClientAggregator::new("127.0.0.1:8545".to_string());
+        let mut client = crate::client::ClientAggregator::new("127.0.0.1:8545".to_string());
         client.dial_aggregator_rpc_client();
     }
 }
