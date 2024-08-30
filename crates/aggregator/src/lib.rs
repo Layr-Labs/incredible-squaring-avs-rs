@@ -170,7 +170,7 @@ impl Aggregator {
                         .process_signed_task_response(signed_task_response)
                         .await;
                     match result {
-                        Ok(_) => Ok(Value::Null),
+                        Ok(_) => Ok(Value::Bool((true))),
                         Err(_) => Err(Error::invalid_params("invalid")),
                     }
                 }

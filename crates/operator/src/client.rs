@@ -43,58 +43,43 @@ impl ClientAggregator {
         signed_task_response: SignedTaskResponse,
     ) -> Result<()> {
         info!("Received signed task response");
+        #[allow(unused_mut)]
         let mut delay = Duration::from_secs(1);
 
-        // for _ in 0..5 {
-        let params = &json!({
-            "params": signed_task_response,
-            "id": 1,
-            "jsonrpc": "2.0"
-        });
-        println!("params before sending response {}", params);
-        let request = self
-            .client
-            .as_ref()
-            .unwrap()
-            .request("process_signed_task_response", params)
-            .await?;
-        println!("params {:?}", request);
-        // let res: bool = request.await.unwrap();
-        // println!("response sent bool {:?}", res);
-        // match response {
-        //     Ok(res) => {
-        //         if res.status().is_success() {
-        //             info!("Signed task response accepted by aggregator.");
-        //             return Ok(());
-        //         } else {
-        //             info!("Received error from aggregator: {:?}", res.text().await?);
-        //         }
-        //     }
-        //     Err(err) => {
-        //         error!("Error sending request: {:?}", err);
-        //     }
-        // }
+        for _ in 0..5 {
+            let params = &json!({
+                "params": signed_task_response,
+                "id": 1,
+                "jsonrpc": "2.0"
+            });
+            println!("params before sending response {}", params);
+            let request = self
+                .client
+                .as_ref()
+                .unwrap()
+                .request("process_signed_task_response", params)
+                .await?;
 
-        // Exponential backoff
-        // info!("Retrying in {} seconds...", delay.as_secs());
-        // sleep(delay).await;
-        // delay *= 2; // Double the delay for the next retry
-        // }
+            if request {
+                return Ok(());
+            }
 
-        // debug!("Could not send signed task response to aggregator. Tried 5 times.");
+            // Exponential backoff
+            info!("Retrying in {} seconds...", delay.as_secs());
+            sleep(delay).await;
+            delay *= 2; // Double the delay for the next retry
+        }
+        debug!("Could not send signed task response to aggregator. Tried 5 times.");
         Ok(())
     }
 }
 
 mod tests {
 
-    use super::*;
 
     #[test]
     fn test_new_client() {
         let mut client = ClientAggregator::new("127.0.0.1:8545".to_string());
         client.dial_aggregator_rpc_client();
-
-        println!("client {:?}", client.client.unwrap());
     }
 }
