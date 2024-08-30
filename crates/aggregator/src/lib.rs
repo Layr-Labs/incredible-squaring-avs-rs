@@ -1,20 +1,16 @@
 //! Aggregator crate
-pub mod rpc_server;
-use core::task;
-use std::collections::HashMap;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::sync::{Arc, Mutex};
-pub mod error;
-use alloy::dyn_abi::SolType;
-use alloy::sol_types::SolEvent;
-use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_utils::{get_provider, get_ws_provider};
-use futures_util::StreamExt;
 
+/// Aggregator error
+pub mod error;
+/// RPC server
+pub mod rpc_server;
+use alloy::dyn_abi::SolType;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
-use eigen_client_avsregistry::reader::{AvsRegistryChainReader, AvsRegistryReader};
+use alloy::sol_types::SolEvent;
+use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_logging::get_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::{
@@ -22,22 +18,25 @@ use eigen_services_blsaggregation::bls_agg::{
 };
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
+use eigen_utils::get_ws_provider;
 pub use error::AggregatorError;
+use futures_util::StreamExt;
+use incredible_bindings::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NonSignerStakesAndSignature};
-use incredible_bindings::IncredibleSquaringTaskManager::{
-    respondToTaskCall, G1Point, NewTaskCreated, TaskResponded, TaskResponseMetadata,
-};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
-use rpc_server::{RawSignedTaskResponse, SignedTaskResponse};
-use serde::Serialize;
-use serde::Serializer;
+use rpc_server::SignedTaskResponse;
+use std::collections::HashMap;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::sync::Arc;
 use tracing::info;
 
+/// Task Challenge Window Block : 100 blocks
 pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
+/// Block Time Seconds : 12 seconds
 pub const BLOCK_TIME_SECONDS: u32 = 12;
 
 ///
@@ -48,12 +47,23 @@ pub struct Aggregator {
     bls_aggregation_service: BlsAggregatorService<
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
+    /// HashMap to store tasks
     pub tasks: HashMap<u32, IncredibleSquaringTaskManager::Task>,
+    /// HashMap to store task responses
     pub tasks_responses:
         HashMap<u32, HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>>,
 }
 
 impl Aggregator {
+    /// Creates a new aggregator
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The configuration for the aggregator
+    ///
+    /// # Returns
+    ///
+    /// * `Self` - The aggregator
     pub async fn new(config: IncredibleConfig) -> Self {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
@@ -137,6 +147,15 @@ impl Aggregator {
         Ok(())
     }
 
+    /// Starts the RPC server
+    ///
+    /// # Arguments
+    ///
+    /// * `aggregator` - The aggregator
+    ///
+    /// # Returns
+    ///
+    /// * `eyre::Result<()>` - The result of the operation
     pub async fn start_server(aggregator: Arc<tokio::sync::Mutex<Self>>) -> eyre::Result<()> {
         let mut io = IoHandler::new();
         io.add_method("process_signed_task_response", {
@@ -170,7 +189,7 @@ impl Aggregator {
                         .process_signed_task_response(signed_task_response)
                         .await;
                     match result {
-                        Ok(_) => Ok(Value::Bool((true))),
+                        Ok(_) => Ok(Value::Bool(true)),
                         Err(_) => Err(Error::invalid_params("invalid")),
                     }
                 }
@@ -191,6 +210,16 @@ impl Aggregator {
         Ok(())
     }
 
+    /// Processes the tasks
+    ///
+    /// # Arguments
+    ///
+    /// * `ws_rpc_url` - The websocket RPC URL
+    /// * `aggregator` - The aggregator
+    ///
+    /// # Returns
+    ///
+    /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_tasks(
         ws_rpc_url: String,
         aggregator: Arc<tokio::sync::Mutex<Self>>,
@@ -229,7 +258,7 @@ impl Aggregator {
                 (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
             );
             info!("initializing new task in bls aggregation service");
-            let s = aggregator
+            let _ = aggregator
                 .lock()
                 .await
                 .bls_aggregation_service
@@ -241,7 +270,7 @@ impl Aggregator {
                     time_to_expiry,
                 )
                 .await
-                .map_err(|e: BlsAggregationServiceError| eyre::eyre!((e)));
+                .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
 
             info!("initialized new task in bls aggregation service");
         }
@@ -249,6 +278,15 @@ impl Aggregator {
         Ok(())
     }
 
+    /// Processes the signed task response
+    ///
+    /// # Arguments
+    ///
+    /// * [`SignedTaskResponse`] - The signed task response
+    ///
+    /// # Returns
+    ///
+    /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_signed_task_response(
         &mut self,
         signed_task_response: SignedTaskResponse,
@@ -298,7 +336,15 @@ impl Aggregator {
         Ok(())
     }
 
+    /// Sends the aggregated response to the contract
     ///
+    /// # Arguments
+    ///
+    /// * [`BlsAggregationServiceResponse`] - The aggregated response
+    ///
+    /// # Returns
+    ///
+    /// * `eyre::Result<()>` - The result of the operation
     pub async fn send_aggregated_response_to_contract(
         &self,
         response: BlsAggregationServiceResponse,
