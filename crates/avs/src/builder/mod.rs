@@ -1,13 +1,15 @@
+//! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
 use futures::TryFutureExt;
 use incredible_aggregator::Aggregator;
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
 use incredible_task_generator::TaskManager;
-use std::future::{self, Future};
+use std::future::Future;
 
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
+    /// Launch Avs
     fn launch_avs(self, avs: T) -> impl Future<Output = eyre::Result<()>> + Send;
 }
 
@@ -42,17 +44,17 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         // start operator
         let mut operator_builder = OperatorBuilder::build(avs.config.clone())?;
         let mut challenge = Challenger::build(avs.config.clone()).await?;
-        let operator_task = operator_builder
+        let operator_service = operator_builder
             .start_operator()
             .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
-        let c = challenge
+        let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
 
-        let mut aggregator = Aggregator::new(avs.config.clone()).await;
+        let aggregator = Aggregator::new(avs.config.clone()).await;
 
-        let a = aggregator
+        let aggregator_service_with_rpc_client = aggregator
             .start(avs.config.ws_rpc_url().clone())
             .map_err(|e| eyre::eyre!("aggregator error {e:?}"));
 
@@ -62,14 +64,17 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             avs.config.task_manager_signer(),
         );
 
-        let t = task_manager
+        let task_spam_service = task_manager
             .start()
             .map_err(|e| eyre::eyre!("task manager error {e:?}"));
-        let s = futures::future::try_join4(operator_task, c, a, t).await?;
+        let _ = futures::future::try_join4(
+            operator_service,
+            challenger_service,
+            aggregator_service_with_rpc_client,
+            task_spam_service,
+        )
+        .await?;
 
-        // /// start aggregator
-
-        println!("end");
         Ok(())
     }
 }
