@@ -3,7 +3,7 @@ use eigen_utils::{get_provider, get_ws_provider};
 use std::collections::HashMap;
 /// Challenger Error
 pub mod error;
-
+mod fake_challenger;
 use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::rpc::types::{Log, TransactionReceipt};
 use alloy::sol_types::{SolCall, SolEvent};
@@ -225,6 +225,10 @@ impl Challenger {
         &mut self,
         task_response_log: Log,
     ) -> Result<u32, ChallengerError> {
+        println!(
+            "process task response log_for_index {:?}",
+            task_response_log
+        );
         let non_signing_operator_pub_keys_result = self
             .get_non_signing_operator_pub_keys(task_response_log.clone())
             .await;
@@ -269,14 +273,24 @@ impl Challenger {
         log: Log,
     ) -> Result<Vec<G1Point>, ChallengerError> {
         let decoded_event = log.log_decode::<TaskResponded>().ok();
-        println!("decoded event {:?}", decoded_event);
         if let Some(task_responded) = decoded_event {
+            let TaskResponded {
+                taskResponse,
+                taskResponseMetadata,
+            } = task_responded.data();
+            println!(
+                "task_responded {:?} task_response_metadata {:?}",
+                task_responded, taskResponseMetadata
+            );
             let tx_hash_result = task_responded.transaction_hash;
             if let Some(tx_hash) = tx_hash_result {
                 let provider = get_provider(&self.rpc_url);
 
                 let transaction_data_result = provider.get_transaction_by_hash(tx_hash).await;
-                println!("tx hash res {:?}", transaction_data_result);
+                println!(
+                    "tx_res_for index:  {:?} {:?}",
+                    taskResponse.referenceTaskIndex, transaction_data_result
+                );
                 match transaction_data_result {
                     Ok(transaction_data_option) => {
                         if let Some(transaction_data) = transaction_data_option {
@@ -326,10 +340,12 @@ impl Challenger {
 #[cfg(test)]
 mod tests {
 
+    use crate::fake_challenger::FakeChallenger;
+
     use super::*;
     use alloy::{
         hex::FromHex,
-        primitives::{address, Bytes, FixedBytes, LogData, B256, U256},
+        primitives::{address, Bytes, FixedBytes, LogData, TxHash, B256, U256},
         sol_types::SolValue,
     };
     use core::task;
@@ -337,6 +353,7 @@ mod tests {
     use incredible_bindings::IncredibleSquaringTaskManager::{
         self, G2Point, NonSignerStakesAndSignature,
     };
+    use incredible_chainio::fake_avs_writer::{self, FakeAvsWriter};
     use incredible_task_generator::TaskManager;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -415,6 +432,111 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
         assert_eq!(
             task.quorumThresholdPercentage,
             new_task_created.clone().task.quorumThresholdPercentage
+        );
+    }
+
+    #[tokio::test]
+    async fn test_call_challenge() {
+        let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
+
+        let fake_avs_writer = FakeAvsWriter {
+            task_manager_addr: get_incredible_squaring_task_manager().await,
+            signer: config.get_signer(),
+            rpc_url: config.http_rpc_url(),
+        };
+        let mut fake_challenger = FakeChallenger {
+            fake_avs_writer: fake_avs_writer.clone(),
+            ws_url: config.ws_rpc_url(),
+            rpc_url: config.http_rpc_url(),
+            tasks: HashMap::new(),
+            task_responses: HashMap::new(),
+        };
+
+        let task_manager = TaskManager::new(
+            get_incredible_squaring_task_manager().await,
+            config.http_rpc_url(),
+            config.task_manager_signer(),
+        );
+
+        let receipt = task_manager.create_new_task(U256::from(2)).await.unwrap();
+
+        let log = receipt.inner.logs().get(0).unwrap();
+        let new_task_created_log = log.log_decode::<NewTaskCreated>().unwrap();
+        let NewTaskCreated { taskIndex, task } = new_task_created_log.data();
+
+        fake_challenger.tasks.insert(*taskIndex, task.clone());
+
+        let task_response = TaskResponseData {
+            task_response: TaskResponse {
+                referenceTaskIndex: *taskIndex,
+                numberSquared: task.numberToBeSquared * task.numberToBeSquared,
+            },
+            task_response_metadata: TaskResponseMetadata {
+                taskResponsedBlock: task.taskCreatedBlock,
+                hashOfNonSigners: FixedBytes::default(),
+            },
+            non_signing_operator_pub_keys: vec![],
+        };
+        fake_challenger
+            .task_responses
+            .insert(*taskIndex, task_response);
+
+        let hash = fake_challenger.raise_challenge(*taskIndex).await.unwrap();
+        assert_eq!(hash, TxHash::default()); // assert that it actually called raise challenge to contract by getting a default tx hash from our fake avs writer
+    }
+
+    #[tokio::test]
+    pub async fn test_process_task_response_log() {
+        let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
+
+        let fake_avs_writer = FakeAvsWriter {
+            task_manager_addr: get_incredible_squaring_task_manager().await,
+            signer: config.get_signer(),
+            rpc_url: config.http_rpc_url(),
+        };
+        let mut fake_challenger = FakeChallenger {
+            fake_avs_writer: fake_avs_writer.clone(),
+            ws_url: config.ws_rpc_url(),
+            rpc_url: config.http_rpc_url(),
+            tasks: HashMap::new(),
+            task_responses: HashMap::new(),
+        };
+
+        let task_response_log= Log { inner: alloy::primitives::Log::new("0x22753e4264fddc6181dc7cce468904a80a363e44".parse().unwrap(), [FixedBytes::from_hex("0x349c1ee60e4e8972ee9dba642c1774543d5c4136879b7f4caaf04bf81a487a2a").unwrap()].to_vec(), Bytes::from_hex("0x00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000006cb2f2c2ccf43574f9e119f4860fd0f1b6036a43ad9db8a428ea09a4ee385112f3").unwrap()).unwrap(), block_hash: Some(FixedBytes::from_hex("0xc9781943aedf7d3040c117b515b9e94af34e564976cf4ddd309a1febfcf4fdb8").unwrap()), block_number: Some(108), block_timestamp: None, transaction_hash: Some(FixedBytes::from_hex("0x7c26ddc3ed0f8ce05be3c5046fd72e7d3493b4e08ee33d03c8d791621183ee55").unwrap()), transaction_index: Some(0), log_index: Some(0), removed: false};
+
+        fake_challenger
+            .process_task_response_log(task_response_log)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            fake_challenger
+                .task_responses
+                .get(&1)
+                .unwrap()
+                .task_response
+                .numberSquared,
+            U256::from(1)
         );
     }
 }

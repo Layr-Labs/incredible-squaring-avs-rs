@@ -4,6 +4,7 @@ mod avs_reader;
 /// error
 pub mod error;
 pub use avs_reader::AvsReader;
+pub mod fake_avs_writer;
 use core::task;
 use tracing::info;
 
@@ -127,6 +128,7 @@ impl AvsWriter {
         task_response_metadata: TaskResponseMetadata,
         pub_keys_of_non_signing_operators: Vec<G1Point>,
     ) -> Result<alloy::rpc::types::TransactionReceipt, ChainIoError> {
+        println!("raised challenge , task {:?}, task_response: {:?}, pub_keys_of_non_signing_operators {:?}", task, task_response, pub_keys_of_non_signing_operators);
         let signer = get_signer(self.signer.clone(), &self.rpc_url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
@@ -141,7 +143,7 @@ impl AvsWriter {
         match challenge_tx_call.send().await {
             Ok(challenge_tx) => {
                 let receipt_result = challenge_tx.get_receipt().await;
-
+                println!("receipt result {:?}", receipt_result);
                 match receipt_result {
                     Ok(receipts) => Ok(receipts),
                     Err(e) => Err(ChainIoError::AlloyContractError(
@@ -192,3 +194,5 @@ impl AvsWriter {
         println!("tx for sending response to task to contract {:?}", tx);
     }
 }
+
+// task Task { numberToBeSquared: 2, taskCreatedBlock: 109, quorumNumbers: 0x00, quorumThresholdPercentage: 100 }, task_response: TaskResponse { referenceTaskIndex: 2, numberSquared: 2 }, pub_keys_of_non_signing_operators []

@@ -137,7 +137,7 @@ impl Aggregator {
         Ok(())
     }
 
-    async fn start_server(aggregator: Arc<tokio::sync::Mutex<Self>>) -> eyre::Result<()> {
+    pub async fn start_server(aggregator: Arc<tokio::sync::Mutex<Self>>) -> eyre::Result<()> {
         let mut io = IoHandler::new();
         io.add_method("process_signed_task_response", {
             let aggregator = Arc::clone(&aggregator);
@@ -191,7 +191,7 @@ impl Aggregator {
         Ok(())
     }
 
-    async fn process_tasks(
+    pub async fn process_tasks(
         ws_rpc_url: String,
         aggregator: Arc<tokio::sync::Mutex<Self>>,
     ) -> eyre::Result<()> {

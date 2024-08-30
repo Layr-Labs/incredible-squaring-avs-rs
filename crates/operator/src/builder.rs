@@ -1,6 +1,6 @@
 use crate::error::OperatorError;
 use alloy::{
-    primitives::{keccak256, Address},
+    primitives::{keccak256, Address, U256},
     providers::WsConnect,
     rpc::types::Filter,
     signers::{k256::ecdsa::SigningKey, local::LocalSigner},
@@ -56,15 +56,15 @@ impl OperatorBuilder {
             config.ecdsa_keystore_path(),
             config.ecdsa_keystore_password(),
         )?;
-
         // Read BlsKey from path
+        println!("bls path {:?}", config.bls_keystore_path());
         let keystore = Keystore::from_file(&config.bls_keystore_path())
             .unwrap()
             .decrypt(&config.bls_keystore_password())?;
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
-
         let key_pair = BlsKeyPair::new(fr_key)?;
+        println!("fr_key {:?}", key_pair);
         let metrics = IncredibleMetrics::new();
         let operator_id = config.get_operator_id()?;
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
@@ -194,7 +194,7 @@ mod tests {
     [rpc_config]
     chain_id = 31337
     http_rpc_url = "http://localhost:8545"
-    ws_rpc_url = "ws://localhost:8546"
+    ws_rpc_url = "ws://localhost:8545"
     signer = "0x337edbf6fef9af147f49c04c1004da47a8bf9f88c01022b7dd108e31c037f075"
 
     [ecdsa_config]

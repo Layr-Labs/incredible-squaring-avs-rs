@@ -3136,7 +3136,17 @@ name = "integration-tests"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
+ "eigen-logging",
+ "eigen-utils",
+ "incredible-aggregator",
+ "incredible-bindings",
+ "incredible-challenger",
+ "incredible-config",
+ "incredible-operator",
+ "incredible-task-generator",
+ "incredible-testing-utils",
  "tokio",
+ "toml",
 ]
 
 [[package]]
