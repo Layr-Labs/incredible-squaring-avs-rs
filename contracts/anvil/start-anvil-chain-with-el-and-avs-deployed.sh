@@ -30,7 +30,7 @@ trap 'cleanup $LINENO "$BASH_COMMAND"' EXIT
 # FIXME: bug in latest foundry version, so we use this pinned version instead of latest
 start_anvil_docker $parent_path/avs-and-eigenlayer-deployed-anvil-state.json ""
 
-cd ../
+cd ../..
 # we need to restart the anvil chain at the correct block, otherwise the indexRegistry has a quorumUpdate at the block number
 # at which it was deployed (aka quorum was created/updated), but when we start anvil by loading state file it starts at block number 0
 # so calling getOperatorListAtBlockNumber reverts because it thinks there are no quorums registered at block 0
@@ -38,5 +38,4 @@ cd ../
 cast rpc anvil_mine 100 --rpc-url $RPC_URL
 echo "advancing chain... current block-number:" $(cast block-number)
 
-# Bring Anvil back to the foreground
-docker attach anvil
+

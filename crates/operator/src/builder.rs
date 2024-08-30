@@ -20,7 +20,7 @@ use rust_bls_bn254::keystores::base_keystore::Keystore;
 
 use crate::client::ClientAggregator;
 use incredible_metrics::IncredibleMetrics;
-use tracing::{debug, info};
+use tracing::info;
 
 /// Main Operator
 #[derive(Debug)]

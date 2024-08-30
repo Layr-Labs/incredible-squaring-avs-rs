@@ -1,7 +1,5 @@
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
-use alloy::providers::Provider;
-use alloy::rpc;
-use alloy::signers::local::{LocalSigner, PrivateKeySigner};
+use alloy::signers::local::LocalSigner;
 use clap::{value_parser, Args, Parser};
 use eigen_client_avsregistry::{
     error::AvsRegistryError, reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter,
@@ -488,12 +486,3 @@ pub async fn deposit_into_strategy(
 
     println!("deposit into strategy tx {:?}", s);
 }
-
-// [2024-08-28 16:26:07.824 IST] INFO (aggregator/aggregator.go:142) Received response from
-// blsAggregationService {"blsAggServiceResp":{"Err":null,"NonSignerQuorumBitmapIndices":[],
-// "NonSignerStakeIndices":[[]],"NonSignersPubkeysG1":[],"QuorumApkIndices":[1],
-// "QuorumApksG1":[{"X":"643552363890320897587044283125191574906281609959531590546948318138132520777","Y":"7028377728703212953187883551402495866059211864756496641401904395458852281995"}],
-// "SignersAggSigG1":{"g1_point":{"X":"11864251662485139840524518823175740619703084812849558911884461892436985016096","Y":"21619832266901962704022872104974986033207431694395399842084264985823313691413"}},
-// "SignersApkG2":{"X":{"A0":"15669747281918965782125375489377843702338327900115142954223823046525120542933","A1":"10049360286681290772545787829932277430329130488480401390150843123809685996135"},"Y":{"A0":"14982008408420160629923179444218881558075572058100484023255790835506797851583","A1":"4979648979879607838890666154119282514313691814432950078096789133613246212107"}},
-// "TaskIndex":1,"TaskResponseDigest":[204,105,136,95,218,107,204,26,74,206,5,139,74,98,191,94,23,158,167,143,213,138,28,205,113,194,44,201,182,136,121,47],
-// "TotalStakeIndices":[1]}}

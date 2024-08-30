@@ -1,4 +1,4 @@
-
+PHONY:reset-anvil
 
 deploy-avs-save-anvil-state:
 	./contracts/anvil/deploy-avs-save-anvil-state.sh
@@ -20,8 +20,8 @@ reset-anvil:
 	-docker stop anvil
 	-docker rm anvil
 
-pr: reset-anvil ## 
-	$(MAKE) start-anvil-chain-with-contracts-deployed
+pr: reset-anvil ##
+	$(MAKE) start-anvil-chain-with-el-and-avs-deployed
 	docker start anvil
 	cargo test --workspace
 	cargo clippy --workspace --lib --examples --tests --benches --all-features
