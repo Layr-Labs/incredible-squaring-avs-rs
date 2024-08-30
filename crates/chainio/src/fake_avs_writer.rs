@@ -1,12 +1,7 @@
-use alloy::{
-    consensus::{Receipt, ReceiptWithBloom},
-    network::ReceiptResponse,
-    primitives::{Address, TxHash},
-    rpc::types::TransactionReceipt,
-};
+use alloy::primitives::{Address, TxHash};
 use eigen_utils::get_signer;
 use incredible_bindings::IncredibleSquaringTaskManager::{
-    self, G1Point, G2Point, Task, TaskResponse, TaskResponseMetadata,
+    self, G1Point, Task, TaskResponse, TaskResponseMetadata,
 };
 
 use crate::error::ChainIoError;
@@ -14,8 +9,11 @@ use crate::error::ChainIoError;
 /// AvsWriter struct
 #[derive(Debug, Clone)]
 pub struct FakeAvsWriter {
+    /// Task manager address
     pub task_manager_addr: Address,
+    /// Signer
     pub signer: String,
+    /// Rpc url
     pub rpc_url: String,
 }
 

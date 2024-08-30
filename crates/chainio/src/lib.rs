@@ -4,9 +4,8 @@ mod avs_reader;
 /// error
 pub mod error;
 pub use avs_reader::AvsReader;
+/// Fake avs writer
 pub mod fake_avs_writer;
-use core::task;
-use tracing::info;
 
 use alloy::{
     primitives::{Address, U256},
@@ -156,6 +155,13 @@ impl AvsWriter {
         }
     }
 
+    /// Send aggregated response
+    ///
+    /// # Arguments
+    ///
+    /// * `task` - Task
+    /// * `task_response` - Task response
+    /// * `non_signer_stakes_and_signature` - Non signer stakes and signature
     pub async fn send_aggregated_response(
         &self,
         task: Task,
@@ -194,5 +200,3 @@ impl AvsWriter {
         println!("tx for sending response to task to contract {:?}", tx);
     }
 }
-
-// task Task { numberToBeSquared: 2, taskCreatedBlock: 109, quorumNumbers: 0x00, quorumThresholdPercentage: 100 }, task_response: TaskResponse { referenceTaskIndex: 2, numberSquared: 2 }, pub_keys_of_non_signing_operators []

@@ -4,11 +4,14 @@ use incredible_config::IncredibleConfig;
 
 use crate::error::ChainIoError;
 
+/// Reader for the AVS Registry
+#[derive(Debug)]
 pub struct AvsReader {
     avs_registry: AvsRegistryChainReader,
 }
 
 impl AvsReader {
+    /// Builds [`AvsReader`]
     pub async fn build(config: IncredibleConfig) -> Result<Self, ChainIoError> {
         let registry_coordinator_address = config.registry_coordinator_addr()?;
         let operator_state_retriever_address = config.operator_state_retriever_addr()?;
