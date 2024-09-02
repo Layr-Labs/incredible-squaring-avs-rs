@@ -1,9 +1,14 @@
+use std::str::FromStr;
+
 use crate::error::OperatorError;
 use alloy::{
     primitives::{keccak256, Address},
     providers::WsConnect,
     rpc::types::Filter,
-    signers::{k256::ecdsa::SigningKey, local::LocalSigner},
+    signers::{
+        k256::ecdsa::SigningKey,
+        local::{LocalSigner, PrivateKeySigner},
+    },
     sol_types::{SolEvent, SolValue},
 };
 use alloy_provider::{Provider, ProviderBuilder};
@@ -36,8 +41,6 @@ pub struct OperatorBuilder {
 
     client: ClientAggregator,
 
-    aggregator_ip_addr: String,
-
     signer: LocalSigner<SigningKey>,
 
     registry_coordinator: Address,
@@ -48,11 +51,16 @@ pub struct OperatorBuilder {
 impl OperatorBuilder {
     /// Build the Operator Builder
     pub fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
-        // Read ECDSA private key from path
-        let signer = LocalSigner::decrypt_keystore(
-            config.ecdsa_keystore_path(),
-            config.ecdsa_keystore_password(),
-        )?;
+        let signer;
+        if let Some(operator_pvt_key) = config.operator_pvt_key() {
+            signer = PrivateKeySigner::from_str(&operator_pvt_key)?;
+        } else {
+            // Read ECDSA private key from path
+            signer = LocalSigner::decrypt_keystore(
+                config.ecdsa_keystore_path(),
+                config.ecdsa_keystore_password(),
+            )?;
+        }
         // Read BlsKey from path
         let keystore = Keystore::from_file(&config.bls_keystore_path())
             .unwrap()
@@ -71,7 +79,6 @@ impl OperatorBuilder {
             key_pair,
             operator_id: operator_id,
             client: ClientAggregator::new(config.aggregator_ip_addr()),
-            aggregator_ip_addr: config.aggregator_ip_addr(),
             signer,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,

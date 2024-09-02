@@ -56,6 +56,7 @@ pub struct IncredibleContractsConfig {
     /// Service manager
     pub service_manager_addr: String,
 
+    /// erc20 mock strategy address
     pub erc20_mock_strategy_addr: String,
 }
 
@@ -82,6 +83,9 @@ pub struct OperatorRegistrationConfig {
 
     ///
     pub sig_expiry: String,
+
+    /// Optional operator pvt key, if not provided, it will be taken from the [`EcdsaConfig`]
+    pub operator_pvt_key: Option<String>,
 }
 
 /// Operator Configurations
@@ -131,7 +135,7 @@ pub struct BlsConfig {
     pub keystore_password: String,
 }
 
-/// ECDSA keysotre configuration
+/// Optional ECDSA keystore configuration for operator
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(default)]
 pub struct EcdsaConfig {
@@ -265,6 +269,11 @@ impl IncredibleConfig {
 
     pub fn set_task_manager_signer(&mut self, signer: String) {
         self.task_manager_config.signer = signer;
+    }
+
+    /// set the operator pvt key
+    pub fn set_operator_signing_key(&mut self, pvt_key: String) {
+        self.operator_registration_config.operator_pvt_key = Some(pvt_key);
     }
 
     /// get appropriate chainid where incredible squaring will run
@@ -449,6 +458,10 @@ impl IncredibleConfig {
     /// Task manager signer
     pub fn task_manager_signer(&self) -> String {
         self.task_manager_config.signer.clone()
+    }
+
+    pub fn operator_pvt_key(&self) -> Option<String> {
+        self.operator_registration_config.operator_pvt_key.clone()
     }
 }
 

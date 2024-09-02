@@ -26,7 +26,7 @@ use std::net::SocketAddr;
 use std::net::{IpAddr, Ipv4Addr};
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::debug;
+use tracing::{debug, info};
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -374,7 +374,7 @@ pub async fn register_operator_with_el_and_avs(
     quorum_numbers: Bytes,
     socket: String,
 ) -> eyre::Result<()> {
-    println!("start registering ");
+    info!("start registering the operator ");
     let signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     let s = signer.to_field_bytes();
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
@@ -423,7 +423,7 @@ pub async fn register_operator_with_el_and_avs(
         200,
         Some("url".to_string()),
     );
-    let register_to_eigen_layer = el_chain_writer
+    let _ = el_chain_writer
         .register_as_operator(operator_details)
         .await
         .unwrap();
