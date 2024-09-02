@@ -55,6 +55,7 @@ impl ClientAggregator {
                 .await?;
 
             if request {
+                incredible_metrics::inc_num_tasks_accepted_by_aggregator();
                 return Ok(());
             }
 

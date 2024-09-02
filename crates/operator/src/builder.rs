@@ -19,7 +19,6 @@ use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 
 use crate::client::ClientAggregator;
-use incredible_metrics::IncredibleMetrics;
 use tracing::info;
 
 /// Main Operator
@@ -38,8 +37,6 @@ pub struct OperatorBuilder {
     client: ClientAggregator,
 
     aggregator_ip_addr: String,
-
-    metrics: IncredibleMetrics,
 
     signer: LocalSigner<SigningKey>,
 
@@ -63,7 +60,6 @@ impl OperatorBuilder {
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
         let key_pair = BlsKeyPair::new(fr_key)?;
-        let metrics = IncredibleMetrics::new();
         let operator_id = config.get_operator_id()?;
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
@@ -75,7 +71,6 @@ impl OperatorBuilder {
             key_pair,
             operator_id: operator_id,
             client: ClientAggregator::new(config.aggregator_ip_addr()),
-            metrics,
             aggregator_ip_addr: config.aggregator_ip_addr(),
             signer,
             registry_coordinator: registry_coordinator_addr,
@@ -136,7 +131,7 @@ impl OperatorBuilder {
                         taskIndex: data.taskIndex,
                     };
                     info!("operator picked up a new task , index: {} ", data.taskIndex);
-                    self.metrics.increment_num_tasks_received();
+                    incredible_metrics::increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
                     let signed_task_response = self.sign_task_response(task_response)?;
                     let _ = self

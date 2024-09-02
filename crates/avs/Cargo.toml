@@ -15,6 +15,8 @@ alloy.workspace = true
 serde.workspace = true
 eyre.workspace = true
 tracing.workspace = true
+metrics.workspace = true
+metrics-util = "0.17.0"
 
 #incredible
 incredible-config.workspace = true
@@ -22,6 +24,7 @@ incredible-operator.workspace = true
 incredible-challenger.workspace = true
 incredible-aggregator.workspace = true
 incredible-task-generator.workspace = true
+incredible-metrics.workspace = true
 #tokio
 tokio.workspace = true
 

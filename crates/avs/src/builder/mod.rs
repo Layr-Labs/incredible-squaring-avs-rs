@@ -40,7 +40,7 @@ impl DefaultAvsLauncher {
 impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
     async fn launch_avs(self, avs: AvsBuilder) -> eyre::Result<()> {
         info!("launching crates: incredible-squaring-avs-rs");
-
+        incredible_metrics::new();
         // start operator
         let mut operator_builder = OperatorBuilder::build(avs.config.clone())?;
         let mut challenge = Challenger::build(avs.config.clone()).await?;

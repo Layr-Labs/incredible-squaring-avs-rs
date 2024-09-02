@@ -18,9 +18,13 @@ use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
     get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
 };
+use metrics_util::MetricKindMask;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
+use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv4Addr};
+use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::debug;
 
@@ -28,6 +32,8 @@ use tracing::debug;
 #[derive(Debug, Clone, Copy, Default, Args)]
 #[non_exhaustive]
 pub struct NoArgs;
+
+use metrics_exporter_prometheus::PrometheusBuilder;
 
 /// Starts incredible squaring
 #[derive(Debug, Parser)]
@@ -181,7 +187,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let registry_coordinator_address =
             RegistryCoordinator::new(registry_coordinator_address_anvil, provider);
 
-        let s = registry_coordinator_address
+        let _ = registry_coordinator_address
             .blsApkRegistry()
             .call()
             .await
@@ -222,6 +228,16 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         debug!("bls keystore path : {:?}", self.bls_keystore_path);
         debug!("bls keystore password : {:?}", self.bls_keystore_password);
         let mut config = IncredibleConfig::default();
+
+        let socket_addr_metrics = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 9091);
+        PrometheusBuilder::new()
+            .with_http_listener(socket_addr_metrics)
+            .idle_timeout(
+                MetricKindMask::COUNTER | MetricKindMask::HISTOGRAM,
+                Some(Duration::from_secs(10)),
+            )
+            .install()
+            .expect("failed to install Prometheus recorder");
 
         let Self {
             ws_rpc_url,
