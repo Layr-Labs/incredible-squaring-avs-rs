@@ -32,18 +32,9 @@ use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
-    get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
 };
 
-use alloy::primitives::U256;
-use eigen_utils::{
-    binding::RegistryCoordinator::{self, serviceManagerReturn},
-    get_provider, get_signer,
-};
-use incredible_aggregator::Aggregator;
-use incredible_operator::builder::OperatorBuilder;
-use incredible_task_generator::TaskManager;
-
+/// Builds [`Challenger`]
 pub async fn build_challenger() -> Challenger {
     let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
     config.set_registry_coordinator_addr(

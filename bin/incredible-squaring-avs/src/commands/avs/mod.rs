@@ -1,21 +1,19 @@
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use alloy::signers::local::LocalSigner;
 use clap::{value_parser, Args, Parser};
-use eigen_client_avsregistry::{
-    error::AvsRegistryError, reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter,
-};
+use eigen_client_avsregistry::{reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter};
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::writer::ELChainWriter;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_testing_utils::anvil_constants::{
-    self, get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
+    get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::binding::{RegistryCoordinator, IERC20};
+use eigen_utils::binding::RegistryCoordinator;
 use eigen_utils::get_provider;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
-use incredible_config::{ELConfig, IncredibleConfig};
+use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
     get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
@@ -23,13 +21,9 @@ use incredible_testing_utils::{
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
-use std::io::Read;
-use std::ops::Add;
-use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::{debug, info};
+use tracing::debug;
 
-use crate::commands::avs;
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
 #[non_exhaustive]
@@ -211,7 +205,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             get_incredible_squaring_task_manager().await;
         let task_manager_signer_anvil =
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string();
-        let w = AvsRegistryChainReader::new(
+        let _ = AvsRegistryChainReader::new(
             get_logger(),
             registry_coordinator_address_anvil,
             operator_state_retriever_address_anvil,
@@ -318,17 +312,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt.unwrap());
         config.set_socket(socket.unwrap());
         config.set_quorum_number(quorum_number.unwrap());
-        // config.
-        println!(
-            "registry coordinator address config {:?}",
-            config.registry_coordinator_addr().unwrap()
-        );
         config.set_operator_id(operator_id);
         config.set_operator_address(operator_address);
         config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
-        println!("sig expiry {}", config.sig_expiry().unwrap());
         if register_operator {
-            println!("register operator");
             let s = register_operator_with_el_and_avs(
                 rpc_url.clone(),
                 ecdsa_keystore_path.clone(),
@@ -378,9 +365,7 @@ pub async fn register_operator_with_el_and_avs(
     socket: String,
 ) -> eyre::Result<()> {
     println!("start registering ");
-    println!("quorum num :{:?}", quorum_numbers);
     let signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
-    println!("signer_{:?}", signer.address());
     let s = signer.to_field_bytes();
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
@@ -432,11 +417,7 @@ pub async fn register_operator_with_el_and_avs(
         .register_as_operator(operator_details)
         .await
         .unwrap();
-    println!("register to eigen layer hash {:?}", register_to_eigen_layer);
 
-    // TODO its failing .
-    // let deposit_into_strategy_tx = el_chain_writer.deposit_erc20_into_strategy(strategy_manager_address, U256::from(1000)).await.unwrap();
-    // println!("deposit into strategy tx {:?}", deposit_into_strategy_tx);
     deposit_into_strategy(
         signer.address(),
         erc20_strategy_address,
@@ -465,6 +446,15 @@ pub async fn register_operator_with_el_and_avs(
     Ok(())
 }
 
+/// Deposit into strategy
+///
+/// # Arguments
+///
+/// * `operator_address` - The address of the operator
+/// * `strategy_address` - The address of the strategy
+/// * `amount` - The amount to deposit
+/// * `el_reader` - The EL chain reader
+/// * `el_writer` - The EL chain writer
 pub async fn deposit_into_strategy(
     operator_address: Address,
     strategy_address: Address,
@@ -472,12 +462,10 @@ pub async fn deposit_into_strategy(
     el_reader: ELChainReader,
     el_writer: ELChainWriter,
 ) {
-    println!("strategy_address {:?}", strategy_address);
     let (a, b, c) = el_reader
         .get_strategy_and_underlying_erc20_token(strategy_address)
         .await
         .unwrap();
-    println!("underlying address {:?}", b);
 
     let s = el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
