@@ -66,8 +66,7 @@ impl Challenger {
 
     /// Start the challenger
     pub async fn start_challenger(&mut self) -> Result<()> {
-        info!("Starting Challenger.");
-        info!("Subscribed to new tasks");
+        info!("challenger crate launched");
 
         let wa = get_ws_provider(&self.ws_url).await?;
 
@@ -99,7 +98,7 @@ impl Challenger {
                 },
                 else => {
                     // If both streams are exhausted, break the loop.
-                    info!("No more logs to process, exiting loop.");
+                    info!("challenger:No more logs to process, exiting loop.");
                     break;
                 }
             };
@@ -108,8 +107,7 @@ impl Challenger {
 
             if let Some(tp) = topic {
                 if *tp == new_task_created_log {
-                    info!("challenger picked up a new task ");
-                    println!("challengerlog {:?}", log);
+                    info!("challenger: picked up a new task ");
                     let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
 
                     if let Some(data) = new_task_created_option {
@@ -132,10 +130,7 @@ impl Challenger {
                         }
                     }
                 } else if *tp == task_responded_log {
-                    info!(
-                        "Task response log received by challenger {:?}",
-                        task_responded_log
-                    );
+                    info!("challenger: received a task response log");
 
                     let task_index_result = self.process_task_response_log(log).await;
 
@@ -174,11 +169,7 @@ impl Challenger {
     pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
         if let Some(number_to_be_squared) = self.tasks.get(&task_index) {
             let num_to_square = number_to_be_squared.numberToBeSquared;
-            println!(
-                "task response for index {:?} {:?}",
-                task_index,
-                self.task_responses.get(&task_index)
-            );
+
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
 
@@ -186,7 +177,7 @@ impl Challenger {
                     let _ = self.raise_challenge(task_index).await;
                     return Ok(());
                 }
-                info!("task response is correct, no challenge");
+                info!("challenger:correct answer, no challenge raised");
                 Ok(())
             } else {
                 return Err(ChallengerError::TaskResponseNotFound);
@@ -225,21 +216,12 @@ impl Challenger {
         &mut self,
         task_response_log: Log,
     ) -> Result<u32, ChallengerError> {
-        println!(
-            "process task response log_for_index {:?}",
-            task_response_log
-        );
         let non_signing_operator_pub_keys_result = self
             .get_non_signing_operator_pub_keys(task_response_log.clone())
             .await;
-        println!(
-            "non signing operator pub keys result {:?}",
-            non_signing_operator_pub_keys_result
-        );
         match non_signing_operator_pub_keys_result {
             Ok(non_signing_operator_pub_key) => {
                 let decoded_event = task_response_log.log_decode::<TaskResponded>().ok();
-                println!("decoded event {:?}", decoded_event);
                 if let Some(decoded) = decoded_event {
                     let data = decoded.data();
 
@@ -251,12 +233,6 @@ impl Challenger {
 
                     self.task_responses
                         .insert(data.taskResponse.referenceTaskIndex, task_response_data);
-                    println!(
-                        "process task response log for index {:?}  , number squared {:?}, {:?}",
-                        data.taskResponse.referenceTaskIndex,
-                        data.taskResponse.numberSquared,
-                        task_response_log
-                    );
 
                     Ok(data.taskResponse.referenceTaskIndex)
                 } else {
@@ -278,24 +254,17 @@ impl Challenger {
                 taskResponse,
                 taskResponseMetadata,
             } = task_responded.data();
-            println!(
-                "task_responded {:?} task_response_metadata {:?}",
-                task_responded, taskResponseMetadata
-            );
+
             let tx_hash_result = task_responded.transaction_hash;
             if let Some(tx_hash) = tx_hash_result {
                 let provider = get_provider(&self.rpc_url);
 
                 let transaction_data_result = provider.get_transaction_by_hash(tx_hash).await;
-                println!(
-                    "tx_res_for index:  {:?} {:?}",
-                    taskResponse.referenceTaskIndex, transaction_data_result
-                );
+
                 match transaction_data_result {
                     Ok(transaction_data_option) => {
                         if let Some(transaction_data) = transaction_data_option {
                             let calldata = transaction_data.input;
-                            println!("calldata {:?}", calldata);
                             let decoded = respondToTaskCall::abi_decode(&calldata, false);
 
                             match decoded {

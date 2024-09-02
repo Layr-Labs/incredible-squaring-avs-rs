@@ -110,12 +110,9 @@ impl OperatorBuilder {
         )
         .await
         .unwrap();
-        println!("operator_addr {:?}", self.operator_addr.clone());
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr.clone())
             .await?;
-
-        info!("is_operaotor_registered {}", is_registered);
 
         self.client.dial_aggregator_rpc_client();
         if is_registered {
@@ -142,15 +139,10 @@ impl OperatorBuilder {
                     self.metrics.increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
                     let signed_task_response = self.sign_task_response(task_response)?;
-                    info!(
-                        "before sending response to client {:?}",
-                        signed_task_response
-                    );
                     let _ = self
                         .client
                         .send_signed_task_response(signed_task_response)
                         .await;
-                    info!("sent signed task response to client");
                 }
             }
         }
@@ -168,7 +160,6 @@ impl OperatorBuilder {
         let signed_msg = self.key_pair.sign_message(hash_msg.as_slice());
         let signed_task_response =
             SignedTaskResponse::new(task_response, signed_msg, self.operator_id);
-        info!("signed task response : {:?}", signed_task_response);
         Ok(signed_task_response)
     }
 }

@@ -367,7 +367,6 @@ impl IncredibleConfig {
     /// get quorum number
     pub fn quorum_number(&self) -> Result<Bytes, ConfigError> {
         let s = Bytes::from_str(&self.operator_registration_config.quorum_number);
-        println!("quorum number {:?}", s);
         match s {
             Ok(quorum_num) => Ok(quorum_num),
             Err(e) => Err(ConfigError::HexParse(e)),

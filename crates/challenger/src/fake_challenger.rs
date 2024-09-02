@@ -60,14 +60,10 @@ impl FakeChallenger {
         let non_signing_operator_pub_keys_result = self
             .get_non_signing_operator_pub_keys(task_response_log.clone())
             .await;
-        println!(
-            "non signing operator pub keys result {:?}",
-            non_signing_operator_pub_keys_result
-        );
+
         match non_signing_operator_pub_keys_result {
             Ok(non_signing_operator_pub_key) => {
                 let decoded_event = task_response_log.log_decode::<TaskResponded>().ok();
-                println!("decoded event {:?}", decoded_event);
                 if let Some(decoded) = decoded_event {
                     let data = decoded.data();
 
@@ -79,12 +75,6 @@ impl FakeChallenger {
 
                     self.task_responses
                         .insert(data.taskResponse.referenceTaskIndex, task_response_data);
-                    println!(
-                        "process task response log for index {:?}  , number squared {:?}, {:?}",
-                        data.taskResponse.referenceTaskIndex,
-                        data.taskResponse.numberSquared,
-                        task_response_log
-                    );
 
                     Ok(data.taskResponse.referenceTaskIndex)
                 } else {

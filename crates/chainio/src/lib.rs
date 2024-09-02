@@ -21,6 +21,7 @@ use incredible_bindings::{
     IncredibleSquaringServiceManager::{self, incredibleSquaringTaskManagerReturn},
     IncredibleSquaringTaskManager::{self, G1Point, Task, TaskResponse, TaskResponseMetadata},
 };
+use tracing::info;
 
 /// AvsWriter struct
 #[derive(Debug)]
@@ -40,7 +41,6 @@ impl AvsWriter {
         let provider = get_provider(&rpc_url);
         let contract_registry_coordinator =
             RegistryCoordinator::new(registry_coordinator_addr, &provider);
-        println!("4444");
         let service_manager_addr_return = contract_registry_coordinator
             .serviceManager()
             .call()
@@ -52,8 +52,6 @@ impl AvsWriter {
         let contract_service_manager =
             IncredibleSquaringServiceManager::new(service_manager_addr, &provider);
 
-        println!("service manager addr {}", service_manager_addr);
-
         let task_manager_address_return = contract_service_manager
             .incredibleSquaringTaskManager()
             .call()
@@ -61,7 +59,6 @@ impl AvsWriter {
         let incredibleSquaringTaskManagerReturn {
             _0: task_manager_address,
         } = task_manager_address_return;
-        println!("task manager addr {}", service_manager_addr);
 
         Ok(AvsWriter {
             task_manager_addr: task_manager_address,
@@ -127,7 +124,7 @@ impl AvsWriter {
         task_response_metadata: TaskResponseMetadata,
         pub_keys_of_non_signing_operators: Vec<G1Point>,
     ) -> Result<alloy::rpc::types::TransactionReceipt, ChainIoError> {
-        println!("raised challenge , task {:?}, task_response: {:?}, pub_keys_of_non_signing_operators {:?}", task, task_response, pub_keys_of_non_signing_operators);
+        info!("raised challenge , task {:?}, task_response: {:?}, pub_keys_of_non_signing_operators {:?}", task, task_response, pub_keys_of_non_signing_operators);
         let signer = get_signer(self.signer.clone(), &self.rpc_url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
@@ -142,7 +139,6 @@ impl AvsWriter {
         match challenge_tx_call.send().await {
             Ok(challenge_tx) => {
                 let receipt_result = challenge_tx.get_receipt().await;
-                println!("receipt result {:?}", receipt_result);
                 match receipt_result {
                     Ok(receipts) => Ok(receipts),
                     Err(e) => Err(ChainIoError::AlloyContractError(
@@ -172,23 +168,6 @@ impl AvsWriter {
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
 
-        println!(
-            "non signer staker indices len {:?}",
-            non_signer_stakes_and_signature.nonSignerStakeIndices.len()
-        );
-        println!(
-            "quorums apk indices g1{:?}",
-            non_signer_stakes_and_signature.quorumApkIndices.len()
-        );
-        println!(
-            "total stake indices{:?}",
-            non_signer_stakes_and_signature.totalStakeIndices.len()
-        );
-        println!(
-            "quorum apk{:?} ",
-            non_signer_stakes_and_signature.quorumApks.len()
-        );
-
         let tx = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
             .send()
@@ -197,6 +176,5 @@ impl AvsWriter {
             .get_receipt()
             .await
             .unwrap();
-        println!("tx for sending response to task to contract {:?}", tx);
     }
 }

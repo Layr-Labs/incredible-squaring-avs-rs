@@ -178,10 +178,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let registry_coordinator_address_anvil =
             get_incredible_squaring_registry_coordinator().await;
         let provider = get_provider(&self.rpc_url);
-        println!(
-            "registry coordinator address {:?}",
-            registry_coordinator_address_anvil
-        ); // 0x276c216d241856199a83bf27b2286659e5b877d3
         let registry_coordinator_address =
             RegistryCoordinator::new(registry_coordinator_address_anvil, provider);
 
@@ -191,7 +187,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             .await
             .map_err(|e| e.to_string())
             .unwrap();
-        println!("bls apk return {:?}", s);
 
         let operator_state_retriever_address_anvil =
             get_incredible_squaring_operator_state_retriever().await;
@@ -339,8 +334,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
         let s = avs_launcher.launch_avs(avs_builder).await;
-
-        println!("launch avs result: {:?}", s);
 
         Ok(())
     }

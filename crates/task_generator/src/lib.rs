@@ -39,7 +39,6 @@ impl TaskManager {
     /// Creates new task every 10 seconds
     pub async fn start(&self) -> eyre::Result<()> {
         info!("Started creating new task ");
-        println!("self.signer{:?}", self.signer.clone());
         let task_manager_contract = IncredibleSquaringTaskManager::new(
             self.task_manager_address,
             get_signer(self.signer.clone(), &self.rpc_url),

@@ -27,7 +27,6 @@ impl ClientAggregator {
     pub fn dial_aggregator_rpc_client(&mut self) {
         let url =
             reqwest::Url::parse(&format!("http://{}", &self.aggregator_ip_port_address)).unwrap();
-        println!("rpc client url {:?}", url);
         let client = ReqwestClient::new_http(url);
 
         self.client = Some(client)
@@ -48,7 +47,6 @@ impl ClientAggregator {
                 "id": 1,
                 "jsonrpc": "2.0"
             });
-            println!("params before sending response {}", params);
             let request = self
                 .client
                 .as_ref()

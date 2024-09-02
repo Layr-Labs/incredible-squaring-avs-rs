@@ -39,7 +39,7 @@ pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
 /// Block Time Seconds : 12 seconds
 pub const BLOCK_TIME_SECONDS: u32 = 12;
 
-///
+/// Aggregator
 #[derive(Debug)]
 pub struct Aggregator {
     port_address: String,
@@ -163,10 +163,6 @@ impl Aggregator {
             move |params: Params| {
                 let aggregator = Arc::clone(&aggregator);
                 async move {
-                    info!(
-                        "received signed task response by aggregator with params{:?}",
-                        params
-                    );
                     let signed_task_response: SignedTaskResponse = match params {
                         Params::Map(map) => serde_json::from_value(map["params"].clone()).unwrap(),
                         _ => {
@@ -176,11 +172,6 @@ impl Aggregator {
                             }
                         }
                     };
-
-                    println!(
-                        "signed task response received by aggregator {:?}",
-                        signed_task_response
-                    );
 
                     // Call the handle_signed_task_response function
                     let result = aggregator
@@ -235,7 +226,6 @@ impl Aggregator {
             info!("received new task created in aggregator ");
 
             let NewTaskCreated { taskIndex, task } = log.log_decode()?.inner.data;
-            println!("task index :{} , task {:?}", taskIndex, task);
 
             aggregator
                 .lock()
@@ -291,8 +281,6 @@ impl Aggregator {
         &mut self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<(), AggregatorError> {
-        info!("handle signed task response {:?}", signed_task_response);
-
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
         let task_response_digest =
@@ -349,10 +337,6 @@ impl Aggregator {
         &self,
         response: BlsAggregationServiceResponse,
     ) {
-        info!(
-            "blsaggregationserviceresponse for index {:?} {:?}",
-            response, response.task_index
-        );
         let mut non_signer_pub_keys = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
             let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
@@ -361,7 +345,6 @@ impl Aggregator {
 
         let mut quorum_apks = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
-            info!("g1_quorum_apks{:?}", pub_key.g1());
             let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
             quorum_apks.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
         }
@@ -386,10 +369,6 @@ impl Aggregator {
             totalStakeIndices: response.total_stake_indices,
             nonSignerStakeIndices: response.non_signer_stake_indices,
         };
-        println!(
-            "non_signer_stakes_and_signature {:?}",
-            non_signer_stakes_and_signature
-        );
 
         let task = &self.tasks[&response.task_index];
         let task_response =
@@ -418,4 +397,26 @@ fn check_double_mapping(
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_check_double_mapping() {
+        let mut outer_map = HashMap::new();
+        let mut inner_map = HashMap::new();
+        inner_map.insert(
+            TaskResponseDigest::default(),
+            IncredibleSquaringTaskManager::TaskResponse {
+                referenceTaskIndex: "0".parse().unwrap(),
+                numberSquared: "0".parse().unwrap(),
+            },
+        );
+        outer_map.insert(1, inner_map);
+        let result = check_double_mapping(&outer_map, 1, TaskResponseDigest::default());
+        assert!(result.is_some());
+    }
 }
