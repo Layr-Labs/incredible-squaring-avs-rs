@@ -83,6 +83,7 @@ impl OperatorBuilder {
         })
     }
 
+    /// Get the [`BlsKeyPair`]
     pub fn bls_key_pair(&self) -> BlsKeyPair {
         self.key_pair.clone()
     }
@@ -183,8 +184,7 @@ mod tests {
     use eigen_crypto_bn254::utils::verify_message;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
-        get_incredible_squaring_registry_coordinator, get_incredible_squaring_strategy_address,
-        get_incredible_squaring_task_manager,
+        get_incredible_squaring_registry_coordinator,
     };
     use std::str::FromStr;
     use IncredibleSquaringTaskManager::Task;
