@@ -126,7 +126,11 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "TASK_MANAGER")]
     task_manager_addr: Option<String>,
 
-    #[arg(long, value_name = "SIGNER")]
+    #[arg(
+        long,
+        value_name = "SIGNER",
+        default_value = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6"
+    )]
     signer: Option<String>,
 
     #[arg(long, value_name = "ERC20_MOCK_STRATEGY_ADDRESS")]
@@ -204,8 +208,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
         let incredible_squaring_task_manager_address_anvil =
             get_incredible_squaring_task_manager().await;
-        let task_manager_signer_anvil =
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string();
+
         let _ = AvsRegistryChainReader::new(
             get_logger(),
             registry_coordinator_address_anvil,
@@ -264,7 +267,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             signer,
             erc20_mock_strategy_address,
             task_manager_signer,
-            ext,
+            ..
         } = *self;
 
         let now = SystemTime::now();
@@ -279,10 +282,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         } else {
             println!("System time seems to be before the UNIX epoch.");
         }
-        config.set_task_manager_signer(task_manager_signer.unwrap_or(task_manager_signer_anvil));
-        config.set_signer(signer.unwrap_or(
-            "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6".to_string(),
-        ));
+        config.set_task_manager_signer(task_manager_signer.unwrap());
+        config.set_signer(signer.unwrap());
         config.set_erc20_mock_strategy_address(
             erc20_mock_strategy_address.unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
         );

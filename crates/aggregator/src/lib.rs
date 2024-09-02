@@ -25,7 +25,6 @@ use incredible_bindings::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NonSignerStakesAndSignature};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
-use incredible_metrics;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
