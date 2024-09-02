@@ -59,7 +59,7 @@ impl Challenger {
             task_responses: HashMap::new(),
         })
     }
-
+    /// Get tasks
     pub fn tasks(&self) -> &HashMap<u32, Task> {
         &self.tasks
     }
@@ -345,22 +345,15 @@ mod tests {
     use super::*;
     use alloy::{
         hex::FromHex,
-        primitives::{address, Bytes, FixedBytes, LogData, TxHash, B256, U256},
-        sol_types::SolValue,
+        primitives::{Bytes, FixedBytes, TxHash, U256},
     };
-    use core::task;
-    use eigen_utils::get_signer;
-    use incredible_bindings::IncredibleSquaringTaskManager::{
-        self, G2Point, NonSignerStakesAndSignature,
-    };
-    use incredible_chainio::fake_avs_writer::{self, FakeAvsWriter};
+    use incredible_chainio::fake_avs_writer::FakeAvsWriter;
     use incredible_task_generator::TaskManager;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
-        get_incredible_squaring_registry_coordinator, get_incredible_squaring_strategy_address,
-        get_incredible_squaring_task_manager,
+        get_incredible_squaring_registry_coordinator, get_incredible_squaring_task_manager,
     };
-    use std::{io::Read, str::FromStr};
+    use std::str::FromStr;
     const INCREDIBLE_CONFIG_FILE: &str = r#"
 [rpc_config]
 chain_id = 31337
@@ -384,8 +377,8 @@ operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa
 signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 "#;
 
-    ///
-    pub async fn build_challenger() -> Challenger {
+    /// Build challenger
+    pub(crate) async fn build_challenger() -> Challenger {
         let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
         config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
@@ -496,7 +489,7 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
     }
 
     #[tokio::test]
-    pub async fn test_process_task_response_log() {
+    pub(crate) async fn test_process_task_response_log() {
         let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
         config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
