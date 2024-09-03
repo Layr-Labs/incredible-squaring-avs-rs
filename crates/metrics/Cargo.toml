@@ -21,6 +21,5 @@ futures-util.workspace = true
 
 
 # eigen-rs
-eigen-metrics-derive.workspace = true
 metrics.workspace = true
 metrics-util = "0.17.0"
