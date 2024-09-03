@@ -186,7 +186,12 @@ impl Aggregator {
                 }
             }
         });
-        let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
+        let socket: SocketAddr = aggregator
+            .lock()
+            .await
+            .port_address
+            .parse()
+            .expect("Unable to parse socket address");
         let server = ServerBuilder::new(io)
             .cors(DomainsValidation::AllowOnly(vec![
                 AccessControlAllowOrigin::Any,

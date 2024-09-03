@@ -14,28 +14,28 @@ pub enum OperatorError {
     /// Failed to derive Cargo Manfest Dir
     #[error("Could not derive cargo manifest path")]
     CargoManifestDir,
-
+    /// Failed to build avsregistry reader
     #[error("Failed to build avsregistry reader")]
     AvsRegistryChainReader,
-
+    /// Could not sign the hash using keypair
     #[error("Could not sign the hash using keypair")]
     SignUsingBlsKeyPair,
-
+    /// Failed to create Encoded bls keystore
     #[error("Failed to create Encoded bls keystore ")]
     EncodedKeystore,
-
+    /// Failed to parse bls keystore path
     #[error("failed to parse bls keystore path ")]
     BlsKeystorePath,
-
+    /// Failed to parse config
     #[error("Config error {0}")]
     ConfigParseError(#[from] ConfigError),
-
+    /// Local signer error
     #[error("Local signer error ")]
     AlloySignerError(#[from] LocalSignerError),
-
+    /// Bls Keystore error
     #[error("Bls Keystore error ")]
     BlsKeystoreError(#[from] KeystoreError),
-
+    /// Bls crate(SDK) error
     #[error("Bls crate(SDK) error")]
     EigenBlsError(#[from] BlsError),
 }

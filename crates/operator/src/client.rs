@@ -4,7 +4,7 @@ use incredible_aggregator::rpc_server::SignedTaskResponse;
 use reqwest::Client;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
-use tracing::{debug, error, info};
+use tracing::{debug, info};
 
 /// Client Aggregator
 #[derive(Debug, Clone)]

@@ -168,7 +168,7 @@ impl AvsWriter {
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
 
-        let tx = task_manager_contract
+        let _ = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
             .send()
             .await
