@@ -1,5 +1,5 @@
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
-use alloy::signers::local::LocalSigner;
+use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::{value_parser, Args, Parser};
 use eigen_client_avsregistry::{reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter};
 use eigen_client_elcontracts::reader::ELChainReader;
@@ -24,6 +24,7 @@ use std::ffi::OsString;
 use std::fmt;
 use std::net::SocketAddr;
 use std::net::{IpAddr, Ipv4Addr};
+use std::str::FromStr;
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{debug, info};
@@ -142,6 +143,13 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
         default_value = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
     )]
     task_manager_signer: Option<String>,
+
+    #[arg(
+        long,
+        value_name = "OPERATOR_PVT_KEY",
+        default_value = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    )]
+    operator_pvt_key: Option<String>,
 
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
@@ -267,6 +275,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             signer,
             erc20_mock_strategy_address,
             task_manager_signer,
+            operator_pvt_key,
             ..
         } = *self;
 
@@ -303,6 +312,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_avs_directory_address(
             avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
         );
+        config.set_operator_signing_key(operator_pvt_key.unwrap());
         // use value from config , if None , then use anvil
         config.set_registry_coordinator_addr(
             registry_coordinator_address
@@ -329,6 +339,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
         if register_operator {
             let s = register_operator_with_el_and_avs(
+                config.operator_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_path.clone(),
                 ecdsa_keystore_password.clone(),
@@ -358,6 +369,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
 /// Register operator in eigenlayer and avs
 pub async fn register_operator_with_el_and_avs(
+    operator_pvt_key: Option<String>,
     rpc_url: String,
     ecdsa_keystore_path: String,
     ecdsa_keystore_password: String,
@@ -375,7 +387,14 @@ pub async fn register_operator_with_el_and_avs(
     socket: String,
 ) -> eyre::Result<()> {
     info!("start registering the operator ");
-    let signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+        println!("signer from operator pvt key {:?}", signer.address());
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+        println!("signer from ecdsa keystore {:?}", signer.address());
+    }
     let s = signer.to_field_bytes();
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
