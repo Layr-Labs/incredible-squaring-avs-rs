@@ -281,12 +281,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
         let now = SystemTime::now();
         let mut expiry: U256 = U256::from(0);
-        // Convert SystemTime to a Duration since the UNIX epoch
         if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
-            // Convert the duration to seconds
             let seconds = duration_since_epoch.as_secs(); // Returns a u64
 
-            // Convert seconds to U256
+            // Signature expiry is at 10000 seconds 
             expiry = U256::from(seconds) + U256::from(10000);
         } else {
             println!("System time seems to be before the UNIX epoch.");
@@ -338,7 +336,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_operator_address(operator_address);
         config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
         if register_operator {
-            let s = register_operator_with_el_and_avs(
+            let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_path.clone(),
@@ -361,7 +359,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         }
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
-        let s = avs_launcher.launch_avs(avs_builder).await;
+        let _ = avs_launcher.launch_avs(avs_builder).await;
 
         Ok(())
     }
@@ -390,10 +388,8 @@ pub async fn register_operator_with_el_and_avs(
     let signer;
     if let Some(operator_key) = operator_pvt_key {
         signer = PrivateKeySigner::from_str(&operator_key)?;
-        println!("signer from operator pvt key {:?}", signer.address());
     } else {
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
-        println!("signer from ecdsa keystore {:?}", signer.address());
     }
     let s = signer.to_field_bytes();
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
@@ -447,14 +443,7 @@ pub async fn register_operator_with_el_and_avs(
         .await
         .unwrap();
 
-    deposit_into_strategy(
-        signer.address(),
-        erc20_strategy_address,
-        U256::from(10000),
-        el_chain_reader,
-        el_chain_writer,
-    )
-    .await;
+    deposit_into_strategy(erc20_strategy_address, U256::from(10000), el_chain_writer).await;
     let tx_hash = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             key_pair,
@@ -464,14 +453,13 @@ pub async fn register_operator_with_el_and_avs(
             socket,
         )
         .await?;
-    println!(
-        "tx hash for registering operator in quorum with avs registry coordinator {}",
+    debug!(
+        "tx hash for registering operator in quorum with avs registry coordinator {:?}",
         tx_hash
     );
 
     let s = avs_reader.is_operator_registered(signer.address()).await?;
-    println!("is operators registered {:?}", s);
-
+    info!("is operator registered :{:?}", s);
     Ok(())
 }
 
@@ -479,27 +467,17 @@ pub async fn register_operator_with_el_and_avs(
 ///
 /// # Arguments
 ///
-/// * `operator_address` - The address of the operator
 /// * `strategy_address` - The address of the strategy
 /// * `amount` - The amount to deposit
 /// * `el_reader` - The EL chain reader
 /// * `el_writer` - The EL chain writer
 pub async fn deposit_into_strategy(
-    operator_address: Address,
     strategy_address: Address,
     amount: U256,
-    el_reader: ELChainReader,
     el_writer: ELChainWriter,
 ) {
-    let (a, b, c) = el_reader
-        .get_strategy_and_underlying_erc20_token(strategy_address)
-        .await
-        .unwrap();
-
-    let s = el_writer
+    let _ = el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
         .await
         .unwrap();
-
-    println!("deposit into strategy tx {:?}", s);
 }
