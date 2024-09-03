@@ -1677,7 +1677,7 @@ dependencies = [
 [[package]]
 name = "eigen-cli"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-contract",
  "alloy-json-rpc",
@@ -1710,7 +1710,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -1733,7 +1733,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -1747,7 +1747,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-eth"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -1771,12 +1771,12 @@ dependencies = [
 [[package]]
 name = "eigen-contract-bindings"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1793,7 +1793,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -1805,7 +1805,7 @@ dependencies = [
 [[package]]
 name = "eigen-logging"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "ctor",
  "once_cell",
@@ -1814,9 +1814,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-metrics"
+version = "0.0.1-alpha"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
+dependencies = [
+ "eigen-logging",
+ "eyre",
+ "hyper 0.14.29",
+ "metrics",
+ "metrics-exporter-prometheus",
+ "metrics-util",
+]
+
+[[package]]
 name = "eigen-metrics-collectors-rpc-calls"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -1825,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-avsregistry"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1841,7 +1854,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-blsaggregation"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1859,7 +1872,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-primitives",
  "alloy-provider",
@@ -1880,7 +1893,7 @@ dependencies = [
 [[package]]
 name = "eigen-testing-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-network",
  "alloy-primitives",
@@ -1894,7 +1907,7 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-primitives",
  "ark-serialize 0.4.2",
@@ -1908,7 +1921,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2b8ce9b#2b8ce9b980e36b3a94e7812b8f89f5e3052a22d9"
 dependencies = [
  "alloy-contract",
  "alloy-json-rpc",
@@ -3121,13 +3134,16 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "alloy-provider",
+ "eigen-metrics",
  "eyre",
  "futures-util",
  "incredible-bindings",
  "incredible-config",
  "metrics",
  "metrics-util",
+ "reqwest 0.12.5",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]

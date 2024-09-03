@@ -70,22 +70,22 @@ incredible-testing-utils = {path = "crates/testing-utils/"}
 incredible-task-generator = {path = "crates/task_generator/"}
 
 # eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-metrics-collectors-rpc-calls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-eigen-client-eth = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
+eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-metrics-collectors-rpc-calls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-client-eth = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
 
 # testing
 integration-tests = {path = "integration-tests/"}
