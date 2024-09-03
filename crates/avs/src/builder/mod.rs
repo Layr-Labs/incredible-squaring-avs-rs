@@ -42,7 +42,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
         // start operator
-        let mut operator_builder = OperatorBuilder::build(avs.config.clone())?;
+        let mut operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
         let mut challenge = Challenger::build(avs.config.clone()).await?;
         let operator_service = operator_builder
             .start_operator()

@@ -177,8 +177,6 @@ mod tests {
     use super::*;
     use alloy::primitives::Bytes;
     use alloy::primitives::U256;
-    use ark_ec::AffineRepr;
-    use ark_ff::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -221,7 +219,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
 
         assert_eq!(
             U256::from_limbs(
@@ -265,7 +263,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
 
         let task_response = operator_builder.process_new_task(new_task_created);
 
@@ -287,7 +285,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let _ = OperatorBuilder::build(incredible_config).unwrap();
+        let _ = OperatorBuilder::build(incredible_config).await.unwrap();
     }
 
     #[tokio::test]
@@ -309,7 +307,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
         let signed_task_response = operator_builder
             .sign_task_response(task_response.clone())
             .unwrap();
