@@ -17,7 +17,6 @@ use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_logger;
-use eigen_metrics_collectors_rpc_calls::RpcCallsMetrics;
 use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
@@ -177,6 +176,8 @@ mod tests {
     use super::*;
     use alloy::primitives::Bytes;
     use alloy::primitives::U256;
+    use ark_ec::AffineRepr;
+    use ark_ff::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
