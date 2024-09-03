@@ -84,7 +84,8 @@ eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , r
 eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
 eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
 eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
-
+eigen-metrics-collectors-rpc-calls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
+eigen-client-eth = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2d7db50"}
 
 # testing
 integration-tests = {path = "integration-tests/"}

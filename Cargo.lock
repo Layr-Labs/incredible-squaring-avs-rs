@@ -1745,6 +1745,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-client-eth"
+version = "0.0.1-alpha"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+dependencies = [
+ "alloy-consensus",
+ "alloy-eips",
+ "alloy-json-rpc",
+ "alloy-primitives",
+ "alloy-provider",
+ "alloy-pubsub",
+ "alloy-rlp",
+ "alloy-rpc-types-eth",
+ "alloy-transport",
+ "alloy-transport-http",
+ "alloy-transport-ws",
+ "async-trait",
+ "eigen-logging",
+ "eigen-metrics-collectors-rpc-calls",
+ "hex",
+ "thiserror",
+ "url",
+]
+
+[[package]]
 name = "eigen-contract-bindings"
 version = "0.0.1-alpha"
 source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
@@ -1787,6 +1811,15 @@ dependencies = [
  "once_cell",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "eigen-metrics-collectors-rpc-calls"
+version = "0.0.1-alpha"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=2d7db50#2d7db50aba948a721a06f125bc8eb9fe709a0e81"
+dependencies = [
+ "eigen-logging",
+ "metrics",
 ]
 
 [[package]]
@@ -3107,10 +3140,13 @@ dependencies = [
  "ark-ff 0.4.2",
  "eigen-cli",
  "eigen-client-avsregistry",
+ "eigen-client-eth",
  "eigen-crypto-bls",
  "eigen-crypto-bn254",
  "eigen-logging",
+ "eigen-metrics-collectors-rpc-calls",
  "eigen-types",
+ "eigen-utils",
  "eyre",
  "futures-util",
  "hex",

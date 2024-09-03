@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use crate::client::ClientAggregator;
 use crate::error::OperatorError;
 use alloy::{
     primitives::{keccak256, Address},
@@ -13,8 +14,10 @@ use alloy::{
 };
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_logger;
+use eigen_metrics_collectors_rpc_calls::RpcCallsMetrics;
 use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
@@ -22,8 +25,6 @@ use incredible_aggregator::rpc_server::SignedTaskResponse;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NewTaskCreated, TaskResponse};
 use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
-
-use crate::client::ClientAggregator;
 use tracing::info;
 
 /// Main Operator
@@ -50,7 +51,11 @@ pub struct OperatorBuilder {
 
 impl OperatorBuilder {
     /// Build the Operator Builder
-    pub fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
+    pub async fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
+        let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url())
+            .await
+            .unwrap();
+
         let signer;
         if let Some(operator_pvt_key) = config.operator_pvt_key() {
             signer = PrivateKeySigner::from_str(&operator_pvt_key)?;
