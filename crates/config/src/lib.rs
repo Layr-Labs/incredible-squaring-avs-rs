@@ -251,22 +251,24 @@ impl IncredibleConfig {
         self.operator_registration_config.socket = socket;
     }
 
+    /// set signature expiry
     pub fn set_sig_expiry(&mut self, expiry: String) {
         self.operator_registration_config.sig_expiry = expiry;
     }
 
+    /// set avs directory address
     pub fn set_avs_directory_address(&mut self, address: String) {
         self.el_config.avs_directory_addr = address;
     }
-
+    /// set task manager address
     pub fn set_task_manager_address(&mut self, address: String) {
         self.incredible_contracts_config.task_manager_addr = address;
     }
-
+    /// set erc20 mock strategy address
     pub fn set_erc20_mock_strategy_address(&mut self, address: String) {
         self.incredible_contracts_config.erc20_mock_strategy_addr = address;
     }
-
+    /// set task manager signer
     pub fn set_task_manager_signer(&mut self, signer: String) {
         self.task_manager_config.signer = signer;
     }
@@ -460,6 +462,7 @@ impl IncredibleConfig {
         self.task_manager_config.signer.clone()
     }
 
+    /// Operator pvt key
     pub fn operator_pvt_key(&self) -> Option<String> {
         self.operator_registration_config.operator_pvt_key.clone()
     }
