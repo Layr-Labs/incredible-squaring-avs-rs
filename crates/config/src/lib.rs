@@ -320,21 +320,14 @@ impl IncredibleConfig {
 
     /// get operator address
     pub fn operator_address(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(self.operator_config.operator_address.as_bytes());
-
-        match s {
-            Ok(operator_address) => Ok(operator_address),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        Address::from_hex(self.operator_config.operator_address.as_bytes())
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// get operator id
     pub fn get_operator_id(&self) -> Result<OperatorId, error::ConfigError> {
-        let s = FixedBytes::from_hex(self.operator_config.operator_id.as_bytes());
-        match s {
-            Ok(id) => Ok(id),
-            Err(e) => Err(error::ConfigError::HexParse(e)),
-        }
+        FixedBytes::from_hex(self.operator_config.operator_id.as_bytes())
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// get aggregator port addr
@@ -344,44 +337,30 @@ impl IncredibleConfig {
 
     /// Operator state retriever
     pub fn operator_state_retriever_addr(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(self.el_config.operator_state_retriever_addr.as_bytes());
-
-        match s {
-            Ok(operator_state_retriever_addr) => Ok(operator_state_retriever_addr),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        Address::from_hex(self.el_config.operator_state_retriever_addr.as_bytes())
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// Registry coordinator addr
     pub fn registry_coordinator_addr(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(self.el_config.registry_coordinator_addr.as_bytes());
-
-        match s {
-            Ok(registry_coordinator_addr) => Ok(registry_coordinator_addr),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        Address::from_hex(self.el_config.registry_coordinator_addr.as_bytes())
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// get operator to avs registration sig salt
     pub fn operator_to_avs_registration_sig_salt(&self) -> Result<FixedBytes<32>, ConfigError> {
-        let s = FixedBytes::<32>::from_str(
+        FixedBytes::<32>::from_str(
             &self
                 .operator_registration_config
                 .operator_to_avs_registration_sig_salt,
-        );
-        match s {
-            Ok(salt) => Ok(salt),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        )
+        .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// get quorum number
     pub fn quorum_number(&self) -> Result<Bytes, ConfigError> {
-        let s = Bytes::from_str(&self.operator_registration_config.quorum_number);
-        match s {
-            Ok(quorum_num) => Ok(quorum_num),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        Bytes::from_str(&self.operator_registration_config.quorum_number)
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     ///
@@ -391,70 +370,46 @@ impl IncredibleConfig {
 
     ///
     pub fn sig_expiry(&self) -> Result<U256, ConfigError> {
-        let s = U256::from_str(&self.operator_registration_config.sig_expiry);
-
-        match s {
-            Ok(expiry) => Ok(expiry),
-            Err(e) => Err(ConfigError::ParseError(e)),
-        }
+        U256::from_str(&self.operator_registration_config.sig_expiry)
+            .map_err(|e| ConfigError::ParseError(e))
     }
 
     /// delegation manager address
     pub fn delegation_manager_addr(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(self.el_config.delegation_manager_addr.as_bytes());
-
-        match s {
-            Ok(delegation_manager_addr) => Ok(delegation_manager_addr),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        Address::from_hex(self.el_config.delegation_manager_addr.as_bytes())
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// Avs Directory manager address
     pub fn avs_directory_addr(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(self.el_config.avs_directory_addr.as_bytes());
-
-        match s {
-            Ok(avs_directory_addr) => Ok(avs_directory_addr),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        Address::from_hex(self.el_config.avs_directory_addr.as_bytes())
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// Strategy Manager address
     pub fn strategy_manager_addr(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(self.el_config.strategy_manager_addr.as_bytes());
-
-        match s {
-            Ok(strategy_manager_addr) => Ok(strategy_manager_addr),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        Address::from_hex(self.el_config.strategy_manager_addr.as_bytes())
+            .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// Incredible Task Manager address
     pub fn task_manager_addr(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(
+        Address::from_hex(
             self.incredible_contracts_config
                 .task_manager_addr
                 .as_bytes(),
-        );
-
-        match s {
-            Ok(task_manager_addr) => Ok(task_manager_addr),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        )
+        .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// Incredible ERC20 mock strategy address
     pub fn erc20_mock_strategy_addr(&self) -> Result<Address, ConfigError> {
-        let s = Address::from_hex(
+        Address::from_hex(
             self.incredible_contracts_config
                 .erc20_mock_strategy_addr
                 .as_bytes(),
-        );
-
-        match s {
-            Ok(erc20_mock_strategy_addr) => Ok(erc20_mock_strategy_addr),
-            Err(e) => Err(ConfigError::HexParse(e)),
-        }
+        )
+        .map_err(|e| ConfigError::HexParse(e))
     }
 
     /// Task manager signer

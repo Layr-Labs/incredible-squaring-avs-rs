@@ -316,7 +316,7 @@ impl Aggregator {
             .await
             .unwrap();
         info!("processed signature for index {:?}", task_index);
-      
+
         if let Some(aggregated_response) = self
             .bls_aggregation_service
             .aggregated_response_receiver
