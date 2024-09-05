@@ -1,35 +1,32 @@
-//! Aggregator crate
-
-/// Aggregator error
-pub mod error;
-pub mod fake_aggregator;
-/// RPC server
-pub mod rpc_server;
+use crate::error::AggregatorError;
+use crate::SignedTaskResponse;
 use alloy::dyn_abi::SolType;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_logging::get_logger;
+use core::task;
+use eigen_client_avsregistry::reader::{AvsRegistryChainReader, AvsRegistryReader};
+use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point, BlsKeyPair};
+use eigen_logging::{get_logger, get_test_logger};
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
+use eigen_services_avsregistry::fake_avs_registry_service::FakeAvsRegistryService;
 use eigen_services_blsaggregation::bls_agg::{
     BlsAggregationServiceError, BlsAggregationServiceResponse, BlsAggregatorService,
 };
-use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
+use eigen_services_operatorsinfo::operatorsinfo_inmemory::{self, OperatorInfoServiceInMemory};
 use eigen_types::avs::TaskResponseDigest;
+use eigen_types::test::TestOperator;
 use eigen_utils::get_ws_provider;
-pub use error::AggregatorError;
 use futures_util::StreamExt;
 use incredible_bindings::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NonSignerStakesAndSignature};
+use incredible_chainio::fake_avs_writer::FakeAvsWriter;
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
-pub use rpc_server::SignedTaskResponse;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -41,8 +38,7 @@ pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
 pub const BLOCK_TIME_SECONDS: u32 = 12;
 
 /// Aggregator
-#[derive(Debug)]
-pub struct Aggregator {
+pub struct FakeAggregator {
     port_address: String,
     avs_writer: AvsWriter,
     bls_aggregation_service: BlsAggregatorService<
@@ -55,19 +51,19 @@ pub struct Aggregator {
         HashMap<u32, HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>>,
 }
 
-impl Aggregator {
-    /// Creates a new aggregator
+impl FakeAggregator {
+    /// Creates a new FakeAggregator
     ///
     /// # Arguments
     ///
-    /// * `config` - The configuration for the aggregator
+    /// * `config` - The configuration for the FakeAggregator
     ///
     /// # Returns
     ///
-    /// * `Self` - The aggregator
+    /// * `Self` - The FakeAggregator
     pub async fn new(config: IncredibleConfig) -> Self {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
-            get_logger(),
+            get_test_logger(),
             config.registry_coordinator_addr().unwrap(),
             config.operator_state_retriever_addr().unwrap(),
             config.http_rpc_url(),
@@ -84,7 +80,7 @@ impl Aggregator {
         .unwrap();
 
         let avs_reader = AvsRegistryChainReader::new(
-            get_logger(),
+            get_test_logger(),
             config.registry_coordinator_addr().unwrap(),
             config.operator_state_retriever_addr().unwrap(),
             config.http_rpc_url(),
@@ -93,7 +89,7 @@ impl Aggregator {
         .unwrap();
 
         let operators_info_service = OperatorInfoServiceInMemory::new(
-            get_logger(),
+            get_test_logger(),
             avs_registry_chain_reader,
             config.ws_rpc_url(),
         )
@@ -164,7 +160,7 @@ impl Aggregator {
             move |params: Params| {
                 let aggregator = Arc::clone(&aggregator);
                 async move {
-                    let signed_task_response: SignedTaskResponse = match params {
+                    let signed_task_response: crate::rpc_server::SignedTaskResponse = match params {
                         Params::Map(map) => serde_json::from_value(map["params"].clone()).unwrap(),
                         _ => {
                             return {
@@ -254,6 +250,7 @@ impl Aggregator {
                 (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
             );
             info!("initializing new task in bls aggregation service");
+
             let _ = aggregator
                 .lock()
                 .await
@@ -285,50 +282,51 @@ impl Aggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_signed_task_response(
         &mut self,
-        signed_task_response: SignedTaskResponse,
-    ) -> Result<(), AggregatorError> {
-        let task_index = signed_task_response.task_response.referenceTaskIndex;
+        signed_task_response: crate::rpc_server::SignedTaskResponse,
+    ) -> Result<(bool), AggregatorError> {
+        // let task_index = signed_task_response.task_response.referenceTaskIndex;
 
-        let task_response_digest =
-            alloy::primitives::keccak256(IncredibleSquaringTaskManager::TaskResponse::abi_encode(
-                &signed_task_response.task_response,
-            ));
+        // let task_response_digest =
+        //     alloy::primitives::keccak256(IncredibleSquaringTaskManager::TaskResponse::abi_encode(
+        //         &signed_task_response.task_response,
+        //     ));
 
-        let response =
-            check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
+        // let response =
+        //     check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
 
-        if response.is_none() {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
-                task_response_digest,
-                signed_task_response.clone().task_response,
-            );
-            self.tasks_responses.insert(task_index, inner_map);
-        }
+        // if response.is_none() {
+        //     let mut inner_map = HashMap::new();
+        //     inner_map.insert(
+        //         task_response_digest,
+        //         signed_task_response.clone().task_response,
+        //     );
+        //     self.tasks_responses.insert(task_index, inner_map);
+        // }
 
-        self.bls_aggregation_service
-            .process_new_signature(
-                task_index,
-                task_response_digest,
-                signed_task_response.signature(),
-                signed_task_response.operator_id(),
-            )
-            .await
-            .unwrap();
-        info!("processed signature for index {:?}", task_index);
-      
-        if let Some(aggregated_response) = self
-            .bls_aggregation_service
-            .aggregated_response_receiver
-            .lock()
-            .await
-            .recv()
-            .await
-        {
-            self.send_aggregated_response_to_contract(aggregated_response.unwrap())
-                .await;
-        }
-        Ok(())
+        // self.bls_aggregation_service
+        //     .process_new_signature(
+        //         task_index,
+        //         task_response_digest,
+        //         signed_task_response.signature(),
+        //         signed_task_response.operator_id(),
+        //     )
+        //     .await
+        //     .unwrap();
+        // info!("processed signature for index {:?}", task_index);
+
+        // if let Some(aggregated_response) = self
+        //     .bls_aggregation_service
+        //     .aggregated_response_receiver
+        //     .lock()
+        //     .await
+        //     .recv()
+        //     .await
+        // {
+        //     let res = self.send_aggregated_response_to_contract(aggregated_response.unwrap())
+        //         .await;
+        //     return Ok(res);
+        // }
+        Ok(true)
     }
 
     /// Sends the aggregated response to the contract
@@ -343,7 +341,7 @@ impl Aggregator {
     pub async fn send_aggregated_response_to_contract(
         &self,
         response: BlsAggregationServiceResponse,
-    ) {
+    ) -> bool {
         let mut non_signer_pub_keys = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
             let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
@@ -380,13 +378,7 @@ impl Aggregator {
         let task = &self.tasks[&response.task_index];
         let task_response =
             &self.tasks_responses[&response.task_index][&response.task_response_digest];
-        self.avs_writer
-            .send_aggregated_response(
-                task.clone(),
-                task_response.clone(),
-                non_signer_stakes_and_signature,
-            )
-            .await;
+        return true; // don't actually send the call, return true
     }
 }
 
@@ -409,21 +401,102 @@ fn check_double_mapping(
 #[cfg(test)]
 mod tests {
 
-    use super::*;
+    use alloy::primitives::{FixedBytes, Sign, U256};
+    use alloy::rpc::client::{ReqwestClient, RpcClient};
+    use ark_bn254::{Fq, G1Affine};
+    use ark_std::str::FromStr;
+    use eigen_crypto_bls::Signature;
+    use hex::FromHex;
+    use incredible_bindings::IncredibleSquaringTaskManager::TaskResponse;
+    use incredible_operator::client::{ClientAggregator, SignedTaskResponse};
+    use incredible_testing_utils::{
+        get_incredible_squaring_operator_state_retriever,
+        get_incredible_squaring_registry_coordinator,
+    };
+    use serde_json::json;
+    use std::time::Duration;
 
-    #[test]
-    fn test_check_double_mapping() {
-        let mut outer_map = HashMap::new();
-        let mut inner_map = HashMap::new();
-        inner_map.insert(
-            TaskResponseDigest::default(),
-            IncredibleSquaringTaskManager::TaskResponse {
-                referenceTaskIndex: "0".parse().unwrap(),
-                numberSquared: "0".parse().unwrap(),
-            },
+    use crate::rpc_server;
+
+    use super::*;
+    const INCREDIBLE_CONFIG_FILE: &str = r#"
+    [rpc_config]
+    chain_id = 31337
+    http_rpc_url = "http://localhost:8545"
+    ws_rpc_url = "ws://localhost:8545"
+    signer = "0x337edbf6fef9af147f49c04c1004da47a8bf9f88c01022b7dd108e31c037f075"
+
+    [ecdsa_config]
+    keystore_path = "../testing-utils/src/ecdsakeystore.json"
+    keystore_password = "test"
+
+    [bls_config]
+    keystore_path = "../testing-utils/src/blskeystore.json"
+    keystore_password = "testpassword"
+
+    [operator_config]
+    operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+    operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+
+    [aggregator_config]
+    ip_address = "127.0.0.1:8080"
+
+    "#;
+
+    const PRIVATE_KEY_DECIMAL: &str =
+        "12248929636257230549931416853095037629726205319386239410403476017439825112537";
+    const OPERATOR_ID: &str = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3";
+    fn build_test_operator() -> TestOperator {
+        let bls_keypair = BlsKeyPair::new(PRIVATE_KEY_DECIMAL.into()).unwrap();
+        let operator_id =
+            FixedBytes::<32>::from_slice(hex::decode(OPERATOR_ID).unwrap().as_slice());
+        TestOperator {
+            operator_id,
+            bls_keypair: bls_keypair.clone(),
+            stake_per_quorum: HashMap::from([(1u8, U256::from(123))]),
+        }
+    }
+
+    async fn build_aggregator() -> FakeAggregator {
+        let mut incredible_config: IncredibleConfig =
+            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        incredible_config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
         );
-        outer_map.insert(1, inner_map);
-        let result = check_double_mapping(&outer_map, 1, TaskResponseDigest::default());
-        assert!(result.is_some());
+        incredible_config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
+        let fake_aggregator = FakeAggregator::new(incredible_config).await;
+        fake_aggregator
+    }
+
+    #[tokio::test]
+    async fn test_build() {
+        let fake_aggregator = build_aggregator().await;
+        fake_aggregator
+            .bls_aggregation_service
+            .initialize_new_task(
+                0,
+                5,
+                ["0".parse().unwrap()].to_vec(),
+                ["100".parse().unwrap()].to_vec(),
+                Duration::from_secs(1200),
+            )
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_start_server() {
+        let fake_aggregator = build_aggregator().await;
+        let _ = tokio::spawn(async move {
+            let _ =
+                FakeAggregator::start_server(Arc::new(tokio::sync::Mutex::new(fake_aggregator)))
+                    .await;
+        });
     }
 }

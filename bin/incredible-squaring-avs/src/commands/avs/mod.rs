@@ -284,7 +284,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
             let seconds = duration_since_epoch.as_secs(); // Returns a u64
 
-            // Signature expiry is at 10000 seconds 
+            // Signature expiry is at 10000 seconds
             expiry = U256::from(seconds) + U256::from(10000);
         } else {
             println!("System time seems to be before the UNIX epoch.");

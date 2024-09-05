@@ -1,6 +1,6 @@
 use alloy::rpc::client::{ReqwestClient, RpcClient};
 use eyre::Result;
-use incredible_aggregator::rpc_server::SignedTaskResponse;
+pub use incredible_aggregator::rpc_server::SignedTaskResponse;
 use reqwest::Client;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
