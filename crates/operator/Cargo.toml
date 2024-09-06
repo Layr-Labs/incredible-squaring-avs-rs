@@ -44,8 +44,13 @@ eigen-crypto-bn254.workspace = true
 eigen-metrics-collectors-rpc-calls.workspace = true
 eigen-client-eth.workspace = true
 eigen-utils.workspace = true
+
 [dev-dependencies]
 incredible-testing-utils.workspace = true
 tempfile.workspace = true
 ark-ec = "0.4.2"
 ark-ff = "0.4.0"
+
+
+[features]
+challenger_test = []

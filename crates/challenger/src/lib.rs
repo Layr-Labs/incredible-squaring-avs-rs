@@ -172,7 +172,6 @@ impl Challenger {
 
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
-
                 if answer != (num_to_square * num_to_square) {
                     let _ = self.raise_challenge(task_index).await;
                     return Ok(());

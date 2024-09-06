@@ -9,10 +9,8 @@ description = "integration tests for incredible avs"
     
 [lints]
 workspace = true
-
-
 [dependencies]
-alloy.workspace = true
+alloy = {workspace = true, features = ["node-bindings"]}
 eigen-utils.workspace = true
 eigen-logging.workspace = true
 incredible-config.workspace = true
@@ -20,9 +18,11 @@ incredible-challenger.workspace = true
 incredible-testing-utils.workspace = true
 incredible-bindings.workspace = true
 incredible-task-generator.workspace = true
-incredible-operator.workspace = true
+incredible-operator = {workspace = true, features= ["challenger_test"]}
 incredible-aggregator.workspace = true
 toml.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
+eyre.workspace = true
+

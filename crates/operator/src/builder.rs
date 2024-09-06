@@ -3,9 +3,9 @@ use std::str::FromStr;
 use crate::client::ClientAggregator;
 use crate::error::OperatorError;
 use alloy::{
-    primitives::{keccak256, Address},
+    primitives::{keccak256, Address, U256},
     providers::WsConnect,
-    rpc::types::Filter,
+    rpc::types::{serde_helpers::num, Filter},
     signers::{
         k256::ecdsa::SigningKey,
         local::{LocalSigner, PrivateKeySigner},
@@ -96,8 +96,12 @@ impl OperatorBuilder {
 
     /// Processes new task
     pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
+        #[cfg(not(feature = "challenger_test"))]
         let num_squared =
             new_task_created.task.numberToBeSquared * new_task_created.task.numberToBeSquared;
+
+        #[cfg(feature = "challenger_test")]
+        let num_squared = new_task_created.task.numberToBeSquared * U256::from(9);
 
         let task_response = TaskResponse {
             referenceTaskIndex: new_task_created.taskIndex,
@@ -119,7 +123,6 @@ impl OperatorBuilder {
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr.clone())
             .await?;
-
         self.client.dial_aggregator_rpc_client();
         if is_registered {
             info!("Starting operator");

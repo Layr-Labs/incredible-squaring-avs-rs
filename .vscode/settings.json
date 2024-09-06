@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.cargo.features": [
+        "challenger_test"
+    ]
+}
