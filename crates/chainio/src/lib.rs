@@ -167,8 +167,8 @@ impl AvsWriter {
         let signer = get_signer(self.signer.clone(), &self.rpc_url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
-
-        let _ = task_manager_contract
+        info!("sending respond_to_task");
+        let receipt = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
             .send()
             .await
@@ -176,5 +176,6 @@ impl AvsWriter {
             .get_receipt()
             .await
             .unwrap();
+        info!("receipt for response {:?}", receipt.transaction_hash);
     }
 }

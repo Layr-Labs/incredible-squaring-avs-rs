@@ -162,12 +162,7 @@ impl FakeAggregator {
                 async move {
                     let signed_task_response: crate::rpc_server::SignedTaskResponse = match params {
                         Params::Map(map) => serde_json::from_value(map["params"].clone()).unwrap(),
-                        _ => {
-                            return {
-                                println!("error in parsing signed task response");
-                                Err(Error::invalid_params("Expected a map"))
-                            }
-                        }
+                        _ => return { Err(Error::invalid_params("Expected a map")) },
                     };
 
                     // Call the process_signed_task_response function

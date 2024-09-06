@@ -1,4 +1,5 @@
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use alloy::rpc;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::{value_parser, Args, Parser};
 use eigen_client_avsregistry::{reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter};
@@ -24,6 +25,7 @@ use std::ffi::OsString;
 use std::fmt;
 use std::net::SocketAddr;
 use std::net::{IpAddr, Ipv4Addr};
+use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -427,7 +429,7 @@ pub async fn register_operator_with_el_and_avs(
         delegation_manager_address,
         strategy_manager_address,
         el_chain_reader.clone(),
-        rpc_url,
+        rpc_url.clone(),
         hex::encode(s).to_string(),
     );
 
@@ -460,6 +462,16 @@ pub async fn register_operator_with_el_and_avs(
 
     let s = avs_reader.is_operator_registered(signer.address()).await?;
     info!("is operator registered :{:?}", s);
+
+    fn mine_anvil_block(rpc_url: &str) {
+        Command::new("cast")
+            .args(["rpc", "anvil_mine", "120", "--rpc-url", rpc_url])
+            .stdout(Stdio::null())
+            .output()
+            .expect("Failed to execute command");
+    }
+    mine_anvil_block(&rpc_url);
+
     Ok(())
 }
 
