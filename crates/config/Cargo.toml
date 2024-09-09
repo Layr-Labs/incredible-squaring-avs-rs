@@ -8,7 +8,13 @@ license.workspace = true
 description = " incredible squaring configuration "
     
 [lints]
-workspace = true
+rust.missing_docs = "allow"
+rust.missing_debug_implementations = "warn"
+rust.unreachable_pub = "warn"
+rust.unused_must_use = "deny"
+rust.rust_2018_idioms = { level = "deny", priority = -1 }
+rustdoc.all = "warn"
+
 
 [dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }

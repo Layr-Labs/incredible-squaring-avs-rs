@@ -8,9 +8,9 @@ use std::str::FromStr;
 /// Config Error
 pub mod error;
 use std::path::PathBuf;
-/// Configurations for running the avs
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(default)]
+#[allow(missing_docs)]
 pub struct IncredibleConfig {
     rpc_config: RpcConfig,
 
@@ -33,125 +33,89 @@ pub struct IncredibleConfig {
     metrics_config: MetricsConfig,
 }
 
-/// Rpc Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct RpcConfig {
-    /// chainid
     pub chain_id: u16,
 
-    /// http rpc url
     pub http_rpc_url: String,
 
-    /// ws rpc url
     pub ws_rpc_url: String,
 
-    /// signer pvt key
     pub signer: String,
 }
 
-/// Rpc Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct IncredibleContractsConfig {
-    /// Task manager
     pub task_manager_addr: String,
 
-    /// Service manager
     pub service_manager_addr: String,
 
-    /// erc20 mock strategy address
     pub erc20_mock_strategy_addr: String,
 }
 
-/// Rpc Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct TaskManagerConfig {
-    /// Task manager private key
     pub signer: String,
 }
 
-/// Metrics Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct MetricsConfig {
-    /// Port address to listen metrics from
     pub port_address: String,
 }
 
-/// Rpc Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct OperatorRegistrationConfig {
-    /// Register operator on startup
     register_operator: bool,
-    ///
     pub operator_to_avs_registration_sig_salt: String,
 
-    ///
     pub socket: String,
 
-    ///
     pub quorum_number: String,
 
-    ///
     pub sig_expiry: String,
 
     /// Optional operator pvt key, if not provided, it will be taken from the [`EcdsaConfig`]
     pub operator_pvt_key: Option<String>,
 }
 
-/// Operator Configurations
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct OperatorConfig {
-    /// Operator Address
     pub operator_address: String,
 
-    /// Operator Id
     pub operator_id: String,
 }
 
-/// Eigen Layer Configuration
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct ELConfig {
-    /// Registry Coordinator Address
     pub registry_coordinator_addr: String,
 
-    /// Operator State retriever Address
     pub operator_state_retriever_addr: String,
 
-    /// Delegation Manager Address
     pub delegation_manager_addr: String,
 
-    /// Avs Directory Address
     pub avs_directory_addr: String,
 
-    /// Strategy Manager Address
     pub strategy_manager_addr: String,
 }
 
-/// AggregatorConfig
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct AggregatorConfig {
-    /// Aggregator Ip address
     ip_address: String,
 }
 
-/// Bls Configuration
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(default)]
 pub struct BlsConfig {
-    /// keystore path
     pub keystore_path: String,
 
-    /// keystore password
     pub keystore_password: String,
 }
 
-/// Optional ECDSA keystore configuration for operator
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(default)]
 pub struct EcdsaConfig {
-    /// keysotre path
     pub keystore_path: String,
 
-    /// keysotre password
     pub keystore_password: String,
 }
 
@@ -282,91 +246,74 @@ impl IncredibleConfig {
         self.task_manager_config.signer = signer;
     }
 
-    /// set the operator pvt key
     pub fn set_operator_signing_key(&mut self, pvt_key: String) {
         self.operator_registration_config.operator_pvt_key = Some(pvt_key);
     }
 
-    /// set the metrics prometheus port address
     pub fn set_metrics_port_address(&mut self, port: String) {
         self.metrics_config.port_address = port;
     }
 
-    /// get the metrics port address
     pub fn metrics_port_address(&self) -> String {
         self.metrics_config.port_address.clone()
     }
 
-    /// get appropriate chainid where incredible squaring will run
     pub fn chain_id(&self) -> u16 {
         self.rpc_config.chain_id
     }
 
-    /// get http rpc url
     pub fn http_rpc_url(&self) -> String {
         self.rpc_config.http_rpc_url.clone()
     }
 
-    /// get ws rpc url
     pub fn ws_rpc_url(&self) -> String {
         self.rpc_config.ws_rpc_url.clone()
     }
 
-    /// get pvt key
     pub fn get_signer(&self) -> String {
         self.rpc_config.signer.clone()
     }
 
-    /// get ecdsa keystore path
     pub fn ecdsa_keystore_path(&self) -> String {
         self.ecdsa_config.keystore_path.clone()
     }
 
-    /// get ecdsa keystore password
     pub fn ecdsa_keystore_password(&self) -> String {
         self.ecdsa_config.keystore_password.clone()
     }
 
-    /// get bls keystore path
     pub fn bls_keystore_path(&self) -> String {
         self.bls_config.keystore_path.clone()
     }
 
-    /// get bls keystore file password
     pub fn bls_keystore_password(&self) -> String {
         self.bls_config.keystore_password.clone()
     }
 
-    /// get operator address
     pub fn operator_address(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.operator_config.operator_address.as_bytes())
             .map_err(|e| ConfigError::HexParse(e))
     }
 
-    /// get operator id
     pub fn get_operator_id(&self) -> Result<OperatorId, error::ConfigError> {
         FixedBytes::from_hex(self.operator_config.operator_id.as_bytes())
             .map_err(|e| ConfigError::HexParse(e))
     }
 
-    /// get aggregator port addr
     pub fn aggregator_ip_addr(&self) -> String {
         self.aggregator_config.ip_address.clone()
     }
 
-    /// Operator state retriever
     pub fn operator_state_retriever_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.operator_state_retriever_addr.as_bytes())
             .map_err(|e| ConfigError::HexParse(e))
     }
 
-    /// Registry coordinator addr
     pub fn registry_coordinator_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.registry_coordinator_addr.as_bytes())
             .map_err(|e| ConfigError::HexParse(e))
     }
 
-    /// get operator to avs registration sig salt
     pub fn operator_to_avs_registration_sig_salt(&self) -> Result<FixedBytes<32>, ConfigError> {
         FixedBytes::<32>::from_str(
             &self
@@ -376,24 +323,20 @@ impl IncredibleConfig {
         .map_err(|e| ConfigError::HexParse(e))
     }
 
-    /// get quorum number
     pub fn quorum_number(&self) -> Result<Bytes, ConfigError> {
         Bytes::from_str(&self.operator_registration_config.quorum_number)
             .map_err(|e| ConfigError::HexParse(e))
     }
 
-    ///
     pub fn socket(&self) -> &String {
         &self.operator_registration_config.socket
     }
 
-    ///
     pub fn sig_expiry(&self) -> Result<U256, ConfigError> {
         U256::from_str(&self.operator_registration_config.sig_expiry)
             .map_err(|e| ConfigError::ParseError(e))
     }
 
-    /// delegation manager address
     pub fn delegation_manager_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.delegation_manager_addr.as_bytes())
             .map_err(|e| ConfigError::HexParse(e))

@@ -1,15 +1,9 @@
-use std::str::FromStr;
-
 use crate::client::ClientAggregator;
 use crate::error::OperatorError;
 use alloy::{
-    primitives::{keccak256, Address, U256},
+    primitives::{keccak256, Address},
     providers::WsConnect,
-    rpc::types::{serde_helpers::num, Filter},
-    signers::{
-        k256::ecdsa::SigningKey,
-        local::{LocalSigner, PrivateKeySigner},
-    },
+    rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
 use alloy_provider::{Provider, ProviderBuilder};
@@ -80,6 +74,7 @@ impl OperatorBuilder {
 
     /// Processes new task
     pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
+        #[allow(unused_mut)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
         #[cfg(target_feature = "integration_tests")]
