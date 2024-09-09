@@ -1,27 +1,21 @@
 use crate::error::AggregatorError;
-use crate::SignedTaskResponse;
-use alloy::dyn_abi::SolType;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
-use core::task;
-use eigen_client_avsregistry::reader::{AvsRegistryChainReader, AvsRegistryReader};
-use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point, BlsKeyPair};
-use eigen_logging::{get_logger, get_test_logger};
+use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
+use eigen_logging::get_test_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_avsregistry::fake_avs_registry_service::FakeAvsRegistryService;
 use eigen_services_blsaggregation::bls_agg::{
     BlsAggregationServiceError, BlsAggregationServiceResponse, BlsAggregatorService,
 };
-use eigen_services_operatorsinfo::operatorsinfo_inmemory::{self, OperatorInfoServiceInMemory};
+use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
-use eigen_types::test::TestOperator;
 use eigen_utils::get_ws_provider;
 use futures_util::StreamExt;
 use incredible_bindings::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NonSignerStakesAndSignature};
-use incredible_chainio::fake_avs_writer::FakeAvsWriter;
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
@@ -38,9 +32,9 @@ pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
 pub const BLOCK_TIME_SECONDS: u32 = 12;
 
 /// Aggregator
+#[derive(Debug)]
 pub struct FakeAggregator {
     port_address: String,
-    avs_writer: AvsWriter,
     bls_aggregation_service: BlsAggregatorService<
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
@@ -109,7 +103,6 @@ impl FakeAggregator {
 
         Self {
             port_address: config.aggregator_ip_addr(),
-            avs_writer,
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
             bls_aggregation_service,
@@ -277,8 +270,8 @@ impl FakeAggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_signed_task_response(
         &mut self,
-        signed_task_response: crate::rpc_server::SignedTaskResponse,
-    ) -> Result<(bool), AggregatorError> {
+        _signed_task_response: crate::rpc_server::SignedTaskResponse,
+    ) -> Result<bool, AggregatorError> {
         // let task_index = signed_task_response.task_response.referenceTaskIndex;
 
         // let task_response_digest =
@@ -349,7 +342,7 @@ impl FakeAggregator {
             quorum_apks.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
         }
 
-        let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
+        let _non_signer_stakes_and_signature = NonSignerStakesAndSignature {
             nonSignerPubkeys: non_signer_pub_keys,
             nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
             quorumApks: quorum_apks,
@@ -370,48 +363,24 @@ impl FakeAggregator {
             nonSignerStakeIndices: response.non_signer_stake_indices,
         };
 
-        let task = &self.tasks[&response.task_index];
-        let task_response =
+        let _task = &self.tasks[&response.task_index];
+        let _task_response =
             &self.tasks_responses[&response.task_index][&response.task_response_digest];
         return true; // don't actually send the call, return true
     }
 }
 
-fn check_double_mapping(
-    outer_map: &HashMap<
-        u32,
-        HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>,
-    >,
-    outer_key: u32,
-    inner_key: TaskResponseDigest,
-) -> Option<&IncredibleSquaringTaskManager::TaskResponse> {
-    if let Some(inner_map) = outer_map.get(&outer_key) {
-        if let Some(value) = inner_map.get(&inner_key) {
-            return Some(value);
-        }
-    }
-    None
-}
-
 #[cfg(test)]
 mod tests {
 
-    use alloy::primitives::{FixedBytes, Sign, U256};
-    use alloy::rpc::client::{ReqwestClient, RpcClient};
-    use ark_bn254::{Fq, G1Affine};
-    use ark_std::str::FromStr;
-    use eigen_crypto_bls::Signature;
-    use hex::FromHex;
-    use incredible_bindings::IncredibleSquaringTaskManager::TaskResponse;
-    use incredible_operator::client::{ClientAggregator, SignedTaskResponse};
+    use alloy::primitives::{FixedBytes, U256};
+    use eigen_crypto_bls::BlsKeyPair;
+    use eigen_types::test::TestOperator;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator,
     };
-    use serde_json::json;
     use std::time::Duration;
-
-    use crate::rpc_server;
 
     use super::*;
     const INCREDIBLE_CONFIG_FILE: &str = r#"
@@ -441,6 +410,7 @@ mod tests {
     const PRIVATE_KEY_DECIMAL: &str =
         "12248929636257230549931416853095037629726205319386239410403476017439825112537";
     const OPERATOR_ID: &str = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3";
+    #[allow(unused)]
     fn build_test_operator() -> TestOperator {
         let bls_keypair = BlsKeyPair::new(PRIVATE_KEY_DECIMAL.into()).unwrap();
         let operator_id =

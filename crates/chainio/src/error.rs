@@ -10,7 +10,10 @@ use thiserror::Error;
 pub enum ChainIoError {
     /// Avs writer build fail
     #[error("Avs writer build fail : {reason}")]
-    AvsWriterBuildFail { reason: String },
+    AvsWriterBuildFail {
+        /// The reason for the build failure
+        reason: String,
+    },
     /// Alloy contract error
     #[error("Alloy contract error: {0}")]
     AlloyContractError(#[from] AlloyError),

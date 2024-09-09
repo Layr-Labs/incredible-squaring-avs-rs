@@ -11,7 +11,6 @@ use eigen_testing_utils::anvil_constants::{
     get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::get_provider;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -31,8 +30,6 @@ use tracing::{debug, info};
 #[derive(Debug, Clone, Copy, Default, Args)]
 #[non_exhaustive]
 pub struct NoArgs;
-
-use metrics_exporter_prometheus::PrometheusBuilder;
 
 /// Starts incredible squaring
 #[derive(Debug, Parser)]
@@ -343,6 +340,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 /// Register operator in eigenlayer and avs
 pub async fn register_operator_with_el_and_avs(
     operator_pvt_key: Option<String>,
@@ -388,8 +386,8 @@ pub async fn register_operator_with_el_and_avs(
     .await?;
 
     // Read BlsKey from path
-    let keystore = Keystore::from_file(&bls_keystore_path)?.decrypt(&bls_keystore_password)?;
-    let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
+    let keystore = Keystore::from_file(&bls_keystore_path)?.decrypt(bls_keystore_password)?;
+    let fr_key: String = keystore.iter().map(|&value| value as char).collect();
 
     let key_pair = BlsKeyPair::new(fr_key)?;
     let el_chain_reader = ELChainReader::new(
