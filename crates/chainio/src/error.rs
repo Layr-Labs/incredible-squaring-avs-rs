@@ -1,4 +1,7 @@
-use alloy::contract::Error as AlloyError;
+use alloy::{
+    contract::Error as AlloyError,
+    transports::{RpcError, TransportErrorKind},
+};
 use eigen_client_avsregistry::error::AvsRegistryError;
 use incredible_config::error::ConfigError;
 use thiserror::Error;
@@ -20,4 +23,8 @@ pub enum ChainIoError {
     /// Avs registry error in eigensdk-rs
     #[error("AvsRegistry error in eigensdk-rs")]
     SdkAvsRegistryChainError(#[from] AvsRegistryError),
+
+    /// Alloy Rpc Error
+    #[error("Alloy Rpc Error")]
+    RpcError(#[from] RpcError<TransportErrorKind>),
 }

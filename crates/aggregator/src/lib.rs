@@ -369,7 +369,7 @@ impl Aggregator {
                 task_response.clone(),
                 non_signer_stakes_and_signature,
             )
-            .await;
+            .await?;
         Ok(())
     }
 }

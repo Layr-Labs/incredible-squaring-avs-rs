@@ -50,4 +50,8 @@ pub enum ChallengerError {
     /// Config error
     #[error("Config error {0}")]
     ConfigParseError(#[from] ConfigError),
+
+    /// Toml Error
+    #[error("Toml error")]
+    Toml(#[from] toml::de::Error),
 }

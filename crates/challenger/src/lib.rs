@@ -249,11 +249,6 @@ impl Challenger {
     ) -> Result<Vec<G1Point>, ChallengerError> {
         let decoded_event = log.log_decode::<TaskResponded>().ok();
         if let Some(task_responded) = decoded_event {
-            let TaskResponded {
-                taskResponse,
-                taskResponseMetadata,
-            } = task_responded.data();
-
             let tx_hash_result = task_responded.transaction_hash;
             if let Some(tx_hash) = tx_hash_result {
                 let provider = get_provider(&self.rpc_url);
@@ -346,8 +341,8 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 "#;
 
     /// Build challenger
-    pub(crate) async fn build_challenger() -> Challenger {
-        let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+    pub(crate) async fn build_challenger() -> Result<Challenger, ChallengerError> {
+        let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE)?;
         config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
                 .await
@@ -358,12 +353,12 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
                 .await
                 .to_string(),
         );
-        Challenger::build(config).await.unwrap()
+        Ok(Challenger::build(config).await?)
     }
 
     #[tokio::test]
     async fn test_process_new_task_created_log() {
-        let mut challenger = build_challenger().await;
+        let mut challenger = build_challenger().await.unwrap();
         let new_task_created = NewTaskCreated {
             taskIndex: 1,
             task: Task {
