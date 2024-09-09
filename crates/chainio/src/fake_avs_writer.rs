@@ -57,13 +57,16 @@ impl FakeAvsWriter {
         }
     }
 
+    /// Send the aggregated response
+    /// task -  [`Task`]
+    /// task_response - [`TaskResponse`]
+    /// non_signer_stakes_and_signature - [`IncredibleSquaringTaskManager::NonSignerStakesAndSignature`]
     pub async fn send_aggregated_response(
         &self,
         task: Task,
         task_response: TaskResponse,
         non_signer_stakes_and_signature: IncredibleSquaringTaskManager::NonSignerStakesAndSignature,
     ) {
-        println!("sending_aggregated response");
         let signer = get_signer(self.signer.clone(), &self.rpc_url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
@@ -74,7 +77,6 @@ impl FakeAvsWriter {
             .await
             .unwrap()
             .get_receipt()
-            .await
-            .unwrap();
+            .await;
     }
 }
