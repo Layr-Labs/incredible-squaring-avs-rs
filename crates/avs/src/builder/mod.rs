@@ -59,7 +59,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
 
         let task_manager = TaskManager::new(
-            avs.config.task_manager_addr().unwrap(),
+            avs.config.task_manager_addr()?,
             avs.config.http_rpc_url(),
             avs.config.task_manager_signer(),
         );
