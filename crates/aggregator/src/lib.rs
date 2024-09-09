@@ -19,6 +19,7 @@ use eigen_services_blsaggregation::bls_agg::{
 };
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
+use eigen_types::operator::Socket;
 use eigen_utils::get_ws_provider;
 pub use error::AggregatorError;
 use futures_util::StreamExt;
@@ -65,59 +66,51 @@ impl Aggregator {
     /// # Returns
     ///
     /// * `Self` - The aggregator
-    pub async fn new(config: IncredibleConfig) -> Self {
+    pub async fn new(config: IncredibleConfig) -> Result<Self, AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
-            config.registry_coordinator_addr().unwrap(),
-            config.operator_state_retriever_addr().unwrap(),
+            config.registry_coordinator_addr()?,
+            config.operator_state_retriever_addr()?,
             config.http_rpc_url(),
         )
-        .await
-        .unwrap();
+        .await?;
 
         let avs_writer = AvsWriter::new(
-            config.registry_coordinator_addr().unwrap(),
+            config.registry_coordinator_addr()?,
             config.http_rpc_url(),
             config.get_signer(),
         )
-        .await
-        .unwrap();
-
-        let avs_reader = AvsRegistryChainReader::new(
-            get_logger(),
-            config.registry_coordinator_addr().unwrap(),
-            config.operator_state_retriever_addr().unwrap(),
-            config.http_rpc_url(),
-        )
-        .await
-        .unwrap();
+        .await?;
 
         let operators_info_service = OperatorInfoServiceInMemory::new(
             get_logger(),
-            avs_registry_chain_reader,
+            avs_registry_chain_reader.clone(),
             config.ws_rpc_url(),
         )
         .await;
         let token = tokio_util::sync::CancellationToken::new().clone();
-        let avs_registry_service_chaincaller =
-            AvsRegistryServiceChainCaller::new(avs_reader, operators_info_service.clone());
-        let provider = get_ws_provider(config.ws_rpc_url().as_str()).await.unwrap();
+        let avs_registry_service_chaincaller = AvsRegistryServiceChainCaller::new(
+            avs_registry_chain_reader,
+            operators_info_service.clone(),
+        );
+        let provider = get_ws_provider(config.ws_rpc_url().as_str()).await?;
 
+        let current_block_number = provider.get_block_number().await?;
         tokio::spawn(async move {
             let _ = operators_info_service
-                .start_service(&token, 0, provider.get_block_number().await.unwrap())
+                .start_service(&token, 0, current_block_number)
                 .await;
         });
 
         let bls_aggregation_service = BlsAggregatorService::new(avs_registry_service_chaincaller);
 
-        Self {
+        Ok(Self {
             port_address: config.aggregator_ip_addr(),
             avs_writer,
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
             bls_aggregation_service,
-        }
+        })
     }
 
     /// Starts the aggregator service
@@ -157,7 +150,9 @@ impl Aggregator {
     /// # Returns
     ///
     /// * `eyre::Result<()>` - The result of the operation
-    pub async fn start_server(aggregator: Arc<tokio::sync::Mutex<Self>>) -> eyre::Result<()> {
+    pub async fn start_server(
+        aggregator: Arc<tokio::sync::Mutex<Self>>,
+    ) -> eyre::Result<(), AggregatorError> {
         let mut io = IoHandler::new();
         io.add_method("process_signed_task_response", {
             let aggregator = Arc::clone(&aggregator);
@@ -165,7 +160,9 @@ impl Aggregator {
                 let aggregator = Arc::clone(&aggregator);
                 async move {
                     let signed_task_response: SignedTaskResponse = match params {
-                        Params::Map(map) => serde_json::from_value(map["params"].clone()).unwrap(),
+                        Params::Map(map) => serde_json::from_value(map["params"].clone()).expect(
+                            "Error in adding method in io handler for start_server function",
+                        ),
                         _ => return { Err(Error::invalid_params("Expected a map")) },
                     };
 
@@ -182,18 +179,14 @@ impl Aggregator {
                 }
             }
         });
-        let socket: SocketAddr = aggregator
-            .lock()
-            .await
-            .port_address
-            .parse()
-            .expect("Unable to parse socket address");
+        let socket: SocketAddr = aggregator.lock().await.port_address.parse().map_err(|e| {
+            AggregatorError::IOError(std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
+        })?;
         let server = ServerBuilder::new(io)
             .cors(DomainsValidation::AllowOnly(vec![
                 AccessControlAllowOrigin::Any,
             ]))
-            .start_http(&socket)
-            .expect("Unable to start RPC server");
+            .start_http(&socket)?;
 
         info!("Server running at {}", socket);
 
@@ -237,8 +230,7 @@ impl Aggregator {
             let mut quorum_nums: Vec<u8> = vec![];
             let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
             for _ in &task.quorumNumbers {
-                quorum_threshold_percentages
-                    .push(task.quorumThresholdPercentage.try_into().unwrap());
+                quorum_threshold_percentages.push(task.quorumThresholdPercentage.try_into()?);
             }
 
             for (_, val) in task.quorumNumbers.iter().enumerate() {
@@ -308,8 +300,7 @@ impl Aggregator {
                 signed_task_response.signature(),
                 signed_task_response.operator_id(),
             )
-            .await
-            .unwrap();
+            .await?;
         info!("processed signature for index {:?}", task_index);
 
         if let Some(aggregated_response) = self
@@ -321,8 +312,8 @@ impl Aggregator {
             .await
         {
             info!("sending aggregated response to contract");
-            self.send_aggregated_response_to_contract(aggregated_response.unwrap())
-                .await;
+            self.send_aggregated_response_to_contract(aggregated_response?)
+                .await?;
         }
         Ok(())
     }
@@ -339,16 +330,16 @@ impl Aggregator {
     pub async fn send_aggregated_response_to_contract(
         &self,
         response: BlsAggregationServiceResponse,
-    ) {
+    ) -> Result<(), AggregatorError> {
         let mut non_signer_pub_keys = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+            let g1 = convert_to_g1_point(pub_key.g1())?;
             non_signer_pub_keys.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
         }
 
         let mut quorum_apks = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+            let g1 = convert_to_g1_point(pub_key.g1())?;
             quorum_apks.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
         }
 
@@ -357,16 +348,12 @@ impl Aggregator {
             nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
             quorumApks: quorum_apks,
             apkG2: IncredibleSquaringTaskManager::G2Point {
-                X: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().X,
-                Y: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().Y,
+                X: convert_to_g2_point(response.signers_apk_g2.g2())?.X,
+                Y: convert_to_g2_point(response.signers_apk_g2.g2())?.Y,
             },
             sigma: IncredibleSquaringTaskManager::G1Point {
-                X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                    .unwrap()
-                    .X,
-                Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                    .unwrap()
-                    .Y,
+                X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.X,
+                Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.Y,
             },
             quorumApkIndices: response.quorum_apk_indices,
             totalStakeIndices: response.total_stake_indices,
@@ -383,6 +370,7 @@ impl Aggregator {
                 non_signer_stakes_and_signature,
             )
             .await;
+        Ok(())
     }
 }
 

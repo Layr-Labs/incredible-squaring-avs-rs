@@ -1,29 +1,32 @@
 [package]
 name = "integration-tests"
-version.workspace = true
-edition.workspace = true
-rust-version.workspace = true
-repository.workspace = true
-license.workspace = true
+version = "0.0.1-alpha"
+edition = "2021"
+rust-version = "1.79"
+repository = "https://github.com/Layr-Labs/incredible-squaring-avs-rust"
+homepage = ""
+license = "Business Source License 1.1"
 description = "integration tests for incredible avs"
 
 [dependencies]
-alloy = {workspace = true, features = ["node-bindings"]}
-eigen-utils.workspace = true
-eigen-logging.workspace = true
-incredible-config.workspace = true
-incredible-challenger.workspace = true
-incredible-testing-utils.workspace = true
-incredible-bindings.workspace = true
-incredible-task-generator.workspace = true
-incredible-operator = {workspace = true, features= ["integration_tests"]}
-incredible-aggregator.workspace = true
-toml.workspace = true
+alloy = { version = "0.1", features = ["full","signer-keystore","node-bindings"] }
+eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
+incredible-config = {path = "../crates/config/"}
+incredible-challenger = {path = "../crates/challenger/"}
+incredible-bindings = {path = "../crates/bindings/"}
+incredible-testing-utils = {path = "../crates/testing-utils/"}
+incredible-task-generator = {path = "../crates/task_generator/"}
+incredible-operator = {path = "../crates/operator/" , features = ["integration_tests"]}
+incredible-aggregator = {path = "../crates/aggregator/"}
+toml = "0.8"
 
 [dev-dependencies]
-tokio.workspace = true
-eyre.workspace = true
-incredible-squaring-avs.workspace = true
-eigen-testing-utils.workspace = true
+tokio = { version = "1.21", default-features = false }
+eyre = "0.6.12"
+incredible-squaring-avs = {path = "../bin/incredible-squaring-avs/"}
+eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
 serial_test = "3.1.1"
 
+
+[workspace]

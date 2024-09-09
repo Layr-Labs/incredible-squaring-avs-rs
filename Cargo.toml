@@ -10,7 +10,6 @@ members = ["crates/aggregator",
 "crates/chainio",
 "crates/testing-utils",
 "crates/task_generator",
-"integration-tests"
 ]
 
 resolver = "2"
@@ -86,6 +85,3 @@ eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" 
 eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
 eigen-metrics-collectors-rpc-calls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
 eigen-client-eth = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
-
-#testing
-integration-tests = {path = "integration-tests/"}

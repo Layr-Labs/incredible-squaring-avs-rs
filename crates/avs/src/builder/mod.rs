@@ -52,11 +52,11 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
 
-        let aggregator = Aggregator::new(avs.config.clone()).await;
+        let aggregator = Aggregator::new(avs.config.clone()).await?;
 
         let aggregator_service_with_rpc_client = aggregator
             .start(avs.config.ws_rpc_url().clone())
-            .map_err(|e| eyre::eyre!("aggregator error {e:?}"));
+            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
 
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr().unwrap(),
@@ -66,7 +66,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
 
         let task_spam_service = task_manager
             .start()
-            .map_err(|e| eyre::eyre!("task manager error {e:?}"));
+            .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
         let _ = futures::future::try_join4(
             operator_service,
             challenger_service,

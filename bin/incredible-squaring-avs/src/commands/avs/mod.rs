@@ -3,7 +3,7 @@ use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::{value_parser, Args, Parser};
 use eigen_client_avsregistry::{reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter};
 use eigen_client_elcontracts::reader::ELChainReader;
-use eigen_client_elcontracts::writer::ELChainWriter;
+use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
@@ -19,15 +19,12 @@ use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
     get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
 };
-use metrics_util::MetricKindMask;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
 use std::net::SocketAddr;
-use std::net::{IpAddr, Ipv4Addr};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
-use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{debug, info};
 
@@ -119,13 +116,13 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     register_operator: bool,
 
     #[arg(long, value_name = "OPERATOR_TO_AVS_REGISTRATION_SIG_SALT")]
-    operator_to_avs_registration_sig_salt: Option<String>,
+    operator_to_avs_registration_sig_salt: String,
 
     #[arg(long, value_name = "SOCKET")]
-    socket: Option<String>,
+    socket: String,
 
     #[arg(long, value_name = "QUORUM_NUMBER")]
-    quorum_number: Option<String>,
+    quorum_number: String,
 
     #[arg(long, value_name = "SIG_EXPIRY")]
     sig_expiry: Option<String>,
@@ -202,15 +199,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let registry_coordinator_address_anvil =
             get_incredible_squaring_registry_coordinator().await;
         let provider = get_provider(&self.rpc_url);
-        let registry_coordinator_address =
-            RegistryCoordinator::new(registry_coordinator_address_anvil, provider);
-
-        let _ = registry_coordinator_address
-            .blsApkRegistry()
-            .call()
-            .await
-            .map_err(|e| e.to_string())
-            .unwrap();
 
         let operator_state_retriever_address_anvil =
             get_incredible_squaring_operator_state_retriever().await;
@@ -267,8 +255,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             ..
         } = *self;
         config.set_metrics_port_address(metrics_address);
-        let socket_addr_metrics: SocketAddr =
-            SocketAddr::from_str(&config.metrics_port_address()).unwrap();
+        let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
         let now = SystemTime::now();
         let mut expiry: U256 = U256::from(0);
@@ -278,10 +265,11 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             // Signature expiry is at 10000 seconds
             expiry = U256::from(seconds) + U256::from(10000);
         } else {
-            println!("System time seems to be before the UNIX epoch.");
+            debug!("System time seems to be before the UNIX epoch.");
         }
+        // there's a default value ,so using unwrap is no issue
         config.set_task_manager_signer(task_manager_signer.unwrap());
-        config.set_signer(signer.unwrap());
+        config.set_signer(signer.unwrap()); // there's a default value ,so using unwrap is no issue
         config.set_erc20_mock_strategy_address(
             erc20_mock_strategy_address.unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
         );
@@ -301,8 +289,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_avs_directory_address(
             avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
         );
-        config.set_operator_signing_key(operator_pvt_key.unwrap());
-        // use value from config , if None , then use anvil
+        config.set_operator_signing_key(operator_pvt_key.unwrap()); // there's a default value ,so using unwrap is no issue
+                                                                    // use value from config , if None , then use anvil
         config.set_registry_coordinator_addr(
             registry_coordinator_address
                 .unwrap_or(default_anvil.registry_coordinator_address.to_string()),
@@ -320,11 +308,12 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_task_manager_address(
             task_manager_addr.unwrap_or(incredible_squaring_task_manager_address_anvil.to_string()),
         );
-        config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt.unwrap());
-        config.set_socket(socket.unwrap());
-        config.set_quorum_number(quorum_number.unwrap());
+        config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
+        config.set_socket(socket);
+        config.set_quorum_number(quorum_number);
         config.set_operator_id(operator_id);
         config.set_operator_address(operator_address);
+        // provided expiry , if not , use default expiry : 10000 seconds
         config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
         if register_operator {
             let _ = register_operator_with_el_and_avs(
@@ -332,17 +321,17 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 rpc_url.clone(),
                 ecdsa_keystore_path.clone(),
                 ecdsa_keystore_password.clone(),
-                config.registry_coordinator_addr().unwrap(),
-                config.operator_state_retriever_addr().unwrap(),
-                config.delegation_manager_addr().unwrap(),
-                config.avs_directory_addr().unwrap(),
-                config.strategy_manager_addr().unwrap(),
-                config.erc20_mock_strategy_addr().unwrap(),
+                config.registry_coordinator_addr()?,
+                config.operator_state_retriever_addr()?,
+                config.delegation_manager_addr()?,
+                config.avs_directory_addr()?,
+                config.strategy_manager_addr()?,
+                config.erc20_mock_strategy_addr()?,
                 &bls_keystore_path,
                 &bls_keystore_password,
-                config.operator_to_avs_registration_sig_salt().unwrap(),
-                config.sig_expiry().unwrap(),
-                config.quorum_number().unwrap(),
+                config.operator_to_avs_registration_sig_salt()?,
+                config.sig_expiry()?,
+                config.quorum_number()?,
                 config.socket().to_string(),
             )
             .await;
@@ -401,9 +390,7 @@ pub async fn register_operator_with_el_and_avs(
     .await?;
 
     // Read BlsKey from path
-    let keystore = Keystore::from_file(&bls_keystore_path)
-        .unwrap()
-        .decrypt(&bls_keystore_password)?;
+    let keystore = Keystore::from_file(&bls_keystore_path)?.decrypt(&bls_keystore_password)?;
     let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
 
     let key_pair = BlsKeyPair::new(fr_key)?;
@@ -431,10 +418,9 @@ pub async fn register_operator_with_el_and_avs(
     );
     let _ = el_chain_writer
         .register_as_operator(operator_details)
-        .await
-        .unwrap();
+        .await?;
 
-    deposit_into_strategy(erc20_strategy_address, U256::from(10000), el_chain_writer).await;
+    deposit_into_strategy(erc20_strategy_address, U256::from(10000), el_chain_writer).await?;
     let tx_hash = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             key_pair,
@@ -476,9 +462,9 @@ pub async fn deposit_into_strategy(
     strategy_address: Address,
     amount: U256,
     el_writer: ELChainWriter,
-) {
+) -> Result<(), ElContractsError> {
     let _ = el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
-        .await
-        .unwrap();
+        .await?;
+    Ok(())
 }
