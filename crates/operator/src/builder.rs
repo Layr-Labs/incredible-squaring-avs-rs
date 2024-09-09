@@ -96,12 +96,15 @@ impl OperatorBuilder {
 
     /// Processes new task
     pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
-        #[cfg(not(feature = "challenger_test"))]
-        let num_squared =
-            new_task_created.task.numberToBeSquared * new_task_created.task.numberToBeSquared;
+        let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
-        #[cfg(feature = "challenger_test")]
-        let num_squared = new_task_created.task.numberToBeSquared * U256::from(9);
+        #[cfg(target_feature = "integration_tests")]
+        {
+            number_to_be_squared = U256::from(9);
+            info!("Challenger test: setting number to be squared to 9");
+        }
+
+        let num_squared = number_to_be_squared * number_to_be_squared;
 
         let task_response = TaskResponse {
             referenceTaskIndex: new_task_created.taskIndex,

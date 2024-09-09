@@ -51,6 +51,6 @@ tempfile.workspace = true
 ark-ec = "0.4.2"
 ark-ff = "0.4.0"
 
-
 [features]
-challenger_test = []
+default = []
+integration_tests = []

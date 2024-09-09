@@ -1,5 +1,4 @@
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
-use alloy::rpc;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::{value_parser, Args, Parser};
 use eigen_client_avsregistry::{reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter};
@@ -7,6 +6,7 @@ use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::writer::ELChainWriter;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
+use eigen_metrics::prometheus::init_registry;
 use eigen_testing_utils::anvil_constants::{
     get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
 };
@@ -82,6 +82,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
         default_value = "127.0.0.1:8080"
     )]
     aggregator_ip_address: String,
+
+    /// Metrics port address
+    #[arg(long, value_name = "METRICS_ADDRESS", default_value = "127.0.0.1:9001")]
+    metrics_address: String,
 
     /// bls keystore path
     #[arg(long, value_name = "BLS_KEYSTORE_PATH")]
@@ -219,15 +223,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let incredible_squaring_task_manager_address_anvil =
             get_incredible_squaring_task_manager().await;
 
-        let _ = AvsRegistryChainReader::new(
-            get_logger(),
-            registry_coordinator_address_anvil,
-            operator_state_retriever_address_anvil,
-            self.rpc_url.clone(),
-        )
-        .await
-        .map_err(|e| e.to_string())
-        .unwrap();
         let default_anvil = AnvilValues::new(
             registry_coordinator_address_anvil,
             operator_state_retriever_address_anvil,
@@ -241,16 +236,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         debug!("bls keystore path : {:?}", self.bls_keystore_path);
         debug!("bls keystore password : {:?}", self.bls_keystore_password);
         let mut config = IncredibleConfig::default();
-
-        let socket_addr_metrics = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 9091);
-        PrometheusBuilder::new()
-            .with_http_listener(socket_addr_metrics)
-            .idle_timeout(
-                MetricKindMask::COUNTER | MetricKindMask::HISTOGRAM,
-                Some(Duration::from_secs(10)),
-            )
-            .install()
-            .expect("failed to install Prometheus recorder");
 
         let Self {
             ws_rpc_url,
@@ -278,9 +263,13 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             erc20_mock_strategy_address,
             task_manager_signer,
             operator_pvt_key,
+            metrics_address,
             ..
         } = *self;
-
+        config.set_metrics_port_address(metrics_address);
+        let socket_addr_metrics: SocketAddr =
+            SocketAddr::from_str(&config.metrics_port_address()).unwrap();
+        init_registry(socket_addr_metrics);
         let now = SystemTime::now();
         let mut expiry: U256 = U256::from(0);
         if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {

@@ -12,7 +12,7 @@ workspace = true
 
 [dependencies]
 incredible-aggregator.workspace = true
-incredible-operator.workspace = true
+incredible-operator = {workspace = true , features = ["default"]}
 incredible-cli-runner.workspace = true
 incredible-config.workspace = true
 incredible-avs.workspace = true
@@ -34,9 +34,11 @@ eigen-utils.workspace = true
 eigen-client-avsregistry.workspace = true
 eigen-client-elcontracts.workspace = true
 eigen-types.workspace = true
+eigen-metrics.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
+
 
 [[bin]]
 name = "incredible-squaring-avs"

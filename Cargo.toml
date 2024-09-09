@@ -56,7 +56,7 @@ rand_core = "0.6"
 toml = "0.8"
 
 
-incredible-operator = {path = "crates/operator/"}
+incredible-operator = {path = "crates/operator/" , features = ["default"]}
 incredible-aggregator = {path = "crates/aggregator/"}
 incredible-squaring-avs = {path = "bin/incredible-squaring-avs/"}
 incredible-cli-runner = {path = "crates/cli/"}
@@ -87,5 +87,5 @@ eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs
 eigen-metrics-collectors-rpc-calls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
 eigen-client-eth = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "2b8ce9b"}
 
-# testing
+#testing
 integration-tests = {path = "integration-tests/"}

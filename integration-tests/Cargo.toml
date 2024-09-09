@@ -6,9 +6,7 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "integration tests for incredible avs"
-    
-[lints]
-workspace = true
+
 [dependencies]
 alloy = {workspace = true, features = ["node-bindings"]}
 eigen-utils.workspace = true
@@ -18,7 +16,7 @@ incredible-challenger.workspace = true
 incredible-testing-utils.workspace = true
 incredible-bindings.workspace = true
 incredible-task-generator.workspace = true
-incredible-operator = {workspace = true, features= ["challenger_test"]}
+incredible-operator = {workspace = true, features= ["integration_tests"]}
 incredible-aggregator.workspace = true
 toml.workspace = true
 
@@ -28,3 +26,4 @@ eyre.workspace = true
 incredible-squaring-avs.workspace = true
 eigen-testing-utils.workspace = true
 serial_test = "3.1.1"
+

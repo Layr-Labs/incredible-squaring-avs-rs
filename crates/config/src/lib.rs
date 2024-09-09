@@ -29,6 +29,8 @@ pub struct IncredibleConfig {
     incredible_contracts_config: IncredibleContractsConfig,
 
     task_manager_config: TaskManagerConfig,
+
+    metrics_config: MetricsConfig,
 }
 
 /// Rpc Configurations
@@ -65,6 +67,13 @@ pub struct IncredibleContractsConfig {
 pub struct TaskManagerConfig {
     /// Task manager private key
     pub signer: String,
+}
+
+/// Metrics Configurations
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct MetricsConfig {
+    /// Port address to listen metrics from
+    pub port_address: String,
 }
 
 /// Rpc Configurations
@@ -276,6 +285,15 @@ impl IncredibleConfig {
     /// set the operator pvt key
     pub fn set_operator_signing_key(&mut self, pvt_key: String) {
         self.operator_registration_config.operator_pvt_key = Some(pvt_key);
+    }
+
+    /// set the metrics prometheus port address
+    pub fn set_metrics_port_address(&mut self, port: String) {
+        self.metrics_config.port_address = port;
+    }
+
+    pub fn metrics_port_address(&self) -> String {
+        self.metrics_config.port_address.clone()
     }
 
     /// get appropriate chainid where incredible squaring will run
