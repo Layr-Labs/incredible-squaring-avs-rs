@@ -131,7 +131,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
         value_name = "SIGNER",
         default_value = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6"
     )]
-    signer: Option<String>,
+    signer: String,
 
     #[arg(long, value_name = "ERC20_MOCK_STRATEGY_ADDRESS")]
     erc20_mock_strategy_address: Option<String>,
@@ -141,14 +141,14 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
         value_name = "TASK_MANAGER_SIGNER",
         default_value = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
     )]
-    task_manager_signer: Option<String>,
+    task_manager_signer: String,
 
     #[arg(
         long,
         value_name = "OPERATOR_PVT_KEY",
         default_value = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     )]
-    operator_pvt_key: Option<String>,
+    operator_pvt_key: String,
 
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
@@ -263,8 +263,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             debug!("System time seems to be before the UNIX epoch.");
         }
         // there's a default value ,so using unwrap is no issue
-        config.set_task_manager_signer(task_manager_signer.unwrap());
-        config.set_signer(signer.unwrap()); // there's a default value ,so using unwrap is no issue
+        config.set_task_manager_signer(task_manager_signer);
+        config.set_signer(signer); // there's a default value ,so using unwrap is no issue
         config.set_erc20_mock_strategy_address(
             erc20_mock_strategy_address.unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
         );
@@ -284,8 +284,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_avs_directory_address(
             avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
         );
-        config.set_operator_signing_key(operator_pvt_key.unwrap()); // there's a default value ,so using unwrap is no issue
-                                                                    // use value from config , if None , then use anvil
+        config.set_operator_signing_key(operator_pvt_key);
+        // use value from config , if None , then use anvil
         config.set_registry_coordinator_addr(
             registry_coordinator_address
                 .unwrap_or(default_anvil.registry_coordinator_address.to_string()),
