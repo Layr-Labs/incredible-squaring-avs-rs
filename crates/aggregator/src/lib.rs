@@ -163,7 +163,7 @@ impl Aggregator {
                         Params::Map(map) => serde_json::from_value(map["params"].clone()).expect(
                             "Error in adding method in io handler for start_server function",
                         ),
-                        _ => return { Err(Error::invalid_params("Expected a map")) },
+                        _ => return Err(Error::invalid_params("Expected a map")),
                     };
 
                     // Call the process_signed_task_response function

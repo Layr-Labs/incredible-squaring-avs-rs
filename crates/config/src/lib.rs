@@ -292,6 +292,7 @@ impl IncredibleConfig {
         self.metrics_config.port_address = port;
     }
 
+    /// get the metrics port address
     pub fn metrics_port_address(&self) -> String {
         self.metrics_config.port_address.clone()
     }

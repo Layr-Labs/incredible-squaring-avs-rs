@@ -1,7 +1,7 @@
 use alloy::rpc::client::{ReqwestClient, RpcClient};
 use eyre::Result;
 pub use incredible_aggregator::rpc_server::SignedTaskResponse;
-use reqwest::Client;
+use reqwest::{Client, Url};
 use serde_json::json;
 use tokio::time::{sleep, Duration};
 use tracing::{debug, info};
@@ -24,12 +24,12 @@ impl ClientAggregator {
     }
 
     /// new http rpc client instance using the aggregator ip port address
-    pub fn dial_aggregator_rpc_client(&mut self) {
-        let url =
-            reqwest::Url::parse(&format!("http://{}", &self.aggregator_ip_port_address)).unwrap();
+    pub fn dial_aggregator_rpc_client(&mut self) -> Result<()> {
+        let url = reqwest::Url::parse(&format!("http://{}", &self.aggregator_ip_port_address))?;
         let client = ReqwestClient::new_http(url);
 
-        self.client = Some(client)
+        self.client = Some(client);
+        Ok(())
     }
 
     /// Send signed task response
@@ -47,22 +47,20 @@ impl ClientAggregator {
                 "id": 1,
                 "jsonrpc": "2.0"
             });
-            let request = self
-                .client
-                .as_ref()
-                .unwrap()
-                .request("process_signed_task_response", params)
-                .await?;
+            if let Some(request) = self.client.as_ref() {
+                let s: bool = request
+                    .request("process_signed_task_response", params)
+                    .await?;
+                if s {
+                    incredible_metrics::inc_num_tasks_accepted_by_aggregator();
+                    return Ok(());
+                }
 
-            if request {
-                incredible_metrics::inc_num_tasks_accepted_by_aggregator();
-                return Ok(());
+                // Exponential backoff
+                info!("Retrying in {} seconds...", delay.as_secs());
+                sleep(delay).await;
+                delay *= 2; // Double the delay for the next retry
             }
-
-            // Exponential backoff
-            info!("Retrying in {} seconds...", delay.as_secs());
-            sleep(delay).await;
-            delay *= 2; // Double the delay for the next retry
         }
         debug!("Could not send signed task response to aggregator. Tried 5 times.");
         Ok(())
@@ -74,6 +72,6 @@ mod tests {
     #[test]
     fn test_new_client() {
         let mut client = crate::client::ClientAggregator::new("127.0.0.1:8545".to_string());
-        client.dial_aggregator_rpc_client();
+        let _ = client.dial_aggregator_rpc_client();
     }
 }

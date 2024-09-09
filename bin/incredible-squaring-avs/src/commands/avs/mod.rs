@@ -11,7 +11,6 @@ use eigen_testing_utils::anvil_constants::{
     get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::binding::RegistryCoordinator;
 use eigen_utils::get_provider;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
@@ -198,7 +197,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         init_logger(LogLevel::Info);
         let registry_coordinator_address_anvil =
             get_incredible_squaring_registry_coordinator().await;
-        let provider = get_provider(&self.rpc_url);
 
         let operator_state_retriever_address_anvil =
             get_incredible_squaring_operator_state_retriever().await;

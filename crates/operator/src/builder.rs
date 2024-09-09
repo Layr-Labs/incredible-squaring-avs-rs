@@ -41,8 +41,6 @@ pub struct OperatorBuilder {
 
     client: ClientAggregator,
 
-    signer: LocalSigner<SigningKey>,
-
     registry_coordinator: Address,
 
     operator_state_retriever: Address,
@@ -51,23 +49,10 @@ pub struct OperatorBuilder {
 impl OperatorBuilder {
     /// Build the Operator Builder
     pub async fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
-        let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url())
-            .await
-            .unwrap();
+        let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url()).await;
 
-        let signer;
-        if let Some(operator_pvt_key) = config.operator_pvt_key() {
-            signer = PrivateKeySigner::from_str(&operator_pvt_key)?;
-        } else {
-            // Read ECDSA private key from path
-            signer = LocalSigner::decrypt_keystore(
-                config.ecdsa_keystore_path(),
-                config.ecdsa_keystore_password(),
-            )?;
-        }
         // Read BlsKey from path
-        let keystore = Keystore::from_file(&config.bls_keystore_path())
-            .unwrap()
+        let keystore = Keystore::from_file(&config.bls_keystore_path())?
             .decrypt(&config.bls_keystore_password())?;
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
@@ -83,7 +68,6 @@ impl OperatorBuilder {
             key_pair,
             operator_id: operator_id,
             client: ClientAggregator::new(config.aggregator_ip_addr()),
-            signer,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
         })
@@ -121,12 +105,11 @@ impl OperatorBuilder {
             self.operator_state_retriever,
             self.http_rpc_url.clone(),
         )
-        .await
-        .unwrap();
+        .await?;
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr.clone())
             .await?;
-        self.client.dial_aggregator_rpc_client();
+        let _ = self.client.dial_aggregator_rpc_client();
         if is_registered {
             info!("Starting operator");
 
