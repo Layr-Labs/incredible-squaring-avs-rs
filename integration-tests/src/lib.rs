@@ -28,7 +28,6 @@ mod tests {
         get_incredible_squaring_task_manager,
     };
     use serial_test::serial;
-    use std::process::Command;
 
     const INCREDIBLE_CONFIG_FILE: &str = r#"
     [rpc_config]
@@ -99,7 +98,7 @@ mod tests {
         }
 
         incredible_config.set_sig_expiry(expiry.to_string());
-        let s = register_operator_with_el_and_avs(
+        let _ = register_operator_with_el_and_avs(
             incredible_config.operator_pvt_key(),
             incredible_config.http_rpc_url(),
             incredible_config.ecdsa_keystore_path(),
@@ -152,13 +151,13 @@ mod tests {
             let _ = operator_builder.start_operator().await;
         });
 
-        let aggregator = Aggregator::new(incredible_config.clone()).await;
+        let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
 
         let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
         let arc_agg_clone = Arc::clone(&arc_agg);
 
         // Run process_tasks in a separate thread
-        let process_tasks_handle = std::thread::spawn(move || {
+        let _ = std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) =
                     Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
@@ -170,7 +169,7 @@ mod tests {
         });
 
         // Run the server in a separate thread
-        let server_handle = std::thread::spawn(move || {
+        let _ = std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg)).await {
                     eprintln!("Server error: {:?}", e);
@@ -256,13 +255,13 @@ mod tests {
             let _ = operator_builder.start_operator().await;
         });
 
-        let aggregator = Aggregator::new(incredible_config.clone()).await;
+        let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
 
         let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
         let arc_agg_clone = Arc::clone(&arc_agg);
 
         // Run process_tasks in a separate thread
-        let process_tasks_handle = std::thread::spawn(move || {
+        let _ = std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) =
                     Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
@@ -274,7 +273,7 @@ mod tests {
         });
 
         // Run the server in a separate thread
-        let server_handle = std::thread::spawn(move || {
+        let _ = std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg)).await {
                     eprintln!("Server error: {:?}", e);

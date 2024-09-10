@@ -1,7 +1,7 @@
 use crate::client::ClientAggregator;
 use crate::error::OperatorError;
 use alloy::{
-    primitives::{keccak256, Address},
+    primitives::{keccak256, Address, U256},
     providers::WsConnect,
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
@@ -77,7 +77,7 @@ impl OperatorBuilder {
         #[allow(unused_mut)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
-        #[cfg(target_feature = "integration_tests")]
+        #[cfg(feature = "integration_tests")]
         {
             number_to_be_squared = U256::from(9);
             info!("Challenger test: setting number to be squared to 9");

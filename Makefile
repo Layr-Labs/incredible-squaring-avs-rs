@@ -28,3 +28,7 @@ pr: reset-anvil ##
 	cargo +nightly fmt -- --check
 	docker stop anvil
 
+integration-tests: reset-anvil ##
+				   $(MAKE) start-anvil-chain-with-el-and-avs-deployed
+				   docker start anvil
+				   cargo test --manifest-path ./integration-tests/Cargo.toml
