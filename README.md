@@ -15,10 +15,10 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 make start-anvil
 ```
 
-- Single command AVS start using the following command
+- Single command AVS start using the following command for default values on anvil
 
 ```bash
-cargo run --bin incredible-squaring-avs  start --chain-id 31337  --ecdsa-keystore-path ./crates/testing-utils/src/ecdsakeystore.json --ecdsa-keystore-password test  --bls-keystore-path ./crates/testing-utils/src/blskeystore.json --bls-keystore-password testpassword  --operator-id 0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3  --operator-address 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 --register-operator --operator-to-avs-registration-sig-salt b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3 --socket hello --quorum-number 00
+cargo run --bin incredible-squaring-avs  start
 ```
 
 This command launches 4 crates together 
