@@ -39,7 +39,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     long,
     value_name = "CHAIN_ID",
     global = true,
-    default_value_t = 1,
+    default_value_t = 31337,
     value_parser = value_parser!(u16).range(1..)
 )]
     chain_id: u16,
@@ -53,11 +53,15 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     ws_rpc_url: String,
 
     /// ECDSA key store path file
-    #[arg(long, value_name = "ECDSA_KEYSTORE_PATH")]
+    #[arg(
+        long,
+        value_name = "ECDSA_KEYSTORE_PATH",
+        default_value = "./crates/testing-utils/src/ecdsakeystore.json"
+    )]
     ecdsa_keystore_path: String,
 
     /// ECDSA keystore path  password
-    #[arg(long, value_name = "ECDSA_KEYSTORE_PASSWORD")]
+    #[arg(long, value_name = "ECDSA_KEYSTORE_PASSWORD", default_value = "test")]
     ecdsa_keystore_password: String,
 
     /// Registry coordinator address
@@ -81,15 +85,27 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     metrics_address: String,
 
     /// bls keystore path
-    #[arg(long, value_name = "BLS_KEYSTORE_PATH")]
+    #[arg(
+        long,
+        value_name = "BLS_KEYSTORE_PATH",
+        default_value = "./crates/testing-utils/src/blskeystore.json"
+    )]
     bls_keystore_path: String,
 
     /// bls keystore password
-    #[arg(long, value_name = "BLS_KEYSTORE_PASSWORD")]
+    #[arg(
+        long,
+        value_name = "BLS_KEYSTORE_PASSWORD",
+        default_value = "testpassword"
+    )]
     bls_keystore_password: String,
 
     /// Operator Id
-    #[arg(long, value_name = "OPERATOR_ID")]
+    #[arg(
+        long,
+        value_name = "OPERATOR_ID",
+        default_value = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+    )]
     operator_id: String,
 
     /// Operator State retreiver
@@ -105,19 +121,27 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     strategy_manager_addr: Option<String>,
 
     /// Operator Address
-    #[arg(long, value_name = "OPERATOR_ADDRESS")]
+    #[arg(
+        long,
+        value_name = "OPERATOR_ADDRESS",
+        default_value = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+    )]
     operator_address: String,
 
-    #[arg(long, value_name = "REGISTER_OPERATOR")]
+    #[arg(long, value_name = "REGISTER_OPERATOR", default_value = "true")]
     register_operator: bool,
 
-    #[arg(long, value_name = "OPERATOR_TO_AVS_REGISTRATION_SIG_SALT")]
+    #[arg(
+        long,
+        value_name = "OPERATOR_TO_AVS_REGISTRATION_SIG_SALT",
+        default_value = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+    )]
     operator_to_avs_registration_sig_salt: String,
 
-    #[arg(long, value_name = "SOCKET")]
+    #[arg(long, value_name = "SOCKET", default_value = "incredible-socket")]
     socket: String,
 
-    #[arg(long, value_name = "QUORUM_NUMBER")]
+    #[arg(long, value_name = "QUORUM_NUMBER", default_value = "00")]
     quorum_number: String,
 
     #[arg(long, value_name = "SIG_EXPIRY")]

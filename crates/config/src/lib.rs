@@ -405,7 +405,7 @@ mod tests {
 
     use std::str::FromStr;
 
-    use alloy::primitives::{address, Bytes, FixedBytes};
+    use alloy::primitives::{Bytes, FixedBytes};
 
     use super::BlsConfig;
     use super::PathBuf;
