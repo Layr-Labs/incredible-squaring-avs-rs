@@ -85,3 +85,4 @@ eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" 
 eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
 eigen-metrics-collectors-rpc-calls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
 eigen-client-eth = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
+eigen-nodeapi = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}

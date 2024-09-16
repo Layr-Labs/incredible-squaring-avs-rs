@@ -31,6 +31,13 @@ pub struct IncredibleConfig {
     task_manager_config: TaskManagerConfig,
 
     metrics_config: MetricsConfig,
+
+    node_oonfig: NodeConfig,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct NodeConfig {
+    pub node_port_address: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -252,6 +259,14 @@ impl IncredibleConfig {
 
     pub fn set_metrics_port_address(&mut self, port: String) {
         self.metrics_config.port_address = port;
+    }
+
+    pub fn set_node_api_port_address(&mut self, port: String) {
+        self.node_oonfig.node_port_address = port;
+    }
+
+    pub fn node_api_port_address(&self) -> String {
+        self.node_oonfig.node_port_address.clone()
     }
 
     pub fn metrics_port_address(&self) -> String {

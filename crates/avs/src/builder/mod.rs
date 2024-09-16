@@ -1,10 +1,12 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
+use eigen_nodeapi::{create_server, NodeApi};
 use futures::TryFutureExt;
 use incredible_aggregator::Aggregator;
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
 use incredible_task_generator::TaskManager;
+use ntex::rt::System;
 use std::future::Future;
 use tracing::info;
 /// Launch Avs trait
@@ -67,6 +69,17 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let task_spam_service = task_manager
             .start()
             .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
+
+        let node_api = NodeApi::new("incredible-squaring", "v0.0.1");
+        let node_api_address = avs.config.node_api_port_address();
+
+        std::thread::spawn(move || {
+            let _ = System::new("node_api_system").block_on(async move {
+                let node_api_server = create_server(node_api, node_api_address).unwrap();
+                node_api_server.await
+            });
+        });
+
         let _ = futures::future::try_join4(
             operator_service,
             challenger_service,
