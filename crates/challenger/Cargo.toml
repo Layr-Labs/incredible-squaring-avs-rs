@@ -1,0 +1,32 @@
+[package]
+name = "incredible-challenger"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "incredible squaring challenger "
+    
+[lints]
+workspace = true
+
+[dependencies]
+incredible-config.workspace = true
+eyre.workspace = true
+alloy-provider.workspace = true
+incredible-bindings.workspace = true
+futures-util.workspace = true
+alloy.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+toml.workspace = true
+#incredible
+incredible-testing-utils.workspace = true
+incredible-chainio.workspace = true
+
+#eigen-rs
+eigen-utils.workspace = true
+
+[dev-dependencies]
+incredible-task-generator.workspace = true

@@ -1,10 +1,14 @@
+//! cli crate  
 use std::{future::Future, pin::pin};
 use tracing::trace;
+
+/// Incredible Runner
 #[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 pub struct IncredibleRunner;
 
 impl IncredibleRunner {
+    /// Run until ctrl c
     pub fn run_blocking_until_ctrl_c<F, E>(self, fut: F) -> Result<(), E>
     where
         F: Future<Output = Result<(), E>> + Send + 'static,

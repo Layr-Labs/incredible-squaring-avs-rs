@@ -16,3 +16,4 @@ openzeppelin-contracts-upgradeable/=lib/eigenlayer-middleware.git/lib/openzeppel
 openzeppelin-contracts-v4.9.0/=lib/eigenlayer-middleware.git/lib/eigenlayer-contracts/lib/openzeppelin-contracts-v4.9.0/
 openzeppelin-contracts/=lib/eigenlayer-middleware.git/lib/openzeppelin-contracts/
 openzeppelin/=lib/eigenlayer-middleware.git/lib/eigenlayer-contracts/lib/openzeppelin-contracts-upgradeable-v4.9.0/contracts/
+eigenlayer-middleware/=lib/eigenlayer-middleware.git/

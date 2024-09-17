@@ -11,3 +11,35 @@ description = "eigen layer aggregator utils "
 workspace = true
 
 [dependencies]
+incredible-bindings.workspace = true
+ark-bn254.workspace = true
+alloy.workspace = true
+eigen-types.workspace = true
+serde.workspace = true
+ark-serialize = "0.4.2"
+hex = "0.4.3"
+eigen-crypto-bls.workspace = true
+eyre.workspace = true
+incredible-chainio.workspace = true
+incredible-config.workspace = true
+incredible-metrics.workspace = true
+eigen-services-operatorsinfo.workspace = true
+eigen-logging.workspace = true
+eigen-client-avsregistry.workspace = true
+eigen-services-avsregistry.workspace = true
+eigen-services-blsaggregation.workspace = true
+eigen-utils.workspace = true
+jsonrpc-core = "18.0.0"
+jsonrpc-http-server = "18.0.0"
+tracing.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+futures-util.workspace = true
+tokio-util = "0.7.11"
+
+[dev-dependencies]
+incredible-testing-utils.workspace = true
+toml.workspace = true
+ark-std = { version = "0.4.0", default-features = false }
+incredible-operator.workspace = true
+reqwest.workspace = true

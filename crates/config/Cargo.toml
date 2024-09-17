@@ -1,0 +1,40 @@
+[package]
+name = "incredible-config"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+description = " incredible squaring configuration "
+    
+[lints]
+rust.missing_docs = "allow"
+rust.missing_debug_implementations = "warn"
+rust.unreachable_pub = "warn"
+rust.unused_must_use = "deny"
+rust.rust_2018_idioms = { level = "deny", priority = -1 }
+rustdoc.all = "warn"
+
+
+[dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
+tracing.workspace = true
+alloy.workspace = true
+serde.workspace = true
+confy = "0.6.1"
+thiserror.workspace = true
+
+#config
+toml.workspace = true
+hex = "0.4.3"
+ruint = "1.12.3"
+
+
+#eigen
+eigen-types.workspace = true
+eigen-logging.workspace = true
+
+
+[dev-dependencies]
+tempfile = "3.10.1"
+incredible-testing-utils.workspace = true
