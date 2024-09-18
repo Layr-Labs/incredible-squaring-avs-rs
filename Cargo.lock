@@ -1728,7 +1728,7 @@ dependencies = [
 [[package]]
 name = "eigen-cli"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-contract",
  "alloy-json-rpc",
@@ -1750,7 +1750,7 @@ dependencies = [
  "num-bigint",
  "rand",
  "rand_core",
- "rust-bls-bn254",
+ "rust-bls-bn254 0.2.0",
  "serde",
  "serde_json",
  "thiserror",
@@ -1761,7 +1761,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -1784,7 +1784,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -1798,7 +1798,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-eth"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -1822,12 +1822,12 @@ dependencies = [
 [[package]]
 name = "eigen-contract-bindings"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1844,19 +1844,19 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "ark-bn254",
  "ark-ec",
  "ark-ff 0.4.2",
  "num-bigint",
- "rust-bls-bn254",
+ "rust-bls-bn254 0.2.0",
 ]
 
 [[package]]
 name = "eigen-logging"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "ctor",
  "once_cell",
@@ -1867,7 +1867,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -1878,7 +1878,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -1887,7 +1887,7 @@ dependencies = [
 [[package]]
 name = "eigen-nodeapi"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "ntex",
  "serde",
@@ -1899,7 +1899,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-avsregistry"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1915,7 +1915,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-blsaggregation"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1935,7 +1935,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-primitives",
  "alloy-provider",
@@ -1956,7 +1956,7 @@ dependencies = [
 [[package]]
 name = "eigen-testing-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-network",
  "alloy-primitives",
@@ -1972,7 +1972,7 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-primitives",
  "ark-serialize 0.4.2",
@@ -1986,7 +1986,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.0.1-alpha"
-source = "git+https://github.com/layr-labs/eigensdk-rs?rev=5390597#53905973a714c33364a449024e6a39ed79bec74d"
+source = "git+https://github.com/layr-labs/eigensdk-rs?rev=e01b594#e01b5945be196f4eaadf71eead49b0b6ae845b50"
 dependencies = [
  "alloy-contract",
  "alloy-json-rpc",
@@ -3272,7 +3272,7 @@ dependencies = [
  "incredible-testing-utils",
  "rand_core",
  "reqwest 0.12.7",
- "rust-bls-bn254",
+ "rust-bls-bn254 0.1.0",
  "serde_json",
  "tempfile",
  "thiserror",
@@ -3306,7 +3306,7 @@ dependencies = [
  "incredible-testing-utils",
  "metrics-exporter-prometheus",
  "metrics-util",
- "rust-bls-bn254",
+ "rust-bls-bn254 0.1.0",
  "tokio",
  "tracing",
 ]
@@ -5115,6 +5115,34 @@ checksum = "48fd7bd8a6377e15ad9d42a8ec25371b94ddc67abe7c8b9127bec79bebaaae18"
 name = "rust-bls-bn254"
 version = "0.1.0"
 source = "git+https://github.com/Layr-Labs/rust-bls-bn254.git?rev=be3ef87#be3ef873f484bb09c2db7b6491715236df8c6174"
+dependencies = [
+ "aes",
+ "ark-bn254",
+ "ark-ec",
+ "ark-ff 0.4.2",
+ "ark-serialize 0.4.2",
+ "ark-std 0.4.0",
+ "ctr",
+ "hex",
+ "hkdf",
+ "num-bigint",
+ "num-traits",
+ "pbkdf2 0.12.2",
+ "rand",
+ "scrypt 0.11.0",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "unicode-normalization",
+ "uuid 0.8.2",
+]
+
+[[package]]
+name = "rust-bls-bn254"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24ee74e41c4bdfb5720a8d5743e089cb7c7b3ea7dfed73de1fe0a02c5fe744f9"
 dependencies = [
  "aes",
  "ark-bn254",
