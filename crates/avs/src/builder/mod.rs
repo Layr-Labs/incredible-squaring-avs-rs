@@ -78,6 +78,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
 
         let node_api = NodeApi::new("incredible-squaring", "v0.0.1");
         let node_api_address = avs.config.node_api_port_address();
+        info!("node_api_address{:?}", node_api_address);
 
         std::thread::spawn(move || {
             let _ = System::new("node_api_system").block_on(async move {

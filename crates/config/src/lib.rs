@@ -32,7 +32,7 @@ pub struct IncredibleConfig {
 
     metrics_config: MetricsConfig,
 
-    node_oonfig: NodeConfig,
+    node_config: NodeConfig,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -72,7 +72,8 @@ pub struct MetricsConfig {
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct OperatorRegistrationConfig {
-    register_operator: bool,
+    pub register_operator: bool,
+
     pub operator_to_avs_registration_sig_salt: String,
 
     pub socket: String,
@@ -239,11 +240,11 @@ impl IncredibleConfig {
     }
 
     pub fn set_node_api_port_address(&mut self, port: String) {
-        self.node_oonfig.node_port_address = port;
+        self.node_config.node_port_address = port;
     }
 
     pub fn node_api_port_address(&self) -> String {
-        self.node_oonfig.node_port_address.clone()
+        self.node_config.node_port_address.clone()
     }
 
     pub fn metrics_port_address(&self) -> String {

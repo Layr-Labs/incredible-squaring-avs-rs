@@ -47,10 +47,10 @@ impl OperatorBuilder {
     /// Build the Operator Builder
     pub async fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
         let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url()).await;
-
         // Read BlsKey from path
         let keystore = Keystore::from_file(&config.bls_keystore_path())?
             .decrypt(&config.bls_keystore_password())?;
+
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let key_pair = BlsKeyPair::new(fr_key)?;
