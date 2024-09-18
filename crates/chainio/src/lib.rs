@@ -1,9 +1,7 @@
 //! AvsWriter
 
-mod avs_reader;
 /// error
 pub mod error;
-pub use avs_reader::AvsReader;
 /// Fake avs writer
 pub mod fake_avs_writer;
 

@@ -174,6 +174,13 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_pvt_key: String,
 
+    #[arg(
+        long,
+        value_name = "NODE_API_ADDRESS",
+        default_value = "127.0.0.1:8085"
+    )]
+    node_api_address: String,
+
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
     pub ext: Ext,
@@ -271,8 +278,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             task_manager_signer,
             operator_pvt_key,
             metrics_address,
+            node_api_address,
             ..
         } = *self;
+        config.set_node_api_port_address(node_api_address);
         config.set_metrics_port_address(metrics_address);
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
@@ -354,7 +363,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.socket().to_string(),
             )
             .await;
-        } else {
         }
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
@@ -410,7 +418,7 @@ pub async fn register_operator_with_el_and_avs(
     .await?;
 
     // Read BlsKey from path
-    let keystore = Keystore::from_file(&bls_keystore_path)?.decrypt(bls_keystore_password)?;
+    let keystore = Keystore::from_file(bls_keystore_path)?.decrypt(bls_keystore_password)?;
     let fr_key: String = keystore.iter().map(|&value| value as char).collect();
 
     let key_pair = BlsKeyPair::new(fr_key)?;

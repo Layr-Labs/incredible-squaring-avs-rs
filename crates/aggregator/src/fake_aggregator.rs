@@ -16,7 +16,6 @@ use eigen_utils::get_ws_provider;
 use futures_util::StreamExt;
 use incredible_bindings::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_bindings::IncredibleSquaringTaskManager::{self, NonSignerStakesAndSignature};
-use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
@@ -61,14 +60,6 @@ impl FakeAggregator {
             config.registry_coordinator_addr().unwrap(),
             config.operator_state_retriever_addr().unwrap(),
             config.http_rpc_url(),
-        )
-        .await
-        .unwrap();
-
-        let avs_writer = AvsWriter::new(
-            config.registry_coordinator_addr().unwrap(),
-            config.http_rpc_url(),
-            config.get_signer(),
         )
         .await
         .unwrap();
@@ -155,7 +146,7 @@ impl FakeAggregator {
                 async move {
                     let signed_task_response: crate::rpc_server::SignedTaskResponse = match params {
                         Params::Map(map) => serde_json::from_value(map["params"].clone()).unwrap(),
-                        _ => return { Err(Error::invalid_params("Expected a map")) },
+                        _ => return Err(Error::invalid_params("Expected a map")),
                     };
 
                     // Call the process_signed_task_response function
@@ -230,7 +221,7 @@ impl FakeAggregator {
                     .push(task.quorumThresholdPercentage.try_into().unwrap());
             }
 
-            for (_, val) in task.quorumNumbers.iter().enumerate() {
+            for val in task.quorumNumbers.iter() {
                 quorum_nums.push(*val);
             }
 
@@ -366,7 +357,7 @@ impl FakeAggregator {
         let _task = &self.tasks[&response.task_index];
         let _task_response =
             &self.tasks_responses[&response.task_index][&response.task_response_digest];
-        return true; // don't actually send the call, return true
+        true // don't actually send the call, return true
     }
 }
 

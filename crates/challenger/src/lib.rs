@@ -119,7 +119,7 @@ impl Challenger {
 
                         let t_index = self.process_new_task_created_log(new_task_cr);
 
-                        if let Some(_) = self.task_responses.get(&t_index) {
+                        if self.task_responses.contains_key(&t_index) {
                             let call_c_result = self.call_challenge(t_index).await;
                             match call_c_result {
                                 Ok(_) => continue,
@@ -136,7 +136,7 @@ impl Challenger {
 
                     match task_index_result {
                         Ok(task_index) => {
-                            if let Some(_) = self.tasks.get(&task_index) {
+                            if self.tasks.contains_key(&task_index) {
                                 let call_c_result = self.call_challenge(task_index).await;
                                 match call_c_result {
                                     Ok(_) => continue,
@@ -179,10 +179,10 @@ impl Challenger {
                 info!("challenger:correct answer, no challenge raised");
                 Ok(())
             } else {
-                return Err(ChallengerError::TaskResponseNotFound);
+                Err(ChallengerError::TaskResponseNotFound)
             }
         } else {
-            return Err(ChallengerError::TaskNotFound);
+            Err(ChallengerError::TaskNotFound)
         }
     }
 

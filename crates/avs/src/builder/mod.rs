@@ -39,6 +39,12 @@ impl DefaultAvsLauncher {
     }
 }
 
+impl Default for DefaultAvsLauncher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
     async fn launch_avs(self, avs: AvsBuilder) -> eyre::Result<()> {
         info!("launching crates: incredible-squaring-avs-rs");

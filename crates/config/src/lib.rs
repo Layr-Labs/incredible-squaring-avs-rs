@@ -138,117 +138,94 @@ impl IncredibleConfig {
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
     }
 
-    ///
-    pub fn set_logger(&mut self) {}
-
-    /// Set chainid
     pub fn set_chain_id(&mut self, chain_id: u16) {
         self.rpc_config.chain_id = chain_id;
     }
 
-    /// Set operatorid
     pub fn set_operator_id(&mut self, id: String) {
         self.operator_config.operator_id = id;
     }
 
-    /// Set signer
     pub fn set_signer(&mut self, pvt_key: String) {
         self.rpc_config.signer = pvt_key;
     }
 
-    /// Set http rpc url
     pub fn set_http_rpc_url(&mut self, rpc_url: String) {
         self.rpc_config.http_rpc_url = rpc_url;
     }
 
-    /// Set ws rpc url
     pub fn set_ws_rpc_url(&mut self, ws_url: String) {
         self.rpc_config.ws_rpc_url = ws_url;
     }
 
-    /// set ecdsa keystoe file path
     pub fn set_ecdsa_keystore_path(&mut self, path: String) {
         self.ecdsa_config.keystore_path = path;
     }
 
-    /// set ecdsa keystore password
     pub fn set_ecdsa_keystore_pasword(&mut self, password: String) {
         self.ecdsa_config.keystore_password = password;
     }
 
-    /// set the aggregator ip address
     pub fn set_aggregator_ip_address(&mut self, port: String) {
         self.aggregator_config.ip_address = port;
     }
 
-    /// set the bls keystore path directory
     pub fn set_bls_keystore_path(&mut self, path: String) {
         self.bls_config.keystore_path = path;
     }
 
-    /// set the bls keystore file password to decrypt it
     pub fn set_bls_keystore_password(&mut self, password: String) {
         self.bls_config.keystore_password = password;
     }
 
-    /// set the registry coordinator address
     pub fn set_registry_coordinator_addr(&mut self, address: String) {
         self.el_config.registry_coordinator_addr = address;
     }
 
-    /// set the delegation manager address
     pub fn set_delegation_manager_addr(&mut self, address: String) {
         self.el_config.delegation_manager_addr = address;
     }
-    /// set the strategy manager address
     pub fn set_strategy_manager_addr(&mut self, address: String) {
         self.el_config.strategy_manager_addr = address;
     }
 
-    /// set the operator state retriever address
     pub fn set_operator_state_retriever(&mut self, address: String) {
         (self.el_config.operator_state_retriever_addr) = address;
     }
 
-    /// set the operator address
     pub fn set_operator_address(&mut self, address: String) {
         self.operator_config.operator_address = address;
     }
 
-    /// set operator registration signature salt
     pub fn set_operator_registration_sig_salt(&mut self, salt: String) {
         self.operator_registration_config
             .operator_to_avs_registration_sig_salt = salt;
     }
 
-    /// set quorum number
     pub fn set_quorum_number(&mut self, quorum_num: String) {
         self.operator_registration_config.quorum_number = quorum_num;
     }
 
-    /// set socket
     pub fn set_socket(&mut self, socket: String) {
         self.operator_registration_config.socket = socket;
     }
 
-    /// set signature expiry
     pub fn set_sig_expiry(&mut self, expiry: String) {
         self.operator_registration_config.sig_expiry = expiry;
     }
 
-    /// set avs directory address
     pub fn set_avs_directory_address(&mut self, address: String) {
         self.el_config.avs_directory_addr = address;
     }
-    /// set task manager address
+
     pub fn set_task_manager_address(&mut self, address: String) {
         self.incredible_contracts_config.task_manager_addr = address;
     }
-    /// set erc20 mock strategy address
+
     pub fn set_erc20_mock_strategy_address(&mut self, address: String) {
         self.incredible_contracts_config.erc20_mock_strategy_addr = address;
     }
-    /// set task manager signer
+
     pub fn set_task_manager_signer(&mut self, signer: String) {
         self.task_manager_config.signer = signer;
     }
@@ -307,12 +284,12 @@ impl IncredibleConfig {
 
     pub fn operator_address(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.operator_config.operator_address.as_bytes())
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
     pub fn get_operator_id(&self) -> Result<OperatorId, error::ConfigError> {
         FixedBytes::from_hex(self.operator_config.operator_id.as_bytes())
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
     pub fn aggregator_ip_addr(&self) -> String {
@@ -321,12 +298,12 @@ impl IncredibleConfig {
 
     pub fn operator_state_retriever_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.operator_state_retriever_addr.as_bytes())
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
     pub fn registry_coordinator_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.registry_coordinator_addr.as_bytes())
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
     pub fn operator_to_avs_registration_sig_salt(&self) -> Result<FixedBytes<32>, ConfigError> {
@@ -335,12 +312,12 @@ impl IncredibleConfig {
                 .operator_registration_config
                 .operator_to_avs_registration_sig_salt,
         )
-        .map_err(|e| ConfigError::HexParse(e))
+        .map_err(ConfigError::HexParse)
     }
 
     pub fn quorum_number(&self) -> Result<Bytes, ConfigError> {
         Bytes::from_str(&self.operator_registration_config.quorum_number)
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
     pub fn socket(&self) -> &String {
@@ -349,52 +326,46 @@ impl IncredibleConfig {
 
     pub fn sig_expiry(&self) -> Result<U256, ConfigError> {
         U256::from_str(&self.operator_registration_config.sig_expiry)
-            .map_err(|e| ConfigError::ParseError(e))
+            .map_err(ConfigError::ParseError)
     }
 
     pub fn delegation_manager_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.delegation_manager_addr.as_bytes())
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
-    /// Avs Directory manager address
     pub fn avs_directory_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.avs_directory_addr.as_bytes())
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
-    /// Strategy Manager address
     pub fn strategy_manager_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.strategy_manager_addr.as_bytes())
-            .map_err(|e| ConfigError::HexParse(e))
+            .map_err(ConfigError::HexParse)
     }
 
-    /// Incredible Task Manager address
     pub fn task_manager_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(
             self.incredible_contracts_config
                 .task_manager_addr
                 .as_bytes(),
         )
-        .map_err(|e| ConfigError::HexParse(e))
+        .map_err(ConfigError::HexParse)
     }
 
-    /// Incredible ERC20 mock strategy address
     pub fn erc20_mock_strategy_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(
             self.incredible_contracts_config
                 .erc20_mock_strategy_addr
                 .as_bytes(),
         )
-        .map_err(|e| ConfigError::HexParse(e))
+        .map_err(ConfigError::HexParse)
     }
 
-    /// Task manager signer
     pub fn task_manager_signer(&self) -> String {
         self.task_manager_config.signer.clone()
     }
 
-    /// Operator pvt key
     pub fn operator_pvt_key(&self) -> Option<String> {
         self.operator_registration_config.operator_pvt_key.clone()
     }
@@ -418,8 +389,7 @@ mod tests {
     use crate::RpcConfig;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
-        get_incredible_squaring_registry_coordinator, get_incredible_squaring_strategy_address,
-        get_incredible_squaring_task_manager,
+        get_incredible_squaring_registry_coordinator,
     };
     const EXTENSION: &str = "toml";
 

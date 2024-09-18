@@ -1,11 +1,14 @@
 use crate::client::ClientAggregator;
 use crate::error::OperatorError;
 use alloy::{
-    primitives::{keccak256, Address, U256},
+    primitives::{keccak256, Address},
     providers::WsConnect,
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
+
+#[cfg(feature = "integration_tests")]
+use alloy::primitives::U256;
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
@@ -49,7 +52,7 @@ impl OperatorBuilder {
         let keystore = Keystore::from_file(&config.bls_keystore_path())?
             .decrypt(&config.bls_keystore_password())?;
         // TODO(supernova): Add this method in sdk in bls crate
-        let fr_key: String = keystore.iter().map(|&value| value as u8 as char).collect();
+        let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let key_pair = BlsKeyPair::new(fr_key)?;
         let operator_id = config.get_operator_id()?;
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
@@ -60,7 +63,7 @@ impl OperatorBuilder {
             ws_rpc_url: config.ws_rpc_url(),
             operator_addr: operator_address,
             key_pair,
-            operator_id: operator_id,
+            operator_id,
             client: ClientAggregator::new(config.aggregator_ip_addr()),
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
@@ -75,6 +78,7 @@ impl OperatorBuilder {
     /// Processes new task
     pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
         #[allow(unused_mut)]
+        #[allow(unused_assignments)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
         #[cfg(feature = "integration_tests")]
@@ -85,11 +89,10 @@ impl OperatorBuilder {
 
         let num_squared = number_to_be_squared * number_to_be_squared;
 
-        let task_response = TaskResponse {
+        TaskResponse {
             referenceTaskIndex: new_task_created.taskIndex,
             numberSquared: num_squared,
-        };
-        task_response
+        }
     }
 
     /// Start the operator
@@ -102,7 +105,7 @@ impl OperatorBuilder {
         )
         .await?;
         let is_registered = avs_registry_reader
-            .is_operator_registered(self.operator_addr.clone())
+            .is_operator_registered(self.operator_addr)
             .await?;
         let _ = self.client.dial_aggregator_rpc_client();
         if is_registered {
