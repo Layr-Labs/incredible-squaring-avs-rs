@@ -80,10 +80,3 @@ jobs:
 
       - name: Run Integration tests
         run: make integration-tests
-
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-summary
-          path: lcov.info
