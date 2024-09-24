@@ -119,36 +119,16 @@ impl Challenger {
 
                         let t_index = self.process_new_task_created_log(new_task_cr);
 
-                        if let Some(_) = self.task_responses.get(&t_index) {
-                            let call_c_result = self.call_challenge(t_index).await;
-                            match call_c_result {
-                                Ok(_) => continue,
-                                Err(e) => {
-                                    return Err(e.into());
-                                }
-                            }
+                        if self.task_responses.contains_key(&t_index) {
+                            self.call_challenge(t_index).await?;
                         }
                     }
                 } else if *tp == task_responded_log {
                     info!("challenger: received a task response log");
 
-                    let task_index_result = self.process_task_response_log(log).await;
-
-                    match task_index_result {
-                        Ok(task_index) => {
-                            if let Some(_) = self.tasks.get(&task_index) {
-                                let call_c_result = self.call_challenge(task_index).await;
-                                match call_c_result {
-                                    Ok(_) => continue,
-                                    Err(e) => {
-                                        return Err(e.into());
-                                    }
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            return Err(e.into());
-                        }
+                    let task_index = self.process_task_response_log(log).await?;
+                    if self.tasks.contains_key(&task_index) {
+                        self.call_challenge(task_index).await?;
                     }
                 }
             }
@@ -179,10 +159,10 @@ impl Challenger {
                 info!("challenger:correct answer, no challenge raised");
                 Ok(())
             } else {
-                return Err(ChallengerError::TaskResponseNotFound);
+                Err(ChallengerError::TaskResponseNotFound)
             }
         } else {
-            return Err(ChallengerError::TaskNotFound);
+            Err(ChallengerError::TaskNotFound)
         }
     }
 

@@ -6,7 +6,6 @@ use alloy::{
     primitives::TxHash,
     rpc::types::{serde_helpers::OtherFields, AccessList, Transaction},
 };
-use eigen_utils::get_provider;
 use incredible_bindings::IncredibleSquaringTaskManager::{
     respondToTaskCall, G1Point, Task, TaskResponded,
 };
@@ -17,8 +16,9 @@ use std::collections::HashMap;
 #[derive(Debug)]
 pub(crate) struct FakeChallenger {
     pub fake_avs_writer: FakeAvsWriter,
+    #[allow(unused)]
     pub ws_url: String,
-
+    #[allow(unused)]
     pub rpc_url: String,
 
     pub tasks: HashMap<u32, Task>,

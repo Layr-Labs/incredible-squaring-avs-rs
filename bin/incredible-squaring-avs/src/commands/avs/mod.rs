@@ -1,6 +1,7 @@
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
-use clap::{value_parser, Args, Parser};
+use clap::value_parser;
+use clap::{Args, Parser};
 use eigen_client_avsregistry::{reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter};
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
@@ -31,6 +32,7 @@ use tracing::{debug, info};
 #[non_exhaustive]
 pub struct NoArgs;
 
+use std::path::PathBuf;
 /// Starts incredible squaring
 #[derive(Debug, Parser)]
 pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
@@ -174,6 +176,17 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_pvt_key: String,
 
+    #[arg(
+        long,
+        value_name = "NODE_API_ADDRESS",
+        default_value = "127.0.0.1:8085"
+    )]
+    node_api_address: String,
+
+    /// The path to the configuration file to use.
+    #[arg(long, value_name = "FILE")]
+    config_path: Option<PathBuf>,
+
     /// additional arguments
     #[command(flatten, next_help_heading = "Extension")]
     pub ext: Ext,
@@ -271,35 +284,38 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             task_manager_signer,
             operator_pvt_key,
             metrics_address,
+            node_api_address,
+            config_path,
             ..
         } = *self;
-        config.set_metrics_port_address(metrics_address);
-        let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
-        init_registry(socket_addr_metrics);
-        let now = SystemTime::now();
-        let mut expiry: U256 = U256::from(0);
-        if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
-            let seconds = duration_since_epoch.as_secs(); // Returns a u64
-
-            // Signature expiry is at 10000 seconds
-            expiry = U256::from(seconds) + U256::from(10000);
+        if let Some(config_path) = config_path {
+            config = IncredibleConfig::load(&config_path)?;
         } else {
-            debug!("System time seems to be before the UNIX epoch.");
+            config.set_node_api_port_address(node_api_address);
+            config.set_metrics_port_address(metrics_address);
+
+            // there's a default value ,so using unwrap is no issue
+            config.set_task_manager_signer(task_manager_signer);
+            config.set_signer(signer); // there's a default value ,so using unwrap is no issue
+
+            config.set_chain_id(chain_id);
+            config.set_http_rpc_url(rpc_url.clone());
+            config.set_ws_rpc_url(ws_rpc_url);
+            config.set_ecdsa_keystore_path(ecdsa_keystore_path.clone());
+            config.set_ecdsa_keystore_pasword(ecdsa_keystore_password.clone());
+            config.set_aggregator_ip_address(aggregator_ip_address);
+            config.set_bls_keystore_path(bls_keystore_path.clone());
+            config.set_bls_keystore_password(bls_keystore_password.clone());
+
+            config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
+            config.set_socket(socket);
+            config.set_quorum_number(quorum_number);
+            config.set_operator_id(operator_id);
+            config.set_operator_address(operator_address);
         }
-        // there's a default value ,so using unwrap is no issue
-        config.set_task_manager_signer(task_manager_signer);
-        config.set_signer(signer); // there's a default value ,so using unwrap is no issue
         config.set_erc20_mock_strategy_address(
             erc20_mock_strategy_address.unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
         );
-        config.set_chain_id(chain_id);
-        config.set_http_rpc_url(rpc_url.clone());
-        config.set_ws_rpc_url(ws_rpc_url);
-        config.set_ecdsa_keystore_path(ecdsa_keystore_path.clone());
-        config.set_ecdsa_keystore_pasword(ecdsa_keystore_password.clone());
-        config.set_aggregator_ip_address(aggregator_ip_address);
-        config.set_bls_keystore_path(bls_keystore_path.clone());
-        config.set_bls_keystore_password(bls_keystore_password.clone());
         config.set_delegation_manager_addr(
             delegation_manager_address
                 .clone()
@@ -327,13 +343,21 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_task_manager_address(
             task_manager_addr.unwrap_or(incredible_squaring_task_manager_address_anvil.to_string()),
         );
-        config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
-        config.set_socket(socket);
-        config.set_quorum_number(quorum_number);
-        config.set_operator_id(operator_id);
-        config.set_operator_address(operator_address);
+        let now = SystemTime::now();
+        let mut expiry: U256 = U256::from(0);
+        if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
+            let seconds = duration_since_epoch.as_secs(); // Returns a u64
+
+            // Signature expiry is at 10000 seconds
+            expiry = U256::from(seconds) + U256::from(10000);
+        } else {
+            debug!("System time seems to be before the UNIX epoch.");
+        }
         // provided expiry , if not , use default expiry : 10000 seconds
         config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
+        let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
+        init_registry(socket_addr_metrics);
+
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
@@ -354,7 +378,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.socket().to_string(),
             )
             .await;
-        } else {
         }
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
@@ -410,7 +433,7 @@ pub async fn register_operator_with_el_and_avs(
     .await?;
 
     // Read BlsKey from path
-    let keystore = Keystore::from_file(&bls_keystore_path)?.decrypt(bls_keystore_password)?;
+    let keystore = Keystore::from_file(bls_keystore_path)?.decrypt(bls_keystore_password)?;
     let fr_key: String = keystore.iter().map(|&value| value as char).collect();
 
     let key_pair = BlsKeyPair::new(fr_key)?;

@@ -8,7 +8,12 @@ license.workspace = true
 description = "eigen layer operator"
     
 [lints]
-workspace = true
+rust.missing_docs = "allow"
+rust.missing_debug_implementations = "warn"
+rust.unreachable_pub = "warn"
+rust.unused_must_use = "deny"
+rust.rust_2018_idioms = { level = "deny", priority = -1 }
+rustdoc.all = "warn"
 
 [dependencies]
 alloy.workspace = true

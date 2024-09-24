@@ -15,11 +15,17 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 make start-anvil
 ```
 
-- Single command AVS start using the following command for default values on anvil
+- Single command AVS start using the following command (default values)
 
 ```bash
 cargo run --bin incredible-squaring-avs  start
 ```
+
+- To change the parameters, provide path to a toml config file 
+```
+cargo run --bin incredible-squaring-avs  start --config-path <PATH>
+```
+We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rust/tree/master/incredible_config.toml) for reference.
 
 This command launches 4 crates together 
 - Operator : It listens for new tasks , responds them by signing with their bls key and send the signed response to the aggregator.
