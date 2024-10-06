@@ -9,7 +9,7 @@ use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
 use eigen_testing_utils::anvil_constants::{
-    get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
+    get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
@@ -33,6 +33,8 @@ use tracing::{debug, info};
 pub struct NoArgs;
 
 use std::path::PathBuf;
+
+const ANVIL_HTTP_UR:&str = "http://localhost:8545";
 /// Starts incredible squaring
 #[derive(Debug, Parser)]
 pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
@@ -235,10 +237,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let operator_state_retriever_address_anvil =
             get_incredible_squaring_operator_state_retriever().await;
 
-        let delegation_manager_address_anvil = get_delegation_manager_address().await;
-        let avs_directory_address_anvil = get_avs_directory_address().await;
+        let delegation_manager_address_anvil = get_delegation_manager_address(ANVIL_HTTP_URL.to_string()).await;
+        let avs_directory_address_anvil = get_avs_directory_address(ANVIL_HTTP_URL.to_string()).await;
 
-        let strategy_manager_address_anvil = get_strategy_manager_address().await;
+        let strategy_manager_address_anvil = get_strategy_manager_address(ANVIL_HTTP_URL.to_string()).await;
         let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
         let incredible_squaring_task_manager_address_anvil =
             get_incredible_squaring_task_manager().await;
@@ -452,13 +454,13 @@ pub async fn register_operator_with_el_and_avs(
         hex::encode(s).to_string(),
     );
 
-    let operator_details = Operator::new(
-        signer.address(),
-        signer.address(),
-        Address::ZERO,
-        200,
-        Some("url".to_string()),
-    );
+    let operator_details = Operator{
+        address:signer.address(),
+        earnings_receiver_address: signer.address(),
+        delegation_approver_address:Address::ZERO,
+        staker_opt_out_window_blocks:200,
+        metadata_url:Some("url".to_string()),
+    };
     let _ = el_chain_writer
         .register_as_operator(operator_details)
         .await?;
