@@ -68,21 +68,21 @@ incredible-chainio = {path = "crates/chainio/"}
 incredible-testing-utils = {path = "crates/testing-utils/"}
 incredible-task-generator = {path = "crates/task_generator/"}
 
-# eigen-rs 
-eigen-client-avsregistry  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-testing-utils =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-crypto-bls =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-types =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-metrics = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-contract-bindings = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-cli = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-crypto-bn254  = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-client-elcontracts = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-services-operatorsinfo =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-services-avsregistry =  {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-services-blsaggregation = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-metrics-collectors-rpc-calls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-client-eth = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
-eigen-nodeapi = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "5390597"}
+# eigensdk-rs 
+eigen-client-avsregistry  = "0.1.0"
+eigen-testing-utils = "0.1.0"
+eigen-crypto-bls =  "0.1.0"
+eigen-types =  "0.1.0"
+eigen-metrics = "0.1.0"
+eigen-utils = "0.1.0"
+eigen-contract-bindings = "0.1.0"
+eigen-cli = "0.1.0"
+eigen-logging = "0.1.0"
+eigen-crypto-bn254  = "0.1.0"
+eigen-client-elcontracts = "0.1.0"
+eigen-services-operatorsinfo =  "0.1.0"
+eigen-services-avsregistry =  "0.1.0"
+eigen-services-blsaggregation = "0.1.0"
+eigen-metrics-collectors-rpc-calls = "0.1.0"
+eigen-client-eth = "0.1.0"
+eigen-nodeapi = "0.1.0"
