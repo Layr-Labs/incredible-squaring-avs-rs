@@ -1,13 +1,21 @@
 //! Generates a new task every 10 seconds
+use alloy::providers::ProviderBuilder;
 use alloy::{
+    network::EthereumWallet,
     primitives::{Address, Bytes, U256},
     rpc::types::TransactionReceipt,
+    signers::local::PrivateKeySigner,
 };
 use eigen_utils::get_signer;
-use incredible_bindings::IncredibleSquaringTaskManager::{
-    self, NonSignerStakesAndSignature, Task, TaskResponse,
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
+    Task, TaskResponse,
+};
+use incredible_bindings::incrediblesquaringtaskmanager::{
+    IBLSSignatureChecker::NonSignerStakesAndSignature,
+    IncredibleSquaringTaskManager::{self},
 };
 use lazy_static::lazy_static;
+use reqwest::Url;
 use std::str::FromStr;
 use tokio::time::{sleep, Duration};
 lazy_static! {
@@ -38,10 +46,15 @@ impl TaskManager {
     /// Creates new task every 10 seconds
     pub async fn start(&self) -> eyre::Result<()> {
         info!("Started creating new task ");
-        let task_manager_contract = IncredibleSquaringTaskManager::new(
-            self.task_manager_address,
-            get_signer(self.signer.clone(), &self.rpc_url),
-        );
+        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let signer = PrivateKeySigner::from_str(&self.signer)?;
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new()
+            .with_recommended_fillers()
+            .wallet(wallet)
+            .on_http(url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_address, pr);
 
         let mut task_num: U256 = U256::from(0);
 
@@ -80,10 +93,15 @@ impl TaskManager {
         &self,
         task_num: U256,
     ) -> eyre::Result<TransactionReceipt, eyre::Error> {
-        let task_manager_contract = IncredibleSquaringTaskManager::new(
-            self.task_manager_address,
-            get_signer(self.signer.clone(), &self.rpc_url),
-        );
+        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let signer = PrivateKeySigner::from_str(&self.signer)?;
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new()
+            .with_recommended_fillers()
+            .wallet(wallet)
+            .on_http(url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_address, pr);
 
         let number_to_be_squared = task_num;
         let quorum_threshold_percentage = 100;
@@ -118,10 +136,15 @@ impl TaskManager {
         task_response: TaskResponse,
         non_signer_stakes_and_signature: NonSignerStakesAndSignature,
     ) -> eyre::Result<TransactionReceipt, eyre::Error> {
-        let task_manager_contract = IncredibleSquaringTaskManager::new(
-            self.task_manager_address,
-            get_signer(self.signer.clone(), &self.rpc_url),
-        );
+        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let signer = PrivateKeySigner::from_str(&self.signer)?;
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new()
+            .with_recommended_fillers()
+            .wallet(wallet)
+            .on_http(url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_address, pr);
 
         let s = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)

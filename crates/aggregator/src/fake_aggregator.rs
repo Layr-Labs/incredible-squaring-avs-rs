@@ -14,8 +14,13 @@ use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInM
 use eigen_types::avs::TaskResponseDigest;
 use eigen_utils::get_ws_provider;
 use futures_util::StreamExt;
-use incredible_bindings::IncredibleSquaringTaskManager::NewTaskCreated;
-use incredible_bindings::IncredibleSquaringTaskManager::{self, NonSignerStakesAndSignature};
+use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
+    Task, TaskResponse,
+};
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{self};
+use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
@@ -38,10 +43,9 @@ pub struct FakeAggregator {
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
     /// HashMap to store tasks
-    pub tasks: HashMap<u32, IncredibleSquaringTaskManager::Task>,
+    pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
-    pub tasks_responses:
-        HashMap<u32, HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>>,
+    pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
 }
 
 impl FakeAggregator {
@@ -321,27 +325,27 @@ impl FakeAggregator {
         &self,
         response: BlsAggregationServiceResponse,
     ) -> bool {
-        let mut non_signer_pub_keys = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
+        let mut non_signer_pub_keys = Vec::<G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
             let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
-            non_signer_pub_keys.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
+            non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
-        let mut quorum_apks = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
+        let mut quorum_apks = Vec::<G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
             let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
-            quorum_apks.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
+            quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
         let _non_signer_stakes_and_signature = NonSignerStakesAndSignature {
             nonSignerPubkeys: non_signer_pub_keys,
             nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
             quorumApks: quorum_apks,
-            apkG2: IncredibleSquaringTaskManager::G2Point {
+            apkG2: G2Point {
                 X: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().X,
                 Y: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().Y,
             },
-            sigma: IncredibleSquaringTaskManager::G1Point {
+            sigma: G1Point {
                 X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
                     .unwrap()
                     .X,

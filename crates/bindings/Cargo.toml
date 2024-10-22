@@ -11,5 +11,5 @@ description = "incredible squaring alloy bindings "
 workspace = true
 
 [dependencies]
-alloy.workspace = true
+alloy = {workspace = true, features = ["sol-types", "contract"]}
 serde.workspace = true

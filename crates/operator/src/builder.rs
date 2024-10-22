@@ -18,7 +18,10 @@ use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
 use incredible_aggregator::rpc_server::SignedTaskResponse;
-use incredible_bindings::IncredibleSquaringTaskManager::{self, NewTaskCreated, TaskResponse};
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
+    self, NewTaskCreated,
+};
 use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use tracing::info;
@@ -166,12 +169,12 @@ mod tests {
     use ark_ec::AffineRepr;
     use ark_ff::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
+    use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator,
     };
     use std::str::FromStr;
-    use IncredibleSquaringTaskManager::Task;
     const INCREDIBLE_CONFIG_FILE: &str = r#"
     [rpc_config]
     chain_id = 31337

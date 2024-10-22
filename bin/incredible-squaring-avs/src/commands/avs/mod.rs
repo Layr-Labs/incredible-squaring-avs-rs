@@ -453,6 +453,7 @@ pub async fn register_operator_with_el_and_avs(
     let el_chain_writer = ELChainWriter::new(
         delegation_manager_address,
         strategy_manager_address,
+        Address::ZERO,
         el_chain_reader.clone(),
         rpc_url.clone(),
         hex::encode(s).to_string(),

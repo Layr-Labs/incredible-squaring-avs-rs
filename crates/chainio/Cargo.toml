@@ -20,6 +20,7 @@ alloy.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
+reqwest.workspace = true
 
 #eigen-rs
 eigen-client-avsregistry.workspace = true

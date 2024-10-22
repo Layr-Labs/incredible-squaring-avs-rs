@@ -1,5 +1,7 @@
+use alloy::contract::Error as ContractError;
 use alloy::{
-    contract::Error as AlloyError,
+    providers::PendingTransactionError as AlloyError,
+    signers::local::LocalSignerError,
     transports::{RpcError, TransportErrorKind},
 };
 use eigen_client_avsregistry::error::AvsRegistryError;
@@ -15,8 +17,8 @@ pub enum ChainIoError {
         reason: String,
     },
     /// Alloy contract error
-    #[error("Alloy contract error: {0}")]
-    AlloyContractError(#[from] AlloyError),
+    #[error("Alloy provider error: {0}")]
+    AlloyProviderError(#[from] AlloyError),
     /// No logs generated in Create new task function
     #[error("No logs generated in Create new task function")]
     CreateNewTaskNoEventFound,
@@ -26,8 +28,13 @@ pub enum ChainIoError {
     /// Avs registry error in eigensdk-rs
     #[error("AvsRegistry error in eigensdk-rs")]
     SdkAvsRegistryChainError(#[from] AvsRegistryError),
-
     /// Alloy Rpc Error
     #[error("Alloy Rpc Error")]
     RpcError(#[from] RpcError<TransportErrorKind>),
+    /// Alloy Signer Error
+    #[error("Alloy Signer Error")]
+    SignerError(#[from] LocalSignerError),
+    /// Alloy Contract Error
+    #[error("Alloy Contract Error")]
+    ContractError(#[from] ContractError),
 }
