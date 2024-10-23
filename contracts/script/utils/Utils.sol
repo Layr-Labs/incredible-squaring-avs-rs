@@ -3,7 +3,7 @@ pragma solidity =0.8.12;
 
 import "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 import "@eigenlayer/contracts/strategies/StrategyBase.sol";
-import "../../src/ERC20Mock.sol";
+import "../../src/MockERC20.sol";
 
 import "forge-std/Script.sol";
 import "forge-std/StdJson.sol";
@@ -16,7 +16,7 @@ contract Utils is Script {
         uint256[] memory amounts
     ) internal {
         for (uint256 i = 0; i < tos.length; i++) {
-            ERC20Mock underlyingToken = ERC20Mock(
+            MockERC20 underlyingToken = MockERC20(
                 address(StrategyBase(strategyAddress).underlyingToken())
             );
             underlyingToken.mint(tos[i], amounts[i]);

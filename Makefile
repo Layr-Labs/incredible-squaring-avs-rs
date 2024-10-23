@@ -1,14 +1,14 @@
 PHONY:reset-anvil
 
-deploy-avs-save-anvil-state:
-	./contracts/anvil/deploy-avs-save-anvil-state.sh
+deploy-avs:
+	./contracts/anvil/deploy-avs.sh
 
-deploy-contracts-save-anvil-state:
-	./contracts/anvil/deploy-contracts-save-anvil-state.sh
+deploy-eigenlayer:
+	./contracts/anvil/deploy-eigenlayer.sh
 
-start-anvil-chain-with-el-and-avs-deployed: 
-	./contracts/anvil/start-anvil-chain-with-el-and-avs-deployed.sh
-
+deploy-el-and-avs-contracts:
+	$(MAKE) deploy-eigenlayer
+	$(MAKE) deploy-avs
 
 start-anvil: reset-anvil ## 
 			 $(MAKE) start-anvil-chain-with-el-and-avs-deployed

@@ -21,7 +21,7 @@ import "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 import {IncredibleSquaringServiceManager, IServiceManager} from "../src/IncredibleSquaringServiceManager.sol";
 import {IncredibleSquaringTaskManager} from "../src/IncredibleSquaringTaskManager.sol";
 import {IIncredibleSquaringTaskManager} from "../src/IIncredibleSquaringTaskManager.sol";
-import "../src/ERC20Mock.sol";
+import "../src/MockERC20.sol";
 
 import {Utils} from "./utils/Utils.sol";
 
@@ -48,7 +48,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
 
     // ERC20 and Strategy: we need to deploy this erc20, create a strategy for it, and whitelist this strategy in the strategymanager
 
-    ERC20Mock public erc20Mock;
+    MockERC20 public erc20Mock;
     StrategyBaseTVLLimits public erc20MockStrategy;
 
     // Credible Squaring contracts
@@ -144,7 +144,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
         StrategyBaseTVLLimits baseStrategyImplementation,
         IStrategyManager strategyManager
     ) internal {
-        erc20Mock = new ERC20Mock();
+        erc20Mock = new MockERC20();
         // TODO(samlaf): any reason why we are using the strategybase with tvl limits instead of just using strategybase?
         // the maxPerDeposit and maxDeposits below are just arbitrary values.
         erc20MockStrategy = StrategyBaseTVLLimits(
