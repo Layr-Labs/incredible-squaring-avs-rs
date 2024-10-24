@@ -32,3 +32,8 @@ integration-tests: reset-anvil ##
 				   $(MAKE) start-anvil-chain-with-el-and-avs-deployed
 				   docker start anvil
 				   cargo test --manifest-path ./integration-tests/Cargo.toml
+
+fmt: 
+	cargo fmt
+	cd contracts && forge fmt
+	cd ..

@@ -107,9 +107,11 @@ impl OperatorBuilder {
             self.http_rpc_url.clone(),
         )
         .await?;
+        info!("operator{}", self.operator_addr);
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr)
             .await?;
+        info!("is_operator_registered {}", is_registered);
         let _ = self.client.dial_aggregator_rpc_client();
         if is_registered {
             info!("Starting operator");

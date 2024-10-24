@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
+
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 
 import "@eigenlayer/contracts/permissions/PauserRegistry.sol";
+
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
 import {IStrategyManager, IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
@@ -40,16 +43,16 @@ contract IncredibleSquaringDeployer is Script, Utils {
     uint32 public constant TASK_RESPONSE_WINDOW_BLOCK = 30;
     uint32 public constant TASK_DURATION_BLOCKS = 0;
     // TODO: right now hardcoding these (this address is anvil's default address 9)
-    address public constant AGGREGATOR_ADDR =
-        0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
-    address public constant TASK_GENERATOR_ADDR =
-        0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+    address public constant AGGREGATOR_ADDR = 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
+    address public constant TASK_GENERATOR_ADDR = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
     ContractsRegistry contractsRegistry = ContractsRegistry(0x5FbDB2315678afecb367f032d93F642f64180aa3);
 
     // ERC20 and Strategy: we need to deploy this erc20, create a strategy for it, and whitelist this strategy in the strategymanager
 
     MockERC20 public erc20Mock;
     StrategyBaseTVLLimits public erc20MockStrategy;
+
+    address public rewardscoordinator;
 
     // Credible Squaring contracts
     ProxyAdmin public incredibleSquaringProxyAdmin;
@@ -73,68 +76,41 @@ contract IncredibleSquaringDeployer is Script, Utils {
     IServiceManager public incredibleSquaringServiceManagerImplementation;
 
     IncredibleSquaringTaskManager public incredibleSquaringTaskManager;
-    IIncredibleSquaringTaskManager
-        public incredibleSquaringTaskManagerImplementation;
+    IIncredibleSquaringTaskManager public incredibleSquaringTaskManagerImplementation;
+    CoreDeploymentLib.DeploymentData internal configData;
 
     function run() external {
         // Eigenlayer contracts
-        string memory eigenlayerDeployedContracts = readOutput(
-            "eigenlayer_deployment_output"
-        );
-        IStrategyManager strategyManager = IStrategyManager(
-            stdJson.readAddress(
-                eigenlayerDeployedContracts,
-                ".addresses.strategyManager"
-            )
-        );
-        IDelegationManager delegationManager = IDelegationManager(
-            stdJson.readAddress(
-                eigenlayerDeployedContracts,
-                ".addresses.delegation"
-            )
-        );
-        IAVSDirectory avsDirectory = IAVSDirectory(
-            stdJson.readAddress(
-                eigenlayerDeployedContracts,
-                ".addresses.avsDirectory"
-            )
-        );
-        ProxyAdmin eigenLayerProxyAdmin = ProxyAdmin(
-            stdJson.readAddress(
-                eigenlayerDeployedContracts,
-                ".addresses.eigenLayerProxyAdmin"
-            )
-        );
-        PauserRegistry eigenLayerPauserReg = PauserRegistry(
-            stdJson.readAddress(
-                eigenlayerDeployedContracts,
-                ".addresses.eigenLayerPauserReg"
-            )
-        );
-        StrategyBaseTVLLimits baseStrategyImplementation = StrategyBaseTVLLimits(
-                stdJson.readAddress(
-                    eigenlayerDeployedContracts,
-                    ".addresses.baseStrategyImplementation"
-                )
-            );
+        configData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", "31337.json");
+        IStrategyManager strategyManager =
+            IStrategyManager(configData.strategyManager);
+        IDelegationManager delegationManager =
+            IDelegationManager(configData.delegationManager);
+        IAVSDirectory avsDirectory =
+            IAVSDirectory(configData.avsDirectory);
+        // ProxyAdmin eigenLayerProxyAdmin =
+        //     ProxyAdmin(configData.pr);
+        // PauserRegistry eigenLayerPauserReg =
+        //     PauserRegistry(stdJson.readAddress(eigenlayerDeployedContracts, ".addresses.eigenLayerPauserReg"));
+        // StrategyBaseTVLLimits baseStrategyImplementation = StrategyBaseTVLLimits(
+        //     configData.strategy
+        // );
+        rewardscoordinator = configData.rewardsCoordinator;
 
         address credibleSquaringCommunityMultisig = msg.sender;
         address credibleSquaringPauser = msg.sender;
 
         vm.startBroadcast();
-        _deployErc20AndStrategyAndWhitelistStrategy(
-            eigenLayerProxyAdmin,
-            eigenLayerPauserReg,
-            baseStrategyImplementation,
-            strategyManager
-        );
-        _deployCredibleSquaringContracts(
-            delegationManager,
-            avsDirectory,
-            erc20MockStrategy,
-            credibleSquaringCommunityMultisig,
-            credibleSquaringPauser
-        );
+        // _deployErc20AndStrategyAndWhitelistStrategy(
+        //     eigenLayerProxyAdmin, eigenLayerPauserReg, baseStrategyImplementation, strategyManager
+        // );
+        // _deployCredibleSquaringContracts(
+        //     delegationManager,
+        //     avsDirectory,
+        //     erc20MockStrategy,
+        //     credibleSquaringCommunityMultisig,
+        //     credibleSquaringPauser
+        // );
         vm.stopBroadcast();
     }
 
@@ -145,8 +121,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
         IStrategyManager strategyManager
     ) internal {
         erc20Mock = new MockERC20();
-        // TODO(samlaf): any reason why we are using the strategybase with tvl limits instead of just using strategybase?
-        // the maxPerDeposit and maxDeposits below are just arbitrary values.
+        require(address(baseStrategyImplementation).code.length > 0);
+        require(address(strategyManager).code.length > 0);
         erc20MockStrategy = StrategyBaseTVLLimits(
             address(
                 new TransparentUpgradeableProxy(
@@ -156,20 +132,20 @@ contract IncredibleSquaringDeployer is Script, Utils {
                         StrategyBaseTVLLimits.initialize.selector,
                         1 ether, // maxPerDeposit
                         100 ether, // maxDeposits
-                        IERC20(erc20Mock),
+                        IERC20(address(erc20Mock)),
                         eigenLayerPauserReg
                     )
                 )
             )
         );
-        IStrategy[] memory strats = new IStrategy[](1);
-        strats[0] = erc20MockStrategy;
-        bool[] memory thirdPartyTransfersForbiddenValues = new bool[](1);
-        thirdPartyTransfersForbiddenValues[0] = false;
-        strategyManager.addStrategiesToDepositWhitelist(
-            strats,
-            thirdPartyTransfersForbiddenValues
-        );
+        // IStrategy[] memory strats = new IStrategy[](1);
+        // strats[0] = erc20MockStrategy;
+        // bool[] memory thirdPartyTransfersForbiddenValues = new bool[](1);
+        // thirdPartyTransfersForbiddenValues[0] = false;
+        // strategyManager.addStrategiesToDepositWhitelist(
+        //     strats,
+        //     thirdPartyTransfersForbiddenValues
+        // );
     }
 
     function _deployCredibleSquaringContracts(
@@ -182,7 +158,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
         // Adding this as a temporary fix to make the rest of the script work with a single strategy
         // since it was originally written to work with an array of strategies
         IStrategy[1] memory deployedStrategyArray = [strat];
-        uint numStrategies = deployedStrategyArray.length;
+        uint256 numStrategies = deployedStrategyArray.length;
 
         // deploy proxy admin for ability to upgrade proxy contracts
         incredibleSquaringProxyAdmin = new ProxyAdmin();
@@ -192,10 +168,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
             address[] memory pausers = new address[](2);
             pausers[0] = credibleSquaringPauser;
             pausers[1] = incredibleSquaringCommunityMultisig;
-            incredibleSquaringPauserReg = new PauserRegistry(
-                pausers,
-                incredibleSquaringCommunityMultisig
-            );
+            incredibleSquaringPauserReg = new PauserRegistry(pausers, incredibleSquaringCommunityMultisig);
         }
 
         EmptyContract emptyContract = new EmptyContract();
@@ -207,101 +180,58 @@ contract IncredibleSquaringDeployer is Script, Utils {
          * not yet deployed, we give these proxies an empty contract as the initial implementation, to act as if they have no code.
          */
         incredibleSquaringServiceManager = IncredibleSquaringServiceManager(
-            address(
-                new TransparentUpgradeableProxy(
-                    address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
-                    ""
-                )
-            )
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(incredibleSquaringProxyAdmin), ""))
         );
-        contractsRegistry.registerContract("incredible_squaring_service_manager", address(incredibleSquaringServiceManager));
+        contractsRegistry.registerContract(
+            "incredible_squaring_service_manager", address(incredibleSquaringServiceManager)
+        );
 
         incredibleSquaringTaskManager = IncredibleSquaringTaskManager(
-            address(
-                new TransparentUpgradeableProxy(
-                    address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
-                    ""
-                )
-            )
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(incredibleSquaringProxyAdmin), ""))
         );
 
         contractsRegistry.registerContract("incredible_squaring_task_manager", address(incredibleSquaringTaskManager));
-        
+
         registryCoordinator = regcoord.RegistryCoordinator(
-            address(
-                new TransparentUpgradeableProxy(
-                    address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
-                    ""
-                )
-            )
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(incredibleSquaringProxyAdmin), ""))
         );
         contractsRegistry.registerContract("incredible_squaring_registry_coordinator", address(registryCoordinator));
 
         blsApkRegistry = IBLSApkRegistry(
-            address(
-                new TransparentUpgradeableProxy(
-                    address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
-                    ""
-                )
-            )
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(incredibleSquaringProxyAdmin), ""))
         );
         indexRegistry = IIndexRegistry(
-            address(
-                new TransparentUpgradeableProxy(
-                    address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
-                    ""
-                )
-            )
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(incredibleSquaringProxyAdmin), ""))
         );
         stakeRegistry = IStakeRegistry(
-            address(
-                new TransparentUpgradeableProxy(
-                    address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
-                    ""
-                )
-            )
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(incredibleSquaringProxyAdmin), ""))
         );
 
         operatorStateRetriever = new OperatorStateRetriever();
-        erc20Mock.mint(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,10e18);
+        erc20Mock.mint(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, 10e18);
         contractsRegistry.registerContract("erc20MockStrategy", address(erc20MockStrategy));
-        contractsRegistry.registerContract("incredible_squaring_operator_state_retriever", address(operatorStateRetriever));
-
+        contractsRegistry.registerContract(
+            "incredible_squaring_operator_state_retriever", address(operatorStateRetriever)
+        );
 
         // Second, deploy the *implementation* contracts, using the *proxy contracts* as inputs
         {
-            stakeRegistryImplementation = new StakeRegistry(
-                registryCoordinator,
-                delegationManager
-            );
+            stakeRegistryImplementation = new StakeRegistry(registryCoordinator, delegationManager);
 
             incredibleSquaringProxyAdmin.upgrade(
-                TransparentUpgradeableProxy(payable(address(stakeRegistry))),
-                address(stakeRegistryImplementation)
+                TransparentUpgradeableProxy(payable(address(stakeRegistry))), address(stakeRegistryImplementation)
             );
 
-            blsApkRegistryImplementation = new BLSApkRegistry(
-                registryCoordinator
-            );
+            blsApkRegistryImplementation = new BLSApkRegistry(registryCoordinator);
 
             incredibleSquaringProxyAdmin.upgrade(
-                TransparentUpgradeableProxy(payable(address(blsApkRegistry))),
-                address(blsApkRegistryImplementation)
+                TransparentUpgradeableProxy(payable(address(blsApkRegistry))), address(blsApkRegistryImplementation)
             );
 
-            indexRegistryImplementation = new IndexRegistry(
-                registryCoordinator
-            );
+            indexRegistryImplementation = new IndexRegistry(registryCoordinator);
 
             incredibleSquaringProxyAdmin.upgrade(
-                TransparentUpgradeableProxy(payable(address(indexRegistry))),
-                address(indexRegistryImplementation)
+                TransparentUpgradeableProxy(payable(address(indexRegistry))), address(indexRegistryImplementation)
             );
         }
 
@@ -313,49 +243,38 @@ contract IncredibleSquaringDeployer is Script, Utils {
         );
 
         {
-            uint numQuorums = 1;
+            uint256 numQuorums = 1;
             // for each quorum to setup, we need to define
             // QuorumOperatorSetParam, minimumStakeForQuorum, and strategyParams
-            regcoord.IRegistryCoordinator.OperatorSetParam[]
-                memory quorumsOperatorSetParams = new regcoord.IRegistryCoordinator.OperatorSetParam[](
-                    numQuorums
-                );
-            for (uint i = 0; i < numQuorums; i++) {
+            regcoord.IRegistryCoordinator.OperatorSetParam[] memory quorumsOperatorSetParams =
+                new regcoord.IRegistryCoordinator.OperatorSetParam[](numQuorums);
+            for (uint256 i = 0; i < numQuorums; i++) {
                 // hard code these for now
-                quorumsOperatorSetParams[i] = regcoord
-                    .IRegistryCoordinator
-                    .OperatorSetParam({
-                        maxOperatorCount: 10000,
-                        kickBIPsOfOperatorStake: 15000,
-                        kickBIPsOfTotalStake: 100
-                    });
+                quorumsOperatorSetParams[i] = regcoord.IRegistryCoordinator.OperatorSetParam({
+                    maxOperatorCount: 10000,
+                    kickBIPsOfOperatorStake: 15000,
+                    kickBIPsOfTotalStake: 100
+                });
             }
             // set to 0 for every quorum
             uint96[] memory quorumsMinimumStake = new uint96[](numQuorums);
-            IStakeRegistry.StrategyParams[][]
-                memory quorumsStrategyParams = new IStakeRegistry.StrategyParams[][](
-                    numQuorums
-                );
-            for (uint i = 0; i < numQuorums; i++) {
-                quorumsStrategyParams[i] = new IStakeRegistry.StrategyParams[](
-                    numStrategies
-                );
-                for (uint j = 0; j < numStrategies; j++) {
-                    quorumsStrategyParams[i][j] = IStakeRegistry
-                        .StrategyParams({
-                            strategy: deployedStrategyArray[j],
-                            // setting this to 1 ether since the divisor is also 1 ether
-                            // therefore this allows an operator to register with even just 1 token
-                            // see https://github.com/Layr-Labs/eigenlayer-middleware/blob/m2-mainnet/src/StakeRegistry.sol#L484
-                            //    weight += uint96(sharesAmount * strategyAndMultiplier.multiplier / WEIGHTING_DIVISOR);
-                            multiplier: 1 ether
-                        });
+            IStakeRegistry.StrategyParams[][] memory quorumsStrategyParams =
+                new IStakeRegistry.StrategyParams[][](numQuorums);
+            for (uint256 i = 0; i < numQuorums; i++) {
+                quorumsStrategyParams[i] = new IStakeRegistry.StrategyParams[](numStrategies);
+                for (uint256 j = 0; j < numStrategies; j++) {
+                    quorumsStrategyParams[i][j] = IStakeRegistry.StrategyParams({
+                        strategy: deployedStrategyArray[j],
+                        // setting this to 1 ether since the divisor is also 1 ether
+                        // therefore this allows an operator to register with even just 1 token
+                        // see https://github.com/Layr-Labs/eigenlayer-middleware/blob/m2-mainnet/src/StakeRegistry.sol#L484
+                        //    weight += uint96(sharesAmount * strategyAndMultiplier.multiplier / WEIGHTING_DIVISOR);
+                        multiplier: 1 ether
+                    });
                 }
             }
             incredibleSquaringProxyAdmin.upgradeAndCall(
-                TransparentUpgradeableProxy(
-                    payable(address(registryCoordinator))
-                ),
+                TransparentUpgradeableProxy(payable(address(registryCoordinator))),
                 address(registryCoordinatorImplementation),
                 abi.encodeWithSelector(
                     regcoord.RegistryCoordinator.initialize.selector,
@@ -373,29 +292,20 @@ contract IncredibleSquaringDeployer is Script, Utils {
         }
 
         incredibleSquaringServiceManagerImplementation = new IncredibleSquaringServiceManager(
-            avsDirectory,
-            registryCoordinator,
-            stakeRegistry,
-            incredibleSquaringTaskManager
+            avsDirectory, registryCoordinator, stakeRegistry, rewardscoordinator, incredibleSquaringTaskManager
         );
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
         incredibleSquaringProxyAdmin.upgrade(
-            TransparentUpgradeableProxy(
-                payable(address(incredibleSquaringServiceManager))
-            ),
+            TransparentUpgradeableProxy(payable(address(incredibleSquaringServiceManager))),
             address(incredibleSquaringServiceManagerImplementation)
         );
 
-        incredibleSquaringTaskManagerImplementation = new IncredibleSquaringTaskManager(
-            registryCoordinator,
-            TASK_RESPONSE_WINDOW_BLOCK
-        );
+        incredibleSquaringTaskManagerImplementation =
+            new IncredibleSquaringTaskManager(registryCoordinator, TASK_RESPONSE_WINDOW_BLOCK);
 
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
         incredibleSquaringProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(
-                payable(address(incredibleSquaringTaskManager))
-            ),
+            TransparentUpgradeableProxy(payable(address(incredibleSquaringTaskManager))),
             address(incredibleSquaringTaskManagerImplementation),
             abi.encodeWithSelector(
                 incredibleSquaringTaskManager.initialize.selector,
@@ -410,58 +320,31 @@ contract IncredibleSquaringDeployer is Script, Utils {
         string memory parent_object = "parent object";
 
         string memory deployed_addresses = "addresses";
+        vm.serializeAddress(deployed_addresses, "erc20Mock", address(erc20Mock));
+        vm.serializeAddress(deployed_addresses, "erc20MockStrategy", address(erc20MockStrategy));
         vm.serializeAddress(
-            deployed_addresses,
-            "erc20Mock",
-            address(erc20Mock)
-        );
-        vm.serializeAddress(
-            deployed_addresses,
-            "erc20MockStrategy",
-            address(erc20MockStrategy)
-        );
-        vm.serializeAddress(
-            deployed_addresses,
-            "credibleSquaringServiceManager",
-            address(incredibleSquaringServiceManager)
+            deployed_addresses, "credibleSquaringServiceManager", address(incredibleSquaringServiceManager)
         );
         vm.serializeAddress(
             deployed_addresses,
             "credibleSquaringServiceManagerImplementation",
             address(incredibleSquaringServiceManagerImplementation)
         );
-        vm.serializeAddress(
-            deployed_addresses,
-            "credibleSquaringTaskManager",
-            address(incredibleSquaringTaskManager)
-        );
+        vm.serializeAddress(deployed_addresses, "credibleSquaringTaskManager", address(incredibleSquaringTaskManager));
         vm.serializeAddress(
             deployed_addresses,
             "credibleSquaringTaskManagerImplementation",
             address(incredibleSquaringTaskManagerImplementation)
         );
+        vm.serializeAddress(deployed_addresses, "registryCoordinator", address(registryCoordinator));
         vm.serializeAddress(
-            deployed_addresses,
-            "registryCoordinator",
-            address(registryCoordinator)
+            deployed_addresses, "registryCoordinatorImplementation", address(registryCoordinatorImplementation)
         );
-        vm.serializeAddress(
-            deployed_addresses,
-            "registryCoordinatorImplementation",
-            address(registryCoordinatorImplementation)
-        );
-        string memory deployed_addresses_output = vm.serializeAddress(
-            deployed_addresses,
-            "operatorStateRetriever",
-            address(operatorStateRetriever)
-        );
+        string memory deployed_addresses_output =
+            vm.serializeAddress(deployed_addresses, "operatorStateRetriever", address(operatorStateRetriever));
 
         // serialize all the data
-        string memory finalJson = vm.serializeString(
-            parent_object,
-            deployed_addresses,
-            deployed_addresses_output
-        );
+        string memory finalJson = vm.serializeString(parent_object, deployed_addresses, deployed_addresses_output);
 
         writeOutput(finalJson, "credible_squaring_avs_deployment_output");
     }
