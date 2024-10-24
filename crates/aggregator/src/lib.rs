@@ -2,6 +2,7 @@
 
 /// Aggregator error
 pub mod error;
+#[allow(missing_docs)]
 pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
@@ -19,7 +20,6 @@ use eigen_services_blsaggregation::bls_agg::{
 };
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
-use eigen_types::operator::Socket;
 use eigen_utils::get_ws_provider;
 pub use error::AggregatorError;
 use futures_util::StreamExt;
@@ -233,7 +233,7 @@ impl Aggregator {
                 quorum_threshold_percentages.push(task.quorumThresholdPercentage.try_into()?);
             }
 
-            for (_, val) in task.quorumNumbers.iter().enumerate() {
+            for val in task.quorumNumbers.iter() {
                 quorum_nums.push(*val);
             }
 

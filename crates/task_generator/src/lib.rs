@@ -16,7 +16,6 @@ lazy_static! {
 }
 use tracing::info;
 
-///
 #[derive(Debug)]
 pub struct TaskManager {
     task_manager_address: Address,
