@@ -1323,8 +1323,10 @@ checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-targets 0.52.6",
 ]
 
@@ -1844,8 +1846,7 @@ dependencies = [
 [[package]]
 name = "eigen-cli"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3d2e2933e6ec526222791daee3e7e09f230ec7a738995fdefdebbafbf3a15ab"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-contract",
  "alloy-json-rpc",
@@ -1878,8 +1879,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26b545b7b3bb97aa6f769fa329c43e121d3d3ef2c700528c51493d14b7ca4c2b"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -1892,6 +1892,7 @@ dependencies = [
  "eigen-client-elcontracts",
  "eigen-crypto-bls",
  "eigen-logging",
+ "eigen-telemetry",
  "eigen-types",
  "eigen-utils",
  "num-bigint",
@@ -1902,8 +1903,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46b72f6b15b8e641b4b43c1dced1df39cd1b4bcc6ce943ab1ce2280cba6e486f"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-contract",
  "alloy-primitives",
@@ -1917,8 +1917,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-eth"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afc00e0508a9137355212339d6bc0b83b3ceb7dc4f541ec920e66171295bd9c3"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -1942,14 +1941,12 @@ dependencies = [
 [[package]]
 name = "eigen-contract-bindings"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0a99d2a3c6b116d4013121fc20ff2a2f4e884475f6327c7d8300b175683fcb4"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4016b25de0e41e5f4a8b8c495cef35cbdf5d1946021b472a0ce10b656956465f"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -1966,8 +1963,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bab240b582aa622c9a94e12bc7ac6fb65380b85053e1b0db08c8478c618a84a0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -1979,8 +1975,7 @@ dependencies = [
 [[package]]
 name = "eigen-logging"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "858b74ed2efc43af7de8db0f04e7c5d5b348aa8755c1a9000eb03d36f442c690"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "ctor",
  "once_cell",
@@ -1991,8 +1986,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52e0fbdbdb429d03ff6f0be07abe4d58a942d6069328f7827938ca57157766df"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2003,8 +1997,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67563f8a7d1e242f8cab846729a4fec5d299c2e57abea66732400749c265ab92"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2013,8 +2006,7 @@ dependencies = [
 [[package]]
 name = "eigen-nodeapi"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d53c0275e3e0c8afc1358c0a3d1c781ac9815aadb0463a7d8e8cdc832569dca"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "ntex",
  "serde",
@@ -2026,8 +2018,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-avsregistry"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b8a3bf7010289fcac159db5a5d89fb3879236ac3c84e7c389366269d512c1da"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -2043,8 +2034,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-blsaggregation"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ccce420984d12deb996b6d85580f0080e5b8f6dc10c8858622c24f23953453b"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -2064,8 +2054,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc37b203588165d466fbff505e474b7fdfd4bfdd9095171f171209aeaf57919d"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-primitives",
  "alloy-provider",
@@ -2084,10 +2073,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-telemetry"
+version = "0.1.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
+dependencies = [
+ "posthog-rs",
+]
+
+[[package]]
 name = "eigen-testing-utils"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54b14a2ba9fbb5585ce0b3170243db2dfc551383ea7a46114a2c3f748da4515a"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-network",
  "alloy-primitives",
@@ -2104,8 +2100,7 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59467c722b271730a065a401002a6d3e7f6861233cf6241fda3a94bf863b4d74"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-primitives",
  "ark-serialize 0.4.2",
@@ -2119,8 +2114,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "781a0d9bc2ab3d3709a1d6b23dfca5c2ef2da29b38f10a04bf7f1991bb53293e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs.git?branch=telemetry_alloy_0_1#c458285b1e683d0c0e037a515816aadb29b5cadb"
 dependencies = [
  "alloy-contract",
  "alloy-json-rpc",
@@ -3252,6 +3246,19 @@ dependencies = [
 
 [[package]]
 name = "hyper-tls"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905"
+dependencies = [
+ "bytes",
+ "hyper 0.14.30",
+ "native-tls",
+ "tokio",
+ "tokio-native-tls",
+]
+
+[[package]]
+name = "hyper-tls"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
@@ -3588,6 +3595,7 @@ dependencies = [
  "eigen-crypto-bls",
  "eigen-logging",
  "eigen-metrics",
+ "eigen-telemetry",
  "eigen-testing-utils",
  "eigen-types",
  "eigen-utils",
@@ -3602,6 +3610,7 @@ dependencies = [
  "incredible-testing-utils",
  "metrics-exporter-prometheus",
  "metrics-util",
+ "posthog-rs",
  "rust-bls-bn254 0.1.0",
  "tokio",
  "tracing",
@@ -4955,6 +4964,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da544ee218f0d287a911e9c99a39a8c9bc8fcad3cb8db5959940044ecfc67265"
 
 [[package]]
+name = "posthog-rs"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ad1b35ffe50419992615288c40ee90fbf30da4c6faf251414675ea64e1cdfa3"
+dependencies = [
+ "chrono",
+ "reqwest 0.11.27",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "powerfmt"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5303,10 +5324,12 @@ dependencies = [
  "http-body 0.4.6",
  "hyper 0.14.30",
  "hyper-rustls 0.24.2",
+ "hyper-tls 0.5.0",
  "ipnet",
  "js-sys",
  "log",
  "mime",
+ "native-tls",
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
@@ -5318,6 +5341,7 @@ dependencies = [
  "sync_wrapper 0.1.2",
  "system-configuration 0.5.1",
  "tokio",
+ "tokio-native-tls",
  "tokio-rustls 0.24.1",
  "tower-service",
  "url",
@@ -5346,7 +5370,7 @@ dependencies = [
  "http-body-util",
  "hyper 1.4.1",
  "hyper-rustls 0.27.3",
- "hyper-tls",
+ "hyper-tls 0.6.0",
  "hyper-util",
  "ipnet",
  "js-sys",

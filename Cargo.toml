@@ -1,15 +1,16 @@
 [workspace]
-members = ["crates/aggregator",
-"crates/operator",
-"bin/incredible-squaring-avs",
-"crates/cli",
-"crates/config",
-"crates/bindings",
-"crates/avs",
-"crates/challenger",
-"crates/chainio",
-"crates/testing-utils",
-"crates/task_generator",
+members = [
+    "crates/aggregator",
+    "crates/operator",
+    "bin/incredible-squaring-avs",
+    "crates/cli",
+    "crates/config",
+    "crates/bindings",
+    "crates/avs",
+    "crates/challenger",
+    "crates/chainio",
+    "crates/testing-utils",
+    "crates/task_generator",
 ]
 
 resolver = "2"
@@ -37,52 +38,60 @@ clap = "4.5.11"
 eyre = "0.6.12"
 tokio = { version = "1.21", default-features = false }
 thiserror = "1.0.61"
-ark-bn254 = { version = "0.4.0", features = ["curve"], default-features = false }
+ark-bn254 = { version = "0.4.0", features = [
+    "curve",
+], default-features = false }
 futures-util = "0.3"
 metrics = "0.23.0"
 reqwest = "0.12.5"
 serde_json = "1.0.120"
 #alloy
-alloy = { version = "0.1", features = ["full","signer-keystore"] }
+alloy = { version = "0.1", features = ["full", "signer-keystore"] }
 alloy-provider = { version = "0.1", default-features = false, features = [
     "reqwest",
 ] }
 serde = "1.0.203"
 tracing = "0.1.40"
 tempfile = "3"
-rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
+rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = [
+    "std",
+] }
 rand_core = "0.6"
 toml = "0.8"
 
 
-incredible-operator = {path = "crates/operator/" , features = ["default"]}
-incredible-aggregator = {path = "crates/aggregator/"}
-incredible-squaring-avs = {path = "bin/incredible-squaring-avs/"}
-incredible-cli-runner = {path = "crates/cli/"}
-incredible-config = {path = "crates/config/"}
-incredible-bindings = {path = "crates/bindings/"}
-incredible-metrics  = {path = "crates/metrics/"}
-incredible-avs = {path = "crates/avs/"}
-incredible-challenger = {path = "crates/challenger/"}
-incredible-chainio = {path = "crates/chainio/"}
-incredible-testing-utils = {path = "crates/testing-utils/"}
-incredible-task-generator = {path = "crates/task_generator/"}
+incredible-operator = { path = "crates/operator/", features = ["default"] }
+incredible-aggregator = { path = "crates/aggregator/" }
+incredible-squaring-avs = { path = "bin/incredible-squaring-avs/" }
+incredible-cli-runner = { path = "crates/cli/" }
+incredible-config = { path = "crates/config/" }
+incredible-bindings = { path = "crates/bindings/" }
+incredible-metrics = { path = "crates/metrics/" }
+incredible-avs = { path = "crates/avs/" }
+incredible-challenger = { path = "crates/challenger/" }
+incredible-chainio = { path = "crates/chainio/" }
+incredible-testing-utils = { path = "crates/testing-utils/" }
+incredible-task-generator = { path = "crates/task_generator/" }
 
 # eigensdk-rs 
-eigen-client-avsregistry  = "0.1.0"
-eigen-testing-utils = "0.1.0"
-eigen-crypto-bls =  "0.1.0"
-eigen-types =  "0.1.0"
-eigen-metrics = "0.1.0"
-eigen-utils = "0.1.0"
-eigen-contract-bindings = "0.1.0"
-eigen-cli = "0.1.0"
-eigen-logging = "0.1.0"
-eigen-crypto-bn254  = "0.1.0"
-eigen-client-elcontracts = "0.1.0"
-eigen-services-operatorsinfo =  "0.1.0"
-eigen-services-avsregistry =  "0.1.0"
-eigen-services-blsaggregation = "0.1.0"
-eigen-metrics-collectors-rpc-calls = "0.1.0"
-eigen-client-eth = "0.1.0"
-eigen-nodeapi = "0.1.0"
+eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1", features = [
+    "telemetry",
+] }
+eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-types = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-metrics = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-contract-bindings = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-cli = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-crypto-bn254 = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-client-elcontracts = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-services-operatorsinfo = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-services-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-services-blsaggregation = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-client-eth = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-nodeapi = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+
+eigen-telemetry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
