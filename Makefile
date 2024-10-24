@@ -1,4 +1,5 @@
 PHONY:reset-anvil
+.PHONY: integration-tests
 
 deploy-avs-save-anvil-state:
 	./contracts/anvil/deploy-avs-save-anvil-state.sh
@@ -20,15 +21,14 @@ reset-anvil:
 	-docker stop anvil
 	-docker rm anvil
 
-pr: reset-anvil ##
-	$(MAKE) start-anvil-chain-with-el-and-avs-deployed
-	docker start anvil
+pr: 
+	$(MAKE) start-anvil > /dev/null &
+	sleep 4 
 	cargo test --workspace
 	cargo clippy --workspace --lib --examples --tests --benches --all-features
-	cargo +nightly fmt -- --check
+	cargo fmt -- --check
 	docker stop anvil
 
-integration-tests: reset-anvil ##
-				   $(MAKE) start-anvil-chain-with-el-and-avs-deployed
-				   docker start anvil
+integration-tests: 
+				   $(MAKE) start-anvil > /dev/null 
 				   cargo test --manifest-path ./integration-tests/Cargo.toml
