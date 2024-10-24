@@ -12,10 +12,12 @@ import {ContractsRegistry} from "../src/ContractsRegistry.sol";
 // This script registers a bunch of operators with eigenlayer
 // We don't register with eigencert/eigenda because events are not registered in saved anvil state, so we need to register
 // them at runtime whenver we start anvil for a test or localnet.
+
 contract RegisterOperators is ConfigsReadWriter, EigenlayerContractsParser, TokenAndStrategyContractsParser {
     string internal mnemonic;
     uint256 internal numberOfOperators;
-    ContractsRegistry contractsRegistry ;
+    ContractsRegistry contractsRegistry;
+
     function setUp() public {
         numberOfOperators = 10;
         if (block.chainid == 31337 || block.chainid == 1337) {
@@ -26,10 +28,8 @@ contract RegisterOperators is ConfigsReadWriter, EigenlayerContractsParser, Toke
     }
 
     function run() external {
-     contractsRegistry = ContractsRegistry(0x5FbDB2315678afecb367f032d93F642f64180aa3);
-        EigenlayerContracts memory eigenlayerContracts = _loadEigenlayerDeployedContracts();
+        contractsRegistry = ContractsRegistry(0x5FbDB2315678afecb367f032d93F642f64180aa3);
         TokenAndStrategyContracts memory tokenAndStrategy = _loadTokenAndStrategyContracts();
-
 
         address[] memory operators = new address[](numberOfOperators);
         uint256[] memory operatorsETHAmount = new uint256[](numberOfOperators);
@@ -49,37 +49,6 @@ contract RegisterOperators is ConfigsReadWriter, EigenlayerContractsParser, Toke
         _allocateEthOrErc20(address(tokenAndStrategy.token), operators, operatorTokenAmounts);
 
         vm.stopBroadcast();
-
-        // Register operators with EigenLayer
-        for (uint256 i = 0; i < numberOfOperators; i++) {
-            address delegationApprover = address(0); // anyone can delegate to this operator
-            uint32 stakerOptOutWindowBlocks = 100;
-            string memory metadataURI = string.concat("https://coolstuff.com/operator/", vm.toString(i));
-            (, uint256 privateKey) = deriveRememberKey(mnemonic, uint32(i));
-            vm.startBroadcast(privateKey);
-                    if (block.chainid == 31337 || block.chainid == 1337) {
-            contractsRegistry.store_test("test_register_operator",int(i),block.number,block.timestamp);
-                    }
-                if (operators[i] == address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)){
-                     eigenlayerContracts.delegationManager.registerAsOperator(
-                IDelegationManager.OperatorDetails(operators[i], delegationApprover, stakerOptOutWindowBlocks),
-                metadataURI
-            );
-            eigenlayerContracts.strategyManager.depositIntoStrategy(
-                tokenAndStrategy.strategy, IERC20(tokenAndStrategy.token), operatorTokenAmounts[i]
-            );
-                }else{
-
-            eigenlayerContracts.delegationManager.registerAsOperator(
-                IDelegationManager.OperatorDetails(operators[i], delegationApprover, stakerOptOutWindowBlocks),
-                metadataURI
-            );
-            eigenlayerContracts.strategyManager.depositIntoStrategy(
-                tokenAndStrategy.strategy, IERC20(tokenAndStrategy.token), operatorTokenAmounts[i]
-            );
-                }
-            vm.stopBroadcast();
-        }
     }
 
     // setting token=address(0) will allocate eth

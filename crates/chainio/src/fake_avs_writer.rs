@@ -1,10 +1,19 @@
-use alloy::primitives::{Address, TxHash};
-use eigen_utils::get_signer;
-use incredible_bindings::IncredibleSquaringTaskManager::{
-    self, G1Point, Task, TaskResponse, TaskResponseMetadata,
-};
+use std::str::FromStr;
 
 use crate::error::ChainIoError;
+use alloy::signers::local::PrivateKeySigner;
+use alloy::{
+    network::EthereumWallet,
+    primitives::{Address, TxHash},
+    providers::ProviderBuilder,
+};
+use incredible_bindings::incrediblesquaringtaskmanager::{
+    IBLSSignatureChecker::NonSignerStakesAndSignature,
+    IIncredibleSquaringTaskManager::{Task, TaskResponse, TaskResponseMetadata},
+    IncredibleSquaringTaskManager,
+    BN254::G1Point,
+};
+use reqwest::Url;
 
 /// AvsWriter struct
 #[derive(Debug, Clone)]
@@ -26,9 +35,14 @@ impl FakeAvsWriter {
         task_response_metadata: TaskResponseMetadata,
         pub_keys_of_non_signing_operators: Vec<G1Point>,
     ) -> Result<TxHash, ChainIoError> {
-        let signer = get_signer(self.signer.clone(), &self.rpc_url);
-        let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let signer = PrivateKeySigner::from_str(&self.signer)?;
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new()
+            .with_recommended_fillers()
+            .wallet(wallet)
+            .on_http(url);
+        let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
 
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
@@ -43,9 +57,7 @@ impl FakeAvsWriter {
 
                 match receipt_result {
                     Ok(receipts) => Ok(receipts.transaction_hash),
-                    Err(e) => Err(ChainIoError::AlloyContractError(
-                        alloy::contract::Error::TransportError(e),
-                    )),
+                    Err(e) => Err(ChainIoError::AlloyProviderError(e)),
                 }
             }
 
@@ -60,16 +72,21 @@ impl FakeAvsWriter {
     /// Send the aggregated response
     /// task -  [`Task`]
     /// task_response - [`TaskResponse`]
-    /// non_signer_stakes_and_signature - [`IncredibleSquaringTaskManager::NonSignerStakesAndSignature`]
+    /// non_signer_stakes_and_signature - [`NonSignerStakesAndSignature`]
     pub async fn send_aggregated_response(
         &self,
         task: Task,
         task_response: TaskResponse,
-        non_signer_stakes_and_signature: IncredibleSquaringTaskManager::NonSignerStakesAndSignature,
-    ) {
-        let signer = get_signer(self.signer.clone(), &self.rpc_url);
-        let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+        non_signer_stakes_and_signature: NonSignerStakesAndSignature,
+    ) -> eyre::Result<()> {
+        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let signer = PrivateKeySigner::from_str(&self.signer)?;
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new()
+            .with_recommended_fillers()
+            .wallet(wallet)
+            .on_http(url);
+        let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
 
         let _ = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
@@ -78,5 +95,6 @@ impl FakeAvsWriter {
             .unwrap()
             .get_receipt()
             .await;
+        Ok(())
     }
 }

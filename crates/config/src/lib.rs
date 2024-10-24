@@ -1,7 +1,6 @@
 //! config
 use alloy::hex::FromHex;
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
-use eigen_types::operator::OperatorId;
 use error::ConfigError;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -288,7 +287,7 @@ impl IncredibleConfig {
             .map_err(ConfigError::HexParse)
     }
 
-    pub fn get_operator_id(&self) -> Result<OperatorId, error::ConfigError> {
+    pub fn get_operator_id(&self) -> Result<FixedBytes<32>, error::ConfigError> {
         FixedBytes::from_hex(self.operator_config.operator_id.as_bytes())
             .map_err(ConfigError::HexParse)
     }

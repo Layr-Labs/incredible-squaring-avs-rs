@@ -29,7 +29,7 @@ contract UpdateOperators is ConfigsReadWriter, EigenlayerContractsParser, TokenA
     function run() external {
         EigenlayerContracts memory eigenlayerContracts = _loadEigenlayerDeployedContracts();
         TokenAndStrategyContracts memory tokenAndStrategy = _loadTokenAndStrategyContracts();
-        
+
         address[] memory operators = new address[](numberOfOperators);
         uint256[] memory operatorsETHAmount = new uint256[](numberOfOperators);
         uint256[] memory operatorTokenAmounts = new uint256[](numberOfOperators);
@@ -56,15 +56,10 @@ contract UpdateOperators is ConfigsReadWriter, EigenlayerContractsParser, TokenA
             (, uint256 privateKey) = deriveRememberKey(mnemonic, uint32(i));
             vm.startBroadcast(privateKey);
             contractsRegistry.store_test("test_modify_operator_details", int256(i), block.number, block.timestamp);
-            if (operators[i] == address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)){
-            
-            
-            }else{
-
-            eigenlayerContracts.delegationManager.modifyOperatorDetails(
-                IDelegationManager.OperatorDetails(operators[i], delegationApprover, stakerOptOutWindowBlocks)
-            );
-
+            if (operators[i] == address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)) {} else {
+                eigenlayerContracts.delegationManager.modifyOperatorDetails(
+                    IDelegationManager.OperatorDetails(operators[i], delegationApprover, stakerOptOutWindowBlocks)
+                );
             }
             vm.stopBroadcast();
         }

@@ -23,8 +23,13 @@ use eigen_types::avs::TaskResponseDigest;
 use eigen_utils::get_ws_provider;
 pub use error::AggregatorError;
 use futures_util::StreamExt;
-use incredible_bindings::IncredibleSquaringTaskManager::NewTaskCreated;
-use incredible_bindings::IncredibleSquaringTaskManager::{self, NonSignerStakesAndSignature};
+use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
+    Task, TaskResponse,
+};
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{self};
+use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
@@ -50,10 +55,9 @@ pub struct Aggregator {
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
     /// HashMap to store tasks
-    pub tasks: HashMap<u32, IncredibleSquaringTaskManager::Task>,
+    pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
-    pub tasks_responses:
-        HashMap<u32, HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>>,
+    pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
 }
 
 impl Aggregator {
@@ -276,10 +280,9 @@ impl Aggregator {
     ) -> Result<(), AggregatorError> {
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
-        let task_response_digest =
-            alloy::primitives::keccak256(IncredibleSquaringTaskManager::TaskResponse::abi_encode(
-                &signed_task_response.task_response,
-            ));
+        let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
+            &signed_task_response.task_response,
+        ));
 
         let response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
@@ -331,27 +334,27 @@ impl Aggregator {
         &self,
         response: BlsAggregationServiceResponse,
     ) -> Result<(), AggregatorError> {
-        let mut non_signer_pub_keys = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
+        let mut non_signer_pub_keys = Vec::<G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
             let g1 = convert_to_g1_point(pub_key.g1())?;
-            non_signer_pub_keys.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
+            non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
-        let mut quorum_apks = Vec::<IncredibleSquaringTaskManager::G1Point>::new();
+        let mut quorum_apks = Vec::<G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
             let g1 = convert_to_g1_point(pub_key.g1())?;
-            quorum_apks.push(IncredibleSquaringTaskManager::G1Point { X: g1.X, Y: g1.Y })
+            quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
         let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
             nonSignerPubkeys: non_signer_pub_keys,
             nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
             quorumApks: quorum_apks,
-            apkG2: IncredibleSquaringTaskManager::G2Point {
+            apkG2: G2Point {
                 X: convert_to_g2_point(response.signers_apk_g2.g2())?.X,
                 Y: convert_to_g2_point(response.signers_apk_g2.g2())?.Y,
             },
-            sigma: IncredibleSquaringTaskManager::G1Point {
+            sigma: G1Point {
                 X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.X,
                 Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.Y,
             },
@@ -375,13 +378,10 @@ impl Aggregator {
 }
 
 fn check_double_mapping(
-    outer_map: &HashMap<
-        u32,
-        HashMap<TaskResponseDigest, IncredibleSquaringTaskManager::TaskResponse>,
-    >,
+    outer_map: &HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
     outer_key: u32,
     inner_key: TaskResponseDigest,
-) -> Option<&IncredibleSquaringTaskManager::TaskResponse> {
+) -> Option<&TaskResponse> {
     if let Some(inner_map) = outer_map.get(&outer_key) {
         if let Some(value) = inner_map.get(&inner_key) {
             return Some(value);
@@ -401,7 +401,7 @@ mod tests {
         let mut inner_map = HashMap::new();
         inner_map.insert(
             TaskResponseDigest::default(),
-            IncredibleSquaringTaskManager::TaskResponse {
+            TaskResponse {
                 referenceTaskIndex: "0".parse().unwrap(),
                 numberSquared: "0".parse().unwrap(),
             },

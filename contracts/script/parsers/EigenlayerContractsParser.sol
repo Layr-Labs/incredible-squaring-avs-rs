@@ -28,7 +28,7 @@ struct EigenlayerContracts {
 contract EigenlayerContractsParser is ConfigsReadWriter {
     function _loadEigenlayerDeployedContracts() internal view returns (EigenlayerContracts memory) {
         // Eigenlayer contracts
-        string memory eigenlayerDeployedContracts = readOutput("eigenlayer_deployment_output");
+        string memory eigenlayerDeployedContracts = readOutput("31337.json");
         ProxyAdmin eigenlayerProxyAdmin =
             ProxyAdmin(stdJson.readAddress(eigenlayerDeployedContracts, ".addresses.eigenLayerProxyAdmin"));
         PauserRegistry eigenlayerPauserReg =
@@ -45,13 +45,9 @@ contract EigenlayerContractsParser is ConfigsReadWriter {
         );
         // TODO: Update this to read from the eigenlayerDeployedContracts
         // right now M2_Deploy_from_scratch.s.sol deployment script doesnt deploy rewardsCoordinator
-        IRewardsCoordinator rewardsCoordinator = IRewardsCoordinator(address(0x0));
-        // IRewardsCoordinator rewardsCoordinator = IRewardsCoordinator(
-        //     stdJson.readAddress(
-        //         eigenlayerDeployedContracts,
-        //         ".addresses.rewardsCoordinator"
-        //     )
-        // );
+        // IRewardsCoordinator rewardsCoordinator = IRewardsCoordinator(address(0x0));
+        IRewardsCoordinator rewardsCoordinator =
+            IRewardsCoordinator(stdJson.readAddress(eigenlayerDeployedContracts, ".addresses.rewardsCoordinator"));
         return EigenlayerContracts(
             eigenlayerProxyAdmin,
             eigenlayerPauserReg,
