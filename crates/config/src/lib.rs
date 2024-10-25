@@ -406,9 +406,10 @@ mod tests {
     #[test]
     fn test_bls_config_load() {
         with_tempdir("blsconfig-load", |config_path| {
-            let mut config = BlsConfig::default();
-            config.keystore_password = "djsfl".to_string();
-            config.keystore_path = "fdshf".to_string();
+            let config = BlsConfig {
+                keystore_password: "djsfl".to_string(),
+                keystore_path: "fdshf".to_string(),
+            };
             confy::store_path(config_path, &config).unwrap();
 
             let loaded_config: BlsConfig = confy::load_path(config_path).unwrap();
@@ -625,7 +626,7 @@ mod tests {
 
         let ecdsa_config: OperatorRegistrationConfig = toml::from_str(_config).unwrap();
 
-        assert_eq!(ecdsa_config.register_operator, true);
+        assert!(ecdsa_config.register_operator);
         assert_eq!(
             ecdsa_config.operator_to_avs_registration_sig_salt,
             "0202020202020202020202020202020202020202020202020202020202020202"

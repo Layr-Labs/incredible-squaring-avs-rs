@@ -426,8 +426,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let fake_aggregator = FakeAggregator::new(incredible_config).await;
-        fake_aggregator
+        FakeAggregator::new(incredible_config).await
     }
 
     #[tokio::test]
@@ -453,6 +452,7 @@ mod tests {
             let _ =
                 FakeAggregator::start_server(Arc::new(tokio::sync::Mutex::new(fake_aggregator)))
                     .await;
-        });
+        })
+        .await;
     }
 }
