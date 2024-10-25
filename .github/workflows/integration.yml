@@ -70,7 +70,7 @@ jobs:
           cache-on-failure: true
 
       - name: Install Foundry
-        run: cargo install --git https://github.com/foundry-rs/foundry --profile release --locked foundry-cast anvil
+        run: cargo install --git https://github.com/foundry-rs/foundry --profile release --locked cast anvil
 
       - name: docker
         uses: docker-practice/actions-setup-docker@master
