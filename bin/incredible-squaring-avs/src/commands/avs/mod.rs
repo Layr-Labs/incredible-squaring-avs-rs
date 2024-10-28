@@ -35,7 +35,7 @@ pub struct NoArgs;
 
 use std::path::PathBuf;
 
-const ANVIL_HTTP_UR: &str = "http://localhost:8545";
+//const ANVIL_HTTP_UR: &str = "http://localhost:8545";
 /// Starts incredible squaring
 #[derive(Debug, Parser)]
 pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {

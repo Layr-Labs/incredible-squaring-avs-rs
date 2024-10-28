@@ -333,7 +333,7 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
                 .await
                 .to_string(),
         );
-        Ok(Challenger::build(config).await?)
+        Challenger::build(config).await
     }
 
     #[tokio::test]
@@ -406,7 +406,7 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 
         let receipt = task_manager.create_new_task(U256::from(2)).await.unwrap();
 
-        let log = receipt.inner.logs().get(0).unwrap();
+        let log = receipt.inner.logs().first().unwrap();
         let new_task_created_log = log.log_decode::<NewTaskCreated>().unwrap();
         let NewTaskCreated { taskIndex, task } = new_task_created_log.data();
 
