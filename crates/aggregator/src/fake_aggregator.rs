@@ -455,6 +455,7 @@ mod tests {
             let _ =
                 FakeAggregator::start_server(Arc::new(tokio::sync::Mutex::new(fake_aggregator)))
                     .await;
-        });
+        })
+        .await;
     }
 }

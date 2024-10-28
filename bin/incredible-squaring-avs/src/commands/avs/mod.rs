@@ -35,6 +35,7 @@ pub struct NoArgs;
 
 use std::path::PathBuf;
 
+
 /// Starts incredible squaring
 #[derive(Debug, Parser)]
 pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
