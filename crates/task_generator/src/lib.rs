@@ -45,7 +45,6 @@ impl TaskManager {
 
     /// Creates new task every 10 seconds
     pub async fn start(&self) -> eyre::Result<()> {
-        info!("Started creating new task ");
         let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
         let signer = PrivateKeySigner::from_str(&self.signer)?;
         let wallet = EthereumWallet::new(signer);
@@ -55,23 +54,21 @@ impl TaskManager {
             .on_http(url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_address, pr);
-
         let mut task_num: U256 = U256::from(0);
 
         loop {
             let number_to_be_squared = task_num;
             let quorum_threshold_percentage = 100;
             let quorum_numbers = Bytes::from_str("0x00")?;
-            let _ = task_manager_contract
+            let s = task_manager_contract
                 .createNewTask(
                     number_to_be_squared,
                     quorum_threshold_percentage,
                     quorum_numbers.clone(),
                 )
                 .send()
-                .await?
-                .get_receipt()
-                .await?;
+                .await
+                .unwrap();
 
             // Increment the task number for the next iteration
             task_num += *TASK_NUMBER_INCREMENT_VALUE;

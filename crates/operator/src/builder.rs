@@ -106,7 +106,8 @@ impl OperatorBuilder {
             self.operator_state_retriever,
             self.http_rpc_url.clone(),
         )
-        .await?;
+        .await
+        .unwrap();
         info!("operator{}", self.operator_addr);
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr)

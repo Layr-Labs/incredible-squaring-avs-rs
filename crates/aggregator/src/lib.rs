@@ -28,7 +28,6 @@ use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskM
     Task, TaskResponse,
 };
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
-use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{self};
 use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;

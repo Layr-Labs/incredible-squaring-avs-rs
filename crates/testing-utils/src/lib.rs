@@ -5,6 +5,7 @@ use eigen_utils::{
     contractsregistry::ContractsRegistry::{self, contractsReturn},
     get_provider,
 };
+use tracing::info;
 
 /// Local anvil ContractsRegistry which contains a mapping of all locally deployed EL contracts.
 pub const CONTRACTS_REGISTRY: Address = address!("5FbDB2315678afecb367f032d93F642f64180aa3");

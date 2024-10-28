@@ -55,11 +55,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let operator_service = operator_builder
             .start_operator()
             .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
-
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-
         let aggregator = Aggregator::new(avs.config.clone()).await?;
 
         let aggregator_service_with_rpc_client = aggregator

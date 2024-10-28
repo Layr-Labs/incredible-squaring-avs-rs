@@ -327,10 +327,7 @@ library CoreDeploymentLib {
         return readDeploymentConfigValues(directoryPath, string.concat(vm.toString(chainId), ".json"));
     }
 
-    function readDeploymentJson(string memory directoryPath, uint256 chainId)
-        internal
-        returns (DeploymentData memory)
-    {
+    function readDeploymentJson(string memory directoryPath, uint256 chainId) public returns (DeploymentData memory) {
         return readDeploymentJson(directoryPath, string.concat(vm.toString(chainId), ".json"));
     }
 
@@ -413,8 +410,8 @@ library CoreDeploymentLib {
             data.eigenPodManager.getImplementation().toHexString(),
             '","strategyFactory":"',
             data.strategyFactory.toHexString(),
-            '","strategyFactoryImpl":"',
-            data.strategyFactory.getImplementation().toHexString(),
+            '","rewardsCoordinator":"',
+            data.rewardsCoordinator.toHexString(),
             '","strategyBeacon":"',
             data.strategyBeacon.toHexString(),
             '"}'

@@ -362,7 +362,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
-        info!("strategy_addr{}", config.erc20_mock_strategy_addr()?);
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
@@ -420,6 +419,7 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
+
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
         rpc_url.clone(),
@@ -432,7 +432,6 @@ pub async fn register_operator_with_el_and_avs(
     // Read BlsKey from path
     let keystore = Keystore::from_file(bls_keystore_path)?.decrypt(bls_keystore_password)?;
     let fr_key: String = keystore.iter().map(|&value| value as char).collect();
-
     let key_pair = BlsKeyPair::new(fr_key)?;
     let el_chain_reader = ELChainReader::new(
         get_logger(),
@@ -457,17 +456,17 @@ pub async fn register_operator_with_el_and_avs(
         staker_opt_out_window_blocks: 200,
         metadata_url: Some("url".to_string()),
     };
+
     let _ = el_chain_writer
         .register_as_operator(operator_details)
         .await?;
-
     deposit_into_strategy(erc20_strategy_address, U256::from(10000), el_chain_writer).await?;
     let tx_hash = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             key_pair,
             operator_to_avs_registration_sig_salt,
             operator_to_avs_registration_sig_expiry,
-            quorum_numbers,
+            quorum_numbers.clone(),
             socket,
         )
         .await?;
@@ -476,8 +475,6 @@ pub async fn register_operator_with_el_and_avs(
         tx_hash
     );
 
-    // let balance = erc_contract.balanceOf( Address::from_str(&hex::encode(s).to_string()).unwrap()).call().await?._0;
-    // info!("operator balance{}",balance);
     fn mine_anvil_block(rpc_url: &str) {
         Command::new("cast")
             .args(["rpc", "anvil_mine", "120", "--rpc-url", rpc_url])
@@ -486,7 +483,6 @@ pub async fn register_operator_with_el_and_avs(
             .expect("Failed to execute command");
     }
     mine_anvil_block(&rpc_url);
-    info!("is operator registered :{:?}", s);
 
     Ok(())
 }
@@ -507,6 +503,5 @@ pub async fn deposit_into_strategy(
     let s = el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
         .await;
-    info!("deposit_into{:?}", s);
     Ok(())
 }
