@@ -6,7 +6,6 @@ use alloy::{
     rpc::types::TransactionReceipt,
     signers::local::PrivateKeySigner,
 };
-use eigen_utils::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
@@ -22,7 +21,6 @@ lazy_static! {
     /// Task number increment value
     pub static ref TASK_NUMBER_INCREMENT_VALUE: U256 = U256::from(1);
 }
-use tracing::info;
 
 #[derive(Debug)]
 pub struct TaskManager {
@@ -60,7 +58,7 @@ impl TaskManager {
             let number_to_be_squared = task_num;
             let quorum_threshold_percentage = 100;
             let quorum_numbers = Bytes::from_str("0x00")?;
-            let s = task_manager_contract
+            let _ = task_manager_contract
                 .createNewTask(
                     number_to_be_squared,
                     quorum_threshold_percentage,

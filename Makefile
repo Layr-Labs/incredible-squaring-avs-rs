@@ -1,5 +1,3 @@
-PHONY:reset-anvil
-
 deploy-avs:
 	./contracts/anvil/deploy-avs.sh
 
@@ -10,27 +8,20 @@ deploy-el-and-avs-contracts:
 	$(MAKE) deploy-eigenlayer
 	$(MAKE) deploy-avs
 
-start-anvil: reset-anvil ## 
-			 $(MAKE) start-anvil-chain-with-el-and-avs-deployed
-			 docker start anvil
 
 __TESTING__: ##
 
-reset-anvil:
-	-docker stop anvil
-	-docker rm anvil
+pr: 
+	$(MAKE) deploy-el-and-avs-contracts
+	cargo test --workspace --exclude incredible-bindings
+	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
+	cargo fmt -- --check --exclude incredible-bindings
 
-pr: reset-anvil ##
-	$(MAKE) start-anvil-chain-with-el-and-avs-deployed
-	docker start anvil
-	cargo test --workspace
-	cargo clippy --workspace --lib --examples --tests --benches --all-features
-	cargo +nightly fmt -- --check
-	docker stop anvil
+clippy:
+	   cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
 
-integration-tests: reset-anvil ##
-				   $(MAKE) start-anvil-chain-with-el-and-avs-deployed
-				   docker start anvil
+integration-tests: 
+				  $(MAKE) deploy-el-and-avs-contracts
 				   cargo test --manifest-path ./integration-tests/Cargo.toml
 
 fmt: 

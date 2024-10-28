@@ -2146,7 +2146,7 @@ dependencies = [
 [[package]]
 name = "eigen-cli"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "alloy-contract",
@@ -2180,7 +2180,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "alloy-primitives",
@@ -2201,7 +2201,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "alloy-primitives",
@@ -2215,7 +2215,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-eth"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "alloy-json-rpc",
@@ -2232,12 +2232,12 @@ dependencies = [
 [[package]]
 name = "eigen-contract-bindings"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -2254,7 +2254,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -2266,7 +2266,7 @@ dependencies = [
 [[package]]
 name = "eigen-logging"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "ctor",
  "once_cell",
@@ -2277,7 +2277,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "eigen-logging",
  "metrics 0.23.0",
@@ -2288,7 +2288,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "eigen-logging",
  "metrics 0.23.0",
@@ -2297,7 +2297,7 @@ dependencies = [
 [[package]]
 name = "eigen-nodeapi"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "ntex",
  "serde",
@@ -2309,7 +2309,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-avsregistry"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy-primitives",
  "ark-bn254",
@@ -2325,7 +2325,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-blsaggregation"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "alloy-primitives",
@@ -2346,7 +2346,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "alloy-primitives",
@@ -2366,7 +2366,7 @@ dependencies = [
 [[package]]
 name = "eigen-testing-utils"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "alloy-primitives",
@@ -2380,7 +2380,7 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy-primitives",
  "ark-serialize 0.4.2",
@@ -2394,7 +2394,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.1.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=40a1680#40a1680693f07aa72700e1ff3a0c3fb6796266e5"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=f3a9f32#f3a9f3299a26366931c6b25761abdb1c8cfc72cd"
 dependencies = [
  "alloy",
  "reqwest 0.12.7",

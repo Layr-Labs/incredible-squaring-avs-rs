@@ -500,7 +500,7 @@ pub async fn deposit_into_strategy(
     amount: U256,
     el_writer: ELChainWriter,
 ) -> Result<(), ElContractsError> {
-    let s = el_writer
+    let _ = el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
         .await;
     Ok(())

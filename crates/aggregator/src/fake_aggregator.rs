@@ -19,7 +19,6 @@ use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskM
     Task, TaskResponse,
 };
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
-use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{self};
 use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
@@ -430,8 +429,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let fake_aggregator = FakeAggregator::new(incredible_config).await;
-        fake_aggregator
+        FakeAggregator::new(incredible_config).await
     }
 
     #[tokio::test]

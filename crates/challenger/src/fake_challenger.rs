@@ -4,7 +4,7 @@ use alloy::sol_types::SolCall;
 use alloy::{
     hex::FromHex,
     primitives::TxHash,
-    rpc::types::{serde_helpers::OtherFields, AccessList, Transaction},
+    rpc::types::{AccessList, Transaction},
 };
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
