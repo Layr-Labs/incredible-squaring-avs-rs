@@ -1,5 +1,6 @@
 PHONY: deploy-el-and-avs-contracts
 
+
 deploy-avs:
 	./contracts/anvil/deploy-avs.sh
 
