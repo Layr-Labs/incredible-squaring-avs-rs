@@ -21,7 +21,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run cargo check
-        run: cargo check --workspace --all-features --all-targets --exclude incredible-binding
+        run: cargo check --workspace --all-features --all-targets --exclude incredible-bindings
 
   lint:
     name: Run Lints
@@ -42,7 +42,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --workspace --all-features --benches --examples --tests --exclude incredible-bindings -- -D warnings 
+        run: cargo clippy --workspace --all-features --benches --examples --tests -- -D warnings 
 
   test:
     name: Run Tests

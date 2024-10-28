@@ -1,6 +1,7 @@
 //! Bindings for the Incredible Squaring contracts
-use alloy::sol;
-use serde::{Deserialize, Serialize};
 
+#[allow(clippy::all, clippy::pedantic,unused_imports)]
 pub mod incrediblesquaringservicemanager;
+
+#[allow(clippy::all, clippy::pedantic,unused_imports)]
 pub mod incrediblesquaringtaskmanager;
