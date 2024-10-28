@@ -1,3 +1,5 @@
+PHONY: deploy-el-and-avs-contracts
+
 deploy-avs:
 	./contracts/anvil/deploy-avs.sh
 
@@ -20,8 +22,7 @@ pr:
 clippy:
 	   cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
 
-integration-tests: 
-				  $(MAKE) deploy-el-and-avs-contracts
+integration-tests: $(MAKE) deploy-el-and-avs-contracts
 				   cargo test --manifest-path ./integration-tests/Cargo.toml
 
 fmt: 

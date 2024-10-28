@@ -18,7 +18,7 @@ mod tests {
     };
     use eigen_utils::get_provider;
     use incredible_aggregator::Aggregator;
-    use incredible_bindings::IncredibleSquaringTaskManager;
+    use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
     use incredible_challenger::Challenger;
     use incredible_operator::builder::OperatorBuilder;
     use incredible_squaring_avs::commands::avs::register_operator_with_el_and_avs;
@@ -28,6 +28,7 @@ mod tests {
         get_incredible_squaring_task_manager,
     };
     use serial_test::serial;
+    const ANVIL_HTTP_URL :&str= "http://localhost:8545";
 
     const INCREDIBLE_CONFIG_FILE: &str = r#"
     [rpc_config]
@@ -74,10 +75,10 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let delegation_manager_address_anvil = get_delegation_manager_address().await;
-        let avs_directory_address_anvil = get_avs_directory_address().await;
+        let delegation_manager_address_anvil = get_delegation_manager_address(ANVIL_HTTP_URL.to_string()).await;
+        let avs_directory_address_anvil = get_avs_directory_address(ANVIL_HTTP_URL.to_string()).await;
 
-        let strategy_manager_address_anvil = get_strategy_manager_address().await;
+        let strategy_manager_address_anvil = get_strategy_manager_address(ANVIL_HTTP_URL.to_string()).await;
         let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
 
         incredible_config.set_delegation_manager_addr(delegation_manager_address_anvil.to_string());

@@ -12,11 +12,15 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 
 - Start anvil in a separate terminal 
 ```
-make start-anvil
+anvil
+```
+
+- Deploy eigenlayer and avs contracts
+```
+deploy-el-and-avs-contracts
 ```
 
 - Single command AVS start using the following command (default values)
-
 ```bash
 cargo run --bin incredible-squaring-avs  start
 ```
@@ -36,12 +40,12 @@ This command launches 4 crates together
 
 ## Testing 
 
-- To run unit tests
+- To run unit tests(start anvil in a separate terminal)
 ```
 make pr
 ```
 
-- To run integration tests 
+- To run integration tests(start anvil in a separate terminal) 
 ```
 make integration-tests
 ```
