@@ -32,7 +32,7 @@ pr:
 	$(MAKE) deploy-el-and-avs-contracts
 	cargo test --workspace --exclude incredible-bindings
 	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
-	cargo fmt -- --check --exclude incredible-bindings
+	cargo fmt -- --check
 
 clippy:
 	   cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
