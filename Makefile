@@ -1,4 +1,6 @@
 PHONY: deploy-el-and-avs-contracts
+PHONY: reset-anvil
+PHONY: integration-tests
 
 
 deploy-avs:
@@ -14,7 +16,19 @@ deploy-el-and-avs-contracts:
 
 __TESTING__: ##
 
+reset_anvil:
+	-docker stop anvil
+	-docker rm anvil 
+
+
+start_docker:
+	$(MAKE) reset_anvil
+	docker run -d --name anvil -p 8545:8545 --entrypoint anvil \
+		ghcr.io/foundry-rs/foundry:nightly-5b7e4cb3c882b28f3c32ba580de27ce7381f415a --host 0.0.0.0
+	sleep 2
+
 pr: 
+	$(MAKE) start_docker
 	$(MAKE) deploy-el-and-avs-contracts
 	cargo test --workspace --exclude incredible-bindings
 	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
@@ -23,8 +37,10 @@ pr:
 clippy:
 	   cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
 
-integration-tests: $(MAKE) deploy-el-and-avs-contracts
-				   cargo test --manifest-path ./integration-tests/Cargo.toml
+integration_tests:
+				  $(MAKE) start_docker
+				  $(MAKE) deploy-el-and-avs-contracts
+				  cargo test --manifest-path ./integration-tests/Cargo.toml
 
 fmt: 
 	cargo fmt
