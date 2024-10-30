@@ -47,7 +47,6 @@ contract SetupPayments is Script {
     function run() external {
         vm.startBroadcast(deployer);
         IRewardsCoordinator(coreDeployment.rewardsCoordinator).setRewardsUpdater(deployer);
-        // console2.log("deployer",deployer);
         // console2.log("reward coordinator",coreDeployment.rewardsCoordinator);
         // address t =IRewardsCoordinator(coreDeployment.rewardsCoordinator).rewardsUpdater();
         // console2.log("rewards updater",t);
