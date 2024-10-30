@@ -74,24 +74,24 @@ incredible-testing-utils = { path = "crates/testing-utils/" }
 incredible-task-generator = { path = "crates/task_generator/" }
 
 # eigensdk-rs 
-eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1", features = [
+eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57", features = [
     "telemetry",
 ] }
-eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-types = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-metrics = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-contract-bindings = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-cli = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-crypto-bn254 = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-client-elcontracts = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-services-operatorsinfo = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-services-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-services-blsaggregation = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-client-eth = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
-eigen-nodeapi = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-types = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-metrics = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-contract-bindings = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-cli = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-crypto-bn254 = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-client-elcontracts = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-services-operatorsinfo = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-services-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-services-blsaggregation = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-client-eth = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
+eigen-nodeapi = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
 
-eigen-telemetry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", branch = "telemetry_alloy_0_1" }
+eigen-telemetry = { git = "https://github.com/Layr-Labs/eigensdk-rs.git", rev = "ea9a9f6b0eb4c0a667a35f24eb8dae835d827f57" }
