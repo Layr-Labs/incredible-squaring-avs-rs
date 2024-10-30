@@ -1,7 +1,8 @@
 #![allow(missing_docs)]
 
 fn main() {
-    let _ = eigen_telemetry::telemetry::Telemetry::set_config("@@@@", "@@@@");
+    // TODO: replace this with your own API key and user ID
+    let _ = eigen_telemetry::telemetry::Telemetry::set_config("@@@@@", "@@@@@");
     eigen_telemetry::telemetry::Telemetry::capture_event("started").unwrap();
 
     use incredible_squaring_avs::cli::Cli;
@@ -11,12 +12,3 @@ fn main() {
         std::process::exit(1);
     }
 }
-
-/*
-    let client = posthog_rs::client("@@@@");
-
-    let _handler = std::thread::spawn(move || {
-        let event = posthog_rs::Event::new("app_started_manual", "@@@@");
-        client.capture(event).unwrap();
-    });
-*/
