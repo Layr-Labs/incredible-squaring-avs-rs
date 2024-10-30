@@ -2,7 +2,7 @@
 pragma solidity ^0.8.12;
 
 import {Script} from "forge-std/Script.sol";
-
+import {console2} from "forge-std/console2.sol";
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 
@@ -23,6 +23,7 @@ contract DeployEigenlayerCore is Script {
     function run() external {
         vm.startBroadcast(deployer);
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
+        console2.log("proxyadmin_address", address(proxyAdmin));
         deploymentData = CoreDeploymentLib.deployContracts(proxyAdmin, configData);
         vm.stopBroadcast();
         string memory deploymentPath = "script/deployments/core/";

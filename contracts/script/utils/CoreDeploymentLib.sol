@@ -156,7 +156,6 @@ library CoreDeploymentLib {
             )
         );
 
-        /// TODO: Get actual genesis time
         uint64 GENESIS_TIME = 1_564_000;
 
         address eigenPodImpl =
@@ -239,7 +238,7 @@ library CoreDeploymentLib {
         upgradeCall = abi.encodeCall(
             RewardsCoordinator.initialize,
             (
-                proxyAdmin, // initialOwner
+                msg.sender, // initialOwner
                 IPauserRegistry(result.pauserRegistry), // _pauserRegistry
                 configData.rewardsCoordinator.initPausedStatus, // initialPausedStatus
                 /// TODO: is there a setter and is this expected?
@@ -344,6 +343,7 @@ library CoreDeploymentLib {
         data.eigenPodManager = json.readAddress(".addresses.eigenPodManager");
         data.delegationManager = json.readAddress(".addresses.delegation");
         data.avsDirectory = json.readAddress(".addresses.avsDirectory");
+        data.rewardsCoordinator = json.readAddress(".addresses.rewardsCoordinator");
 
         return data;
     }

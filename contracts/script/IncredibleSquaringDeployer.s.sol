@@ -88,9 +88,14 @@ contract IncredibleSquaringDeployer is Script {
 
     address proxyAdmin;
 
+    function setUp() public virtual {
+        deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
+        vm.label(deployer, "Deployer");
+    }
+
     function run() external {
         // Eigenlayer contracts
-        vm.startBroadcast();
+        vm.startBroadcast(deployer);
         AGGREGATOR_ADDR = vm.envAddress("AGGREGATOR_ADDR");
         TASK_GENERATOR_ADDR = vm.envAddress("TASK_GENERATOR_ADDR");
         CONTRACTS_REGISTRY_ADDR = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
