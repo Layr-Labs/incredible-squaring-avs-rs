@@ -1,0 +1,11 @@
+{
+  "earners": ["0x00000000219ab540356cBB839Cbe05303d7705Fa","0x00000000219ab540356cBB839Cbe05303d7705Fa"],
+  "earnerTokenRoots":["0xffe27f9f74b702fb0c28e74c30afdd45e6562925ae4460da1739989304a3b0fb" , "0xffe27f9f74b702fb0c28e74c30afdd45e6562925ae4460da1739989304a3b0fb"],
+  "recipient": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+  "numPayments": 2,
+  "amountPerPayment":2,
+  "duration": 86400,
+  "startTimestamp": 9,
+  "endTimestamp": 55,
+  "indexToProve": 0
+}

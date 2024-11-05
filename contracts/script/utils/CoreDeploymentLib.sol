@@ -86,7 +86,7 @@ library CoreDeploymentLib {
         address strategyBeacon;
     }
 
-    function deployContracts(address proxyAdmin, DeploymentConfigData memory configData)
+    function deployContracts(address deployer, address proxyAdmin, DeploymentConfigData memory configData)
         internal
         returns (DeploymentData memory)
     {
@@ -142,7 +142,7 @@ library CoreDeploymentLib {
         uint32 CALCULATION_INTERVAL_SECONDS = 1 days;
         uint32 MAX_REWARDS_DURATION = 1 days;
         uint32 MAX_RETROACTIVE_LENGTH = 1;
-        uint32 MAX_FUTURE_LENGTH = 1;
+        uint32 MAX_FUTURE_LENGTH = 1 days;
         uint32 GENESIS_REWARDS_TIMESTAMP = 10 days;
         address rewardsCoordinatorImpl = address(
             new RewardsCoordinator(
@@ -238,11 +238,11 @@ library CoreDeploymentLib {
         upgradeCall = abi.encodeCall(
             RewardsCoordinator.initialize,
             (
-                msg.sender, // initialOwner
+                deployer, // initialOwner
                 IPauserRegistry(result.pauserRegistry), // _pauserRegistry
                 configData.rewardsCoordinator.initPausedStatus, // initialPausedStatus
                 /// TODO: is there a setter and is this expected?
-                address(0), // rewards updater
+                deployer, // rewards updater
                 uint32(configData.rewardsCoordinator.activationDelay), // _activationDelay
                 uint16(configData.rewardsCoordinator.globalOperatorCommissionBips) // _globalCommissionBips
             )

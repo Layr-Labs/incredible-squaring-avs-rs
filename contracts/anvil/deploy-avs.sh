@@ -14,3 +14,5 @@ cd ../
 forge script script/IncredibleSquaringDeployer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast -v
 
 forge script script/WriteToContractsRegistry.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast
+
+

@@ -30,7 +30,8 @@ contract SetupPayments is Script {
     address private deployer;
     CoreDeploymentLib.DeploymentData coreDeployment;
     IncredibleSquaringDeploymentLib.DeploymentData incredibleSquaringDeployment;
-    string internal constant filePath = "test/mockData/scratch/payments.json";
+    string internal constant paymentfilepath = "test/mockData/scratch/payments.json";
+    string internal constant filePath = "test/mockData/scratch/payment_info.json";
 
     uint256 constant NUM_TOKEN_EARNINGS = 1;
     uint256 constant DURATION = 1 weeks;
@@ -46,25 +47,53 @@ contract SetupPayments is Script {
 
     function run() external {
         vm.startBroadcast(deployer);
-        IRewardsCoordinator(coreDeployment.rewardsCoordinator).setRewardsUpdater(deployer);
-        // console2.log("reward coordinator",coreDeployment.rewardsCoordinator);
-        // address t =IRewardsCoordinator(coreDeployment.rewardsCoordinator).rewardsUpdater();
-        // console2.log("rewards updater",t);
-        // ProxyAdmin admin = UpgradeableProxyLib.getProxyAdmin(address(coreDeployment.rewardsCoordinator));
-        // console2.log("proxy admin",address(admin));
-        // PaymentInfo memory info = abi.decode(vm.parseJson(vm.readFile(filePath)), (PaymentInfo));
+        uint256 amount_per_payment = vm.parseJsonUint(vm.readFile(filePath), ".amountPerPayment");
+        uint32 duration = uint32(vm.parseJsonUint(vm.readFile(filePath), ".duration"));
+        uint32 start_timestamp = uint32(vm.parseJsonUint(vm.readFile(filePath), ".startTimestamp"));
+        uint32 end_timestamp = uint32(vm.parseJsonUint(vm.readFile(filePath), ".endTimestamp"));
+        uint32 index_to_prove = uint32(vm.parseJsonUint(vm.readFile(filePath), ".indexToProve"));
+        uint256 num_payments = vm.parseJsonUint(vm.readFile(filePath), ".numPayments");
+        address recipient = vm.parseJsonAddress(vm.readFile(filePath), ".recipient");
+        address[] memory earners = vm.parseJsonAddressArray(vm.readFile(filePath), ".earners");
+        bytes32[] memory earner_token_roots = vm.parseJsonBytes32Array(vm.readFile(filePath), ".earnerTokenRoots");
+        console2.log("duration", duration);
+        console2.log("amount_per_payment", amount_per_payment);
+        console2.log("start_timestamp", start_timestamp);
+        console2.log("end_timestamp", end_timestamp);
+        console2.log("index_to_prove", index_to_prove);
+        console2.log("num_payments", num_payments);
+        console2.log("recipient", recipient);
+        console2.log("earners0", earners[0]);
+        console2.log("earners1", earners[1]);
+        uint32 start_time = uint32(nextDivisibleTimestamp(block.timestamp));
+        console2.log("start_time", start_time);
+        console2.log("block timestamp", block.timestamp);
+        createAVSRewardsSubmissions(num_payments, amount_per_payment, duration, start_time);
+        submitPaymentRoot(earners, uint32(block.timestamp - 1000), uint32(num_payments), uint32(amount_per_payment));
 
-        // createAVSRewardsSubmissions(info.numPayments, info.amountPerPayment, info.duration, info.startTimestamp);
-        // submitPaymentRoot(info.earners, info.endTimestamp, uint32(info.numPayments), uint32(info.amountPerPayment));
+        IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinator.EarnerTreeMerkleLeaf({
+            earner: earners[index_to_prove],
+            earnerTokenRoot: earner_token_roots[index_to_prove]
+        });
 
-        // IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinator.EarnerTreeMerkleLeaf({
-        //     earner: info.earners[info.indexToProve],
-        //     earnerTokenRoot: info.earnerTokenRoots[info.indexToProve]
-        // });
-
-        // processClaim(filePath, info.indexToProve, info.recipient, earnerLeaf);
+        processClaim(filePath, index_to_prove, recipient, earnerLeaf);
 
         vm.stopBroadcast();
+    }
+
+    function nextDivisibleTimestamp(uint256 blockTimestamp) public pure returns (uint256) {
+        uint256 daySeconds = 86400;
+
+        // Calculate the remainder to check if blockTimestamp is already divisible by daySeconds
+        uint256 remainder = blockTimestamp % daySeconds;
+
+        if (remainder == 0) {
+            // If blockTimestamp is already divisible by daySeconds, move to the next day
+            return blockTimestamp + daySeconds;
+        } else {
+            // Otherwise, round up to the next multiple of daySeconds
+            return blockTimestamp + (daySeconds - remainder);
+        }
     }
 
     function createAVSRewardsSubmissions(
@@ -123,7 +152,7 @@ contract SetupPayments is Script {
             endTimestamp,
             numPayments,
             NUM_TOKEN_EARNINGS,
-            filePath
+            paymentfilepath
         );
     }
 }
