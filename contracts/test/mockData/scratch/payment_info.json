@@ -1,11 +1,12 @@
 {
-  "earners": ["0x00000000219ab540356cBB839Cbe05303d7705Fa","0x00000000219ab540356cBB839Cbe05303d7705Fa"],
-  "earnerTokenRoots":["0xffe27f9f74b702fb0c28e74c30afdd45e6562925ae4460da1739989304a3b0fb" , "0xffe27f9f74b702fb0c28e74c30afdd45e6562925ae4460da1739989304a3b0fb"],
-  "recipient": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
-  "numPayments": 2,
-  "amountPerPayment":2,
+  "earners": ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"],
+  "earnerTokenRoots":["0x6ce4f6e76c8f51cb8b15b7704bdea8b71e12eb203d6a8f8f644c0552c701f2e3" , "0x6ce4f6e76c8f51cb8b15b7704bdea8b71e12eb203d6a8f8f644c0552c701f2e3" ,"0x6ce4f6e76c8f51cb8b15b7704bdea8b71e12eb203d6a8f8f644c0552c701f2e3" , "0x6ce4f6e76c8f51cb8b15b7704bdea8b71e12eb203d6a8f8f644c0552c701f2e3"],
+  "recipient": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "numPayments": 4,
+  "amountPerPayment":100,
   "duration": 86400,
-  "startTimestamp": 9,
-  "endTimestamp": 55,
   "indexToProve": 0
 }
+
+
+

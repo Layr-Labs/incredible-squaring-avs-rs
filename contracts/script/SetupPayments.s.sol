@@ -49,25 +49,12 @@ contract SetupPayments is Script {
         vm.startBroadcast(deployer);
         uint256 amount_per_payment = vm.parseJsonUint(vm.readFile(filePath), ".amountPerPayment");
         uint32 duration = uint32(vm.parseJsonUint(vm.readFile(filePath), ".duration"));
-        uint32 start_timestamp = uint32(vm.parseJsonUint(vm.readFile(filePath), ".startTimestamp"));
-        uint32 end_timestamp = uint32(vm.parseJsonUint(vm.readFile(filePath), ".endTimestamp"));
         uint32 index_to_prove = uint32(vm.parseJsonUint(vm.readFile(filePath), ".indexToProve"));
         uint256 num_payments = vm.parseJsonUint(vm.readFile(filePath), ".numPayments");
         address recipient = vm.parseJsonAddress(vm.readFile(filePath), ".recipient");
         address[] memory earners = vm.parseJsonAddressArray(vm.readFile(filePath), ".earners");
         bytes32[] memory earner_token_roots = vm.parseJsonBytes32Array(vm.readFile(filePath), ".earnerTokenRoots");
-        console2.log("duration", duration);
-        console2.log("amount_per_payment", amount_per_payment);
-        console2.log("start_timestamp", start_timestamp);
-        console2.log("end_timestamp", end_timestamp);
-        console2.log("index_to_prove", index_to_prove);
-        console2.log("num_payments", num_payments);
-        console2.log("recipient", recipient);
-        console2.log("earners0", earners[0]);
-        console2.log("earners1", earners[1]);
         uint32 start_time = uint32(nextDivisibleTimestamp(block.timestamp));
-        console2.log("start_time", start_time);
-        console2.log("block timestamp", block.timestamp);
         createAVSRewardsSubmissions(num_payments, amount_per_payment, duration, start_time);
         submitPaymentRoot(earners, uint32(block.timestamp - 1000), uint32(num_payments), uint32(amount_per_payment));
 
@@ -75,8 +62,7 @@ contract SetupPayments is Script {
             earner: earners[index_to_prove],
             earnerTokenRoot: earner_token_roots[index_to_prove]
         });
-
-        processClaim(filePath, index_to_prove, recipient, earnerLeaf);
+        processClaim(paymentfilepath, index_to_prove, recipient, earnerLeaf);
 
         vm.stopBroadcast();
     }
@@ -143,7 +129,6 @@ contract SetupPayments is Script {
         );
         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory earnerLeaves =
             SetupPaymentsLib.createEarnerLeaves(earners, tokenLeaves);
-
         SetupPaymentsLib.submitRoot(
             IRewardsCoordinator(coreDeployment.rewardsCoordinator),
             tokenLeaves,
@@ -156,3 +141,12 @@ contract SetupPayments is Script {
         );
     }
 }
+
+//   reward coordinator
+//   0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e
+//   NUM_TOKEN_EARNINGS
+//   1
+//   amountPerPayment
+//   100
+//   incredibleSquaringDeploymentStrategy
+//   0x2b961E3959b79326A8e7F64Ef0d2d825707669b5

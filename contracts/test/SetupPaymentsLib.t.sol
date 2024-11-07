@@ -46,7 +46,7 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
         Vm.Wallet memory ADMIN = vm.createWallet("ADMIN");
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
         coreConfigData = CoreDeploymentLib.readDeploymentConfigValues("test/mockData/config/core/", 1337); // TODO: Fix this to correct path
-        coreDeployment = CoreDeploymentLib.deployContracts(proxyAdmin, coreConfigData);
+        coreDeployment = CoreDeploymentLib.deployContracts(deployer, proxyAdmin, coreConfigData);
 
         mockToken = new MockERC20();
 
@@ -146,7 +146,6 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
         }
         uint32 endTimestamp = rewardsCoordinator.currRewardsCalculationEndTimestamp() + 1 weeks;
         cheats.warp(endTimestamp + 1);
-
         bytes32[] memory tokenLeaves = SetupPaymentsLib.createTokenLeaves(
             rewardsCoordinator, NUM_TOKEN_EARNINGS, TOKEN_EARNINGS, address(strategy)
         );
@@ -162,6 +161,7 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
         cheats.warp(block.timestamp + 2 weeks);
 
         cheats.startPrank(earnerLeaves[INDEX_TO_PROVE].earner, earnerLeaves[INDEX_TO_PROVE].earner);
+
         SetupPaymentsLib.processClaim(
             rewardsCoordinator,
             filePath,

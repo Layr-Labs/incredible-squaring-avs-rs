@@ -4,6 +4,7 @@ pragma solidity ^0.8.12;
 import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 import {IStrategy} from "eigenlayer-contracts/src/contracts/interfaces/IStrategyManager.sol";
 import {Vm} from "forge-std/Vm.sol";
+import {console} from "forge-std/console.sol";
 
 library SetupPaymentsLib {
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
@@ -55,7 +56,7 @@ library SetupPaymentsLib {
         PaymentLeaves memory paymentLeaves = parseLeavesFromJson(filePath);
 
         bytes memory proof = generateMerkleProof(paymentLeaves.leaves, indexToProve);
-        bytes memory tokenProof = generateMerkleProof(paymentLeaves.tokenLeaves, 0);
+        bytes memory tokenProof = generateMerkleProof(paymentLeaves.tokenLeaves, indexToProve);
 
         uint32[] memory tokenIndices = new uint32[](NUM_TOKEN_EARNINGS);
         bytes[] memory tokenProofs = new bytes[](NUM_TOKEN_EARNINGS);
@@ -74,7 +75,6 @@ library SetupPaymentsLib {
             tokenTreeProofs: tokenProofs,
             tokenLeaves: tokenLeaves
         });
-
         rewardsCoordinator.processClaim(claim, recipient);
     }
 
