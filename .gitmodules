@@ -1,13 +1,6 @@
 [submodule "contracts/lib/forge-std"]
 	path = contracts/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-
-[submodule "contracts/lib/eigenlayer-middleware.git"]
-	path = contracts/lib/eigenlayer-middleware.git
-	url = https://github.com/Layr-Labs/eigenlayer-middleware.git
-[submodule "contracts/lib/eigenlayer-contracts"]
-	path = contracts/lib/eigenlayer-contracts
-	url = https://github.com/layr-labs/eigenlayer-contracts
 [submodule "contracts/lib/eigenlayer-middleware"]
 	path = contracts/lib/eigenlayer-middleware
 	url = https://github.com/layr-labs/eigenlayer-middleware
