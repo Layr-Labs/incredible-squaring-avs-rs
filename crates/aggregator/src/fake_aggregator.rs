@@ -81,7 +81,9 @@ impl FakeAggregator {
             avs_registry_chain_reader,
             config.ws_rpc_url(),
         )
-        .await;
+        .await
+        .unwrap()
+        .0;
         let token = tokio_util::sync::CancellationToken::new().clone();
         let avs_registry_service_chaincaller =
             AvsRegistryServiceChainCaller::new(avs_reader, operators_info_service.clone());

@@ -2,6 +2,7 @@ use alloy::transports::{RpcError, TransportErrorKind};
 use eigen_client_avsregistry::error::AvsRegistryError;
 use eigen_crypto_bls::error::BlsError;
 use eigen_services_blsaggregation::bls_agg::BlsAggregationServiceError;
+use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceError;
 use incredible_chainio::error::ChainIoError;
 use incredible_config::error::ConfigError;
 use jsonrpc_core::serde_json::Error;
@@ -41,4 +42,8 @@ pub enum AggregatorError {
     /// IO error
     #[error("IO error")]
     IOError(#[from] std::io::Error),
+
+    /// Operator Info service error
+    #[error("Operator Info Service error")]
+    OperatorInfoServiceError(#[from] OperatorInfoServiceError),
 }

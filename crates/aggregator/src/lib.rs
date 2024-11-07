@@ -90,7 +90,8 @@ impl Aggregator {
             avs_registry_chain_reader.clone(),
             config.ws_rpc_url(),
         )
-        .await;
+        .await?
+        .0;
         let token = tokio_util::sync::CancellationToken::new();
         let avs_registry_service_chaincaller = AvsRegistryServiceChainCaller::new(
             avs_registry_chain_reader,

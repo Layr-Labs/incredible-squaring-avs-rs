@@ -6,6 +6,7 @@ use alloy::{
     rpc::types::TransactionReceipt,
     signers::local::PrivateKeySigner,
 };
+use eigen_utils::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
@@ -131,15 +132,9 @@ impl TaskManager {
         task_response: TaskResponse,
         non_signer_stakes_and_signature: NonSignerStakesAndSignature,
     ) -> eyre::Result<TransactionReceipt, eyre::Error> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
-        let signer = PrivateKeySigner::from_str(&self.signer)?;
-        let wallet = EthereumWallet::new(signer);
-        let pr = ProviderBuilder::new()
-            .with_recommended_fillers()
-            .wallet(wallet)
-            .on_http(url);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_address, pr);
+            IncredibleSquaringTaskManager::new(self.task_manager_address, wallet);
 
         let s = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)

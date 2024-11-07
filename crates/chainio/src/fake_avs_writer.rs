@@ -1,19 +1,12 @@
-use std::str::FromStr;
-
 use crate::error::ChainIoError;
-use alloy::signers::local::PrivateKeySigner;
-use alloy::{
-    network::EthereumWallet,
-    primitives::{Address, TxHash},
-    providers::ProviderBuilder,
-};
+use alloy::primitives::{Address, TxHash};
+use eigen_utils::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::{
     IBLSSignatureChecker::NonSignerStakesAndSignature,
     IIncredibleSquaringTaskManager::{Task, TaskResponse, TaskResponseMetadata},
     IncredibleSquaringTaskManager,
     BN254::G1Point,
 };
-use reqwest::Url;
 
 /// AvsWriter struct
 #[derive(Debug, Clone)]
@@ -35,14 +28,10 @@ impl FakeAvsWriter {
         task_response_metadata: TaskResponseMetadata,
         pub_keys_of_non_signing_operators: Vec<G1Point>,
     ) -> Result<TxHash, ChainIoError> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
-        let signer = PrivateKeySigner::from_str(&self.signer)?;
-        let wallet = EthereumWallet::new(signer);
-        let pr = ProviderBuilder::new()
-            .with_recommended_fillers()
-            .wallet(wallet)
-            .on_http(url);
-        let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
+
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
@@ -79,14 +68,9 @@ impl FakeAvsWriter {
         task_response: TaskResponse,
         non_signer_stakes_and_signature: NonSignerStakesAndSignature,
     ) -> eyre::Result<()> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
-        let signer = PrivateKeySigner::from_str(&self.signer)?;
-        let wallet = EthereumWallet::new(signer);
-        let pr = ProviderBuilder::new()
-            .with_recommended_fillers()
-            .wallet(wallet)
-            .on_http(url);
-        let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let _ = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)

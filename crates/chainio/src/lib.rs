@@ -16,7 +16,7 @@ use alloy::{
 use alloy_provider::ProviderBuilder;
 use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
 use eigen_utils::{
-    get_provider,
+    get_provider, get_signer,
     registrycoordinator::RegistryCoordinator::{self, serviceManagerReturn},
 };
 use error::ChainIoError;
@@ -87,14 +87,9 @@ impl AvsWriter {
         quorum_threshold_percentages: QuorumThresholdPercentage,
         quorum_nums: Vec<QuorumNum>,
     ) -> Result<(TransactionReceipt, u32), ChainIoError> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
-        let signer = PrivateKeySigner::from_str(&self.signer)?;
-        let wallet = EthereumWallet::new(signer);
-        let pr = ProviderBuilder::new()
-            .with_recommended_fillers()
-            .wallet(wallet)
-            .on_http(url);
-        let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let create_new_task_call = task_manager_contract.createNewTask(
             num_to_square,
@@ -140,14 +135,9 @@ impl AvsWriter {
         task_response_metadata: TaskResponseMetadata,
         pub_keys_of_non_signing_operators: Vec<G1Point>,
     ) -> Result<alloy::rpc::types::TransactionReceipt, ChainIoError> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
-        let signer = PrivateKeySigner::from_str(&self.signer)?;
-        let wallet = EthereumWallet::new(signer);
-        let pr = ProviderBuilder::new()
-            .with_recommended_fillers()
-            .wallet(wallet)
-            .on_http(url);
-        let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
