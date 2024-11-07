@@ -56,13 +56,13 @@ contract SetupPayments is Script {
         bytes32[] memory earner_token_roots = vm.parseJsonBytes32Array(vm.readFile(filePath), ".earnerTokenRoots");
         uint32 start_time = uint32(nextDivisibleTimestamp(block.timestamp));
         createAVSRewardsSubmissions(num_payments, amount_per_payment, duration, start_time);
-        // submitPaymentRoot(earners, uint32(block.timestamp - 1000), uint32(num_payments), uint32(amount_per_payment));
+        submitPaymentRoot(earners, uint32(block.timestamp - 1000), uint32(num_payments), uint32(amount_per_payment));
 
-        // IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinator.EarnerTreeMerkleLeaf({
-        //     earner: earners[index_to_prove],
-        //     earnerTokenRoot: earner_token_roots[index_to_prove]
-        // });
-        // processClaim(paymentfilepath, index_to_prove, recipient, earnerLeaf);
+        IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinator.EarnerTreeMerkleLeaf({
+            earner: earners[index_to_prove],
+            earnerTokenRoot: earner_token_roots[index_to_prove]
+        });
+        processClaim(paymentfilepath, index_to_prove, recipient, earnerLeaf);
 
         vm.stopBroadcast();
     }
@@ -141,12 +141,3 @@ contract SetupPayments is Script {
         );
     }
 }
-
-//   reward coordinator
-//   0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e
-//   NUM_TOKEN_EARNINGS
-//   1
-//   amountPerPayment
-//   100
-//   incredibleSquaringDeploymentStrategy
-//   0x2b961E3959b79326A8e7F64Ef0d2d825707669b5
