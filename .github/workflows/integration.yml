@@ -70,11 +70,10 @@ jobs:
           cache-on-failure: true
 
       - name: Install Foundry
-        run: cargo install --git https://github.com/foundry-rs/foundry --profile release --locked forge cast chisel anvil
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: docker
         uses: docker-practice/actions-setup-docker@master
-
       - name: Run unit tests
         run: make pr
 
