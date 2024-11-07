@@ -22,26 +22,27 @@ library SetupPaymentsLib {
         uint32 duration,
         uint32 startTimestamp
     ) internal {
-        IRewardsCoordinator.RewardsSubmission[] memory rewardsSubmissions =
-            new IRewardsCoordinator.RewardsSubmission[](numPayments);
-        for (uint256 i = 0; i < numPayments; i++) {
-            IRewardsCoordinator.StrategyAndMultiplier[] memory strategiesAndMultipliers =
-                new IRewardsCoordinator.StrategyAndMultiplier[](1);
-            strategiesAndMultipliers[0] =
-                IRewardsCoordinator.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
+        IStrategy(strategy).underlyingToken();
+        // IRewardsCoordinator.RewardsSubmission[] memory rewardsSubmissions =
+        //     new IRewardsCoordinator.RewardsSubmission[](numPayments);
+        // for (uint256 i = 0; i < numPayments; i++) {
+        //     IRewardsCoordinator.StrategyAndMultiplier[] memory strategiesAndMultipliers =
+        //         new IRewardsCoordinator.StrategyAndMultiplier[](1);
+        //     strategiesAndMultipliers[0] =
+        //         IRewardsCoordinator.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
 
-            IRewardsCoordinator.RewardsSubmission memory rewardsSubmission = IRewardsCoordinator.RewardsSubmission({
-                strategiesAndMultipliers: strategiesAndMultipliers,
-                token: IStrategy(strategy).underlyingToken(),
-                amount: amountPerPayment,
-                startTimestamp: startTimestamp,
-                duration: duration
-            });
+        //     IRewardsCoordinator.RewardsSubmission memory rewardsSubmission = IRewardsCoordinator.RewardsSubmission({
+        //         strategiesAndMultipliers: strategiesAndMultipliers,
+        //         token: IStrategy(strategy).underlyingToken(),
+        //         amount: amountPerPayment,
+        //         startTimestamp: startTimestamp,
+        //         duration: duration
+        //     });
 
-            rewardsSubmissions[i] = rewardsSubmission;
-        }
+        //     rewardsSubmissions[i] = rewardsSubmission;
+        // }
 
-        rewardsCoordinator.createAVSRewardsSubmission(rewardsSubmissions);
+        // rewardsCoordinator.createAVSRewardsSubmission(rewardsSubmissions);
     }
 
     function processClaim(

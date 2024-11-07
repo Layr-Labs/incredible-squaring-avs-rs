@@ -50,7 +50,7 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
 
         mockToken = new MockERC20();
 
-        strategy = addStrategy(address(mockToken)); // Similar function to HW_SM test using strategy factory
+        strategy = addStrategy(address(mockToken));
         quorum.strategies.push(StrategyParams({strategy: strategy, multiplier: 10_000}));
 
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
