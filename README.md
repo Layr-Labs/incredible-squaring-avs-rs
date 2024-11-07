@@ -15,7 +15,7 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 anvil
 ```
 
-- Deploy eigenlayer and avs contracts
+- Deploy eigenlayer and avs contracts and setup payments
 ```
 deploy-el-and-avs-contracts
 ```
