@@ -16,4 +16,4 @@ forge update
 
 # Deploy Contracts
 forge create ContractsRegistry --rpc-url $RPC_URL --private-key $PRIVATE_KEY
-forge script contracts/script/DeployEigenlayerCore.s.sol:DeployEigenlayerCore --rpc-url $RPC_URL --broadcast --slow
+forge script script/DeployEigenlayerCore.s.sol:DeployEigenlayerCore --rpc-url $RPC_URL --broadcast --slow

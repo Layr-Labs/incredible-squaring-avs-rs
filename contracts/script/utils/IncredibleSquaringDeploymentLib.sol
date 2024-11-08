@@ -30,7 +30,8 @@ import {
     RegistryCoordinator,
     IBLSApkRegistry,
     IIndexRegistry,
-    IStakeRegistry
+    IStakeRegistry,
+    ISocketRegistry
 } from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
@@ -92,7 +93,8 @@ library IncredibleSquaringDeploymentLib {
                 IServiceManager(result.incredibleSquaringServiceManager),
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
-                IIndexRegistry(result.indexRegistry)
+                IIndexRegistry(result.indexRegistry),
+                ISocketRegistry(address(0))
             )
         );
 
@@ -298,15 +300,11 @@ library IncredibleSquaringDeploymentLib {
     }
 
     function verify_deployment(DeploymentData memory result) internal view {
-        IServiceManager servicemanager = IRegistryCoordinator(result.registryCoordinator).serviceManager();
-        require(address(servicemanager) != address(0));
         IBLSApkRegistry blsapkregistry = IRegistryCoordinator(result.registryCoordinator).blsApkRegistry();
         require(address(blsapkregistry) != address(0));
         IStakeRegistry stakeregistry = IRegistryCoordinator(result.registryCoordinator).stakeRegistry();
         require(address(stakeregistry) != address(0));
         IDelegationManager delegationmanager = IStakeRegistry(address(stakeregistry)).delegation();
         require(address(delegationmanager) != address(0));
-        address avsdirectory = servicemanager.avsDirectory();
-        require(avsdirectory != address(0));
     }
 }

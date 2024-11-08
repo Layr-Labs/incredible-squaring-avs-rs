@@ -89,6 +89,8 @@ library SetupPaymentsLib {
         uint256 NUM_TOKEN_EARNINGS,
         string memory filePath
     ) internal {
+        console.log("tokenLeaves[0]");
+        console.logBytes32(tokenLeaves[0]);
         bytes32 paymentRoot = createPaymentRoot(
             rewardsCoordinator, tokenLeaves, earnerLeaves, NUM_PAYMENTS, NUM_TOKEN_EARNINGS, strategy, filePath
         );

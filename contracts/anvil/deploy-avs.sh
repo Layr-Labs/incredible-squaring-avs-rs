@@ -11,9 +11,9 @@ parent_path=$(
 cd "$parent_path"
 
 cd ../
-forge script script/IncredibleSquaringDeployer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast -v
+forge script script/IncredibleSquaringDeployer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
 
-forge script script/WriteToContractsRegistry.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast
+forge script script/WriteToContractsRegistry.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
 
-forge script script/SetupPayments.s.sol --rpc-url http://localhost:8545 --broadcast --slow --private-key $PRIVATE_KEY
+forge script script/SetupPayments.s.sol --rpc-url $RPC_URL --broadcast --slow --private-key $PRIVATE_KEY
 

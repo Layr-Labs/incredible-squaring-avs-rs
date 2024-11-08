@@ -23,9 +23,6 @@ contract DeployEigenlayerCore is Script {
     function run() external {
         vm.startBroadcast(deployer);
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
-        console2.log("proxyadmin_address", address(proxyAdmin));
-        console2.log("deployer", deployer);
-        console2.log("this_address", address(this));
         deploymentData = CoreDeploymentLib.deployContracts(deployer, proxyAdmin, configData);
         vm.stopBroadcast();
         string memory deploymentPath = "script/deployments/core/";
