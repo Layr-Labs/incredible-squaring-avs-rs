@@ -78,6 +78,9 @@ jobs:
       - name: Submodule update
         run: git submodule update --init --recursive
 
+      - name: Copy .env.example to .env
+        run: cp contracts/.env.example contracts/.env
+
       - name: docker
         uses: docker-practice/actions-setup-docker@master
       - name: Run unit tests
