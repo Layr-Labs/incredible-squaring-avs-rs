@@ -50,9 +50,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -74,9 +71,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Submodule update
-        run: git submodule update --init --recursive
 
       - name: docker
         uses: docker-practice/actions-setup-docker@master
