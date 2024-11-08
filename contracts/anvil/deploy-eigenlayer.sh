@@ -12,5 +12,4 @@ root_dir=$(realpath "$parent_path/../..")
 # Deploy Contracts
 cd "$root_dir/contracts"
 forge create src/ContractsRegistry.sol:ContractsRegistry --rpc-url $RPC_URL --private-key $PRIVATE_KEY
-cd "$root_dir/contracts"
 forge script script/DeployEigenlayerCore.s.sol:DeployEigenlayerCore --rpc-url $RPC_URL --broadcast --slow
