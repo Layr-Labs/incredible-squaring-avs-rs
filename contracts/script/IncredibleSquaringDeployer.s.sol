@@ -45,11 +45,11 @@ contract IncredibleSquaringDeployer is Script {
     uint256 public constant QUORUM_THRESHOLD_PERCENTAGE = 100;
     uint32 public constant TASK_RESPONSE_WINDOW_BLOCK = 30;
     uint32 public constant TASK_DURATION_BLOCKS = 0;
-    // TODO: right now hardcoding these (this address is anvil's default address 9)
     address public AGGREGATOR_ADDR;
     address public TASK_GENERATOR_ADDR;
     address public CONTRACTS_REGISTRY_ADDR;
     address public OPERATOR_ADDR;
+    address public OPERATOR_2_ADDR;
     ContractsRegistry contractsRegistry;
 
     StrategyBaseTVLLimits public erc20MockStrategy;
@@ -100,6 +100,7 @@ contract IncredibleSquaringDeployer is Script {
         TASK_GENERATOR_ADDR = vm.envAddress("TASK_GENERATOR_ADDR");
         CONTRACTS_REGISTRY_ADDR = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
         OPERATOR_ADDR = vm.envAddress("OPERATOR_ADDR");
+        OPERATOR_2_ADDR = vm.envAddress("OPERATOR_2_ADDR");
         contractsRegistry = ContractsRegistry(CONTRACTS_REGISTRY_ADDR);
         deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.label(deployer, "Deployer");
@@ -108,12 +109,12 @@ contract IncredibleSquaringDeployer is Script {
 
         erc20Mock = new MockERC20();
         FundOperator.fund_operator(address(erc20Mock), OPERATOR_ADDR, 10e18);
+        FundOperator.fund_operator(address(erc20Mock), OPERATOR_2_ADDR, 10e18);
 
         incredibleSquaringStrategy = IStrategy(StrategyFactory(configData.strategyFactory).deployNewStrategy(erc20Mock));
         rewardscoordinator = configData.rewardsCoordinator;
 
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
-        require(address(incredibleSquaringStrategy) != address(0));
         require(address(incredibleSquaringStrategy) != address(0));
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin,

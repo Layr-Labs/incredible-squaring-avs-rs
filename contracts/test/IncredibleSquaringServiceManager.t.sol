@@ -22,6 +22,8 @@ import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationMa
 import {ISignatureUtils} from "@eigenlayer/contracts/interfaces/ISignatureUtils.sol";
 import {AVSDirectory} from "@eigenlayer/contracts/core/AVSDirectory.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
+
+import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 import {Test, console2 as console} from "forge-std/Test.sol";
 import {IncredibleSquaringServiceManager} from "../src/IncredibleSquaringServiceManager.sol";
 
@@ -69,6 +71,15 @@ contract IncredibleSquaringServiceManagerSetup is Test {
             proxyAdmin, coreDeployment, address(strategy), AGGREGATOR_ADDR.addr, TASK_GENERATOR_ADDR.addr, ADMIN.addr
         );
         labelContracts(coreDeployment, incredibleSquaringDeployment);
+
+        address s = address(IRegistryCoordinator(incredibleSquaringDeployment.registryCoordinator).stakeRegistry());
+        require(s != address(0));
+        address ss = address(IRegistryCoordinator(incredibleSquaringDeployment.registryCoordinator).blsApkRegistry());
+        require(ss != address(0));
+        address sss = address(IRegistryCoordinator(incredibleSquaringDeployment.registryCoordinator).indexRegistry());
+        require(sss != address(0));
+
+
     }
 
     function addStrategy(address token) public returns (IStrategy) {
@@ -97,5 +108,9 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         vm.label(coreDeployment.strategyBeacon, "StrategyBeacon");
         vm.label(incredibleSquaringDeployment.incredibleSquaringServiceManager, "IncredibleSquaringServiceManager");
         vm.label(incredibleSquaringDeployment.stakeRegistry, "StakeRegistry");
+    }
+
+    function test_a() public {
+        assert(1 == 1);
     }
 }

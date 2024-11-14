@@ -1,6 +1,7 @@
 //! config
 use alloy::hex::FromHex;
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use eigen_types::operator::OperatorId;
 use error::ConfigError;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -24,6 +25,8 @@ pub struct IncredibleConfig {
     el_config: ELConfig,
 
     operator_registration_config: OperatorRegistrationConfig,
+
+    operator_2_registration_config: Operator2RegistrationConfig,
 
     incredible_contracts_config: IncredibleContractsConfig,
 
@@ -86,10 +89,30 @@ pub struct OperatorRegistrationConfig {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct Operator2RegistrationConfig {
+    pub register_operator: bool,
+
+    pub operator_to_avs_registration_sig_salt: String,
+
+    pub socket: String,
+
+    pub quorum_number: String,
+
+    pub sig_expiry: String,
+
+    /// Optional operator pvt key, if not provided, it will be taken from the [`EcdsaConfig`]
+    pub operator_pvt_key: Option<String>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct OperatorConfig {
     pub operator_address: String,
 
     pub operator_id: String,
+
+    pub operator_2_address: String,
+
+    pub operator_2_id: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -116,6 +139,10 @@ pub struct BlsConfig {
     pub keystore_path: String,
 
     pub keystore_password: String,
+
+    pub keystore_2_path: String,
+
+    pub keystore_2_password: String,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
@@ -124,6 +151,10 @@ pub struct EcdsaConfig {
     pub keystore_path: String,
 
     pub keystore_password: String,
+
+    pub keystore_2_path: String,
+
+    pub keystore_2_password: String,
 }
 
 impl IncredibleConfig {
@@ -146,6 +177,10 @@ impl IncredibleConfig {
         self.operator_config.operator_id = id;
     }
 
+    pub fn set_operator_2_id(&mut self, id: String) {
+        self.operator_config.operator_2_id = id;
+    }
+
     pub fn set_signer(&mut self, pvt_key: String) {
         self.rpc_config.signer = pvt_key;
     }
@@ -166,6 +201,14 @@ impl IncredibleConfig {
         self.ecdsa_config.keystore_password = password;
     }
 
+    pub fn set_ecdsa_keystore_2_path(&mut self, path: String) {
+        self.ecdsa_config.keystore_2_path = path;
+    }
+
+    pub fn set_ecdsa_keystore_2_pasword(&mut self, password: String) {
+        self.ecdsa_config.keystore_2_password = password;
+    }
+
     pub fn set_aggregator_ip_address(&mut self, port: String) {
         self.aggregator_config.ip_address = port;
     }
@@ -174,8 +217,16 @@ impl IncredibleConfig {
         self.bls_config.keystore_path = path;
     }
 
+    pub fn set_bls_keystore_2_path(&mut self, path: String) {
+        self.bls_config.keystore_2_path = path;
+    }
+
     pub fn set_bls_keystore_password(&mut self, password: String) {
         self.bls_config.keystore_password = password;
+    }
+
+    pub fn set_bls_keystore_2_password(&mut self, password: String) {
+        self.bls_config.keystore_2_password = password;
     }
 
     pub fn set_registry_coordinator_addr(&mut self, address: String) {
@@ -197,6 +248,10 @@ impl IncredibleConfig {
         self.operator_config.operator_address = address;
     }
 
+    pub fn set_operator_2_address(&mut self, address: String) {
+        self.operator_config.operator_2_address = address;
+    }
+
     pub fn set_operator_registration_sig_salt(&mut self, salt: String) {
         self.operator_registration_config
             .operator_to_avs_registration_sig_salt = salt;
@@ -214,6 +269,31 @@ impl IncredibleConfig {
         self.operator_registration_config.sig_expiry = expiry;
     }
 
+    pub fn set_operator_signing_key(&mut self, pvt_key: String) {
+        self.operator_registration_config.operator_pvt_key = Some(pvt_key);
+    }
+
+    pub fn set_operator_2_registration_sig_salt(&mut self, salt: String) {
+        self.operator_2_registration_config
+            .operator_to_avs_registration_sig_salt = salt;
+    }
+
+    pub fn set_operator_2_quorum_number(&mut self, quorum_num: String) {
+        self.operator_2_registration_config.quorum_number = quorum_num;
+    }
+
+    pub fn set_operator_2_socket(&mut self, socket: String) {
+        self.operator_2_registration_config.socket = socket;
+    }
+
+    pub fn set_operator_2_sig_expiry(&mut self, expiry: String) {
+        self.operator_2_registration_config.sig_expiry = expiry;
+    }
+
+    pub fn set_operator_2_signing_key(&mut self, pvt_key: String) {
+        self.operator_2_registration_config.operator_pvt_key = Some(pvt_key);
+    }
+
     pub fn set_avs_directory_address(&mut self, address: String) {
         self.el_config.avs_directory_addr = address;
     }
@@ -228,10 +308,6 @@ impl IncredibleConfig {
 
     pub fn set_task_manager_signer(&mut self, signer: String) {
         self.task_manager_config.signer = signer;
-    }
-
-    pub fn set_operator_signing_key(&mut self, pvt_key: String) {
-        self.operator_registration_config.operator_pvt_key = Some(pvt_key);
     }
 
     pub fn set_metrics_port_address(&mut self, port: String) {
@@ -278,8 +354,16 @@ impl IncredibleConfig {
         self.bls_config.keystore_path.clone()
     }
 
+    pub fn bls_keystore_2_path(&self) -> String {
+        self.bls_config.keystore_2_path.clone()
+    }
+
     pub fn bls_keystore_password(&self) -> String {
         self.bls_config.keystore_password.clone()
+    }
+
+    pub fn bls_keystore_2_password(&self) -> String {
+        self.bls_config.keystore_2_password.clone()
     }
 
     pub fn operator_address(&self) -> Result<Address, ConfigError> {
@@ -287,7 +371,12 @@ impl IncredibleConfig {
             .map_err(ConfigError::HexParse)
     }
 
-    pub fn get_operator_id(&self) -> Result<FixedBytes<32>, error::ConfigError> {
+    pub fn operator_2_address(&self) -> Result<Address, ConfigError> {
+        Address::from_hex(self.operator_config.operator_2_address.as_bytes())
+            .map_err(ConfigError::HexParse)
+    }
+
+    pub fn get_operator_id(&self) -> Result<OperatorId, error::ConfigError> {
         FixedBytes::from_hex(self.operator_config.operator_id.as_bytes())
             .map_err(ConfigError::HexParse)
     }
@@ -369,6 +458,38 @@ impl IncredibleConfig {
     pub fn operator_pvt_key(&self) -> Option<String> {
         self.operator_registration_config.operator_pvt_key.clone()
     }
+
+    pub fn operator_2_to_avs_registration_sig_salt(&self) -> Result<FixedBytes<32>, ConfigError> {
+        FixedBytes::<32>::from_str(
+            &self
+                .operator_2_registration_config
+                .operator_to_avs_registration_sig_salt,
+        )
+        .map_err(ConfigError::HexParse)
+    }
+
+    pub fn operator_2_quorum_number(&self) -> Result<Bytes, ConfigError> {
+        Bytes::from_str(&self.operator_2_registration_config.quorum_number)
+            .map_err(ConfigError::HexParse)
+    }
+
+    pub fn operator_2_socket(&self) -> &String {
+        &self.operator_2_registration_config.socket
+    }
+
+    pub fn operator_2_sig_expiry(&self) -> Result<U256, ConfigError> {
+        U256::from_str(&self.operator_2_registration_config.sig_expiry)
+            .map_err(ConfigError::ParseError)
+    }
+
+    pub fn operator_2_pvt_key(&self) -> Option<String> {
+        self.operator_2_registration_config.operator_pvt_key.clone()
+    }
+
+    pub fn get_operator_2_id(&self) -> Result<OperatorId, error::ConfigError> {
+        FixedBytes::from_hex(self.operator_config.operator_2_id.as_bytes())
+            .map_err(ConfigError::HexParse)
+    }
 }
 
 #[cfg(test)]
@@ -408,6 +529,8 @@ mod tests {
             let config = BlsConfig {
                 keystore_password: "djsfl".to_string(),
                 keystore_path: "fdshf".to_string(),
+                keystore_2_password: "34".to_string(),
+                keystore_2_path: "path".to_string(),
             };
             confy::store_path(config_path, &config).unwrap();
 
