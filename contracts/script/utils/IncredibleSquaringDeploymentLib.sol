@@ -22,6 +22,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
+import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
 import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
@@ -51,6 +52,7 @@ library IncredibleSquaringDeploymentLib {
         address blsapkRegistry;
         address indexRegistry;
         address stakeRegistry;
+        address socketRegistry;
         address strategy;
         address token;
     }
@@ -77,6 +79,7 @@ library IncredibleSquaringDeploymentLib {
         result.registryCoordinator = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
+        result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         OperatorStateRetriever operatorStateRetriever = new OperatorStateRetriever();
         result.strategy = strategy;
         result.operatorStateRetriever = address(operatorStateRetriever);
@@ -86,6 +89,8 @@ library IncredibleSquaringDeploymentLib {
                 IRegistryCoordinator(result.registryCoordinator), IDelegationManager(core.delegationManager)
             )
         );
+
+        address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address registryCoordinatorImpl = address(
@@ -94,7 +99,7 @@ library IncredibleSquaringDeploymentLib {
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
                 IIndexRegistry(result.indexRegistry),
-                ISocketRegistry(address(0))
+                ISocketRegistry(result.socketRegistry)
             )
         );
 
@@ -153,6 +158,7 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
         UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
         UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
+        UpgradeableProxyLib.upgrade(result.socketRegistry,socketRegistryImpl);
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
