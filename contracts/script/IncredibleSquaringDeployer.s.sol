@@ -38,14 +38,13 @@ import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 
 import {FundOperator} from "./utils/FundOperator.sol";
 // # To deploy and verify our contract
-// forge script script/CredibleSquaringDeployer.s.sol:CredibleSquaringDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
+// forge script script/IncredibleSquaringDeployer.s.sol:IncredibleSquaringDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
 
 contract IncredibleSquaringDeployer is Script {
     // DEPLOYMENT CONSTANTS
     uint256 public constant QUORUM_THRESHOLD_PERCENTAGE = 100;
     uint32 public constant TASK_RESPONSE_WINDOW_BLOCK = 30;
     uint32 public constant TASK_DURATION_BLOCKS = 0;
-    // TODO: right now hardcoding these (this address is anvil's default address 9)
     address public AGGREGATOR_ADDR;
     address public TASK_GENERATOR_ADDR;
     address public CONTRACTS_REGISTRY_ADDR;
