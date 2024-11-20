@@ -100,8 +100,6 @@ contract IncredibleSquaringDeployer is Script {
         CONTRACTS_REGISTRY_ADDR = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
         OPERATOR_ADDR = vm.envAddress("OPERATOR_ADDR");
         contractsRegistry = ContractsRegistry(CONTRACTS_REGISTRY_ADDR);
-        deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
-        vm.label(deployer, "Deployer");
 
         configData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
 

@@ -57,6 +57,11 @@ library IncredibleSquaringDeploymentLib {
         address token;
     }
 
+    struct IncredibleSquaringSetupConfig {
+        uint256 numQuorums;
+        uint256[] operatorParams;
+    }
+
     function deployContracts(
         address proxyAdmin,
         CoreDeploymentLib.DeploymentData memory core,
@@ -68,6 +73,8 @@ library IncredibleSquaringDeploymentLib {
         /// read EL deployment address
         CoreDeploymentLib.DeploymentData memory coredata =
             readCoreDeploymentJson("script/deployments/core/", block.chainid);
+
+        IncredibleSquaringSetupConfig memory isConfig = readIncredibleSquaringConfigJson("incredible_squaring_config");
         address avsdirectory = coredata.avsDirectory;
 
         DeploymentData memory result;
@@ -111,10 +118,10 @@ library IncredibleSquaringDeploymentLib {
         IStrategy[1] memory deployedStrategyArray = [IStrategy(strategy)];
         uint256 numStrategies = deployedStrategyArray.length;
 
-        uint256 numQuorums = vm.envUint("NUM_QUORUMS");
+        uint256 numQuorums = isConfig.numQuorums;
         IRegistryCoordinator.OperatorSetParam[] memory quorumsOperatorSetParams =
             new IRegistryCoordinator.OperatorSetParam[](numQuorums);
-        uint256[] memory operator_params = vm.envUint("OPERATOR_PARAMS", ",");
+        uint256[] memory operator_params = isConfig.operatorParams;
 
         for (uint256 i = 0; i < numQuorums; i++) {
             quorumsOperatorSetParams[i] = IRegistryCoordinator.OperatorSetParam({
@@ -187,6 +194,20 @@ library IncredibleSquaringDeploymentLib {
 
     function readDeploymentJson(uint256 chainId) internal returns (DeploymentData memory) {
         return readDeploymentJson("script/deployments/incredible-squaring/", chainId);
+    }
+
+    function readIncredibleSquaringConfigJson(string memory directoryPath)
+        internal
+        returns (IncredibleSquaringSetupConfig memory)
+    {
+        string memory fileName = string.concat(directoryPath, ".json");
+        require(vm.exists(fileName), "Deployment file does not exist");
+        string memory json = vm.readFile(fileName);
+
+        IncredibleSquaringSetupConfig memory data;
+        data.numQuorums = json.readUint(".num_quorums");
+        data.operatorParams = json.readUintArray(".operator_params");
+        return data;
     }
 
     function readDeploymentJson(string memory directoryPath, uint256 chainId)
