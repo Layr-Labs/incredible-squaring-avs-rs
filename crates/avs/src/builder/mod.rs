@@ -8,7 +8,7 @@ use incredible_operator::builder::OperatorBuilder;
 use incredible_operator_2::builder::OperatorBuilder as OperatorBuilder2;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use std::future::Future;
+use std::{future::Future, sync::Arc};
 use tracing::info;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
@@ -52,7 +52,11 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         incredible_metrics::new();
         // start operator
         let mut operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
-        let mut operator_builder2 = OperatorBuilder2::build(avs.config.clone()).await?;
+        let mut operator_builder2 = OperatorBuilder2::build(
+            avs.config.clone(),
+            Some(Arc::new(operator_builder.client.clone())),
+        )
+        .await?;
 
         let mut challenge = Challenger::build(avs.config.clone()).await?;
         let operator_service = operator_builder

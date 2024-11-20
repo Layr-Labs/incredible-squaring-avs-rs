@@ -5,15 +5,10 @@ pub mod error;
 /// Fake avs writer
 pub mod fake_avs_writer;
 
-use std::str::FromStr;
-
 use alloy::{
-    network::EthereumWallet,
     primitives::{Address, U256},
     rpc::types::TransactionReceipt,
-    signers::local::PrivateKeySigner,
 };
-use alloy_provider::ProviderBuilder;
 use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
 use eigen_utils::{
     get_provider, get_signer,
@@ -33,7 +28,6 @@ use incredible_bindings::{
     },
 };
 
-use reqwest::Url;
 use tracing::info;
 
 /// AvsWriter struct
@@ -172,15 +166,8 @@ impl AvsWriter {
         task_response: TaskResponse,
         non_signer_stakes_and_signature: NonSignerStakesAndSignature,
     ) -> Result<(), ChainIoError> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
-        let signer = PrivateKeySigner::from_str(&self.signer)?;
-        let wallet = EthereumWallet::new(signer);
-        let pr = ProviderBuilder::new()
-            .with_recommended_fillers()
-            .wallet(wallet)
-            .on_http(url);
+        let pr = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
-        info!("sending respond_to_task");
         let receipt = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
             .send()

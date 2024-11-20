@@ -53,6 +53,7 @@ pub struct Aggregator {
     bls_aggregation_service: BlsAggregatorService<
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
+    task_quorum: HashMap<u32, u32>,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
@@ -113,6 +114,7 @@ impl Aggregator {
             avs_writer,
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
+            task_quorum: HashMap::new(),
             bls_aggregation_service,
         })
     }
@@ -169,13 +171,14 @@ impl Aggregator {
                         ),
                         _ => return Err(Error::invalid_params("Expected a map")),
                     };
-
+                    info!("calling process_signed_task_response");
                     // Call the process_signed_task_response function
                     let result = aggregator
                         .lock()
                         .await
                         .process_signed_task_response(signed_task_response)
                         .await;
+                    info!("process_signed_task_response_result{:?}", result);
                     match result {
                         Ok(_) => Ok(Value::Bool(true)),
                         Err(_) => Err(Error::invalid_params("invalid")),
@@ -241,6 +244,12 @@ impl Aggregator {
                 quorum_nums.push(*val);
             }
 
+            info!("quorum_nums[0]{:?}", quorum_nums[0]);
+            info!(
+                "quorum_threhold_percentage[0]{:?}",
+                quorum_threshold_percentages[0]
+            );
+
             let time_to_expiry = tokio::time::Duration::from_secs(
                 (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
             );
@@ -278,6 +287,10 @@ impl Aggregator {
         &mut self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<(), AggregatorError> {
+        info!(
+            "received request for task response for index{:?}",
+            signed_task_response.task_response.referenceTaskIndex
+        );
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
         let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
@@ -305,18 +318,31 @@ impl Aggregator {
             )
             .await?;
         info!("processed signature for index {:?}", task_index);
+        let quorum_reached = {
+            let entry = self.task_quorum.entry(task_index).or_insert(0);
+            *entry += 1;
+            *entry >= 2
+        };
 
-        if let Some(aggregated_response) = self
-            .bls_aggregation_service
-            .aggregated_response_receiver
-            .lock()
-            .await
-            .recv()
-            .await
-        {
-            info!("sending aggregated response to contract");
-            self.send_aggregated_response_to_contract(aggregated_response?)
-                .await?;
+        if quorum_reached {
+            info!("quorum reached for task index: {:?}", task_index);
+            if let Some(aggregated_response) = self
+                .bls_aggregation_service
+                .aggregated_response_receiver
+                .lock()
+                .await
+                .recv()
+                .await
+            {
+                info!("sending aggregated response to contract");
+                self.send_aggregated_response_to_contract(aggregated_response?)
+                    .await?;
+            }
+        } else {
+            info!(
+                "quorum not reached yet for index:{:?}. waiting to receive more signatures ",
+                task_index
+            );
         }
         Ok(())
     }

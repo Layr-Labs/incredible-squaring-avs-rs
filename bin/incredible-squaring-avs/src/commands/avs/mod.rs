@@ -1,8 +1,8 @@
-use alloy::primitives::{address, Address, Bytes, FixedBytes, U256};
+use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
@@ -14,6 +14,7 @@ use eigen_testing_utils::anvil_constants::{
     ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
+use eigen_utils::get_provider;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -27,7 +28,7 @@ use std::net::SocketAddr;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::{debug, info};
+use tracing::debug;
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -463,6 +464,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.sig_expiry()?,
                 config.quorum_number()?,
                 config.socket().to_string(),
+                U256::from(5000),
             )
             .await;
 
@@ -483,8 +485,26 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.operator_2_sig_expiry()?,
                 config.operator_2_quorum_number()?,
                 config.operator_2_socket().to_string(),
+                U256::from(7000),
             )
             .await;
+
+            let current_block_number = get_provider(&rpc_url).get_block_number().await?;
+
+            fn mine_anvil_block(rpc_url: &str, blocks: u64) {
+                Command::new("cast")
+                    .args([
+                        "rpc",
+                        "anvil_mine",
+                        &blocks.to_string(),
+                        "--rpc-url",
+                        rpc_url,
+                    ])
+                    .stdout(Stdio::null())
+                    .output()
+                    .expect("Failed to execute command");
+            }
+            mine_anvil_block(&rpc_url, current_block_number);
         }
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
@@ -513,6 +533,7 @@ pub async fn register_operator_with_el_and_avs(
     operator_to_avs_registration_sig_expiry: U256,
     quorum_numbers: Bytes,
     socket: String,
+    deposit_tokens: U256,
 ) -> eyre::Result<()> {
     let signer;
     if let Some(operator_key) = operator_pvt_key {
@@ -563,7 +584,7 @@ pub async fn register_operator_with_el_and_avs(
     let _ = el_chain_writer
         .register_as_operator(operator_details)
         .await?;
-    deposit_into_strategy(erc20_strategy_address, U256::from(10000), el_chain_writer).await?;
+    deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
     let tx_hash = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             key_pair,
@@ -577,15 +598,6 @@ pub async fn register_operator_with_el_and_avs(
         "tx hash for registering operator in quorum with avs registry coordinator {:?}",
         tx_hash
     );
-
-    fn mine_anvil_block(rpc_url: &str) {
-        Command::new("cast")
-            .args(["rpc", "anvil_mine", "120", "--rpc-url", rpc_url])
-            .stdout(Stdio::null())
-            .output()
-            .expect("Failed to execute command");
-    }
-    mine_anvil_block(&rpc_url);
 
     Ok(())
 }

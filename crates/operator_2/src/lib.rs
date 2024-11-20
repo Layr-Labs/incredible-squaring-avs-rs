@@ -3,6 +3,3 @@
 pub mod builder;
 /// Error
 pub mod error;
-
-/// Alloy Rpc Client
-pub mod client;

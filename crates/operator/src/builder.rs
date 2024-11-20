@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::client::ClientAggregator;
 use crate::error::OperatorError;
 use alloy::{
@@ -39,7 +41,7 @@ pub struct OperatorBuilder {
 
     operator_id: OperatorId,
 
-    client: ClientAggregator,
+    pub client: ClientAggregator,
 
     registry_coordinator: Address,
 
@@ -61,13 +63,15 @@ impl OperatorBuilder {
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
         let operator_address = config.operator_address()?;
+        let mut client = ClientAggregator::new(config.aggregator_ip_addr());
+        let _ = client.dial_aggregator_rpc_client();
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
             ws_rpc_url: config.ws_rpc_url(),
             operator_addr: operator_address,
             key_pair,
             operator_id,
-            client: ClientAggregator::new(config.aggregator_ip_addr()),
+            client,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
         })
@@ -108,12 +112,11 @@ impl OperatorBuilder {
         )
         .await
         .unwrap();
-        info!("operator{}", self.operator_addr);
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr)
             .await?;
-        info!("is_operator_registered {}", is_registered);
-        let _ = self.client.dial_aggregator_rpc_client();
+        info!("is_operator1_registered {}", is_registered);
+        let arc_client = Arc::new(self.client.clone());
         if is_registered {
             info!("Starting operator");
 
@@ -134,12 +137,14 @@ impl OperatorBuilder {
                         task: data.task.clone(),
                         taskIndex: data.taskIndex,
                     };
-                    info!("operator picked up a new task , index: {} ", data.taskIndex);
+                    info!(
+                        "operator1 picked up a new task , index: {} ",
+                        data.taskIndex
+                    );
                     incredible_metrics::increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
                     let signed_task_response = self.sign_task_response(task_response)?;
-                    let _ = self
-                        .client
+                    let _ = arc_client
                         .send_signed_task_response(signed_task_response)
                         .await;
                 }
@@ -169,8 +174,6 @@ mod tests {
     use super::*;
     use alloy::primitives::Bytes;
     use alloy::primitives::U256;
-    use ark_ec::AffineRepr;
-    use ark_ff::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
     use incredible_testing_utils::{

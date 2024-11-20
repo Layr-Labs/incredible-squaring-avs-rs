@@ -8,10 +8,10 @@ use std::collections::HashMap;
 /// Challenger Error
 pub mod error;
 mod fake_challenger;
+use alloy::providers::Provider;
 use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::rpc::types::{Log, TransactionReceipt};
 use alloy::sol_types::{SolCall, SolEvent};
-use alloy_provider::Provider;
 use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;

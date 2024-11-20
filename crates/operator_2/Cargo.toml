@@ -18,6 +18,7 @@ thiserror.workspace = true
 incredible-bindings.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
+incredible-operator.workspace = true
 
 # eigen-rs
 eigen-client-avsregistry.workspace = true

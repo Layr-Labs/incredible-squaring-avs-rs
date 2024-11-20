@@ -37,7 +37,6 @@ impl ClientAggregator {
         &self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<()> {
-        info!("Received signed task response");
         #[allow(unused_mut)]
         let mut delay = Duration::from_secs(1);
 
@@ -50,7 +49,8 @@ impl ClientAggregator {
             if let Some(request) = self.client.as_ref() {
                 let s: bool = request
                     .request("process_signed_task_response", params)
-                    .await?;
+                    .await
+                    .unwrap();
                 if s {
                     incredible_metrics::inc_num_tasks_accepted_by_aggregator();
                     return Ok(());

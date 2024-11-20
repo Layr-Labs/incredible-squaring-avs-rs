@@ -1,4 +1,5 @@
-use crate::client::ClientAggregator;
+use std::sync::Arc;
+
 use crate::error::OperatorError;
 use alloy::{
     primitives::{keccak256, Address},
@@ -6,6 +7,7 @@ use alloy::{
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
+use incredible_operator::client::ClientAggregator;
 
 #[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
@@ -39,7 +41,7 @@ pub struct OperatorBuilder {
 
     operator_id: OperatorId,
 
-    client: ClientAggregator,
+    client: Option<Arc<ClientAggregator>>,
 
     registry_coordinator: Address,
 
@@ -48,7 +50,10 @@ pub struct OperatorBuilder {
 
 impl OperatorBuilder {
     /// Build the Operator Builder
-    pub async fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
+    pub async fn build(
+        config: IncredibleConfig,
+        client: Option<Arc<ClientAggregator>>,
+    ) -> Result<Self, OperatorError> {
         let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url()).await;
         // Read BlsKey from path
         let keystore = Keystore::from_file(&config.bls_keystore_2_path())?
@@ -67,7 +72,7 @@ impl OperatorBuilder {
             operator_addr: operator_address,
             key_pair,
             operator_id,
-            client: ClientAggregator::new(config.aggregator_ip_addr()),
+            client,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
         })
@@ -108,12 +113,10 @@ impl OperatorBuilder {
         )
         .await
         .unwrap();
-        info!("operator{}", self.operator_addr);
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr)
             .await?;
-        info!("is_operator_registered {}", is_registered);
-        let _ = self.client.dial_aggregator_rpc_client();
+        info!("is_operator2_registered {}", is_registered);
         if is_registered {
             info!("Starting operator");
 
@@ -141,10 +144,9 @@ impl OperatorBuilder {
                     incredible_metrics::increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
                     let signed_task_response = self.sign_task_response(task_response)?;
-                    let _ = self
-                        .client
-                        .send_signed_task_response(signed_task_response)
-                        .await;
+                    if let Some(client) = &self.client {
+                        let _ = client.send_signed_task_response(signed_task_response).await;
+                    }
                 }
             }
         }
@@ -216,7 +218,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
 
         assert_eq!(
             U256::from_limbs(
@@ -260,7 +264,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
 
         let task_response = operator_builder.process_new_task(new_task_created);
 
@@ -282,7 +288,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let _ = OperatorBuilder::build(incredible_config).await.unwrap();
+        let _ = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -304,7 +312,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
         let signed_task_response = operator_builder
             .sign_task_response(task_response.clone())
             .unwrap();
