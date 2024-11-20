@@ -575,6 +575,8 @@ mod tests {
         let config_file = r#"
         operator_address = "https://localhost:3001"
         operator_id = "0x0202020202020202020202020202020202020202020202020202020202020202"
+        operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
+        operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"    
         "#;
 
         let _config: OperatorConfig = toml::from_str(config_file).unwrap();

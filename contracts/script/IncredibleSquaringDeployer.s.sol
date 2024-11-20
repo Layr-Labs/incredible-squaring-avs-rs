@@ -104,7 +104,7 @@ contract IncredibleSquaringDeployer is Script {
         contractsRegistry = ContractsRegistry(CONTRACTS_REGISTRY_ADDR);
         deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.label(deployer, "Deployer");
-
+        vm.deal(OPERATOR_2_ADDR,0.1 ether);
         configData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
 
         erc20Mock = new MockERC20();
