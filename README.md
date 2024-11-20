@@ -15,8 +15,9 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 anvil
 ```
 
-- Copy env vars
+- git submodule and copy env vars
 ```sh
+git submodule update --init --recursive
 cp contracts/.env.example contracts/.env
 ```
 
