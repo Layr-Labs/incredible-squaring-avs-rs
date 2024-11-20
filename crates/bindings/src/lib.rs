@@ -1,19 +1,7 @@
 //! Bindings for the Incredible Squaring contracts
-use alloy::sol;
-use serde::{Deserialize, Serialize};
 
-sol!(
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    #[derive(Debug, Serialize, Deserialize)]
-    IncredibleSquaringTaskManager,
-    "IncredibleSquaringTaskManager.json"
-);
+#[allow(clippy::all, clippy::pedantic, unused_imports)]
+pub mod incrediblesquaringservicemanager;
 
-sol!(
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    #[derive(Debug, Serialize, Deserialize)]
-    IncredibleSquaringServiceManager,
-    "IncredibleSquaringServiceManager.json"
-);
+#[allow(clippy::all, clippy::pedantic, unused_imports)]
+pub mod incrediblesquaringtaskmanager;

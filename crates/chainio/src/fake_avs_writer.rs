@@ -1,10 +1,12 @@
+use crate::error::ChainIoError;
 use alloy::primitives::{Address, TxHash};
 use eigen_utils::get_signer;
-use incredible_bindings::IncredibleSquaringTaskManager::{
-    self, G1Point, Task, TaskResponse, TaskResponseMetadata,
+use incredible_bindings::incrediblesquaringtaskmanager::{
+    IBLSSignatureChecker::NonSignerStakesAndSignature,
+    IIncredibleSquaringTaskManager::{Task, TaskResponse, TaskResponseMetadata},
+    IncredibleSquaringTaskManager,
+    BN254::G1Point,
 };
-
-use crate::error::ChainIoError;
 
 /// AvsWriter struct
 #[derive(Debug, Clone)]
@@ -26,9 +28,10 @@ impl FakeAvsWriter {
         task_response_metadata: TaskResponseMetadata,
         pub_keys_of_non_signing_operators: Vec<G1Point>,
     ) -> Result<TxHash, ChainIoError> {
-        let signer = get_signer(self.signer.clone(), &self.rpc_url);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
+
         let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
@@ -43,9 +46,7 @@ impl FakeAvsWriter {
 
                 match receipt_result {
                     Ok(receipts) => Ok(receipts.transaction_hash),
-                    Err(e) => Err(ChainIoError::AlloyContractError(
-                        alloy::contract::Error::TransportError(e),
-                    )),
+                    Err(e) => Err(ChainIoError::AlloyProviderError(e)),
                 }
             }
 
@@ -60,16 +61,16 @@ impl FakeAvsWriter {
     /// Send the aggregated response
     /// task -  [`Task`]
     /// task_response - [`TaskResponse`]
-    /// non_signer_stakes_and_signature - [`IncredibleSquaringTaskManager::NonSignerStakesAndSignature`]
+    /// non_signer_stakes_and_signature - [`NonSignerStakesAndSignature`]
     pub async fn send_aggregated_response(
         &self,
         task: Task,
         task_response: TaskResponse,
-        non_signer_stakes_and_signature: IncredibleSquaringTaskManager::NonSignerStakesAndSignature,
-    ) {
-        let signer = get_signer(self.signer.clone(), &self.rpc_url);
+        non_signer_stakes_and_signature: NonSignerStakesAndSignature,
+    ) -> eyre::Result<()> {
+        let wallet = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let _ = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
@@ -78,5 +79,6 @@ impl FakeAvsWriter {
             .unwrap()
             .get_receipt()
             .await;
+        Ok(())
     }
 }

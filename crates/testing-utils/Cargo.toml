@@ -14,3 +14,4 @@ workspace = true
 eigen-utils.workspace = true
 eigen-testing-utils.workspace = true
 alloy.workspace = true
+tracing.workspace = true

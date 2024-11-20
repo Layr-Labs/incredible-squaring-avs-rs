@@ -2,7 +2,7 @@ use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_client_avsregistry::{reader::AvsRegistryChainReader, writer::AvsRegistryChainWriter};
+use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
 use eigen_crypto_bls::BlsKeyPair;
@@ -35,7 +35,6 @@ pub struct NoArgs;
 
 use std::path::PathBuf;
 
-//const ANVIL_HTTP_UR: &str = "http://localhost:8545";
 /// Starts incredible squaring
 #[derive(Debug, Parser)]
 pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
@@ -363,7 +362,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
-
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
@@ -421,6 +419,7 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
+
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
         rpc_url.clone(),
@@ -430,18 +429,9 @@ pub async fn register_operator_with_el_and_avs(
     )
     .await?;
 
-    let avs_reader = AvsRegistryChainReader::new(
-        get_logger(),
-        registry_coordinator_address,
-        operator_state_retriever_address,
-        rpc_url.clone(),
-    )
-    .await?;
-
     // Read BlsKey from path
     let keystore = Keystore::from_file(bls_keystore_path)?.decrypt(bls_keystore_password)?;
     let fr_key: String = keystore.iter().map(|&value| value as char).collect();
-
     let key_pair = BlsKeyPair::new(fr_key)?;
     let el_chain_reader = ELChainReader::new(
         get_logger(),
@@ -453,6 +443,7 @@ pub async fn register_operator_with_el_and_avs(
     let el_chain_writer = ELChainWriter::new(
         delegation_manager_address,
         strategy_manager_address,
+        Address::ZERO,
         el_chain_reader.clone(),
         rpc_url.clone(),
         hex::encode(s).to_string(),
@@ -465,17 +456,17 @@ pub async fn register_operator_with_el_and_avs(
         staker_opt_out_window_blocks: 200,
         metadata_url: Some("url".to_string()),
     };
+
     let _ = el_chain_writer
         .register_as_operator(operator_details)
         .await?;
-
     deposit_into_strategy(erc20_strategy_address, U256::from(10000), el_chain_writer).await?;
     let tx_hash = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             key_pair,
             operator_to_avs_registration_sig_salt,
             operator_to_avs_registration_sig_expiry,
-            quorum_numbers,
+            quorum_numbers.clone(),
             socket,
         )
         .await?;
@@ -483,9 +474,6 @@ pub async fn register_operator_with_el_and_avs(
         "tx hash for registering operator in quorum with avs registry coordinator {:?}",
         tx_hash
     );
-
-    let s = avs_reader.is_operator_registered(signer.address()).await?;
-    info!("is operator registered :{:?}", s);
 
     fn mine_anvil_block(rpc_url: &str) {
         Command::new("cast")
@@ -514,6 +502,6 @@ pub async fn deposit_into_strategy(
 ) -> Result<(), ElContractsError> {
     let _ = el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
-        .await?;
+        .await;
     Ok(())
 }

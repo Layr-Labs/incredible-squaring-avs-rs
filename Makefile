@@ -1,34 +1,48 @@
-PHONY:reset-anvil
-.PHONY: integration-tests
-
-deploy-avs-save-anvil-state:
-	./contracts/anvil/deploy-avs-save-anvil-state.sh
-
-deploy-contracts-save-anvil-state:
-	./contracts/anvil/deploy-contracts-save-anvil-state.sh
-
-start-anvil-chain-with-el-and-avs-deployed: 
-	./contracts/anvil/start-anvil-chain-with-el-and-avs-deployed.sh
+PHONY: deploy-el-and-avs-contracts
+PHONY: reset-anvil
+PHONY: integration-tests
 
 
-start-anvil: reset-anvil ## 
-			 $(MAKE) start-anvil-chain-with-el-and-avs-deployed
-			 docker start anvil
+deploy-avs:
+	./contracts/anvil/deploy-avs.sh
+
+deploy-eigenlayer:
+	./contracts/anvil/deploy-eigenlayer.sh
+
+deploy-el-and-avs-contracts:
+	$(MAKE) deploy-eigenlayer
+	$(MAKE) deploy-avs
+
 
 __TESTING__: ##
 
-reset-anvil:
+reset_anvil:
 	-docker stop anvil
-	-docker rm anvil
+	-docker rm anvil 
+
+
+start_docker:
+	$(MAKE) reset_anvil
+	docker run -d --name anvil -p 8545:8545 --entrypoint anvil \
+		ghcr.io/foundry-rs/foundry:nightly-5b7e4cb3c882b28f3c32ba580de27ce7381f415a --host 0.0.0.0
+	sleep 2
 
 pr: 
-	$(MAKE) start-anvil > /dev/null &
-	sleep 4 
-	cargo test --workspace
-	cargo clippy --workspace --lib --examples --tests --benches --all-features
+	$(MAKE) start_docker
+	$(MAKE) deploy-el-and-avs-contracts
+	cargo test --workspace --exclude incredible-bindings
+	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
 	cargo fmt -- --check
-	docker stop anvil
 
-integration-tests: 
-				   $(MAKE) start-anvil > /dev/null 
-				   cargo test --manifest-path ./integration-tests/Cargo.toml
+clippy:
+	   cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
+
+integration_tests:
+				  $(MAKE) start_docker
+				  $(MAKE) deploy-el-and-avs-contracts
+				  cargo test --manifest-path ./integration-tests/Cargo.toml
+
+fmt: 
+	cargo fmt
+	cd contracts && forge fmt
+	cd ..

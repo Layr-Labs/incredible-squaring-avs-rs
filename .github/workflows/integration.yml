@@ -21,7 +21,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run cargo check
-        run: cargo check --workspace --all-features --all-targets
+        run: cargo check --workspace --all-features --all-targets --exclude incredible-bindings
 
   lint:
     name: Run Lints
@@ -42,7 +42,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --workspace --all-features --benches --examples --tests -- -D warnings
+        run: cargo clippy --workspace --all-features --benches --examples --tests -- -D warnings 
 
   test:
     name: Run Tests
@@ -50,6 +50,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -70,11 +73,16 @@ jobs:
           cache-on-failure: true
 
       - name: Install Foundry
-        run: cargo install --git https://github.com/foundry-rs/foundry --profile release --locked cast anvil
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Submodule update
+        run: git submodule update --init --recursive
+
+      - name: Copy .env.example to .env
+        run: cp contracts/.env.example contracts/.env
 
       - name: docker
         uses: docker-practice/actions-setup-docker@master
-
       - name: Run unit tests
         run: make pr
 

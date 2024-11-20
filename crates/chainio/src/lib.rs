@@ -5,20 +5,35 @@ pub mod error;
 /// Fake avs writer
 pub mod fake_avs_writer;
 
+use std::str::FromStr;
+
 use alloy::{
+    network::EthereumWallet,
     primitives::{Address, U256},
     rpc::types::TransactionReceipt,
+    signers::local::PrivateKeySigner,
 };
+use alloy_provider::ProviderBuilder;
 use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
 use eigen_utils::{
-    binding::RegistryCoordinator::{self, serviceManagerReturn},
     get_provider, get_signer,
+    registrycoordinator::RegistryCoordinator::{self, serviceManagerReturn},
 };
 use error::ChainIoError;
-use incredible_bindings::{
-    IncredibleSquaringServiceManager::{self, incredibleSquaringTaskManagerReturn},
-    IncredibleSquaringTaskManager::{self, G1Point, Task, TaskResponse, TaskResponseMetadata},
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
+    Task, TaskResponse, TaskResponseMetadata,
 };
+use incredible_bindings::{
+    incrediblesquaringservicemanager::IncredibleSquaringServiceManager::{
+        self, incredibleSquaringTaskManagerReturn,
+    },
+    incrediblesquaringtaskmanager::{
+        IBLSSignatureChecker::NonSignerStakesAndSignature, IncredibleSquaringTaskManager,
+        BN254::G1Point,
+    },
+};
+
+use reqwest::Url;
 use tracing::info;
 
 /// AvsWriter struct
@@ -72,9 +87,9 @@ impl AvsWriter {
         quorum_threshold_percentages: QuorumThresholdPercentage,
         quorum_nums: Vec<QuorumNum>,
     ) -> Result<(TransactionReceipt, u32), ChainIoError> {
-        let signer = get_signer(self.signer.clone(), &self.rpc_url);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let create_new_task_call = task_manager_contract.createNewTask(
             num_to_square,
@@ -105,12 +120,10 @@ impl AvsWriter {
                         }
                     }
 
-                    Err(e) => Err(ChainIoError::AlloyContractError(
-                        alloy::contract::Error::TransportError(e),
-                    )),
+                    Err(e) => Err(ChainIoError::AlloyProviderError(e)),
                 }
             }
-            Err(e) => Err(ChainIoError::AlloyContractError(e)),
+            Err(e) => Err(ChainIoError::ContractError(e)),
         }
     }
 
@@ -122,10 +135,9 @@ impl AvsWriter {
         task_response_metadata: TaskResponseMetadata,
         pub_keys_of_non_signing_operators: Vec<G1Point>,
     ) -> Result<alloy::rpc::types::TransactionReceipt, ChainIoError> {
-        info!("raised challenge , task {:?}, task_response: {:?}, pub_keys_of_non_signing_operators {:?}", task, task_response, pub_keys_of_non_signing_operators);
-        let signer = get_signer(self.signer.clone(), &self.rpc_url);
+        let wallet = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+            IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
 
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
@@ -139,13 +151,11 @@ impl AvsWriter {
                 let receipt_result = challenge_tx.get_receipt().await;
                 match receipt_result {
                     Ok(receipts) => Ok(receipts),
-                    Err(e) => Err(ChainIoError::AlloyContractError(
-                        alloy::contract::Error::TransportError(e),
-                    )),
+                    Err(e) => Err(ChainIoError::AlloyProviderError(e)),
                 }
             }
 
-            Err(e) => Err(ChainIoError::AlloyContractError(e)),
+            Err(e) => Err(ChainIoError::ContractError(e)),
         }
     }
 
@@ -160,11 +170,16 @@ impl AvsWriter {
         &self,
         task: Task,
         task_response: TaskResponse,
-        non_signer_stakes_and_signature: IncredibleSquaringTaskManager::NonSignerStakesAndSignature,
+        non_signer_stakes_and_signature: NonSignerStakesAndSignature,
     ) -> Result<(), ChainIoError> {
-        let signer = get_signer(self.signer.clone(), &self.rpc_url);
-        let task_manager_contract =
-            IncredibleSquaringTaskManager::new(self.task_manager_addr, signer);
+        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let signer = PrivateKeySigner::from_str(&self.signer)?;
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new()
+            .with_recommended_fillers()
+            .wallet(wallet)
+            .on_http(url);
+        let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
         info!("sending respond_to_task");
         let receipt = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)

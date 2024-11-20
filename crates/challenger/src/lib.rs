@@ -1,5 +1,9 @@
 //! Challenger crate
 use eigen_utils::{get_provider, get_ws_provider};
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
+    Task, TaskResponse, TaskResponseMetadata,
+};
+use incredible_bindings::incrediblesquaringtaskmanager::BN254::G1Point;
 use std::collections::HashMap;
 /// Challenger Error
 pub mod error;
@@ -11,9 +15,8 @@ use alloy_provider::Provider;
 use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
-use incredible_bindings::IncredibleSquaringTaskManager::{
-    respondToTaskCall, G1Point, NewTaskCreated, Task, TaskResponded, TaskResponse,
-    TaskResponseMetadata,
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
+    respondToTaskCall, NewTaskCreated, TaskResponded,
 };
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
