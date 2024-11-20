@@ -60,21 +60,23 @@ library IncredibleSquaringDeploymentLib {
     struct IncredibleSquaringSetupConfig {
         uint256 numQuorums;
         uint256[] operatorParams;
+        address operator_addr;
+        address contracts_registry_addr;
+        address task_generator_addr;
+        address aggregator_addr;
     }
 
     function deployContracts(
         address proxyAdmin,
         CoreDeploymentLib.DeploymentData memory core,
         address strategy,
-        address aggregator,
-        address taskgenerator,
+        IncredibleSquaringSetupConfig memory isConfig,
         address admin
     ) internal returns (DeploymentData memory) {
         /// read EL deployment address
         CoreDeploymentLib.DeploymentData memory coredata =
             readCoreDeploymentJson("script/deployments/core/", block.chainid);
 
-        IncredibleSquaringSetupConfig memory isConfig = readIncredibleSquaringConfigJson("incredible_squaring_config");
         address avsdirectory = coredata.avsDirectory;
 
         DeploymentData memory result;
@@ -181,7 +183,7 @@ library IncredibleSquaringDeploymentLib {
         );
         bytes memory taskmanagerupgradecall = abi.encodeCall(
             IncredibleSquaringTaskManager.initialize,
-            (IPauserRegistry(address(pausercontract)), admin, aggregator, taskgenerator)
+            (IPauserRegistry(address(pausercontract)), admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
@@ -207,6 +209,10 @@ library IncredibleSquaringDeploymentLib {
         IncredibleSquaringSetupConfig memory data;
         data.numQuorums = json.readUint(".num_quorums");
         data.operatorParams = json.readUintArray(".operator_params");
+        data.aggregator_addr = json.readAddress(".aggregator_addr");
+        data.contracts_registry_addr = json.readAddress(".contracts_registry_addr");
+        data.operator_addr = json.readAddress(".operator_addr");
+        data.task_generator_addr = json.readAddress(".task_generator_addr");
         return data;
     }
 

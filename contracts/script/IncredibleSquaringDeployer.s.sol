@@ -95,16 +95,19 @@ contract IncredibleSquaringDeployer is Script {
     function run() external {
         // Eigenlayer contracts
         vm.startBroadcast(deployer);
-        AGGREGATOR_ADDR = vm.envAddress("AGGREGATOR_ADDR");
-        TASK_GENERATOR_ADDR = vm.envAddress("TASK_GENERATOR_ADDR");
-        CONTRACTS_REGISTRY_ADDR = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
-        OPERATOR_ADDR = vm.envAddress("OPERATOR_ADDR");
-        contractsRegistry = ContractsRegistry(CONTRACTS_REGISTRY_ADDR);
+        IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig memory isConfig =
+            IncredibleSquaringDeploymentLib.readIncredibleSquaringConfigJson("incredible_squaring_config");
+
+        // AGGREGATOR_ADDR = vm.envAddress("AGGREGATOR_ADDR");
+        // TASK_GENERATOR_ADDR = vm.envAddress("TASK_GENERATOR_ADDR");
+        // CONTRACTS_REGISTRY_ADDR = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
+        // OPERATOR_ADDR = vm.envAddress("OPERATOR_ADDR");
+        // contractsRegistry = ContractsRegistry(CONTRACTS_REGISTRY_ADDR);
 
         configData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
 
         erc20Mock = new MockERC20();
-        FundOperator.fund_operator(address(erc20Mock), OPERATOR_ADDR, 10e18);
+        FundOperator.fund_operator(address(erc20Mock), isConfig.operator_addr, 10e18);
 
         incredibleSquaringStrategy = IStrategy(StrategyFactory(configData.strategyFactory).deployNewStrategy(erc20Mock));
         rewardscoordinator = configData.rewardsCoordinator;
@@ -113,12 +116,7 @@ contract IncredibleSquaringDeployer is Script {
         require(address(incredibleSquaringStrategy) != address(0));
         require(address(incredibleSquaringStrategy) != address(0));
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin,
-            configData,
-            address(incredibleSquaringStrategy),
-            AGGREGATOR_ADDR,
-            TASK_GENERATOR_ADDR,
-            msg.sender
+            proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
 
         IncredibleSquaringDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
