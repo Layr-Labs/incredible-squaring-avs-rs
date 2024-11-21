@@ -5,15 +5,10 @@ pub mod error;
 /// Fake avs writer
 pub mod fake_avs_writer;
 
-use std::str::FromStr;
-
 use alloy::{
-    network::EthereumWallet,
     primitives::{Address, U256},
     rpc::types::TransactionReceipt,
-    signers::local::PrivateKeySigner,
 };
-use alloy_provider::ProviderBuilder;
 use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
 use eigen_utils::{
     get_provider, get_signer,

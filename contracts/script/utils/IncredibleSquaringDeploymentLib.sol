@@ -61,6 +61,7 @@ library IncredibleSquaringDeploymentLib {
         uint256 numQuorums;
         uint256[] operatorParams;
         address operator_addr;
+        address operator_2_addr;
         address contracts_registry_addr;
         address task_generator_addr;
         address aggregator_addr;
@@ -212,6 +213,7 @@ library IncredibleSquaringDeploymentLib {
         data.contracts_registry_addr = json.readAddress(".contracts_registry_addr");
         data.operator_addr = json.readAddress(".operator_addr");
         data.task_generator_addr = json.readAddress(".task_generator_addr");
+        data.operator_2_addr = json.readAddress(".operator_2_addr");
         return data;
     }
 

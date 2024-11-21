@@ -11,7 +11,7 @@ parent_path=$(
 cd "$parent_path"
 
 cd ../
-forge script script/IncredibleSquaringDeployer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
+forge script script/IncredibleSquaringDeployer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast 
 
 forge script script/ContractsRegistry.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
 

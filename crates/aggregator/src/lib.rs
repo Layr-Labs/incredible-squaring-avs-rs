@@ -171,14 +171,12 @@ impl Aggregator {
                         ),
                         _ => return Err(Error::invalid_params("Expected a map")),
                     };
-                    info!("calling process_signed_task_response");
                     // Call the process_signed_task_response function
                     let result = aggregator
                         .lock()
                         .await
                         .process_signed_task_response(signed_task_response)
                         .await;
-                    info!("process_signed_task_response_result{:?}", result);
                     match result {
                         Ok(_) => Ok(Value::Bool(true)),
                         Err(_) => Err(Error::invalid_params("invalid")),
@@ -224,8 +222,6 @@ impl Aggregator {
         let mut stream = sub.into_stream();
 
         while let Some(log) = stream.next().await {
-            info!("received new task created in aggregator ");
-
             let NewTaskCreated { taskIndex, task } = log.log_decode()?.inner.data;
 
             aggregator
@@ -244,16 +240,9 @@ impl Aggregator {
                 quorum_nums.push(*val);
             }
 
-            info!("quorum_nums[0]{:?}", quorum_nums[0]);
-            info!(
-                "quorum_threhold_percentage[0]{:?}",
-                quorum_threshold_percentages[0]
-            );
-
             let time_to_expiry = tokio::time::Duration::from_secs(
                 (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
             );
-            info!("initializing new task in bls aggregation service");
             let _ = aggregator
                 .lock()
                 .await
@@ -267,8 +256,6 @@ impl Aggregator {
                 )
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
-
-            info!("initialized new task in bls aggregation service");
         }
 
         Ok(())
@@ -287,10 +274,6 @@ impl Aggregator {
         &mut self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<(), AggregatorError> {
-        info!(
-            "received request for task response for index{:?}",
-            signed_task_response.task_response.referenceTaskIndex
-        );
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
         let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
