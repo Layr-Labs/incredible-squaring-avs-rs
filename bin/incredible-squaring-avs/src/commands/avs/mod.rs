@@ -542,6 +542,7 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
+
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
         rpc_url.clone(),

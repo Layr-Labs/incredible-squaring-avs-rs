@@ -1,34 +1,37 @@
-// // SPDX-License-Identifier: UNLICENSED
-// pragma solidity ^0.8.12;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.12;
 
+import {Vm} from "forge-std/Vm.sol";
+import {ContractsRegistry} from "../../src/ContractsRegistry.sol";
+import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
+import {IncredibleSquaringDeploymentLib} from "./IncredibleSquaringDeploymentLib.sol";
 
-// import {ContractsRegistry} from "../../src/ContractsRegistry.sol";
-// import "forge-std/console.sol";
-// import "forge-std/console2.sol";
-// import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
-// import {IncredibleSquaringDeploymentLib} from "./IncredibleSquaringDeploymentLib.sol";
-// import {Vm} from "forge-std/Vm.sol";
-// import {WriteToContractsRegistryLib} from "./WriteToContractsRegistryLib.sol";
+library WriteToContractsRegistryLib {
+    function writeCoreContractsToRegistry(
+        address contracts_registry_addr,
+        CoreDeploymentLib.DeploymentData memory deploymentdata
+    ) internal {
+        ContractsRegistry contractsRegistry = ContractsRegistry(contracts_registry_addr);
+        contractsRegistry.registerContract("delegationManager", address(deploymentdata.delegationManager));
+        contractsRegistry.registerContract("strategyManager", address(deploymentdata.strategyManager));
+        contractsRegistry.registerContract("avsDirectory", address(deploymentdata.avsDirectory));
+    }
 
+    function writeIncredibleSquaringContractsToRegistry(
+        address contracts_registry_addr,
+        IncredibleSquaringDeploymentLib.DeploymentData memory deploymentdata
+    ) internal {
+        ContractsRegistry contractsRegistry = ContractsRegistry(contracts_registry_addr);
 
-// library WriteToContractsRegistryLib {
-
-//   Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
-//    CoreDeploymentLib.DeploymentData internal coreConfigData;
-//     IncredibleSquaringDeploymentLib.DeploymentData internal avsConfigData;
-    
-//   struct ContractsRegistryConfig{
-
-//     address contractsRegistry;
-
-//   }
-//     function writeContractsToRegistry() internal {
-//         address CONTRACT_REGISTRY = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
-//         ContractsRegistryConfig memory registryConfig = ContractsRegistryConfig({contractsRegistry:CONTRACT_REGISTRY});
-//            coreConfigData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", "31337.json");
-//         avsConfigData =
-//             IncredibleSquaringDeploymentLib.readDeploymentJson("script/deployments/incredible-squaring/", block.chainid);
-//     }
-
-
-// }
+        contractsRegistry.registerContract(
+            "incredible_squaring_task_manager", address(deploymentdata.incredibleSquaringTaskManager)
+        );
+        contractsRegistry.registerContract("erc20MockStrategy", address(deploymentdata.strategy));
+        contractsRegistry.registerContract(
+            "incredible_squaring_registry_coordinator", address(deploymentdata.registryCoordinator)
+        );
+        contractsRegistry.registerContract(
+            "incredible_squaring_operator_state_retriever", address(deploymentdata.operatorStateRetriever)
+        );
+    }
+}

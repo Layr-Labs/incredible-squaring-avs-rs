@@ -38,7 +38,7 @@ import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 
 import {FundOperator} from "./utils/FundOperator.sol";
 // # To deploy and verify our contract
-// forge script script/CredibleSquaringDeployer.s.sol:CredibleSquaringDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
+// forge script script/IncredibleSquaringDeployer.s.sol:IncredibleSquaringDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
 
 contract IncredibleSquaringDeployer is Script {
     // DEPLOYMENT CONSTANTS
@@ -49,7 +49,6 @@ contract IncredibleSquaringDeployer is Script {
     address public TASK_GENERATOR_ADDR;
     address public CONTRACTS_REGISTRY_ADDR;
     address public OPERATOR_ADDR;
-    address public OPERATOR_2_ADDR;
     ContractsRegistry contractsRegistry;
 
     StrategyBaseTVLLimits public erc20MockStrategy;
@@ -96,33 +95,28 @@ contract IncredibleSquaringDeployer is Script {
     function run() external {
         // Eigenlayer contracts
         vm.startBroadcast(deployer);
-        AGGREGATOR_ADDR = vm.envAddress("AGGREGATOR_ADDR");
-        TASK_GENERATOR_ADDR = vm.envAddress("TASK_GENERATOR_ADDR");
-        CONTRACTS_REGISTRY_ADDR = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
-        OPERATOR_ADDR = vm.envAddress("OPERATOR_ADDR");
-        OPERATOR_2_ADDR = vm.envAddress("OPERATOR_2_ADDR");
-        contractsRegistry = ContractsRegistry(CONTRACTS_REGISTRY_ADDR);
-        deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
-        vm.label(deployer, "Deployer");
-        vm.deal(OPERATOR_2_ADDR,0.1 ether);
+        IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig memory isConfig =
+            IncredibleSquaringDeploymentLib.readIncredibleSquaringConfigJson("incredible_squaring_config");
+
+        // AGGREGATOR_ADDR = vm.envAddress("AGGREGATOR_ADDR");
+        // TASK_GENERATOR_ADDR = vm.envAddress("TASK_GENERATOR_ADDR");
+        // CONTRACTS_REGISTRY_ADDR = vm.envAddress("CONTRACTS_REGISTRY_ADDR");
+        // OPERATOR_ADDR = vm.envAddress("OPERATOR_ADDR");
+        // contractsRegistry = ContractsRegistry(CONTRACTS_REGISTRY_ADDR);
+
         configData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
 
         erc20Mock = new MockERC20();
-        FundOperator.fund_operator(address(erc20Mock), OPERATOR_ADDR, 10e18);
-        FundOperator.fund_operator(address(erc20Mock), OPERATOR_2_ADDR, 10e18);
+        FundOperator.fund_operator(address(erc20Mock), isConfig.operator_addr, 10e18);
 
         incredibleSquaringStrategy = IStrategy(StrategyFactory(configData.strategyFactory).deployNewStrategy(erc20Mock));
         rewardscoordinator = configData.rewardsCoordinator;
 
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
         require(address(incredibleSquaringStrategy) != address(0));
+        require(address(incredibleSquaringStrategy) != address(0));
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin,
-            configData,
-            address(incredibleSquaringStrategy),
-            AGGREGATOR_ADDR,
-            TASK_GENERATOR_ADDR,
-            msg.sender
+            proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
 
         IncredibleSquaringDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);

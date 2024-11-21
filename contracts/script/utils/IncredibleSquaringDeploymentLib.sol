@@ -57,12 +57,20 @@ library IncredibleSquaringDeploymentLib {
         address token;
     }
 
+    struct IncredibleSquaringSetupConfig {
+        uint256 numQuorums;
+        uint256[] operatorParams;
+        address operator_addr;
+        address contracts_registry_addr;
+        address task_generator_addr;
+        address aggregator_addr;
+    }
+
     function deployContracts(
         address proxyAdmin,
         CoreDeploymentLib.DeploymentData memory core,
         address strategy,
-        address aggregator,
-        address taskgenerator,
+        IncredibleSquaringSetupConfig memory isConfig,
         address admin
     ) internal returns (DeploymentData memory) {
         /// read EL deployment address
@@ -111,10 +119,10 @@ library IncredibleSquaringDeploymentLib {
         IStrategy[1] memory deployedStrategyArray = [IStrategy(strategy)];
         uint256 numStrategies = deployedStrategyArray.length;
 
-        uint256 numQuorums = vm.envUint("NUM_QUORUMS");
+        uint256 numQuorums = isConfig.numQuorums;
         IRegistryCoordinator.OperatorSetParam[] memory quorumsOperatorSetParams =
             new IRegistryCoordinator.OperatorSetParam[](numQuorums);
-        uint256[] memory operator_params = vm.envUint("OPERATOR_PARAMS", ",");
+        uint256[] memory operator_params = isConfig.operatorParams;
 
         for (uint256 i = 0; i < numQuorums; i++) {
             quorumsOperatorSetParams[i] = IRegistryCoordinator.OperatorSetParam({
@@ -158,7 +166,7 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
         UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
         UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
-        UpgradeableProxyLib.upgrade(result.socketRegistry,socketRegistryImpl);
+        UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
@@ -174,7 +182,7 @@ library IncredibleSquaringDeploymentLib {
         );
         bytes memory taskmanagerupgradecall = abi.encodeCall(
             IncredibleSquaringTaskManager.initialize,
-            (IPauserRegistry(address(pausercontract)), admin, aggregator, taskgenerator)
+            (IPauserRegistry(address(pausercontract)), admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
@@ -187,6 +195,24 @@ library IncredibleSquaringDeploymentLib {
 
     function readDeploymentJson(uint256 chainId) internal returns (DeploymentData memory) {
         return readDeploymentJson("script/deployments/incredible-squaring/", chainId);
+    }
+
+    function readIncredibleSquaringConfigJson(string memory directoryPath)
+        internal
+        returns (IncredibleSquaringSetupConfig memory)
+    {
+        string memory fileName = string.concat(directoryPath, ".json");
+        require(vm.exists(fileName), "Deployment file does not exist");
+        string memory json = vm.readFile(fileName);
+
+        IncredibleSquaringSetupConfig memory data;
+        data.numQuorums = json.readUint(".num_quorums");
+        data.operatorParams = json.readUintArray(".operator_params");
+        data.aggregator_addr = json.readAddress(".aggregator_addr");
+        data.contracts_registry_addr = json.readAddress(".contracts_registry_addr");
+        data.operator_addr = json.readAddress(".operator_addr");
+        data.task_generator_addr = json.readAddress(".task_generator_addr");
+        return data;
     }
 
     function readDeploymentJson(string memory directoryPath, uint256 chainId)

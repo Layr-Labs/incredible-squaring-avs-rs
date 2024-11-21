@@ -9,12 +9,15 @@ import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoor
 import {console2} from "forge-std/console2.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
+import {stdJson} from "forge-std/StdJson.sol";
 
 interface Ownable {
     function owner() external view returns (address);
 }
 
 contract SetupPayments is Script {
+    using stdJson for string;
+
     struct PaymentInfo {
         address[] earners;
         bytes32[] earnerTokenRoots;
@@ -47,13 +50,14 @@ contract SetupPayments is Script {
 
     function run() external {
         vm.startBroadcast(deployer);
-        uint256 amount_per_payment = vm.parseJsonUint(vm.readFile(filePath), ".amountPerPayment");
-        uint32 duration = uint32(vm.parseJsonUint(vm.readFile(filePath), ".duration"));
-        uint32 index_to_prove = uint32(vm.parseJsonUint(vm.readFile(filePath), ".indexToProve"));
-        uint256 num_payments = vm.parseJsonUint(vm.readFile(filePath), ".numPayments");
-        address recipient = vm.parseJsonAddress(vm.readFile(filePath), ".recipient");
-        address[] memory earners = vm.parseJsonAddressArray(vm.readFile(filePath), ".earners");
-        bytes32[] memory earner_token_roots = vm.parseJsonBytes32Array(vm.readFile(filePath), ".earnerTokenRoots");
+        string memory json = vm.readFile(filePath);
+        uint256 amount_per_payment = json.readUint(".amountPerPayment");
+        uint32 duration = uint32(json.readUint(".duration"));
+        uint32 index_to_prove = uint32(json.readUint(".indexToProve"));
+        uint256 num_payments = json.readUint(".numPayments");
+        address recipient = json.readAddress(".recipient");
+        address[] memory earners = json.readAddressArray(".earners");
+        bytes32[] memory earner_token_roots = json.readBytes32Array(".earnerTokenRoots");
         uint32 start_time = uint32(nextDivisibleTimestamp(block.timestamp));
         createAVSRewardsSubmissions(num_payments, amount_per_payment, duration, start_time);
         submitPaymentRoot(earners, uint32(block.timestamp - 1000), uint32(num_payments), uint32(amount_per_payment));

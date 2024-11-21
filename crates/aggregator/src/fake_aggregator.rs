@@ -451,16 +451,4 @@ mod tests {
             .await
             .unwrap();
     }
-
-    // #[tokio::test]
-    // async fn test_start_server() {
-    //     let fake_aggregator = build_aggregator().await;
-    //     let server = tokio::spawn(async move {
-    //         let _ =
-    //             FakeAggregator::start_server(Arc::new(tokio::sync::Mutex::new(fake_aggregator)))
-    //                 .await;
-    //     })
-    //     .await;
-    //     drop(server);
-    // }
 }

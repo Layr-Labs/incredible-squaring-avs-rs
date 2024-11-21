@@ -15,11 +15,12 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 anvil
 ```
 
-- git submodule and copy env vars
+- git submodule and copy env 
 ```sh
 git submodule update --init --recursive
 cp contracts/.env.example contracts/.env
 ```
+
 
 - Deploy eigenlayer and avs contracts and setup payments
 ```sh
