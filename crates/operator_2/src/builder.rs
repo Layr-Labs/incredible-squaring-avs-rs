@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
-use crate::error::OperatorError;
 use alloy::{
     primitives::{keccak256, Address},
     providers::WsConnect,
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
-use incredible_operator::client::ClientAggregator;
+use incredible_operator::{client::ClientAggregator, error::OperatorError};
 
 #[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
@@ -181,35 +180,21 @@ mod tests {
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator,
     };
+    use std::fs;
+    use std::path::Path;
     use std::str::FromStr;
-    const INCREDIBLE_CONFIG_FILE: &str = r#"
-    [rpc_config]
-    chain_id = 31337
-    http_rpc_url = "http://localhost:8545"
-    ws_rpc_url = "ws://localhost:8545"
-    signer = "0x337edbf6fef9af147f49c04c1004da47a8bf9f88c01022b7dd108e31c037f075"
 
-    [ecdsa_config]
-    keystore_path = "../testing-utils/src/ecdsakeystore.json"
-    keystore_password = "test"
+    fn get_config_path() -> String {
+        let config_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("operator_2_test_config.toml");
+        println!("Config path: {:?}", config_path);
 
-    [bls_config]
-    keystore_path = "../testing-utils/src/blskeystore.json"
-    keystore_password = "testpassword"
-    keystore_2_path = "../testing-utils/src/bls_keystore_2.json"
-    keystore_2_password = "test"
-    
-    [operator_config]
-    operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-    operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
-    operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
-    operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"    
-    "#;
+        let config_content = fs::read_to_string(config_path).unwrap();
+        config_content
+    }
 
     #[tokio::test]
     async fn test_bls_keystore() {
-        let mut incredible_config: IncredibleConfig =
-            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let mut incredible_config: IncredibleConfig = toml::from_str(&get_config_path()).unwrap();
         incredible_config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
                 .await
@@ -254,8 +239,7 @@ mod tests {
             },
         };
 
-        let mut incredible_config: IncredibleConfig =
-            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let mut incredible_config: IncredibleConfig = toml::from_str(&get_config_path()).unwrap();
         incredible_config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
                 .await
@@ -278,8 +262,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_build_operator() {
-        let mut incredible_config: IncredibleConfig =
-            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let mut incredible_config: IncredibleConfig = toml::from_str(&get_config_path()).unwrap();
         incredible_config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
                 .await
@@ -302,8 +285,7 @@ mod tests {
             numberSquared: U256::from(16),
         };
 
-        let mut incredible_config: IncredibleConfig =
-            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        let mut incredible_config: IncredibleConfig = toml::from_str(&get_config_path()).unwrap();
         incredible_config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
                 .await
