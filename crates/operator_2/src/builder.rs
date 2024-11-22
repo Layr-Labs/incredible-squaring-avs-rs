@@ -186,10 +186,8 @@ mod tests {
 
     fn get_config_path() -> String {
         let config_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("operator_2_test_config.toml");
-        println!("Config path: {:?}", config_path);
 
-        let config_content = fs::read_to_string(config_path).unwrap();
-        config_content
+        fs::read_to_string(config_path).unwrap()
     }
 
     #[tokio::test]
