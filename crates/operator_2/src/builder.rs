@@ -185,8 +185,10 @@ mod tests {
     use std::str::FromStr;
 
     fn get_config_path() -> String {
-        let config_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("operator_2_test_config.toml");
-
+        let config_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .join("operator/operator_test_config.toml");
         fs::read_to_string(config_path).unwrap()
     }
 
