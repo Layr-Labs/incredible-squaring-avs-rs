@@ -13,10 +13,8 @@ root_dir=$(realpath "$parent_path/../..")
 cd "$root_dir/contracts"
 forge create src/ContractsRegistry.sol:ContractsRegistry --rpc-url $RPC_URL --private-key $PRIVATE_KEY
 
-sleep 5
-
-echo "forge create ok!"
+echo "forge create return value: $?"
 
 forge script script/DeployEigenLayerCore.s.sol:DeployEigenlayerCore --rpc-url $RPC_URL --broadcast --slow
 
-echo "forge script ok!"
+echo "forge script return value: $?"
