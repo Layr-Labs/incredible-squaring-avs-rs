@@ -104,7 +104,6 @@ contract IncredibleSquaringDeployer is Script {
         erc20Mock = new MockERC20();
         FundOperator.fund_operator(address(erc20Mock), isConfig.operator_addr, 10e18);
         FundOperator.fund_operator(address(erc20Mock), isConfig.operator_2_addr, 10e18);
-        console.log("operator_2_addr");
         console.log(isConfig.operator_2_addr);
         (bool s ,) =  isConfig.operator_2_addr.call{value: 0.1 ether}("");
         require(s);
