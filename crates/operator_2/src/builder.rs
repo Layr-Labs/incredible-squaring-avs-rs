@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
-use crate::client::ClientAggregator;
-use crate::error::OperatorError;
 use alloy::{
     primitives::{keccak256, Address},
     providers::WsConnect,
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
+use incredible_operator::{client::ClientAggregator, error::OperatorError};
 
 #[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
@@ -40,8 +39,8 @@ pub struct OperatorBuilder {
     key_pair: BlsKeyPair,
 
     operator_id: OperatorId,
-    /// [`ClientAggregator`]
-    pub client: ClientAggregator,
+
+    client: Option<Arc<ClientAggregator>>,
 
     registry_coordinator: Address,
 
@@ -50,21 +49,22 @@ pub struct OperatorBuilder {
 
 impl OperatorBuilder {
     /// Build the Operator Builder
-    pub async fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
+    pub async fn build(
+        config: IncredibleConfig,
+        client: Option<Arc<ClientAggregator>>,
+    ) -> Result<Self, OperatorError> {
         let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url()).await;
         // Read BlsKey from path
-        let keystore = Keystore::from_file(&config.bls_keystore_path())?
-            .decrypt(&config.bls_keystore_password())?;
+        let keystore = Keystore::from_file(&config.bls_keystore_2_path())?
+            .decrypt(&config.bls_keystore_2_password())?;
 
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let key_pair = BlsKeyPair::new(fr_key)?;
-        let operator_id = config.get_operator_id()?;
+        let operator_id = config.get_operator_2_id()?;
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
-        let operator_address = config.operator_address()?;
-        let mut client = ClientAggregator::new(config.aggregator_ip_addr());
-        let _ = client.dial_aggregator_rpc_client();
+        let operator_address = config.operator_2_address()?;
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
             ws_rpc_url: config.ws_rpc_url(),
@@ -110,13 +110,11 @@ impl OperatorBuilder {
             self.operator_state_retriever,
             self.http_rpc_url.clone(),
         )
-        .await
-        .unwrap();
+        .await?;
         let is_registered = avs_registry_reader
             .is_operator_registered(self.operator_addr)
             .await?;
-        info!("is_operator1_registered {}", is_registered);
-        let arc_client = Arc::new(self.client.clone());
+        info!("is_operator2_registered {}", is_registered);
         if is_registered {
             info!("Starting operator");
 
@@ -138,15 +136,15 @@ impl OperatorBuilder {
                         taskIndex: data.taskIndex,
                     };
                     info!(
-                        "operator1 picked up a new task , index: {} ",
+                        "operator2 picked up a new task , index: {} ",
                         data.taskIndex
                     );
                     incredible_metrics::increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
                     let signed_task_response = self.sign_task_response(task_response)?;
-                    let _ = arc_client
-                        .send_signed_task_response(signed_task_response)
-                        .await;
+                    if let Some(client) = &self.client {
+                        let _ = client.send_signed_task_response(signed_task_response).await;
+                    }
                 }
             }
         }
@@ -175,7 +173,7 @@ mod tests {
     use alloy::primitives::Bytes;
     use alloy::primitives::U256;
     use ark_ec::AffineRepr;
-    use ark_ff::fields::PrimeField;
+    use ark_ff::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
     use incredible_testing_utils::{
@@ -207,7 +205,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
 
         assert_eq!(
             U256::from_limbs(
@@ -221,7 +221,7 @@ mod tests {
                     .0
             ),
             U256::from_str(
-                "277950648056014144722774518899051149098728246263316284984520891067822832300"
+                "654664748928620715566514527065607787384626422829919343002201686008542704547"
             )
             .unwrap()
         );
@@ -250,7 +250,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
 
         let task_response = operator_builder.process_new_task(new_task_created);
 
@@ -271,7 +273,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let _ = OperatorBuilder::build(incredible_config).await.unwrap();
+        let _ = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -292,7 +296,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
+        let operator_builder = OperatorBuilder::build(incredible_config, None)
+            .await
+            .unwrap();
         let signed_task_response = operator_builder
             .sign_task_response(task_response.clone())
             .unwrap();

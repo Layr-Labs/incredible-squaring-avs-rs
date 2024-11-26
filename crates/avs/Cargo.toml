@@ -19,6 +19,7 @@ metrics.workspace = true
 metrics-util = "0.17.0"
 
 #incredible
+incredible-operator-2.workspace = true
 incredible-config.workspace = true
 incredible-operator.workspace = true
 incredible-challenger.workspace = true

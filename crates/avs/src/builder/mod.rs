@@ -5,9 +5,10 @@ use incredible_aggregator::Aggregator;
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
+use incredible_operator_2::builder::OperatorBuilder as OperatorBuilder2;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use std::future::Future;
+use std::{future::Future, sync::Arc};
 use tracing::info;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
@@ -51,10 +52,21 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         incredible_metrics::new();
         // start operator
         let mut operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
+        let mut operator_builder2 = OperatorBuilder2::build(
+            avs.config.clone(),
+            Some(Arc::new(operator_builder.client.clone())),
+        )
+        .await?;
+
         let mut challenge = Challenger::build(avs.config.clone()).await?;
         let operator_service = operator_builder
             .start_operator()
             .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+
+        let operator2_service = operator_builder2
+            .start_operator()
+            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
@@ -85,8 +97,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             });
         });
 
-        let _ = futures::future::try_join4(
+        let _ = futures::future::try_join5(
             operator_service,
+            operator2_service,
             challenger_service,
             aggregator_service_with_rpc_client,
             task_spam_service,

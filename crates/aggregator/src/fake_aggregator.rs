@@ -397,6 +397,8 @@ mod tests {
     [operator_config]
     operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
     operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+    operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
+    operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
 
     [aggregator_config]
     ip_address = "127.0.0.1:8080"

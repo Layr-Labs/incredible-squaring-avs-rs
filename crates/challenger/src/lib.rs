@@ -8,10 +8,10 @@ use std::collections::HashMap;
 /// Challenger Error
 pub mod error;
 mod fake_challenger;
+use alloy::providers::Provider;
 use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::rpc::types::{Log, TransactionReceipt};
 use alloy::sol_types::{SolCall, SolEvent};
-use alloy_provider::Provider;
 use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
@@ -314,11 +314,14 @@ keystore_password = "test"
 [bls_config]
 keystore_path = "../testing-utils/src/blskeystore.json"
 keystore_password = "testpassword"
+keystore_2_path = "../testing-utils/src/bls_keystore_2.json"
+keystore_2_password = "test"
 
 [operator_config]
 operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
-
+operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
+operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
 [task_manager_config]
 signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 "#;

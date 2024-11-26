@@ -24,7 +24,7 @@ reset_anvil:
 start_docker:
 	$(MAKE) reset_anvil
 	docker run -d --name anvil -p 8545:8545 --entrypoint anvil \
-		ghcr.io/foundry-rs/foundry:nightly-5b7e4cb3c882b28f3c32ba580de27ce7381f415a --host 0.0.0.0
+		ghcr.io/foundry-rs/foundry:latest --host 0.0.0.0
 	sleep 2
 
 pr: 
