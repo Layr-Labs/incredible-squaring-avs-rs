@@ -45,6 +45,40 @@ library SetupPaymentsLib {
         rewardsCoordinator.createAVSRewardsSubmission(rewardsSubmissions);
     }
 
+    function createOperatorDirectedAVSRewardsSubmissions(
+        IRewardsCoordinator rewardsCoordinator,
+        address strategy,
+        address avs,
+        IRewardsCoordinator.OperatorReward[] memory operatorRewards,
+        uint256 numPayments,
+        uint32 duration,
+        uint32 startTimestamp
+    ) internal {
+        IStrategy(strategy).underlyingToken();
+        IRewardsCoordinator.OperatorDirectedRewardsSubmission[] memory operatorDirectedRewardsSubmissions =
+            new IRewardsCoordinator.OperatorDirectedRewardsSubmission[](numPayments);
+        for (uint256 i = 0; i < numPayments; i++) {
+            IRewardsCoordinator.StrategyAndMultiplier[] memory strategiesAndMultipliers =
+                new IRewardsCoordinator.StrategyAndMultiplier[](1);
+            strategiesAndMultipliers[0] =
+                IRewardsCoordinator.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
+
+            IRewardsCoordinator.OperatorDirectedRewardsSubmission memory rewardSubmission = IRewardsCoordinator
+                .OperatorDirectedRewardsSubmission({
+                strategiesAndMultipliers: strategiesAndMultipliers,
+                token: IStrategy(strategy).underlyingToken(),
+                operatorRewards: operatorRewards,
+                startTimestamp: startTimestamp,
+                duration: duration,
+                description: ""
+            });
+
+            operatorDirectedRewardsSubmissions[i] = rewardSubmission;
+        }
+
+        rewardsCoordinator.createOperatorDirectedAVSRewardsSubmission(avs, operatorDirectedRewardsSubmissions);
+    }
+
     function processClaim(
         IRewardsCoordinator rewardsCoordinator,
         string memory filePath,
