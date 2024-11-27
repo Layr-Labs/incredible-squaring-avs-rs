@@ -38,9 +38,10 @@ cargo run --bin incredible-squaring-avs  start --config-path <PATH>
 ```
 We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rust/tree/master/incredible_config.toml) for reference.
 
-This command launches 4 crates together 
-- Operator : It listens for new tasks , responds them by signing with their bls key and send the signed response to the aggregator.
-- Aggregator : Sets up an Rpc client to receive signed task responses from operator, aggregates the signatures , calls the respondToTask function in the TaskManager contract.
+This command launches 5 services(crates) together 
+- Operator1 : It listens for new tasks , responds them by signing with their bls key and send the signed response to the aggregator. Stake in strategy : 5000 tokens
+- Operator2 : Same task as operator 1 . Stake in strategy : 7000 tokens
+- Aggregator : Sets up an Rpc client to receive signed task responses from operators, aggregates the signatures ,if quorums is met(i.e both operators sign the response),it  calls the respondToTask function in the TaskManager contract.
 - Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
 - Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
 
@@ -68,7 +69,7 @@ The architecture of the AVS contains:
   - The [challenge](contracts/src/IncredibleSquaringTaskManager.sol#L176) logic could be separated into its own contract, but we have decided to include it in the TaskManager for this simple task.
   - Set of [registry contracts](https://github.com/Layr-Labs/eigenlayer-middleware) to manage operators opted in to this avs
 - Task Generator
-  - in a real world scenario, this could be a separate entity, but for this simple demo, the aggregator also acts as the task generator
+  - This is a separate entity .
 - Aggregator
   - aggregates BLS signatures from operators and posts the aggregated response to the task manager
   - For this simple demo, the aggregator is not an operator, and thus does not need to register with eigenlayer or the AVS contract. It's IP address is simply hardcoded into the operators' config.
@@ -81,7 +82,8 @@ The architecture of the AVS contains:
 ## Default Configuration
 - Metrics http endpoint - `http://localhost:9001/metrics`
 - Aggregator Rpc endpoint - `127.0.0.1:8080`
-- Operator - `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` (anvil's 0 index key)
+- Operator1 - `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` (anvil's 0 index key)
+- Operator2 - `0x0b065a0423f076a340f37e16e1ce22e23d66caf2` 
 
 
 ## Dependencies 
