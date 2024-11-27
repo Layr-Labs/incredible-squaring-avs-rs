@@ -37,6 +37,13 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
         incredibleSquaringTaskManager = _incredibleSquaringTaskManager;
     }
 
+    function createOperatorDirectedAVSRewardsSubmission(
+        address avs,
+        IRewardsCoordinator.OperatorDirectedRewardsSubmission[] memory operatorDirectedRewardsSubmission
+    ) public {
+        _rewardsCoordinator.createOperatorDirectedAVSRewardsSubmission(avs, operatorDirectedRewardsSubmission);
+    }
+
     /// @notice Called in the event of challenge resolution, in order to forward a call to the Slasher, which 'freezes' the `operator`.
     /// @dev The Slasher contract is under active development and its interface expected to change.
     ///      We recommend writing slashing logic without integrating with the Slasher at this point in time.

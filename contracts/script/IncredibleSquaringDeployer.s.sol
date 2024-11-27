@@ -117,6 +117,9 @@ contract IncredibleSquaringDeployer is Script {
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
+        FundOperator.fund_operator(
+            address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
+        );
 
         IncredibleSquaringDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
 

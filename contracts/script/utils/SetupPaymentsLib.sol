@@ -5,13 +5,33 @@ import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoor
 import {IStrategy} from "eigenlayer-contracts/src/contracts/interfaces/IStrategyManager.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {console} from "forge-std/console.sol";
+import {stdJson} from "forge-std/StdJson.sol";
+import {IncredibleSquaringServiceManager} from "../../src/IncredibleSquaringServiceManager.sol";
 
 library SetupPaymentsLib {
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
+    using stdJson for string;
+
     struct PaymentLeaves {
         bytes32[] leaves;
         bytes32[] tokenLeaves;
+    }
+
+    struct OperatorConfig {
+        address[] operator_addr;
+        uint256[] amount;
+    }
+
+    function readOperatorConfig(string memory path) internal returns (OperatorConfig memory config) {
+        string memory pathToFile = string.concat(path, ".json");
+        require(vm.exists(pathToFile), "Deployment file does not exist");
+        string memory json = vm.readFile(pathToFile);
+
+        config.operator_addr = json.readAddressArray(".operator_addresses");
+        config.amount = json.readUintArray(".amount");
+
+        return config;
     }
 
     function createAVSRewardsSubmissions(
@@ -46,7 +66,6 @@ library SetupPaymentsLib {
     }
 
     function createOperatorDirectedAVSRewardsSubmissions(
-        IRewardsCoordinator rewardsCoordinator,
         address strategy,
         address avs,
         IRewardsCoordinator.OperatorReward[] memory operatorRewards,
@@ -75,8 +94,9 @@ library SetupPaymentsLib {
 
             operatorDirectedRewardsSubmissions[i] = rewardSubmission;
         }
-
-        rewardsCoordinator.createOperatorDirectedAVSRewardsSubmission(avs, operatorDirectedRewardsSubmissions);
+        IncredibleSquaringServiceManager(avs).createOperatorDirectedAVSRewardsSubmission(
+            avs, operatorDirectedRewardsSubmissions
+        );
     }
 
     function processClaim(
