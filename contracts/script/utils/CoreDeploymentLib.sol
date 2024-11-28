@@ -141,7 +141,7 @@ library CoreDeploymentLib {
         /// TODO: Get actual values
         uint32 CALCULATION_INTERVAL_SECONDS = 1 days;
         uint32 MAX_REWARDS_DURATION = 1 days;
-        uint32 MAX_RETROACTIVE_LENGTH = 1;
+        uint32 MAX_RETROACTIVE_LENGTH = 3 days;
         uint32 MAX_FUTURE_LENGTH = 1 days;
         uint32 GENESIS_REWARDS_TIMESTAMP = 10 days;
         address rewardsCoordinatorImpl = address(

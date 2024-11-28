@@ -5,13 +5,33 @@ import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoor
 import {IStrategy} from "eigenlayer-contracts/src/contracts/interfaces/IStrategyManager.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {console} from "forge-std/console.sol";
+import {stdJson} from "forge-std/StdJson.sol";
+import {IncredibleSquaringServiceManager} from "../../src/IncredibleSquaringServiceManager.sol";
 
 library SetupPaymentsLib {
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
+    using stdJson for string;
+
     struct PaymentLeaves {
         bytes32[] leaves;
         bytes32[] tokenLeaves;
+    }
+
+    struct OperatorConfig {
+        address[] operator_addr;
+        uint256[] amount;
+    }
+
+    function readOperatorConfig(string memory path) internal returns (OperatorConfig memory config) {
+        string memory pathToFile = string.concat(path, ".json");
+        require(vm.exists(pathToFile), "Deployment file does not exist");
+        string memory json = vm.readFile(pathToFile);
+
+        config.operator_addr = json.readAddressArray(".operator_addresses");
+        config.amount = json.readUintArray(".amount");
+
+        return config;
     }
 
     function createAVSRewardsSubmissions(
@@ -43,6 +63,40 @@ library SetupPaymentsLib {
         }
 
         rewardsCoordinator.createAVSRewardsSubmission(rewardsSubmissions);
+    }
+
+    function createOperatorDirectedAVSRewardsSubmissions(
+        address strategy,
+        address avs,
+        IRewardsCoordinator.OperatorReward[] memory operatorRewards,
+        uint256 numPayments,
+        uint32 duration,
+        uint32 startTimestamp
+    ) internal {
+        IStrategy(strategy).underlyingToken();
+        IRewardsCoordinator.OperatorDirectedRewardsSubmission[] memory operatorDirectedRewardsSubmissions =
+            new IRewardsCoordinator.OperatorDirectedRewardsSubmission[](numPayments);
+        for (uint256 i = 0; i < numPayments; i++) {
+            IRewardsCoordinator.StrategyAndMultiplier[] memory strategiesAndMultipliers =
+                new IRewardsCoordinator.StrategyAndMultiplier[](1);
+            strategiesAndMultipliers[0] =
+                IRewardsCoordinator.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
+
+            IRewardsCoordinator.OperatorDirectedRewardsSubmission memory rewardSubmission = IRewardsCoordinator
+                .OperatorDirectedRewardsSubmission({
+                strategiesAndMultipliers: strategiesAndMultipliers,
+                token: IStrategy(strategy).underlyingToken(),
+                operatorRewards: operatorRewards,
+                startTimestamp: startTimestamp,
+                duration: duration,
+                description: ""
+            });
+
+            operatorDirectedRewardsSubmissions[i] = rewardSubmission;
+        }
+        IncredibleSquaringServiceManager(avs).createOperatorDirectedAVSRewardsSubmission(
+            avs, operatorDirectedRewardsSubmissions
+        );
     }
 
     function processClaim(
