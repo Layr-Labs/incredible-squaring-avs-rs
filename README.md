@@ -38,10 +38,11 @@ cargo run --bin incredible-squaring-avs  start --config-path <PATH>
 ```
 We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rust/tree/master/incredible_config.toml) for reference.
 
-This command launches 5 services(crates) together 
-- Operator1 : It listens for new tasks , responds them by signing with their bls key and send the signed response to the aggregator. Stake in strategy : 5000 tokens
-- Operator2 : Same task as operator 1 . Stake in strategy : 7000 tokens
-- Aggregator : Sets up an Rpc client to receive signed task responses from operators, aggregates the signatures ,if quorums is met(i.e both operators sign the response),it  calls the respondToTask function in the TaskManager contract.
+This command launches 5 services(crates) together:
+
+- Operator1 : It listens for new tasks , responds them by signing with their bls key and send the signed response to the aggregator. Stake in strategy: 5000 tokens
+- Operator2: Same task as operator 1. Stake in strategy: 7000 tokens
+- Aggregator: Sets up an Rpc client to receive signed task responses from operators, aggregates the signatures, if quorums is met (i.e both operators sign the response), it calls the respondToTask function in the TaskManager contract.
 - Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
 - Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
 
