@@ -1,4 +1,4 @@
-use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use alloy::primitives::{bytes, Address, Bytes, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
@@ -15,7 +15,9 @@ use eigen_testing_utils::anvil_constants::{
 };
 use eigen_types::operator::Operator;
 use eigen_utils::allocationmanager::AllocationManager::{self, OperatorSet};
-use eigen_utils::allocationmanager::IAllocationManagerTypes::{AllocateParams, CreateSetParams};
+use eigen_utils::allocationmanager::IAllocationManagerTypes::{
+    AllocateParams, CreateSetParams, RegisterParams,
+};
 use eigen_utils::{get_provider, get_signer};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
@@ -526,6 +528,26 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             )
             .await?;
 
+            let register_for_operator_sets_by_operator1_txhash = register_for_operator_sets(
+                allocation_manager_address_anvil,
+                config.operator_pvt_key(),
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+            )
+            .await?;
+
+            let register_for_operator_sets_by_operator2_txhash = register_for_operator_sets(
+                allocation_manager_address_anvil,
+                config.operator_2_pvt_key(),
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+            )
+            .await?;
+
             let current_block_number = get_provider(&rpc_url).get_block_number().await?;
 
             fn mine_anvil_block(rpc_url: &str, blocks: u64) {
@@ -700,6 +722,38 @@ pub async fn modify_allocation_for_operator(
     };
     Ok(allocation_manager_instance
         .modifyAllocations(allocate_params)
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash)
+}
+
+pub async fn register_for_operator_sets(
+    allocation_manager: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+    avs: Address,
+) -> Result<(FixedBytes<32>)> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+    let allocation_manager_instance =
+        AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
+    let register_params = RegisterParams {
+        avs,
+        operatorSetIds: vec![0],
+        data: hex!("0x00"),
+    };
+    Ok(allocation_manager_instance
+        .registerForOperatorSets(params)
         .send()
         .await?
         .get_receipt()
