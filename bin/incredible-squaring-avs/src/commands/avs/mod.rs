@@ -32,7 +32,7 @@ use std::net::SocketAddr;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::debug;
+use tracing::{debug, info};
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -462,6 +462,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.erc20_mock_strategy_addr()?,
         )
         .await?;
+        info!(tx_hash = %new_operator_set_tx_hash,"new operator set created tx_hash");
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
@@ -505,7 +506,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             )
             .await;
 
-            let modify_allocation_tx_hash = modify_allocation_for_operator(
+            let modify_allocation_for_operator1_tx_hash = modify_allocation_for_operator(
                 allocation_manager_address_anvil,
                 config.operator_pvt_key(),
                 ecdsa_keystore_path.clone(),
@@ -516,7 +517,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 vec![0],
             )
             .await?;
-            let modify_allocation_tx_hash = modify_allocation_for_operator(
+
+            info!(tx_hash = %modify_allocation_for_operator1_tx_hash,strategy_address = %erc20_mock_strategy_address,"allocation by operator1 for strategy");
+
+            let modify_allocation_for_operator2_tx_hash = modify_allocation_for_operator(
                 allocation_manager_address_anvil,
                 config.operator_2_pvt_key(),
                 ecdsa_keystore_2_path.clone(),
@@ -527,6 +531,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 vec![0],
             )
             .await?;
+            info!(tx_hash = %modify_allocation_for_operator2_tx_hash,strategy_address = %erc20_mock_strategy_address,"allocation by operator2 for strategy");
 
             let register_for_operator_sets_by_operator1_txhash = register_for_operator_sets(
                 allocation_manager_address_anvil,
@@ -538,6 +543,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             )
             .await?;
 
+            info!(tx_hash = %register_for_operator_sets_by_operator1_txhash,"register for operator sets by operator1");
+
             let register_for_operator_sets_by_operator2_txhash = register_for_operator_sets(
                 allocation_manager_address_anvil,
                 config.operator_2_pvt_key(),
@@ -547,6 +554,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 service_manager_address_anvil,
             )
             .await?;
+
+            info!(tx_hash = %register_for_operator_sets_by_operator2_txhash,"register for operator sets by operator2");
 
             let current_block_number = get_provider(&rpc_url).get_block_number().await?;
 
