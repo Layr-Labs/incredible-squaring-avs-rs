@@ -8,6 +8,7 @@ import {SetupPaymentsLib} from "./utils/SetupPaymentsLib.sol";
 import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 import {console2} from "forge-std/console2.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
+
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 

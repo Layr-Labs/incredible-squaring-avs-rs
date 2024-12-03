@@ -10,7 +10,6 @@ import {stdJson} from "forge-std/StdJson.sol";
 import {DelegationManager} from "@eigenlayer/contracts/core/DelegationManager.sol";
 import {StrategyManager} from "@eigenlayer/contracts/core/StrategyManager.sol";
 import {AVSDirectory} from "@eigenlayer/contracts/core/AVSDirectory.sol";
-import {Slasher} from "@eigenlayer/contracts/core/Slasher.sol";
 import {EigenPodManager} from "@eigenlayer/contracts/pods/EigenPodManager.sol";
 import {RewardsCoordinator} from "@eigenlayer/contracts/core/RewardsCoordinator.sol";
 import {StrategyBase} from "@eigenlayer/contracts/strategies/StrategyBase.sol";

@@ -22,7 +22,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
-import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
+import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol"; // todo: socket registry not available
 import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
