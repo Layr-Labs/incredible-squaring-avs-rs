@@ -13,6 +13,7 @@ import {AVSDirectory} from "@eigenlayer/contracts/core/AVSDirectory.sol";
 import {EigenPodManager} from "@eigenlayer/contracts/pods/EigenPodManager.sol";
 import {RewardsCoordinator} from "@eigenlayer/contracts/core/RewardsCoordinator.sol";
 import {StrategyBase} from "@eigenlayer/contracts/strategies/StrategyBase.sol";
+import {AllocationManager} from "@eigenlayer/contracts/core/AllocationManager.sol";
 import {EigenPod} from "@eigenlayer/contracts/pods/EigenPod.sol";
 import {IETHPOSDeposit} from "@eigenlayer/contracts/interfaces/IETHPOSDeposit.sol";
 import {StrategyBaseTVLLimits} from "@eigenlayer/contracts/strategies/StrategyBaseTVLLimits.sol";
@@ -83,6 +84,7 @@ library CoreDeploymentLib {
         address pauserRegistry;
         address strategyFactory;
         address strategyBeacon;
+        address AllocationManager;
     }
 
     function deployContracts(address deployer, address proxyAdmin, DeploymentConfigData memory configData)
@@ -99,13 +101,19 @@ library CoreDeploymentLib {
         result.eigenPodBeacon = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.pauserRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.strategyFactory = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
-
+        result.AllocationManager = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address delegationManagerImpl = address(
             new DelegationManager(
                 IStrategyManager(result.strategyManager), ISlasher(address(0)), IEigenPodManager(result.eigenPodManager)
             )
         );
+
+        address allocationManagerImpl = address(
+            new AllocationManager(
+                IDelegationManager(result.delegationManager), IAVSDirectory(result.avsDirectory), 0, 0
+            )
+        ); // todo : remove hardcode , add to json config
         address avsDirectoryImpl = address(new AVSDirectory(IDelegationManager(result.delegationManager)));
 
         address strategyManagerImpl = address(
@@ -185,7 +193,17 @@ library CoreDeploymentLib {
                 new uint256[](0) // _withdrawalDelayBlocks (empty array for now)
             )
         );
+
         UpgradeableProxyLib.upgradeAndCall(result.delegationManager, delegationManagerImpl, upgradeCall);
+
+        upgradeCall = abi.encodeCall(
+            AllocationManager.initialize,
+            (
+                proxyAdmin,
+                0 // 0 means unpaused right?
+            )
+        );
+        UpgradeableProxyLib.upgradeAndCall(AllocationManager, allocationManagerImpl, upgradeCall);
 
         // Upgrade StrategyManager contract
         upgradeCall = abi.encodeCall(
