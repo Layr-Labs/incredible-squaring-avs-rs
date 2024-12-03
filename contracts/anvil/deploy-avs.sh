@@ -17,4 +17,4 @@ forge script script/ContractsRegistry.s.sol --rpc-url $RPC_URL --private-key $PR
 
 forge script script/SetupPayments.s.sol --rpc-url $RPC_URL --broadcast --slow --private-key $PRIVATE_KEY
 
-forge script script/OperatorDirectedPayments.s.sol --rpc-url $RPC_URL --broadcast --slow --private-key $PRIVATE_KEY
+# forge script script/OperatorDirectedPayments.s.sol --rpc-url $RPC_URL --broadcast --slow --private-key $PRIVATE_KEY
