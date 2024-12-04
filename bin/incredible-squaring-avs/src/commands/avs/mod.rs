@@ -692,6 +692,8 @@ pub async fn create_new_operator_set(
         operatorSetId: 0,
         strategies: [strategy_address],
     }];
+
+    //todo : route this call through service manager instead of calling directly
     let s = allocation_manager_instance
         .createOperatorSets(params)
         .send()
