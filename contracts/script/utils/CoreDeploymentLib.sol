@@ -27,6 +27,7 @@ import {IStrategyManager} from "@eigenlayer/contracts/interfaces/IStrategyManage
 import {ISlasher} from "@eigenlayer/contracts/interfaces/ISlasher.sol";
 import {IEigenPodManager} from "@eigenlayer/contracts/interfaces/IEigenPodManager.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
+import {IAllocationManager} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 import {IPauserRegistry} from "@eigenlayer/contracts/interfaces/IPauserRegistry.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {StrategyFactory} from "@eigenlayer/contracts/strategies/StrategyFactory.sol";
@@ -84,7 +85,7 @@ library CoreDeploymentLib {
         address pauserRegistry;
         address strategyFactory;
         address strategyBeacon;
-        address AllocationManager;
+        address allocationManager;
     }
 
     function deployContracts(address deployer, address proxyAdmin, DeploymentConfigData memory configData)
@@ -101,11 +102,15 @@ library CoreDeploymentLib {
         result.eigenPodBeacon = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.pauserRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.strategyFactory = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
-        result.AllocationManager = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
+        result.allocationManager = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address delegationManagerImpl = address(
             new DelegationManager(
-                IStrategyManager(result.strategyManager), ISlasher(address(0)), IEigenPodManager(result.eigenPodManager)
+                IAVSDirectory(result.avsDirectory),
+                IStrategyManager(result.strategyManager),
+                IEigenPodManager(result.eigenPodManager),
+                IAllocationManager(result.allocationManager),
+                0
             )
         );
 
@@ -114,15 +119,11 @@ library CoreDeploymentLib {
                 IDelegationManager(result.delegationManager), IAVSDirectory(result.avsDirectory), 0, 0
             )
         ); // todo : remove hardcode , add to json config
-        address avsDirectoryImpl = address(new AVSDirectory(IDelegationManager(result.delegationManager)));
+        address avsDirectoryImpl = address(new AVSDirectory(IDelegationManager(result.delegationManager), 0)); // todo remove hardcoding
 
-        address strategyManagerImpl = address(
-            new StrategyManager(
-                IDelegationManager(result.delegationManager),
-                IEigenPodManager(result.eigenPodManager),
-                ISlasher(address(0))
-            )
-        );
+        address strategyManagerImpl = address(new StrategyManager(IDelegationManager(result.delegationManager)));
+        // IEigenPodManager(result.eigenPodManager),
+        // ISlasher(address(0))
 
         address strategyFactoryImpl = address(new StrategyFactory(IStrategyManager(result.strategyManager)));
 
@@ -140,7 +141,7 @@ library CoreDeploymentLib {
                 IETHPOSDeposit(ethPOSDeposit),
                 IBeacon(result.eigenPodBeacon),
                 IStrategyManager(result.strategyManager),
-                ISlasher(address(0)),
+                // ISlasher(address(0)),
                 IDelegationManager(result.delegationManager)
             )
         );
@@ -187,10 +188,10 @@ library CoreDeploymentLib {
             (
                 proxyAdmin, // initialOwner
                 IPauserRegistry(result.pauserRegistry), // _pauserRegistry
-                configData.delegationManager.initPausedStatus, // initialPausedStatus
-                configData.delegationManager.withdrawalDelayBlocks, // _minWithdrawalDelayBlocks
-                new IStrategy[](0), // _strategies (empty array for now)
-                new uint256[](0) // _withdrawalDelayBlocks (empty array for now)
+                configData.delegationManager.initPausedStatus // initialPausedStatus
+                    // configData.delegationManager.withdrawalDelayBlocks, // _minWithdrawalDelayBlocks
+                    // new IStrategy[](0), // _strategies (empty array for now)
+                    // new uint256[](0) // _withdrawalDelayBlocks (empty array for now)
             )
         );
 
@@ -200,10 +201,11 @@ library CoreDeploymentLib {
             AllocationManager.initialize,
             (
                 proxyAdmin,
+                IPauserRegistry(result.pauserRegistry),
                 0 // 0 means unpaused right?
             )
         );
-        UpgradeableProxyLib.upgradeAndCall(AllocationManager, allocationManagerImpl, upgradeCall);
+        UpgradeableProxyLib.upgradeAndCall(result.allocationManager, allocationManagerImpl, upgradeCall);
 
         // Upgrade StrategyManager contract
         upgradeCall = abi.encodeCall(
@@ -361,6 +363,7 @@ library CoreDeploymentLib {
         data.delegationManager = json.readAddress(".addresses.delegation");
         data.avsDirectory = json.readAddress(".addresses.avsDirectory");
         data.rewardsCoordinator = json.readAddress(".addresses.rewardsCoordinator");
+        data.allocationManager = json.readAddress(".addresses.allocationManager");
 
         return data;
     }
@@ -413,6 +416,10 @@ library CoreDeploymentLib {
             data.delegationManager.toHexString(),
             '","delegationManagerImpl":"',
             data.delegationManager.getImplementation().toHexString(),
+             '","allocationManager":"',
+            data.allocationManager.toHexString(),
+            '","allocationManagerImpl":"',
+            data.allocationManager.getImplementation().toHexString(),
             '","avsDirectory":"',
             data.avsDirectory.toHexString(),
             '","avsDirectoryImpl":"',

@@ -22,8 +22,9 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
-import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol"; // todo: socket registry not available
+// import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol"; // todo: socket registry not available
 import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
+import {IAllocationManager} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 
@@ -31,9 +32,11 @@ import {
     RegistryCoordinator,
     IBLSApkRegistry,
     IIndexRegistry,
-    IStakeRegistry,
-    ISocketRegistry
+    IStakeRegistry,StakeType
+    // ISocketRegistry
 } from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
+// import {StakeType} from "./interfaces/IStakeRegistry.sol";
+
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 
@@ -95,11 +98,11 @@ library IncredibleSquaringDeploymentLib {
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
-                IRegistryCoordinator(result.registryCoordinator), IDelegationManager(core.delegationManager)
+                IRegistryCoordinator(result.registryCoordinator), IDelegationManager(core.delegationManager),IAVSDirectory(core.avsDirectory),IServiceManager(result.incredibleSquaringServiceManager)
             )
         );
 
-        address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
+        // address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address registryCoordinatorImpl = address(
@@ -108,7 +111,7 @@ library IncredibleSquaringDeploymentLib {
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
                 IIndexRegistry(result.indexRegistry),
-                ISocketRegistry(result.socketRegistry)
+                IAVSDirectory(core.avsDirectory)
             )
         );
 
@@ -117,7 +120,8 @@ library IncredibleSquaringDeploymentLib {
         pausers[1] = admin;
         PauserRegistry pausercontract = new PauserRegistry(pausers, admin);
 
-        IStrategy[1] memory deployedStrategyArray = [IStrategy(strategy)];
+        IStrategy[] memory deployedStrategyArray = new IStrategy[](1);
+        deployedStrategyArray[0] = IStrategy(strategy);
         uint256 numStrategies = deployedStrategyArray.length;
 
         uint256 numQuorums = isConfig.numQuorums;
@@ -132,7 +136,7 @@ library IncredibleSquaringDeploymentLib {
                 kickBIPsOfTotalStake: uint16(operator_params[i + 2])
             });
         }
-        // set to 0 for every quorum
+        // // set to 0 for every quorum
         uint96[] memory quorumsMinimumStake = new uint96[](numQuorums);
         IStakeRegistry.StrategyParams[][] memory quorumsStrategyParams =
             new IStakeRegistry.StrategyParams[][](numQuorums);
@@ -150,6 +154,11 @@ library IncredibleSquaringDeploymentLib {
             }
         }
 
+        StakeType[] memory stake_type  = new StakeType[](1);
+        stake_type[0] = StakeType.TOTAL_SLASHABLE;
+        uint32[] memory look_ahead_period = new uint32[](1);
+        look_ahead_period[0] = 0 ;
+        
         bytes memory upgradeCall = abi.encodeCall(
             RegistryCoordinator.initialize,
             (
@@ -160,20 +169,23 @@ library IncredibleSquaringDeploymentLib {
                 0,
                 quorumsOperatorSetParams,
                 quorumsMinimumStake,
-                quorumsStrategyParams
+                quorumsStrategyParams,
+                stake_type,
+                look_ahead_period
             )
         );
 
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
         UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
         UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
-        UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
+        // UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
             IRegistryCoordinator(result.registryCoordinator),
             IStakeRegistry(result.stakeRegistry),
             core.rewardsCoordinator,
+            IAllocationManager(core.allocationManager),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl =

@@ -11,7 +11,7 @@ use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
 use eigen_testing_utils::anvil_constants::{
     get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
-    ANVIL_HTTP_URL,
+    ANVIL_HTTP_URL,get_allocation_manager_address
 };
 use eigen_types::operator::Operator;
 use eigen_utils::allocationmanager::AllocationManager::{self, OperatorSet};
@@ -23,7 +23,7 @@ use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
-    get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
+    get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,get_incredible_squaring_service_manager
 };
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
@@ -310,8 +310,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
         let incredible_squaring_task_manager_address_anvil =
             get_incredible_squaring_task_manager().await;
-        let allocation_manager_address_anvil = Address::ZERO; // TODO : update this
-        let service_manager_address_anvil = Address::ZERO;
+        let allocation_manager_address_anvil = get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await; 
+        let service_manager_address_anvil = get_incredible_squaring_service_manager().await;
         let default_anvil = AnvilValues::new(
             registry_coordinator_address_anvil,
             operator_state_retriever_address_anvil,
