@@ -105,13 +105,16 @@ library IncredibleSquaringDeploymentLib {
         // address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
+        console2.log("pauser_registry");
+        console2.log(core.pauserRegistry);
         address registryCoordinatorImpl = address(
             new RegistryCoordinator(
                 IServiceManager(result.incredibleSquaringServiceManager),
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
                 IIndexRegistry(result.indexRegistry),
-                IAVSDirectory(core.avsDirectory)
+                IAVSDirectory(core.avsDirectory),
+                IPauserRegistry(core.pauserRegistry)
             )
         );
 
@@ -165,7 +168,6 @@ library IncredibleSquaringDeploymentLib {
                 admin,
                 admin,
                 admin,
-                pausercontract,
                 0,
                 quorumsOperatorSetParams,
                 quorumsMinimumStake,
@@ -189,13 +191,13 @@ library IncredibleSquaringDeploymentLib {
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl =
-            new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30);
+            new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator),IPauserRegistry(address(pausercontract)), 30);
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );
         bytes memory taskmanagerupgradecall = abi.encodeCall(
             IncredibleSquaringTaskManager.initialize,
-            (IPauserRegistry(address(pausercontract)), admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
+            ( admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
@@ -341,6 +343,7 @@ library IncredibleSquaringDeploymentLib {
         data.eigenPodManager = json.readAddress(".addresses.eigenPodManager");
         data.delegationManager = json.readAddress(".addresses.delegation");
         data.avsDirectory = json.readAddress(".addresses.avsDirectory");
+        data.pauserRegistry = json.readAddress(".addresses.pauserRegistry");
 
         return data;
     }
