@@ -3,8 +3,8 @@ pragma solidity ^0.8.9;
 
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
 
+// import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
-
 import "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
@@ -117,11 +117,11 @@ contract IncredibleSquaringDeployer is Script {
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
-        FundOperator.fund_operator(
-            address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
-        );
+        // FundOperator.fund_operator(
+        //     address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
+        // );
 
-        IncredibleSquaringDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
+        // IncredibleSquaringDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
 
         vm.stopBroadcast();
     }

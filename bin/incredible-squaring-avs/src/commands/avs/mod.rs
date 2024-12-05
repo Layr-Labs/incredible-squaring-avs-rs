@@ -1,4 +1,4 @@
-use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use alloy::primitives::{bytes, Address, Bytes, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
@@ -11,15 +11,19 @@ use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
 use eigen_testing_utils::anvil_constants::{
     get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
-    ANVIL_HTTP_URL,
+    ANVIL_HTTP_URL,get_allocation_manager_address
 };
 use eigen_types::operator::Operator;
-use eigen_utils::get_provider;
+use eigen_utils::allocationmanager::AllocationManager::{self, OperatorSet};
+use eigen_utils::allocationmanager::IAllocationManagerTypes::{
+    AllocateParams, CreateSetParams, RegisterParams,
+};
+use eigen_utils::{get_provider, get_signer};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
-    get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
+    get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,get_incredible_squaring_service_manager
 };
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
@@ -28,7 +32,7 @@ use std::net::SocketAddr;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::debug;
+use tracing::{debug, info};
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -306,7 +310,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
         let incredible_squaring_task_manager_address_anvil =
             get_incredible_squaring_task_manager().await;
-
+        let allocation_manager_address_anvil = get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await; 
+        let service_manager_address_anvil = get_incredible_squaring_service_manager().await;
         let default_anvil = AnvilValues::new(
             registry_coordinator_address_anvil,
             operator_state_retriever_address_anvil,
@@ -446,6 +451,18 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         );
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
+        // create operator set with strategy address.
+        // we can add new strategy by calling addStrategiesToOperatorSet function in allocation manager in future.
+        let new_operator_set_tx_hash = create_new_operator_set(
+            allocation_manager_address_anvil,
+            config.operator_pvt_key(),
+            config.ecdsa_keystore_path()?,
+            config.ecdsa_keystore_password()?,
+            &rpc_url,
+            config.erc20_mock_strategy_addr()?,
+        )
+        .await?;
+        info!(tx_hash = %new_operator_set_tx_hash,"new operator set created tx_hash");
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
@@ -488,6 +505,57 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 U256::from(7000),
             )
             .await;
+
+            let modify_allocation_for_operator1_tx_hash = modify_allocation_for_operator(
+                allocation_manager_address_anvil,
+                config.operator_pvt_key(),
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+                vec![erc20_mock_strategy_address],
+                vec![0],
+            )
+            .await?;
+
+            info!(tx_hash = %modify_allocation_for_operator1_tx_hash,strategy_address = %erc20_mock_strategy_address,"allocation by operator1 for strategy");
+
+            let modify_allocation_for_operator2_tx_hash = modify_allocation_for_operator(
+                allocation_manager_address_anvil,
+                config.operator_2_pvt_key(),
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+                vec![erc20_mock_strategy_address],
+                vec![0],
+            )
+            .await?;
+            info!(tx_hash = %modify_allocation_for_operator2_tx_hash,strategy_address = %erc20_mock_strategy_address,"allocation by operator2 for strategy");
+
+            let register_for_operator_sets_by_operator1_txhash = register_for_operator_sets(
+                allocation_manager_address_anvil,
+                config.operator_pvt_key(),
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+            )
+            .await?;
+
+            info!(tx_hash = %register_for_operator_sets_by_operator1_txhash,"register for operator sets by operator1");
+
+            let register_for_operator_sets_by_operator2_txhash = register_for_operator_sets(
+                allocation_manager_address_anvil,
+                config.operator_2_pvt_key(),
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+            )
+            .await?;
+
+            info!(tx_hash = %register_for_operator_sets_by_operator2_txhash,"register for operator sets by operator2");
 
             let current_block_number = get_provider(&rpc_url).get_block_number().await?;
 
@@ -575,10 +643,10 @@ pub async fn register_operator_with_el_and_avs(
 
     let operator_details = Operator {
         address: signer.address(),
-        earnings_receiver_address: signer.address(),
         delegation_approver_address: Address::ZERO,
         staker_opt_out_window_blocks: 200,
         metadata_url: Some("url".to_string()),
+        allocation_delay: 0,
     };
 
     let _ = el_chain_writer
@@ -600,6 +668,108 @@ pub async fn register_operator_with_el_and_avs(
     );
 
     Ok(())
+}
+
+pub async fn create_new_operator_set(
+    allocation_manager: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+    strategy_address: Address,
+) -> Result<(FixedBytes<32>)> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+    let allocation_manager_instance =
+        AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
+    let params: Vec<CreateSetParams> = vec![CreateSetParams {
+        operatorSetId: 0,
+        strategies: [strategy_address],
+    }];
+
+    //todo : route this call through service manager instead of calling directly
+    let s = allocation_manager_instance
+        .createOperatorSets(params)
+        .send()
+        .await
+        .unwrap()
+        .get_receipt()
+        .await
+        .unwrap()
+        .transaction_hash;
+    Ok(s)
+}
+
+pub async fn modify_allocation_for_operator(
+    allocation_manager: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+    avs: Address,
+    strategies: Vec<Address>,
+    new_magnitude: Vec<u64>,
+) -> Result<FixedBytes<32>> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+    let allocation_manager_instance =
+        AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
+    let allocate_params = AllocateParams {
+        operatorSet: OperatorSet { avs, id: 0 },
+        strategies,
+        newMagnitudes: new_magnitude,
+    };
+    Ok(allocation_manager_instance
+        .modifyAllocations(allocate_params)
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash)
+}
+
+pub async fn register_for_operator_sets(
+    allocation_manager: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+    avs: Address,
+) -> Result<(FixedBytes<32>)> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+    let allocation_manager_instance =
+        AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
+    let register_params = RegisterParams {
+        avs,
+        operatorSetIds: vec![0],
+        data: hex!("0x00"),
+    };
+    Ok(allocation_manager_instance
+        .registerForOperatorSets(params)
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash)
 }
 
 /// Deposit into strategy
