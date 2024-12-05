@@ -13,7 +13,6 @@ workspace = true
 [dependencies]
 incredible-config.workspace = true
 eyre.workspace = true
-alloy-provider.workspace = true
 incredible-bindings.workspace = true
 futures-util.workspace = true
 alloy.workspace = true
