@@ -26,7 +26,6 @@ import {IPermissionController} from "@eigenlayer/contracts/interfaces/IPermissio
 import {PermissionController} from "@eigenlayer/contracts/permissions/PermissionController.sol";
 import {IBeacon} from "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 import {IStrategyManager} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
-import {ISlasher} from "@eigenlayer/contracts/interfaces/ISlasher.sol";
 import {IEigenPodManager} from "@eigenlayer/contracts/interfaces/IEigenPodManager.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
 import {IAllocationManager} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
@@ -117,7 +116,7 @@ library CoreDeploymentLib {
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address delegationManagerImpl = address(
             new DelegationManager(
-                IAVSDirectory(result.avsDirectory),
+                // IAVSDirectory(result.avsDirectory),
                 IStrategyManager(result.strategyManager),
                 IEigenPodManager(result.eigenPodManager),
                 IAllocationManager(result.allocationManager),
@@ -151,7 +150,7 @@ library CoreDeploymentLib {
             new EigenPodManager(
                 IETHPOSDeposit(ethPOSDeposit),
                 IBeacon(result.eigenPodBeacon),
-                IStrategyManager(result.strategyManager),
+                // IStrategyManager(result.strategyManager),
                 IDelegationManager(result.delegationManager),
                 IPauserRegistry(result.pauserRegistry)
             )
