@@ -647,19 +647,19 @@ let el_chain_writer = ELChainWriter::new(
     rpc_url.clone(),
     hex::encode(s).to_string(),
 );
-
+info!("oppp{:?}",signer.address());
 let operator_details = Operator {
     address: signer.address(),
     delegation_approver_address: signer.address(),
-    staker_opt_out_window_blocks: 0,
+    staker_opt_out_window_blocks: 0,    
     metadata_url: Some("url".to_string()),
-    allocation_delay: 0,
+    allocation_delay: 1,
 };  
 let delegation_manager_instance = DelegationManager::new(delegation_manager_address, get_signer(&hex::encode(s).to_string(), &rpc_url));
 let op_details = OperatorDetails{__deprecated_earningsReceiver:Address::ZERO,delegationApprover:signer.address(),__deprecated_stakerOptOutWindowBlocks:0};
 let d = delegation_manager_instance.allocationManager().call().await?._0;
 info!("allocation_manager{:?}",d);
-let s = delegation_manager_instance.registerAsOperator(op_details, 10,"uri".to_string()).send().await?.get_receipt().await?.transaction_hash;
+// let s = delegation_manager_instance.registerAsOperator(op_details, 10,"uri".to_string()).send().await?.get_receipt().await?.transaction_hash;
     let is_registered = el_chain_reader.is_operator_registered(signer.address()).await?;
     info!("op_reg_on_eigenlayer{:?}",is_registered);
     let _ = el_chain_writer
