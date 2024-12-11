@@ -20,7 +20,7 @@ pub mod BN254 {
 struct G1Point { uint256 X; uint256 Y; }
 ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
+    #[derive(Clone,Debug)]
     pub struct G1Point {
         pub X: alloy::sol_types::private::primitives::aliases::U256,
         pub Y: alloy::sol_types::private::primitives::aliases::U256,
@@ -1404,7 +1404,7 @@ pub mod IIncredibleSquaringTaskManager {
 struct Task { uint256 numberToBeSquared; uint32 taskCreatedBlock; bytes quorumNumbers; uint32 quorumThresholdPercentage; }
 ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
+    #[derive(Clone,Debug)]
     pub struct Task {
         pub numberToBeSquared: alloy::sol_types::private::primitives::aliases::U256,
         pub taskCreatedBlock: u32,
@@ -1681,7 +1681,7 @@ struct Task { uint256 numberToBeSquared; uint32 taskCreatedBlock; bytes quorumNu
 struct TaskResponse { uint32 referenceTaskIndex; uint256 numberSquared; }
 ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
+    #[derive(Clone,Debug,Serialize,Deserialize)]
     pub struct TaskResponse {
         pub referenceTaskIndex: u32,
         pub numberSquared: alloy::sol_types::private::primitives::aliases::U256,
@@ -1907,7 +1907,7 @@ struct TaskResponse { uint32 referenceTaskIndex; uint256 numberSquared; }
 struct TaskResponseMetadata { uint32 taskResponsedBlock; bytes32 hashOfNonSigners; }
 ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
+    #[derive(Clone,Debug)]
     pub struct TaskResponseMetadata {
         pub taskResponsedBlock: u32,
         pub hashOfNonSigners: alloy::sol_types::private::FixedBytes<32>,
@@ -2129,6 +2129,8 @@ struct TaskResponseMetadata { uint32 taskResponsedBlock; bytes32 hashOfNonSigner
         }
     };
     use alloy::contract as alloy_contract;
+    use serde::Deserialize;
+    use serde::Serialize;
     /**Creates a new wrapper around an on-chain [`IIncredibleSquaringTaskManager`](self) contract instance.
 
 See the [wrapper's documentation](`IIncredibleSquaringTaskManagerInstance`) for more details.*/

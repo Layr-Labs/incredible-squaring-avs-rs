@@ -123,6 +123,7 @@ library CoreDeploymentLib {
                 IAllocationManager(result.allocationManager),
                 IPauserRegistry(result.pauserRegistry),
                 IPermissionController(result.permissionController),
+                0
             )
         );
         address permissionControllerImpl = address(new PermissionController());
@@ -192,7 +193,7 @@ library CoreDeploymentLib {
             DelegationManager.initialize,
             (
                 proxyAdmin, // initialOwner
-                configData.delegationManager.initPausedStatus // initialPausedStatus
+                0 // initialPausedStatus
                    
             )
         );
