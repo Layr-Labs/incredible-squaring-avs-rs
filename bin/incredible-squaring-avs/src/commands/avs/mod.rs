@@ -470,9 +470,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         // )
         // .await?;
         // info!(tx_hash = %new_operator_set_tx_hash,"new operator set created tx_hash");
-let service_instance = IncredibleSquaringServiceManager::new(service_manager_address_anvil, get_provider(&config.http_rpc_url()));
-let s = service_instance.slasher().call().await.unwrap()._0;
-info!("slasherr{:?}",s);
+        
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
