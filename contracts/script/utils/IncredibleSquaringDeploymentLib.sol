@@ -31,11 +31,10 @@ import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 import {
     RegistryCoordinator,
     IBLSApkRegistry,
-    IIndexRegistry,
-    IStakeRegistry,StakeType
+    IIndexRegistry
     // ISocketRegistry
 } from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
-// import {StakeType} from "./interfaces/IStakeRegistry.sol";
+import {IStakeRegistry} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
 
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
@@ -113,8 +112,8 @@ library IncredibleSquaringDeploymentLib {
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
                 IIndexRegistry(result.indexRegistry),
-                IAVSDirectory(core.avsDirectory),
-                IPauserRegistry(core.pauserRegistry)
+                IAVSDirectory(core.avsDirectory)
+                // IPauserRegistry(core.pauserRegistry)
             )
         );
 
@@ -157,23 +156,23 @@ library IncredibleSquaringDeploymentLib {
             }
         }
 
-        StakeType[] memory stake_type  = new StakeType[](1);
-        stake_type[0] = StakeType.TOTAL_SLASHABLE;
-        uint32[] memory look_ahead_period = new uint32[](1);
-        look_ahead_period[0] = 0 ;
-        
+        // StakeType[] memory stake_type  = new StakeType[](1);
+        // stake_type[0] = StakeType.TOTAL_SLASHABLE;
+        // uint32[] memory look_ahead_period = new uint32[](1);
+        // look_ahead_period[0] = 0 ;
         bytes memory upgradeCall = abi.encodeCall(
             RegistryCoordinator.initialize,
             (
                 admin,
                 admin,
                 admin,
+                pausercontract,
                 0,
                 quorumsOperatorSetParams,
                 quorumsMinimumStake,
-                quorumsStrategyParams,
-                stake_type,
-                look_ahead_period
+                quorumsStrategyParams
+                // stake_type,
+                // look_ahead_period
             )
         );
 
@@ -343,7 +342,7 @@ library IncredibleSquaringDeploymentLib {
         data.eigenPodManager = json.readAddress(".addresses.eigenPodManager");
         data.delegationManager = json.readAddress(".addresses.delegation");
         data.avsDirectory = json.readAddress(".addresses.avsDirectory");
-        data.pauserRegistry = json.readAddress(".addresses.pauserRegistry");
+        // data.pauserRegistry = json.readAddress(".addresses.pauserRegistry");
 
         return data;
     }

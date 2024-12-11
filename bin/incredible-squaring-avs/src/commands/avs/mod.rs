@@ -456,21 +456,23 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
 
-        let set_avs_registrar_hash = set_avs_registrar(service_manager_address_anvil,config.operator_pvt_key(),config.ecdsa_keystore_path(),config.ecdsa_keystore_password(),&config.http_rpc_url()).await?;
-        info!("set avs registrar tx hash : {:?}",set_avs_registrar_hash);
+        // let set_avs_registrar_hash = set_avs_registrar(service_manager_address_anvil,config.operator_pvt_key(),config.ecdsa_keystore_path(),config.ecdsa_keystore_password(),&config.http_rpc_url()).await?;
+        // info!("set avs registrar tx hash : {:?}",set_avs_registrar_hash);
         // create operator set with strategy address.
         // we can add new strategy by calling addStrategiesToOperatorSet function in allocation manager in future.
-        let new_operator_set_tx_hash = create_new_operator_set(
-            service_manager_address_anvil,
-            config.operator_pvt_key(),
-            config.ecdsa_keystore_path(),
-            config.ecdsa_keystore_password(),
-            &rpc_url,
-            config.erc20_mock_strategy_addr()?,
-        )
-        .await?;
-        info!(tx_hash = %new_operator_set_tx_hash,"new operator set created tx_hash");
-
+        // let new_operator_set_tx_hash = create_new_operator_set(
+        //     service_manager_address_anvil,
+        //     config.operator_pvt_key(),
+        //     config.ecdsa_keystore_path(),
+        //     config.ecdsa_keystore_password(),
+        //     &rpc_url,
+        //     config.erc20_mock_strategy_addr()?,
+        // )
+        // .await?;
+        // info!(tx_hash = %new_operator_set_tx_hash,"new operator set created tx_hash");
+let service_instance = IncredibleSquaringServiceManager::new(service_manager_address_anvil, get_provider(&config.http_rpc_url()));
+let s = service_instance.slasher().call().await.unwrap()._0;
+info!("slasherr{:?}",s);
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
@@ -493,26 +495,26 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             )
             .await;
 
-            // let _ = register_operator_with_el_and_avs(
-            //     config.operator_2_pvt_key(),
-            //     rpc_url.clone(),
-            //     ecdsa_keystore_2_path.clone(),
-            //     ecdsa_keystore_2_password.clone(),
-            //     config.registry_coordinator_addr()?,
-            //     config.operator_state_retriever_addr()?,
-            //     config.delegation_manager_addr()?,
-            //     config.avs_directory_addr()?,
-            //     config.strategy_manager_addr()?,
-            //     config.erc20_mock_strategy_addr()?,
-            //     &bls_keystore_2_path,
-            //     &bls_keystore_2_password,
-            //     config.operator_2_to_avs_registration_sig_salt()?,
-            //     config.operator_2_sig_expiry()?,
-            //     config.operator_2_quorum_number()?,
-            //     config.operator_2_socket().to_string(),
-            //     U256::from(7000),
-            // )
-            // .await;
+            let _ = register_operator_with_el_and_avs(
+                config.operator_2_pvt_key(),
+                rpc_url.clone(),
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                config.registry_coordinator_addr()?,
+                config.operator_state_retriever_addr()?,
+                config.delegation_manager_addr()?,
+                config.avs_directory_addr()?,
+                config.strategy_manager_addr()?,
+                config.erc20_mock_strategy_addr()?,
+                &bls_keystore_2_path,
+                &bls_keystore_2_password,
+                config.operator_2_to_avs_registration_sig_salt()?,
+                config.operator_2_sig_expiry()?,
+                config.operator_2_quorum_number()?,
+                config.operator_2_socket().to_string(),
+                U256::from(7000),
+            )
+            .await;
 
             // let modify_allocation_for_operator1_tx_hash = modify_allocation_for_operator(
             //     allocation_manager_address_anvil,
@@ -564,22 +566,22 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             // .await?;
             // info!(tx_hash = %register_for_operator_sets_by_operator2_txhash,"register for operator sets by operator2");
 
-            // let current_block_number = get_provider(&rpc_url).get_block_number().await?;
+            let current_block_number = get_provider(&rpc_url).get_block_number().await?;
 
-            // fn mine_anvil_block(rpc_url: &str, blocks: u64) {
-            //     Command::new("cast")
-            //         .args([
-            //             "rpc",
-            //             "anvil_mine",
-            //             &blocks.to_string(),
-            //             "--rpc-url",
-            //             rpc_url,
-            //         ])
-            //         .stdout(Stdio::null())
-            //         .output()
-            //         .expect("Failed to execute command");
-            // }
-            // mine_anvil_block(&rpc_url, current_block_number);
+            fn mine_anvil_block(rpc_url: &str, blocks: u64) {
+                Command::new("cast")
+                    .args([
+                        "rpc",
+                        "anvil_mine",
+                        &blocks.to_string(),
+                        "--rpc-url",
+                        rpc_url,
+                    ])
+                    .stdout(Stdio::null())
+                    .output()
+                    .expect("Failed to execute command");
+            }
+            mine_anvil_block(&rpc_url, current_block_number);
         }
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
