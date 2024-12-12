@@ -34,7 +34,7 @@ import {
     IIndexRegistry
     // ISocketRegistry
 } from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
-import {IStakeRegistry} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
+import {IStakeRegistry,StakeType} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
 
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
@@ -56,6 +56,7 @@ library IncredibleSquaringDeploymentLib {
         address stakeRegistry;
         address socketRegistry;
         address strategy;
+        address pauserRegistry;
         address token;
     }
 
@@ -105,15 +106,28 @@ library IncredibleSquaringDeploymentLib {
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
         console2.log("pauser_registry");
-        console2.log(core.pauserRegistry);
+        console2.log(coredata.pauserRegistry);
+        console2.log("service_manager");
+        console2.log(result.incredibleSquaringServiceManager);
+        console2.log("stake_registry");
+        console2.log(result.stakeRegistry);
+        console2.log("bls_apk_registry");
+        console2.log(result.blsapkRegistry);
+        console2.log("index_registry");
+        console2.log(result.indexRegistry);
+        console2.log("avs_directory");
+        console2.log(core.avsDirectory);
+        console2.log("pauser_registry");
+        console2.log(coredata.pauserRegistry);
+
         address registryCoordinatorImpl = address(
             new RegistryCoordinator(
                 IServiceManager(result.incredibleSquaringServiceManager),
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
                 IIndexRegistry(result.indexRegistry),
-                IAVSDirectory(core.avsDirectory)
-                // IPauserRegistry(core.pauserRegistry)
+                IAVSDirectory(core.avsDirectory),
+                IPauserRegistry(coredata.pauserRegistry)
             )
         );
 
@@ -156,23 +170,23 @@ library IncredibleSquaringDeploymentLib {
             }
         }
 
-        // StakeType[] memory stake_type  = new StakeType[](1);
-        // stake_type[0] = StakeType.TOTAL_SLASHABLE;
-        // uint32[] memory look_ahead_period = new uint32[](1);
-        // look_ahead_period[0] = 0 ;
+        StakeType[] memory stake_type  = new StakeType[](1);
+        stake_type[0] = StakeType.TOTAL_SLASHABLE;
+        uint32[] memory look_ahead_period = new uint32[](1);
+        look_ahead_period[0] = 0 ;
         bytes memory upgradeCall = abi.encodeCall(
             RegistryCoordinator.initialize,
             (
                 admin,
                 admin,
                 admin,
-                pausercontract,
+                // pausercontract,
                 0,
                 quorumsOperatorSetParams,
                 quorumsMinimumStake,
-                quorumsStrategyParams
-                // stake_type,
-                // look_ahead_period
+                quorumsStrategyParams,
+                stake_type,
+                look_ahead_period
             )
         );
 
@@ -313,6 +327,8 @@ library IncredibleSquaringDeploymentLib {
             data.operatorStateRetriever.toHexString(),
             '","strategy":"',
             data.strategy.toHexString(),
+            '","pauserRegistry":"',
+            data.pauserRegistry.toHexString(),
             '","token":"',
             data.token.toHexString(),
             '"}'
@@ -342,7 +358,7 @@ library IncredibleSquaringDeploymentLib {
         data.eigenPodManager = json.readAddress(".addresses.eigenPodManager");
         data.delegationManager = json.readAddress(".addresses.delegation");
         data.avsDirectory = json.readAddress(".addresses.avsDirectory");
-        // data.pauserRegistry = json.readAddress(".addresses.pauserRegistry");
+        data.pauserRegistry = json.readAddress(".addresses.pauserRegistry");
 
         return data;
     }

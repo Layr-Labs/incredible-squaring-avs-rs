@@ -60,7 +60,7 @@ contract IncredibleSquaringTaskManager is
     }
 
     constructor(IRegistryCoordinator _registryCoordinator,IPauserRegistry _pauserRegistry, uint32 _taskResponseWindowBlock)
-        BLSSignatureChecker(_registryCoordinator) /** Pausable(_pauserRegistry) */
+        BLSSignatureChecker(_registryCoordinator) Pausable(_pauserRegistry)
     {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
     }
