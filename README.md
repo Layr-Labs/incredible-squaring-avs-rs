@@ -24,7 +24,7 @@ cp contracts/.env.example contracts/.env
 
 - Deploy eigenlayer and avs contracts and setup payments
 ```sh
-deploy-el-and-avs-contracts
+make deploy-el-and-avs-contracts
 ```
 
 - Single command AVS start using the following command (default values)
