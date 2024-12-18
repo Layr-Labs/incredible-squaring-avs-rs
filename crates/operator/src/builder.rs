@@ -161,7 +161,7 @@ impl OperatorBuilder {
         let encoded_response = TaskResponse::abi_encode(&task_response);
         let hash_msg = keccak256(encoded_response);
 
-        let signed_msg = self.key_pair.sign_message(hash_msg.as_slice());
+        let signed_msg = self.key_pair.sign_message(&hash_msg);
         let signed_task_response =
             SignedTaskResponse::new(task_response, signed_msg, self.operator_id);
         Ok(signed_task_response)
@@ -302,7 +302,7 @@ mod tests {
         let hash_msg = keccak256(encoded_response);
         assert!(verify_message(
             bls_key_pair.public_key_g2().g2(),
-            hash_msg.as_slice(),
+            &hash_msg,
             signed_task_response.signature().g1_point().g1()
         ));
     }

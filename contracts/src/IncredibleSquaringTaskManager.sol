@@ -59,17 +59,17 @@ contract IncredibleSquaringTaskManager is
         _;
     }
 
-    constructor(IRegistryCoordinator _registryCoordinator, uint32 _taskResponseWindowBlock)
-        BLSSignatureChecker(_registryCoordinator)
+    constructor(IRegistryCoordinator _registryCoordinator,IPauserRegistry _pauserRegistry, uint32 _taskResponseWindowBlock)
+        BLSSignatureChecker(_registryCoordinator) Pausable(_pauserRegistry)
     {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
     }
 
-    function initialize(IPauserRegistry _pauserRegistry, address initialOwner, address _aggregator, address _generator)
+    function initialize( address initialOwner, address _aggregator, address _generator)
         public
         initializer
     {
-        _initializePauser(_pauserRegistry, UNPAUSE_ALL);
+        // _initializePauser(_pauserRegistry, UNPAUSE_ALL);
         _transferOwnership(initialOwner);
         aggregator = _aggregator;
         generator = _generator;
