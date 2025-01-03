@@ -19,7 +19,7 @@ resolver = "2"
 [workspace.package]
 version = "0.0.1-alpha"
 edition = "2021"
-rust-version = "1.79"
+rust-version = "1.81"
 repository = "https://github.com/Layr-Labs/incredible-squaring-avs-rs"
 homepage = ""
 license = "Business Source License 1.1"
