@@ -3,6 +3,7 @@ use alloy::hex::FromHex;
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use eigen_types::operator::OperatorId;
 use error::ConfigError;
+use ruint::ParseError;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 /// Config Error
@@ -113,6 +114,8 @@ pub struct OperatorConfig {
     pub operator_2_address: String,
 
     pub operator_2_id: String,
+
+    pub operator_set_id: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -265,6 +268,10 @@ impl IncredibleConfig {
         self.operator_registration_config.quorum_number = quorum_num;
     }
 
+    pub fn set_operator_set_id(&mut self, operator_set_id: String) {
+        self.operator_config.operator_set_id = operator_set_id;
+    }
+
     pub fn set_socket(&mut self, socket: String) {
         self.operator_registration_config.socket = socket;
     }
@@ -328,6 +335,11 @@ impl IncredibleConfig {
 
     pub fn set_permission_controller_address(&mut self, address: String) {
         self.el_config.permission_controller_addr = address;
+    }
+
+    pub fn operator_set_id(&mut self) -> Result<u32, ConfigError> {
+        u32::from_str(&self.operator_config.operator_set_id)
+            .map_err(|e| ConfigError::ParseIntError(e))
     }
 
     pub fn rewards_coordinator_address(&self) -> Result<Address, ConfigError> {

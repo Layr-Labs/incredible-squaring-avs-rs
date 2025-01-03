@@ -1,8 +1,7 @@
-use ::hex::FromHex;
 use alloy::dyn_abi::DynSolValue;
 use alloy::hex;
 use alloy::primitives::aliases::U96;
-use alloy::primitives::{address, Address, Bytes, FixedBytes, U256};
+use alloy::primitives::{address, Address, Bytes, FixedBytes, U256, U32};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
@@ -150,6 +149,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "BLS_KEYSTORE_2_PASSWORD", default_value = "test")]
     bls_keystore_2_password: String,
 
+    /// operator set id
+    #[arg(long, value_name = "OPERATOR_SET_ID", default_value = "1")]
+    operator_set_id: String,
+
     /// Operator Id
     #[arg(
         long,
@@ -214,7 +217,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "SOCKET", default_value = "incredible-socket")]
     socket: String,
 
-    #[arg(long, value_name = "QUORUM_NUMBER", default_value = "01")]
+    #[arg(long, value_name = "QUORUM_NUMBER", default_value = "1")]
     quorum_number: String,
 
     #[arg(long, value_name = "SIG_EXPIRY")]
@@ -384,6 +387,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_2_sig_expiry,
             operator_2_address,
             operator_2_id,
+            operator_set_id,
             ..
         } = *self;
         if let Some(config_path) = config_path {
@@ -395,7 +399,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             // there's a default value ,so using unwrap is no issue
             config.set_task_manager_signer(task_manager_signer);
             config.set_signer(signer); // there's a default value ,so using unwrap is no issue
-
+            config.set_operator_set_id(operator_set_id);
             config.set_chain_id(chain_id);
             config.set_http_rpc_url(rpc_url.clone());
             config.set_ws_rpc_url(ws_rpc_url);
@@ -407,8 +411,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
             config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
             config.set_socket(socket);
-            info!("operator1 quorum num {:?}", quorum_number);
-            config.set_quorum_number(quorum_number);
+
+            config.set_quorum_number(quorum_number.clone());
             config.set_operator_id(operator_id);
             config.set_operator_address(operator_address);
             config.set_operator_2_address(operator_2_address);
@@ -422,7 +426,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 .clone()
                 .unwrap_or(delegation_manager_address_anvil.to_string()),
         );
-        config.set_operator_2_quorum_number("01".to_string());
+        config.set_operator_2_quorum_number(quorum_number);
         config.set_avs_directory_address(
             avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
         );
@@ -500,15 +504,14 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let allocation =
             AllocationManager::new(allocation_manager_address_anvil, get_provider(&rpc_url));
 
-        let reg_ = allocation
-            .getAVSRegistrar(service_manager_address_anvil)
-            .call()
-            .await?
-            ._0;
-        let regcoord =
-            RegistryCoordinator::new(config.registry_coordinator_addr()?, get_provider(&rpc_url));
-        let id = regcoord.quorumCount().call().await?._0 - 1;
-        info!("op_id{:?}", id);
+        // let reg_ = allocation
+        //     .getAVSRegistrar(service_manager_address_anvil)
+        //     .call()
+        //     .await?
+        //     ._0;
+        // let regcoord =
+        //     RegistryCoordinator::new(config.registry_coordinator_addr()?, get_provider(&rpc_url));
+        // let id = regcoord.quorumCount().call().await?._0 - 1;
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
@@ -526,10 +529,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.erc20_mock_strategy_addr()?,
                 &bls_keystore_path,
                 &bls_keystore_password,
-                config.operator_to_avs_registration_sig_salt()?,
-                config.sig_expiry()?,
-                config.quorum_number()?,
-                config.socket().to_string(),
                 "5000000000000000000000".parse().unwrap(),
             )
             .await;
@@ -550,10 +549,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.erc20_mock_strategy_addr()?,
                 &bls_keystore_2_path,
                 &bls_keystore_2_password,
-                config.operator_2_to_avs_registration_sig_salt()?,
-                config.operator_2_sig_expiry()?,
-                config.operator_2_quorum_number()?,
-                config.operator_2_socket().to_string(),
                 "7000000000000000000000".parse().unwrap(),
             )
             .await;
@@ -603,6 +598,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             let fr_key: String = keystore.iter().map(|&value| value as char).collect();
             let key_pair = BlsKeyPair::new(fr_key)?;
             let register_for_operator_sets_by_operator1_txhash = register_for_operator_sets(
+                config.operator_set_id()?,
                 key_pair,
                 config.registry_coordinator_addr()?,
                 allocation_manager_address_anvil,
@@ -622,6 +618,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             let fr_key: String = keystore.iter().map(|&value| value as char).collect();
             let key_pair_2 = BlsKeyPair::new(fr_key)?;
             let register_for_operator_sets_by_operator2_txhash = register_for_operator_sets(
+                u32::from(config.operator_set_id()?),
                 key_pair_2,
                 config.registry_coordinator_addr()?,
                 allocation_manager_address_anvil,
@@ -679,13 +676,8 @@ pub async fn register_operator_with_el_and_avs(
     erc20_strategy_address: Address,
     bls_keystore_path: &str,
     bls_keystore_password: &str,
-    operator_to_avs_registration_sig_salt: FixedBytes<32>,
-    operator_to_avs_registration_sig_expiry: U256,
-    quorum_numbers: Bytes,
-    socket: String,
     deposit_tokens: U256,
 ) -> eyre::Result<()> {
-    info!("strategy_manager{:?}", strategy_manager_address);
     let signer;
     if let Some(operator_key) = operator_pvt_key {
         signer = PrivateKeySigner::from_str(&operator_key)?;
@@ -693,21 +685,11 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
-    let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
-        get_logger(),
-        rpc_url.clone(),
-        hex::encode(s).to_string(),
-        registry_coordinator_address,
-        operator_state_retriever_address,
-    )
-    .await?;
 
     // Read BlsKey from path
     let keystore = Keystore::from_file(bls_keystore_path)?
         .decrypt(bls_keystore_password)
         .unwrap();
-    let fr_key: String = keystore.iter().map(|&value| value as char).collect();
-    let key_pair = BlsKeyPair::new(fr_key)?;
     let el_chain_reader = ELChainReader::new(
         get_logger(),
         allocation_manager,
@@ -735,14 +717,10 @@ pub async fn register_operator_with_el_and_avs(
         allocation_delay: 1,
     };
 
-    let is_registered = el_chain_reader
-        .is_operator_registered(signer.address())
-        .await?;
-    info!("op_reg_on_eigenlayer{:?}", is_registered);
     let _ = el_chain_writer
         .register_as_operator(operator_details)
-        .await?;
-    let ts = deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
+        .await?; // register operator in delegation manager on EigenLayer
+    deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
 
     Ok(())
 }
@@ -881,7 +859,9 @@ pub async fn modify_allocation_for_operator(
         .transaction_hash)
 }
 
+/// registers the operator to the operator set by calling the allocation manager
 pub async fn register_for_operator_sets(
+    operator_set_id: u32,
     bls_key_pair: BlsKeyPair,
     registry_coordinator_address: Address,
     allocation_manager: Address,
@@ -940,7 +920,7 @@ pub async fn register_for_operator_sets(
     .abi_encode_params();
     let register_params = RegisterParams {
         avs,
-        operatorSetIds: vec![1],
+        operatorSetIds: vec![operator_set_id],
         data: encoded_params_with_socket.into(),
     };
     Ok(allocation_manager_instance
