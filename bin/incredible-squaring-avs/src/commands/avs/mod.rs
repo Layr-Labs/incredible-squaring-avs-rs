@@ -152,7 +152,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_id: String,
 
-    /// Operator Id
+    /// Operator2 Id
     #[arg(
         long,
         value_name = "OPERATOR_2_ID",
@@ -160,7 +160,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_2_id: String,
 
-    /// Allocation Delay
+    /// Allocation Delay , default 1
     #[arg(long, value_name = "ALLOCATION_DELAY", default_value = "1")]
     allocation_delay: String,
 
@@ -230,6 +230,15 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
 
     #[arg(long, value_name = "ERC20_MOCK_STRATEGY_ADDRESS")]
     erc20_mock_strategy_address: Option<String>,
+
+    // metadata uri
+    #[arg(
+        long,
+        value_name = "METADATA_URI",
+        default_value = "incredible-squaring-avs"
+    )]
+    metadata_uri: String,
+
     // default is no.2 of anvil
     #[arg(
         long,
@@ -399,6 +408,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_1_token_amount,
             operator_2_token_amount,
             allocation_delay,
+            metadata_uri,
             ..
         } = *self;
         if let Some(config_path) = config_path {
@@ -517,6 +527,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
         if register_operator {
             let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
+                metadata_uri.clone(),
+                config.allocation_delay()?,
                 config.operator_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_path.clone(),
@@ -534,6 +546,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             .await;
 
             let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
+                metadata_uri,
+                config.allocation_delay()?,
                 config.operator_2_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_2_path.clone(),
@@ -661,6 +675,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 #[allow(clippy::too_many_arguments)]
 /// Register operator in eigenlayer and avs
 pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
+    metadata_uri: String,
+    allocation_delay: u32,
     operator_pvt_key: Option<String>,
     rpc_url: String,
     ecdsa_keystore_path: String,
@@ -706,8 +722,8 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
         address: signer.address(),
         delegation_approver_address: signer.address(),
         staker_opt_out_window_blocks: 0,
-        metadata_url: Some("url".to_string()),
-        allocation_delay: 1,
+        metadata_url: Some(metadata_uri),
+        allocation_delay,
     };
 
     let _ = el_chain_writer
