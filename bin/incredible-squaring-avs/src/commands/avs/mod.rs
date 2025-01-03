@@ -1,13 +1,12 @@
 use alloy::dyn_abi::DynSolValue;
 use alloy::hex;
 use alloy::primitives::aliases::U96;
-use alloy::primitives::{address, Address, Bytes, FixedBytes, U256, U32};
+use alloy::primitives::{Address, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
 use clap::{Args, Parser};
 use eigen_client_avsregistry::error::AvsRegistryError;
-use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
 use eigen_crypto_bls::{
@@ -23,23 +22,15 @@ use eigen_testing_utils::anvil_constants::{
 use eigen_types::operator::Operator;
 use eigen_utils::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigen_utils::allocationmanager::IAllocationManagerTypes::{AllocateParams, RegisterParams};
-use eigen_utils::delegationmanager::DelegationManager;
-use eigen_utils::iregistrycoordinator::IRegistryCoordinator::OperatorSetParam;
-use eigen_utils::istakeregistry::IStakeRegistry::StrategyParams;
 use eigen_utils::registrycoordinator::RegistryCoordinator;
-use eigen_utils::stakeregistry::StakeRegistry;
 use eigen_utils::{get_provider, get_signer};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
-use incredible_bindings::incrediblesquaringservicemanager::{
-    IAllocationManagerTypes::CreateSetParams, IncredibleSquaringServiceManager,
-};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
     get_incredible_squaring_service_manager, get_incredible_squaring_strategy_address,
     get_incredible_squaring_task_manager,
 };
-use metrics_util::registry;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
@@ -262,6 +253,20 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
 
     #[arg(
         long,
+        value_name = "OPERATOR_1_TOKEN_AMOUNT",
+        default_value = "5000000000000000000000"
+    )]
+    operator_1_token_amount: String,
+
+    #[arg(
+        long,
+        value_name = "OPERATOR_2_TOKEN_AMOUNT",
+        default_value = "7000000000000000000000"
+    )]
+    operator_2_token_amount: String,
+
+    #[arg(
+        long,
         value_name = "NODE_API_ADDRESS",
         default_value = "127.0.0.1:8085"
     )]
@@ -318,7 +323,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
         let operator_state_retriever_address_anvil =
             get_incredible_squaring_operator_state_retriever().await;
-        let service_manager_address_anvil = get_incredible_squaring_service_manager().await;
         let delegation_manager_address_anvil =
             get_delegation_manager_address(ANVIL_HTTP_URL.to_string()).await;
         let avs_directory_address_anvil =
@@ -388,6 +392,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_2_address,
             operator_2_id,
             operator_set_id,
+            operator_1_token_amount,
+            operator_2_token_amount,
             ..
         } = *self;
         if let Some(config_path) = config_path {
@@ -475,6 +481,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 .unwrap_or(expiry.to_string())
                 .to_string(),
         );
+        config.set_operator_1_token_amount(operator_1_token_amount);
+        config.set_operator_2_token_amount(operator_2_token_amount);
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
 
@@ -501,19 +509,9 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         )
         .await?;
         info!(tx_hash = %total_delegated_quorum_create_tx_hash,"total delegated stake quorum create tx_hash");
-        let allocation =
-            AllocationManager::new(allocation_manager_address_anvil, get_provider(&rpc_url));
 
-        // let reg_ = allocation
-        //     .getAVSRegistrar(service_manager_address_anvil)
-        //     .call()
-        //     .await?
-        //     ._0;
-        // let regcoord =
-        //     RegistryCoordinator::new(config.registry_coordinator_addr()?, get_provider(&rpc_url));
-        // let id = regcoord.quorumCount().call().await?._0 - 1;
         if register_operator {
-            let _ = register_operator_with_el_and_avs(
+            let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
                 config.operator_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_path.clone(),
@@ -522,18 +520,15 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.rewards_coordinator_address()?,
                 allocation_manager_address_anvil,
                 config.registry_coordinator_addr()?,
-                config.operator_state_retriever_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
                 config.strategy_manager_addr()?,
                 config.erc20_mock_strategy_addr()?,
-                &bls_keystore_path,
-                &bls_keystore_password,
-                "5000000000000000000000".parse().unwrap(),
+                config.operator_1_token_amount()?,
             )
             .await;
 
-            let _ = register_operator_with_el_and_avs(
+            let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
                 config.operator_2_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_2_path.clone(),
@@ -542,18 +537,16 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.rewards_coordinator_address()?,
                 allocation_manager_address_anvil,
                 config.registry_coordinator_addr()?,
-                config.operator_state_retriever_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
                 config.strategy_manager_addr()?,
                 config.erc20_mock_strategy_addr()?,
-                &bls_keystore_2_path,
-                &bls_keystore_2_password,
-                "7000000000000000000000".parse().unwrap(),
+                config.operator_2_token_amount()?,
             )
             .await;
 
             let allocation_delay_set_tx_hash = set_allocation_delay(
+                1,
                 allocation_manager_address_anvil,
                 config.operator_pvt_key(),
                 config.ecdsa_keystore_path(),
@@ -660,7 +653,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
 #[allow(clippy::too_many_arguments)]
 /// Register operator in eigenlayer and avs
-pub async fn register_operator_with_el_and_avs(
+pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     operator_pvt_key: Option<String>,
     rpc_url: String,
     ecdsa_keystore_path: String,
@@ -669,13 +662,10 @@ pub async fn register_operator_with_el_and_avs(
     rewards_coordinator: Address,
     allocation_manager: Address,
     registry_coordinator_address: Address,
-    operator_state_retriever_address: Address,
     delegation_manager_address: Address,
     avs_directory_address: Address,
     strategy_manager_address: Address,
     erc20_strategy_address: Address,
-    bls_keystore_path: &str,
-    bls_keystore_password: &str,
     deposit_tokens: U256,
 ) -> eyre::Result<()> {
     let signer;
@@ -686,10 +676,6 @@ pub async fn register_operator_with_el_and_avs(
     }
     let s = signer.to_field_bytes();
 
-    // Read BlsKey from path
-    let keystore = Keystore::from_file(bls_keystore_path)?
-        .decrypt(bls_keystore_password)
-        .unwrap();
     let el_chain_reader = ELChainReader::new(
         get_logger(),
         allocation_manager,
@@ -726,6 +712,7 @@ pub async fn register_operator_with_el_and_avs(
 }
 
 pub async fn set_allocation_delay(
+    allocation_delay: u32,
     allocation_manager: Address,
     operator_pvt_key: Option<String>,
     ecdsa_keystore_path: String,

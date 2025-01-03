@@ -116,6 +116,10 @@ pub struct OperatorConfig {
     pub operator_2_id: String,
 
     pub operator_set_id: String,
+
+    pub operator_1_token_amount: String,
+
+    pub operator_2_token_amount: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -305,6 +309,14 @@ impl IncredibleConfig {
         self.operator_2_registration_config.operator_pvt_key = Some(pvt_key);
     }
 
+    pub fn set_operator_1_token_amount(&mut self, amount: String) {
+        self.operator_config.operator_1_token_amount = amount;
+    }
+
+    pub fn set_operator_2_token_amount(&mut self, amount: String) {
+        self.operator_config.operator_2_token_amount = amount;
+    }
+
     pub fn set_avs_directory_address(&mut self, address: String) {
         self.el_config.avs_directory_addr = address;
     }
@@ -340,6 +352,16 @@ impl IncredibleConfig {
     pub fn operator_set_id(&mut self) -> Result<u32, ConfigError> {
         u32::from_str(&self.operator_config.operator_set_id)
             .map_err(|e| ConfigError::ParseIntError(e))
+    }
+
+    pub fn operator_1_token_amount(&mut self) -> Result<U256, ConfigError> {
+        U256::from_str(&self.operator_config.operator_1_token_amount)
+            .map_err(|e| ConfigError::ParseError(e))
+    }
+
+    pub fn operator_2_token_amount(&mut self) -> Result<U256, ConfigError> {
+        U256::from_str(&self.operator_config.operator_2_token_amount)
+            .map_err(|e| ConfigError::ParseError(e))
     }
 
     pub fn rewards_coordinator_address(&self) -> Result<Address, ConfigError> {
