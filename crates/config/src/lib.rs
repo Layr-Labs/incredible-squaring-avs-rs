@@ -3,7 +3,6 @@ use alloy::hex::FromHex;
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use eigen_types::operator::OperatorId;
 use error::ConfigError;
-use ruint::ParseError;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 /// Config Error
@@ -350,18 +349,17 @@ impl IncredibleConfig {
     }
 
     pub fn operator_set_id(&mut self) -> Result<u32, ConfigError> {
-        u32::from_str(&self.operator_config.operator_set_id)
-            .map_err(|e| ConfigError::ParseIntError(e))
+        u32::from_str(&self.operator_config.operator_set_id).map_err(ConfigError::ParseIntError)
     }
 
     pub fn operator_1_token_amount(&mut self) -> Result<U256, ConfigError> {
         U256::from_str(&self.operator_config.operator_1_token_amount)
-            .map_err(|e| ConfigError::ParseError(e))
+            .map_err(ConfigError::ParseError)
     }
 
     pub fn operator_2_token_amount(&mut self) -> Result<U256, ConfigError> {
         U256::from_str(&self.operator_config.operator_2_token_amount)
-            .map_err(|e| ConfigError::ParseError(e))
+            .map_err(ConfigError::ParseError)
     }
 
     pub fn rewards_coordinator_address(&self) -> Result<Address, ConfigError> {

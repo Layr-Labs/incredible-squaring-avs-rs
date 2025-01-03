@@ -243,7 +243,7 @@ impl Challenger {
                     Ok(transaction_data_option) => {
                         if let Some(transaction_data) = transaction_data_option {
                             let calldata = transaction_data.inner.input();
-                            let decoded = respondToTaskCall::abi_decode(&calldata, false);
+                            let decoded = respondToTaskCall::abi_decode(calldata, false);
 
                             match decoded {
                                 Ok(decoded) => {

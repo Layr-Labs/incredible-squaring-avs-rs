@@ -613,7 +613,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             let fr_key: String = keystore.iter().map(|&value| value as char).collect();
             let key_pair_2 = BlsKeyPair::new(fr_key)?;
             let register_for_operator_sets_by_operator2_txhash = register_for_operator_sets(
-                u32::from(config.operator_set_id()?),
+                config.operator_set_id()?,
                 key_pair_2,
                 config.registry_coordinator_addr()?,
                 allocation_manager_address_anvil,
@@ -713,6 +713,7 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     Ok(())
 }
 
+/// set allocation delay
 pub async fn set_allocation_delay(
     allocation_delay: u32,
     allocation_manager: Address,
@@ -733,7 +734,7 @@ pub async fn set_allocation_delay(
     let allocation_manager =
         AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
     Ok(allocation_manager
-        .setAllocationDelay(signer.address(), 0)
+        .setAllocationDelay(signer.address(), allocation_delay)
         .send()
         .await?
         .get_receipt()
@@ -817,6 +818,7 @@ pub async fn enable_operator_sets(
 }
 
 /// modify allocation for the operator for the particular operator set id
+#[allow(clippy::too_many_arguments)]
 pub async fn modify_allocation_for_operator(
     operator_set_id: u32,
     allocation_manager: Address,
@@ -842,7 +844,7 @@ pub async fn modify_allocation_for_operator(
         operatorSet: OperatorSet {
             avs,
             id: operator_set_id,
-        }, //todo remove hardcode in id?
+        },
         strategies,
         newMagnitudes: new_magnitude,
     }];
@@ -856,6 +858,7 @@ pub async fn modify_allocation_for_operator(
 }
 
 /// registers the operator to the operator set by calling the allocation manager
+#[allow(clippy::too_many_arguments)]
 pub async fn register_for_operator_sets(
     operator_set_id: u32,
     bls_key_pair: BlsKeyPair,
@@ -941,7 +944,7 @@ pub async fn deposit_into_strategy(
     amount: U256,
     el_writer: ELChainWriter,
 ) -> Result<(), ElContractsError> {
-    let s = el_writer
+    el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
         .await?;
     Ok(())

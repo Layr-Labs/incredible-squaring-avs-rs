@@ -320,8 +320,8 @@ impl Aggregator {
                 .recv()
                 .await
             {
-                let response = aggregated_response
-                    .map_err(|e| AggregatorError::BlsAggregationServiceError(e))?;
+                let response =
+                    aggregated_response.map_err(AggregatorError::BlsAggregationServiceError)?;
                 self.send_aggregated_response_to_contract(response).await?;
             }
         } else {

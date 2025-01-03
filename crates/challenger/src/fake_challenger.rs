@@ -1,11 +1,8 @@
 use crate::{error::ChallengerError, TaskResponseData};
-use alloy::consensus::{
-    Signed, Transaction, TxEip4844, TxEip4844Variant, TxEnvelope, TypedTransaction,
-};
-use alloy::rpc::types::{Log, TransactionReceipt};
-use alloy::signers::Signature;
+
+use alloy::rpc::types::Log;
 use alloy::sol_types::SolCall;
-use alloy::{hex::FromHex, primitives::TxHash, rpc::types::AccessList};
+use alloy::{hex::FromHex, primitives::TxHash};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
     respondToTaskCall, TaskResponded,
