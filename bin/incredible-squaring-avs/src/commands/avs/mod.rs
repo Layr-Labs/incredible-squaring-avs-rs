@@ -160,6 +160,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_2_id: String,
 
+    /// Allocation Delay
+    #[arg(long, value_name = "ALLOCATION_DELAY", default_value = "1")]
+    allocation_delay: String,
+
     /// Operator State retreiver
     #[arg(long, value_name = "OPERATOR_STATE_RETRIEVER_ADDRESS")]
     operator_state_retriever_addr: Option<String>,
@@ -394,6 +398,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_set_id,
             operator_1_token_amount,
             operator_2_token_amount,
+            allocation_delay,
             ..
         } = *self;
         if let Some(config_path) = config_path {
@@ -414,7 +419,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_aggregator_ip_address(aggregator_ip_address);
             config.set_bls_keystore_path(bls_keystore_path.clone());
             config.set_bls_keystore_password(bls_keystore_password.clone());
-
+            config.set_allocation_delay(allocation_delay);
             config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
             config.set_socket(socket);
 
@@ -546,7 +551,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             .await;
 
             let allocation_delay_set_tx_hash = set_allocation_delay(
-                1,
+                config.allocation_delay()?,
                 allocation_manager_address_anvil,
                 config.operator_pvt_key(),
                 config.ecdsa_keystore_path(),

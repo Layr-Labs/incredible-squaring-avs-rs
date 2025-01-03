@@ -119,6 +119,8 @@ pub struct OperatorConfig {
     pub operator_1_token_amount: String,
 
     pub operator_2_token_amount: String,
+
+    pub allocation_delay: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -346,6 +348,14 @@ impl IncredibleConfig {
 
     pub fn set_permission_controller_address(&mut self, address: String) {
         self.el_config.permission_controller_addr = address;
+    }
+
+    pub fn set_allocation_delay(&mut self, delay: String) {
+        self.operator_config.allocation_delay = delay;
+    }
+
+    pub fn allocation_delay(&mut self) -> Result<u32, ConfigError> {
+        u32::from_str(&self.operator_config.allocation_delay).map_err(ConfigError::ParseIntError)
     }
 
     pub fn operator_set_id(&mut self) -> Result<u32, ConfigError> {
