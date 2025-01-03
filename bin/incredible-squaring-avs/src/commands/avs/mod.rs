@@ -560,6 +560,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             );
 
             let modify_allocation_for_operator1_tx_hash = modify_allocation_for_operator(
+                config.operator_set_id()?,
                 allocation_manager_address_anvil,
                 config.operator_pvt_key(),
                 ecdsa_keystore_path.clone(),
@@ -574,6 +575,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             info!(tx_hash = %modify_allocation_for_operator1_tx_hash,strategy_address = %config.erc20_mock_strategy_addr()?,"allocation by operator1 for strategy");
 
             let modify_allocation_for_operator2_tx_hash = modify_allocation_for_operator(
+                config.operator_set_id()?,
                 allocation_manager_address_anvil,
                 config.operator_2_pvt_key(),
                 ecdsa_keystore_2_path.clone(),
@@ -739,6 +741,7 @@ pub async fn set_allocation_delay(
         .transaction_hash)
 }
 
+/// Creates Total Delegated stake
 pub async fn create_total_delegated_stake_quorum(
     strategy_address: Address,
     registry_coordinator_address: Address,
@@ -785,6 +788,7 @@ pub async fn create_total_delegated_stake_quorum(
     Ok(s)
 }
 
+/// Enable operator sets for the avs' registry coordinator
 pub async fn enable_operator_sets(
     registry_coordinator_address: Address,
     operator_pvt_key: Option<String>,
@@ -812,7 +816,9 @@ pub async fn enable_operator_sets(
         .transaction_hash)
 }
 
+/// modify allocation for the operator for the particular operator set id
 pub async fn modify_allocation_for_operator(
+    operator_set_id: u32,
     allocation_manager: Address,
     operator_pvt_key: Option<String>,
     ecdsa_keystore_path: String,
@@ -833,7 +839,10 @@ pub async fn modify_allocation_for_operator(
     let allocation_manager_instance =
         AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
     let allocate_params = vec![AllocateParams {
-        operatorSet: OperatorSet { avs, id: 1 }, //todo remove hardcode in id?
+        operatorSet: OperatorSet {
+            avs,
+            id: operator_set_id,
+        }, //todo remove hardcode in id?
         strategies,
         newMagnitudes: new_magnitude,
     }];
