@@ -15,9 +15,9 @@ library WriteToContractsRegistryLib {
         contractsRegistry.registerContract("delegationManager", address(deploymentdata.delegationManager));
         contractsRegistry.registerContract("strategyManager", address(deploymentdata.strategyManager));
         contractsRegistry.registerContract("avsDirectory", address(deploymentdata.avsDirectory));
-        contractsRegistry.registerContract("allocationManager",address(deploymentdata.allocationManager));
+        contractsRegistry.registerContract("allocationManager", address(deploymentdata.allocationManager));
         require(deploymentdata.permissionController != address(0));
-        contractsRegistry.registerContract("permissionController",address(deploymentdata.permissionController));
+        contractsRegistry.registerContract("permissionController", address(deploymentdata.permissionController));
     }
 
     function writeIncredibleSquaringContractsToRegistry(
@@ -36,6 +36,8 @@ library WriteToContractsRegistryLib {
         contractsRegistry.registerContract(
             "incredible_squaring_operator_state_retriever", address(deploymentdata.operatorStateRetriever)
         );
-        contractsRegistry.registerContract("incredible_squaring_service_manager", address(deploymentdata.incredibleSquaringServiceManager));
+        contractsRegistry.registerContract(
+            "incredible_squaring_service_manager", address(deploymentdata.incredibleSquaringServiceManager)
+        );
     }
 }

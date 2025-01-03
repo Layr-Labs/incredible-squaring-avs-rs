@@ -67,7 +67,7 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         quorum.strategies.push(StrategyParams({strategy: strategy, multiplier: 10_000}));
 
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin, coreDeployment, address(strategy),iSquaringConfig , ADMIN.addr
+            proxyAdmin, coreDeployment, address(strategy), iSquaringConfig, ADMIN.addr
         );
         labelContracts(coreDeployment, incredibleSquaringDeployment);
     }

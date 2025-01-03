@@ -254,6 +254,9 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_pvt_key: String,
 
+    #[arg(long, value_name = "SLASH_SIMULATE", default_value_t = false)]
+    slash_simulate: bool,
+
     #[arg(
         long,
         value_name = "OPERATOR_2_PVT_KEY",

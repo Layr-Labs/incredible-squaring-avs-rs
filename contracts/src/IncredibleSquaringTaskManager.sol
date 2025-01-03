@@ -59,16 +59,15 @@ contract IncredibleSquaringTaskManager is
         _;
     }
 
-    constructor(IRegistryCoordinator _registryCoordinator,IPauserRegistry _pauserRegistry, uint32 _taskResponseWindowBlock)
-        BLSSignatureChecker(_registryCoordinator) Pausable(_pauserRegistry)
-    {
+    constructor(
+        IRegistryCoordinator _registryCoordinator,
+        IPauserRegistry _pauserRegistry,
+        uint32 _taskResponseWindowBlock
+    ) BLSSignatureChecker(_registryCoordinator) Pausable(_pauserRegistry) {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
     }
 
-    function initialize( address initialOwner, address _aggregator, address _generator)
-        public
-        initializer
-    {
+    function initialize(address initialOwner, address _aggregator, address _generator) public initializer {
         // _initializePauser(_pauserRegistry, UNPAUSE_ALL);
         _transferOwnership(initialOwner);
         aggregator = _aggregator;
@@ -150,9 +149,6 @@ contract IncredibleSquaringTaskManager is
         return latestTaskNum;
     }
 
-    // NOTE: this function enables a challenger to raise and resolve a challenge.
-    // TODO: require challenger to pay a bond for raising a challenge
-    // TODO(samlaf): should we check that quorumNumbers is same as the one recorded in the task?
     function raiseAndResolveChallenge(
         Task calldata task,
         TaskResponse calldata taskResponse,

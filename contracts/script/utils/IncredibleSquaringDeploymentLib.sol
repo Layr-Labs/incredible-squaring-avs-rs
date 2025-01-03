@@ -29,12 +29,11 @@ import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 
 import {
-    RegistryCoordinator,
-    IBLSApkRegistry,
-    IIndexRegistry
-    // ISocketRegistry
-} from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
-import {IStakeRegistry,StakeType} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
+    RegistryCoordinator, IBLSApkRegistry, IIndexRegistry
+} from
+// ISocketRegistry
+"@eigenlayer-middleware/src/RegistryCoordinator.sol";
+import {IStakeRegistry, StakeType} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
 
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
@@ -98,7 +97,10 @@ library IncredibleSquaringDeploymentLib {
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
-                IRegistryCoordinator(result.registryCoordinator), IDelegationManager(core.delegationManager),IAVSDirectory(core.avsDirectory),IServiceManager(result.incredibleSquaringServiceManager)
+                IRegistryCoordinator(result.registryCoordinator),
+                IDelegationManager(core.delegationManager),
+                IAVSDirectory(core.avsDirectory),
+                IServiceManager(result.incredibleSquaringServiceManager)
             )
         );
 
@@ -170,10 +172,10 @@ library IncredibleSquaringDeploymentLib {
             }
         }
 
-        StakeType[] memory stake_type  = new StakeType[](1);
+        StakeType[] memory stake_type = new StakeType[](1);
         stake_type[0] = StakeType.TOTAL_SLASHABLE;
         uint32[] memory look_ahead_period = new uint32[](1);
-        look_ahead_period[0] = 0 ;
+        look_ahead_period[0] = 0;
         bytes memory upgradeCall = abi.encodeCall(
             RegistryCoordinator.initialize,
             (
@@ -203,14 +205,14 @@ library IncredibleSquaringDeploymentLib {
             IAllocationManager(core.allocationManager),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
-        IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl =
-            new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator),IPauserRegistry(address(pausercontract)), 30);
+        IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
+            IRegistryCoordinator(result.registryCoordinator), IPauserRegistry(address(pausercontract)), 30
+        );
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );
         bytes memory taskmanagerupgradecall = abi.encodeCall(
-            IncredibleSquaringTaskManager.initialize,
-            ( admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
+            IncredibleSquaringTaskManager.initialize, (admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
