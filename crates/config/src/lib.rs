@@ -126,6 +126,10 @@ pub struct ELConfig {
     pub avs_directory_addr: String,
 
     pub strategy_manager_addr: String,
+
+    pub rewards_coordinator_addr: String,
+
+    pub permission_controller_addr: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -316,6 +320,24 @@ impl IncredibleConfig {
 
     pub fn set_node_api_port_address(&mut self, port: String) {
         self.node_config.node_port_address = port;
+    }
+
+    pub fn set_rewards_coordinator_address(&mut self, address: String) {
+        self.el_config.rewards_coordinator_addr = address;
+    }
+
+    pub fn set_permission_controller_address(&mut self, address: String) {
+        self.el_config.permission_controller_addr = address;
+    }
+
+    pub fn rewards_coordinator_address(&self) -> Result<Address, ConfigError> {
+        Address::from_hex(self.el_config.rewards_coordinator_addr.as_bytes())
+            .map_err(ConfigError::HexParse)
+    }
+
+    pub fn permission_controller_address(&self) -> Result<Address, ConfigError> {
+        Address::from_hex(self.el_config.permission_controller_addr.as_bytes())
+            .map_err(ConfigError::HexParse)
     }
 
     pub fn node_api_port_address(&self) -> String {

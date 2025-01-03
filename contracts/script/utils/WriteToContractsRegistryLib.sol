@@ -16,6 +16,8 @@ library WriteToContractsRegistryLib {
         contractsRegistry.registerContract("strategyManager", address(deploymentdata.strategyManager));
         contractsRegistry.registerContract("avsDirectory", address(deploymentdata.avsDirectory));
         contractsRegistry.registerContract("allocationManager",address(deploymentdata.allocationManager));
+        require(deploymentdata.permissionController != address(0));
+        contractsRegistry.registerContract("permissionController",address(deploymentdata.permissionController));
     }
 
     function writeIncredibleSquaringContractsToRegistry(

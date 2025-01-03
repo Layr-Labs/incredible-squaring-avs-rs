@@ -480,6 +480,7 @@ library CoreDeploymentLib {
         data.allocationManager = json.readAddress(
             ".addresses.allocationManager"
         );
+        data.permissionController = json.readAddress(".addresses.permissionController");
 
         return data;
     }
@@ -567,6 +568,8 @@ library CoreDeploymentLib {
                 data.strategyBeacon.toHexString(),
                 '","allocationManager":"',
                 data.allocationManager.toHexString(),
+                '","permissionController":"',
+                data.permissionController.toHexString(),
                 '"}'
             );
     }

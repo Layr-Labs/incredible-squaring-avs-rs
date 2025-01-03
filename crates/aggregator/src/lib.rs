@@ -11,12 +11,14 @@ use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
+use ark_ec::AffineRepr;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_logging::get_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_blsaggregation::bls_agg::{
-    BlsAggregationServiceError, BlsAggregationServiceResponse, BlsAggregatorService,
+use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigen_services_blsaggregation::{
+    bls_agg::BlsAggregatorService, bls_aggregation_service_response::BlsAggregationServiceResponse,
 };
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
@@ -107,7 +109,8 @@ impl Aggregator {
                 .await;
         });
 
-        let bls_aggregation_service = BlsAggregatorService::new(avs_registry_service_chaincaller);
+        let bls_aggregation_service =
+            BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
@@ -237,6 +240,7 @@ impl Aggregator {
             }
 
             for val in task.quorumNumbers.iter() {
+                info!("qqq{:?}", val);
                 quorum_nums.push(*val);
             }
 
@@ -256,6 +260,7 @@ impl Aggregator {
                 )
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
+            info!("initialized new task with index{:?}", taskIndex);
         }
 
         Ok(())
@@ -284,6 +289,7 @@ impl Aggregator {
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
 
         if response.is_none() {
+            info!("none_response");
             let mut inner_map = HashMap::new();
             inner_map.insert(
                 task_response_digest,
@@ -291,7 +297,10 @@ impl Aggregator {
             );
             self.tasks_responses.insert(task_index, inner_map);
         }
-
+        info!("task_index{:?}", task_index);
+        info!("task_response_digest{:?}", task_response_digest);
+        info!("signed_task_response{:?}", signed_task_response.signature());
+        info!("operator_id{:?}", signed_task_response.operator_id());
         self.bls_aggregation_service
             .process_new_signature(
                 task_index,
@@ -299,7 +308,8 @@ impl Aggregator {
                 signed_task_response.signature(),
                 signed_task_response.operator_id(),
             )
-            .await?;
+            .await
+            .expect("PROCESS_SIGNATURE_ERROR");
         info!("processed signature for index {:?}", task_index);
         let quorum_reached = {
             let entry = self.task_quorum.entry(task_index).or_insert(0);
@@ -317,9 +327,10 @@ impl Aggregator {
                 .recv()
                 .await
             {
-                info!("sending aggregated response to contract");
-                self.send_aggregated_response_to_contract(aggregated_response?)
-                    .await?;
+                let response = aggregated_response
+                    .map_err(|e| AggregatorError::BlsAggregationServiceError(e))?;
+                info!("sending aggregated response to contract {:?}", response);
+                self.send_aggregated_response_to_contract(response).await?;
             }
         } else {
             info!(
@@ -345,13 +356,20 @@ impl Aggregator {
     ) -> Result<(), AggregatorError> {
         let mut non_signer_pub_keys = Vec::<G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1())?;
-            non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
+            if pub_key.g1().x().is_some() {
+                let g1 = convert_to_g1_point(pub_key.g1()).expect("111");
+                non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
+            } else {
+                info!(
+                    "There are no non_signers for the task index :{:?}",
+                    response.task_index
+                );
+            }
         }
 
         let mut quorum_apks = Vec::<G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1())?;
+            let g1 = convert_to_g1_point(pub_key.g1()).expect("222");
             quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
