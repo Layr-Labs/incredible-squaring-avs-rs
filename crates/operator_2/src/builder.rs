@@ -45,6 +45,8 @@ pub struct OperatorBuilder {
     registry_coordinator: Address,
 
     operator_state_retriever: Address,
+
+    slash_simulate: bool,
 }
 
 impl OperatorBuilder {
@@ -65,6 +67,7 @@ impl OperatorBuilder {
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
         let operator_address = config.operator_2_address()?;
+        let slash = config.slash_simulate();
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
             ws_rpc_url: config.ws_rpc_url(),
@@ -74,6 +77,7 @@ impl OperatorBuilder {
             client,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
+            slash_simulate: slash,
         })
     }
 
@@ -94,7 +98,12 @@ impl OperatorBuilder {
             info!("Challenger test: setting number to be squared to 9");
         }
 
-        let num_squared = number_to_be_squared * number_to_be_squared;
+        let num_squared;
+        if self.slash_simulate {
+            num_squared = U256::from(24); // not a perfect square, so it can't be correct in any input
+        } else {
+            num_squared = number_to_be_squared * number_to_be_squared;
+        }
 
         TaskResponse {
             referenceTaskIndex: new_task_created.taskIndex,

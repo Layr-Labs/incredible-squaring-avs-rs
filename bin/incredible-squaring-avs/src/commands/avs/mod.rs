@@ -412,6 +412,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_2_token_amount,
             allocation_delay,
             metadata_uri,
+            slash_simulate,
             ..
         } = *self;
         if let Some(config_path) = config_path {
@@ -419,7 +420,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         } else {
             config.set_node_api_port_address(node_api_address);
             config.set_metrics_port_address(metrics_address);
-
+            config.set_slash_simulate(slash_simulate);
             // there's a default value ,so using unwrap is no issue
             config.set_task_manager_signer(task_manager_signer);
             config.set_signer(signer); // there's a default value ,so using unwrap is no issue

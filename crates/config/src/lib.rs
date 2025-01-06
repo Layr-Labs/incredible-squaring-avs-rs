@@ -121,6 +121,8 @@ pub struct OperatorConfig {
     pub operator_2_token_amount: String,
 
     pub allocation_delay: String,
+
+    pub slash_simulate: bool,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -352,6 +354,14 @@ impl IncredibleConfig {
 
     pub fn set_allocation_delay(&mut self, delay: String) {
         self.operator_config.allocation_delay = delay;
+    }
+
+    pub fn set_slash_simulate(&mut self, slash: bool) {
+        self.operator_config.slash_simulate = slash;
+    }
+
+    pub fn slash_simulate(&self) -> bool {
+        self.operator_config.slash_simulate
     }
 
     pub fn allocation_delay(&mut self) -> Result<u32, ConfigError> {

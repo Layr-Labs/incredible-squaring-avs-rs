@@ -37,7 +37,6 @@ import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 import {FundOperator} from "./utils/FundOperator.sol";
 // # To deploy and verify our contract
 // forge script script/IncredibleSquaringDeployer.s.sol:IncredibleSquaringDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
-
 contract IncredibleSquaringDeployer is Script {
     // DEPLOYMENT CONSTANTS
     uint256 public constant QUORUM_THRESHOLD_PERCENTAGE = 100;
