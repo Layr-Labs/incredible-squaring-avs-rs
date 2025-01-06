@@ -21,6 +21,7 @@ import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
+import {InstantSlasher} from "@eigenlayer-middleware/src/slashers/InstantSlasher.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
 // import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol"; // todo: socket registry not available
 import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
@@ -57,6 +58,7 @@ library IncredibleSquaringDeploymentLib {
         address strategy;
         address pauserRegistry;
         address token;
+        address slasher;
     }
 
     struct IncredibleSquaringSetupConfig {
@@ -91,6 +93,7 @@ library IncredibleSquaringDeploymentLib {
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
+        result.slasher = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         OperatorStateRetriever operatorStateRetriever = new OperatorStateRetriever();
         result.strategy = strategy;
         result.operatorStateRetriever = address(operatorStateRetriever);
@@ -104,9 +107,9 @@ library IncredibleSquaringDeploymentLib {
             )
         );
 
-        // address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
+        address instantSlasherImpl = address(new InstantSlasher());
         console2.log("pauser_registry");
         console2.log(coredata.pauserRegistry);
         console2.log("service_manager");
@@ -182,7 +185,6 @@ library IncredibleSquaringDeploymentLib {
                 admin,
                 admin,
                 admin,
-                // pausercontract,
                 0,
                 quorumsOperatorSetParams,
                 quorumsMinimumStake,
@@ -195,7 +197,6 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
         UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
         UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
-        // UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
@@ -206,7 +207,7 @@ library IncredibleSquaringDeploymentLib {
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
-            IRegistryCoordinator(result.registryCoordinator), IPauserRegistry(address(pausercontract)), 30
+            IRegistryCoordinator(result.registryCoordinator), IPauserRegistry(address(pausercontract)), 30,result.slasher,coredata.allocationManager,result.incredibleSquaringServiceManager
         );
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
@@ -217,6 +218,12 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
         );
+
+        bytes memory slasherupgradecall = abi.encodeCall(
+            InstantSlasher.initialize,
+            (address(result.incredibleSquaringServiceManager), address(result.incredibleSquaringTaskManager))
+        );
+        UpgradeableProxyLib.upgradeAndCall(result.slasher, instantSlasherImpl, slasherupgradecall);
 
         verify_deployment(result);
 
@@ -264,6 +271,7 @@ library IncredibleSquaringDeploymentLib {
         data.stakeRegistry = json.readAddress(".addresses.stakeRegistry");
         data.strategy = json.readAddress(".addresses.strategy");
         data.token = json.readAddress(".addresses.token");
+        data.slasher = json.readAddress(".addresses.instantSlasher");
 
         return data;
     }
@@ -333,6 +341,8 @@ library IncredibleSquaringDeploymentLib {
             data.pauserRegistry.toHexString(),
             '","token":"',
             data.token.toHexString(),
+            '","instantSlasher":"',
+            data.slasher.toHexString(),
             '"}'
         );
     }

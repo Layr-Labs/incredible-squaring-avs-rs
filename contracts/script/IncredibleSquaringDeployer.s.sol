@@ -3,14 +3,12 @@ pragma solidity ^0.8.9;
 
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
 
-// import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
 import {IStrategyManager, IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
-// import {ISlasher} from "@eigenlayer/contracts/interfaces/ISlasher.sol";
 import {StrategyBaseTVLLimits} from "@eigenlayer/contracts/strategies/StrategyBaseTVLLimits.sol";
 import "@eigenlayer/test/mocks/EmptyContract.sol";
 
@@ -98,7 +96,6 @@ contract IncredibleSquaringDeployer is Script {
         vm.startBroadcast(deployer);
         IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig memory isConfig =
             IncredibleSquaringDeploymentLib.readIncredibleSquaringConfigJson("incredible_squaring_config");
-
         configData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
 
         erc20Mock = new MockERC20();
@@ -107,16 +104,19 @@ contract IncredibleSquaringDeployer is Script {
         console.log(isConfig.operator_2_addr);
         (bool s,) = isConfig.operator_2_addr.call{value: 0.1 ether}("");
         require(s);
-        console.log(isConfig.operator_2_addr.balance);
         incredibleSquaringStrategy = IStrategy(StrategyFactory(configData.strategyFactory).deployNewStrategy(erc20Mock));
         rewardscoordinator = configData.rewardsCoordinator;
 
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
         require(address(incredibleSquaringStrategy) != address(0));
-        require(address(incredibleSquaringStrategy) != address(0));
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
+        console.log("instantSlasher",incrediblSquaringDeployment.slasher);
+        IncredibleSquaringServiceManager serviceManager =
+            IncredibleSquaringServiceManager(incrediblSquaringDeployment.incredibleSquaringServiceManager);
+        serviceManager.initialize(msg.sender, configData.rewardsCoordinator);
+
         FundOperator.fund_operator(
             address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
         );
