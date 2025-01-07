@@ -198,6 +198,8 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
         UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
+        console2.log("allocation_manager");
+        console2.log(core.allocationManager);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
             IRegistryCoordinator(result.registryCoordinator),
@@ -206,14 +208,25 @@ library IncredibleSquaringDeploymentLib {
             IAllocationManager(core.allocationManager),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
+        console2.log("allocation_manager");
+        console2.log(core.allocationManager);
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
-            IRegistryCoordinator(result.registryCoordinator), IPauserRegistry(address(pausercontract)), 30,result.slasher,coredata.allocationManager,result.incredibleSquaringServiceManager
+            IRegistryCoordinator(result.registryCoordinator),
+            IPauserRegistry(address(pausercontract)),
+            30,
+            result.incredibleSquaringServiceManager
         );
-        UpgradeableProxyLib.upgrade(
-            result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
+        bytes memory servicemanagerupgradecall =
+            abi.encodeCall(IncredibleSquaringServiceManager.initialize, (admin, admin, result.slasher));
+        UpgradeableProxyLib.upgradeAndCall(
+            result.incredibleSquaringServiceManager,
+            address(incredibleSquaringServiceManagerImpl),
+            servicemanagerupgradecall
         );
+
         bytes memory taskmanagerupgradecall = abi.encodeCall(
-            IncredibleSquaringTaskManager.initialize, (admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
+            IncredibleSquaringTaskManager.initialize,
+            (admin, isConfig.aggregator_addr, isConfig.task_generator_addr, core.allocationManager, result.slasher)
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)

@@ -93,24 +93,16 @@ impl Challenger {
         let task_responded_log = TaskResponded::SIGNATURE_HASH;
 
         loop {
-            let log = tokio::select! {
+            tokio::select! {
                 Some(log) = task_responded_stream.next() => {
-                    log
+                    info!("challenger: Picked a task response");
+                    let task_index = self.process_task_response_log(log).await?;
+                    if self.tasks.contains_key(&task_index) {
+                        info!("calling challenge");
+                        self.call_challenge(task_index).await?;
+                    }
                 },
                 Some(log) = new_task_created_stream.next() => {
-                    log
-                },
-                else => {
-                    // If both streams are exhausted, break the loop.
-                    info!("challenger:No more logs to process, exiting loop.");
-                    break;
-                }
-            };
-
-            let topic = log.topic0();
-
-            if let Some(tp) = topic {
-                if *tp == new_task_created_log {
                     info!("challenger: picked up a new task ");
                     let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
 
@@ -123,19 +115,47 @@ impl Challenger {
 
                         let t_index = self.process_new_task_created_log(new_task_cr);
 
-                        if self.task_responses.contains_key(&t_index) {
-                            self.call_challenge(t_index).await?;
-                        }
+                        // if self.task_responses.contains_key(&t_index) {
+                        //     self.call_challenge(t_index).await?;
+                        // }
                     }
-                } else if *tp == task_responded_log {
-                    info!("challenger: received a task response log");
-
-                    let task_index = self.process_task_response_log(log).await?;
-                    if self.tasks.contains_key(&task_index) {
-                        self.call_challenge(task_index).await?;
-                    }
+                },
+                else => {
+                    // If both streams are exhausted, break the loop.
+                    info!("challenger:No more logs to process, exiting loop.");
+                    break;
                 }
-            }
+            };
+
+            // let topic = log.topic0();
+
+            // if let Some(tp) = topic {
+            //     if *tp == new_task_created_log {
+            //         info!("challenger: picked up a new task ");
+            //         let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
+
+            //         if let Some(data) = new_task_created_option {
+            //             let m = data.data();
+            //             let new_task_cr = NewTaskCreated {
+            //                 taskIndex: m.taskIndex,
+            //                 task: m.task.clone(),
+            //             };
+
+            //             let t_index = self.process_new_task_created_log(new_task_cr);
+
+            //             if self.task_responses.contains_key(&t_index) {
+            //                 self.call_challenge(t_index).await?;
+            //             }
+            //         }
+            //     } else if *tp == task_responded_log {
+            //         info!("challenger: received a task response log");
+
+            //         let task_index = self.process_task_response_log(log).await?;
+            //         if self.tasks.contains_key(&task_index) {
+            //             self.call_challenge(task_index).await?;
+            //         }
+            //     }
+            // }
         }
 
         Ok(())
@@ -152,11 +172,17 @@ impl Challenger {
     /// Call challenge
     pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
         if let Some(number_to_be_squared) = self.tasks.get(&task_index) {
+            info!(
+                "challenger:number_to_be_squared{:?}",
+                number_to_be_squared.numberToBeSquared
+            );
             let num_to_square = number_to_be_squared.numberToBeSquared;
 
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
+                info!("answer_by_operator{:?}", answer);
                 if answer != (num_to_square * num_to_square) {
+                    info!("calling raise challenge");
                     let _ = self.raise_challenge(task_index).await;
                     return Ok(());
                 }
@@ -250,18 +276,15 @@ impl Challenger {
                                     let non_signer_stakes_and_signature =
                                         decoded.nonSignerStakesAndSignature;
 
-                                    let mut non_signing_operator_pub_keys: Vec<G1Point> = vec![];
-
-                                    for (i, pub_key) in non_signer_stakes_and_signature
-                                        .nonSignerPubkeys
-                                        .iter()
-                                        .enumerate()
-                                    {
-                                        non_signing_operator_pub_keys[i] = G1Point {
-                                            X: pub_key.X,
-                                            Y: pub_key.Y,
-                                        };
-                                    }
+                                    let non_signing_operator_pub_keys: Vec<G1Point> =
+                                        non_signer_stakes_and_signature
+                                            .nonSignerPubkeys
+                                            .iter()
+                                            .map(|pub_key| G1Point {
+                                                X: pub_key.X,
+                                                Y: pub_key.Y,
+                                            })
+                                            .collect();
                                     Ok(non_signing_operator_pub_keys)
                                 }
 

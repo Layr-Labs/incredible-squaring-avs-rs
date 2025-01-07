@@ -7,6 +7,8 @@ pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
 use alloy::dyn_abi::SolType;
+use alloy::primitives::aliases::U96;
+use alloy::primitives::Address;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
@@ -22,7 +24,9 @@ use eigen_services_blsaggregation::{
 };
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
-use eigen_utils::get_ws_provider;
+use eigen_utils::operatorstateretriever::OperatorStateRetriever;
+use eigen_utils::registrycoordinator::RegistryCoordinator;
+use eigen_utils::{get_provider, get_ws_provider};
 pub use error::AggregatorError;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
@@ -37,6 +41,7 @@ use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 pub use rpc_server::SignedTaskResponse;
+use serde::ser;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -51,11 +56,11 @@ pub const BLOCK_TIME_SECONDS: u32 = 12;
 #[derive(Debug)]
 pub struct Aggregator {
     port_address: String,
-    avs_writer: AvsWriter,
+    pub avs_writer: AvsWriter,
     bls_aggregation_service: BlsAggregatorService<
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
-    task_quorum: HashMap<u32, u32>,
+    task_quorum: HashMap<u32, U96>,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
@@ -123,13 +128,22 @@ impl Aggregator {
     }
 
     /// Starts the aggregator service
-    pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
+    pub async fn start(
+        self,
+        ws_rpc_url: String,
+        operator_state_retriever: Address,
+        registry_coordinator: Address,
+    ) -> eyre::Result<()> {
         info!("Starting aggregator");
 
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
 
         // Spawn two tasks: one for the server and one for processing tasks
-        let server_handle = tokio::spawn(Self::start_server(Arc::clone(&aggregator)));
+        let server_handle = tokio::spawn(Self::start_server(
+            Arc::clone(&aggregator),
+            operator_state_retriever,
+            registry_coordinator,
+        ));
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
             Arc::clone(&aggregator),
@@ -161,6 +175,8 @@ impl Aggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn start_server(
         aggregator: Arc<tokio::sync::Mutex<Self>>,
+        operator_state_retriever: Address,
+        registry_coordinator: Address,
     ) -> eyre::Result<(), AggregatorError> {
         let mut io = IoHandler::new();
         io.add_method("process_signed_task_response", {
@@ -178,7 +194,11 @@ impl Aggregator {
                     let result = aggregator
                         .lock()
                         .await
-                        .process_signed_task_response(signed_task_response)
+                        .process_signed_task_response(
+                            signed_task_response,
+                            operator_state_retriever,
+                            registry_coordinator,
+                        )
                         .await;
                     match result {
                         Ok(_) => Ok(Value::Bool(true)),
@@ -238,6 +258,10 @@ impl Aggregator {
             for _ in &task.quorumNumbers {
                 quorum_threshold_percentages.push(task.quorumThresholdPercentage.try_into()?);
             }
+            info!(
+                "quorum_threshold_percentages{:?}",
+                quorum_threshold_percentages
+            );
 
             for val in task.quorumNumbers.iter() {
                 quorum_nums.push(*val);
@@ -277,6 +301,8 @@ impl Aggregator {
     pub async fn process_signed_task_response(
         &mut self,
         signed_task_response: SignedTaskResponse,
+        operator_state_retriever: Address,
+        registry_coordinator: Address,
     ) -> Result<(), AggregatorError> {
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
@@ -295,19 +321,53 @@ impl Aggregator {
             );
             self.tasks_responses.insert(task_index, inner_map);
         }
-        self.bls_aggregation_service
-            .process_new_signature(
-                task_index,
-                task_response_digest,
-                signed_task_response.signature(),
-                signed_task_response.operator_id(),
-            )
-            .await?;
+        info!("before_process,index{:?}", task_index);
 
         let quorum_reached = {
-            let entry = self.task_quorum.entry(task_index).or_insert(0);
-            *entry += 1;
-            *entry >= 2
+            let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
+            let registry_coordinator_instance = RegistryCoordinator::new(
+                registry_coordinator,
+                get_provider(&self.avs_writer.rpc_url),
+            );
+            let op_state = OperatorStateRetriever::new(
+                operator_state_retriever,
+                get_provider(&self.avs_writer.rpc_url),
+            );
+            if let Some(task) = self.tasks.get(&task_index) {
+                let state = op_state
+                    .getOperatorState_0(
+                        registry_coordinator,
+                        task.quorumNumbers.clone(),
+                        task.taskCreatedBlock,
+                    )
+                    .call()
+                    .await?
+                    ._0;
+                let operator_address = registry_coordinator_instance
+                    .getOperatorFromId(signed_task_response.operator_id())
+                    .call()
+                    .await?
+                    ._0;
+                for (quorum_idx, operators) in state.iter().enumerate() {
+                    for operator in operators {
+                        if operator.operator == operator_address {
+                            info!("op_stakee{:?} ,task_index{:?}", operator.stake, task_index);
+                            *entry += operator.stake;
+                        }
+                    }
+                }
+            }
+            if *entry < U96::from(12000) {
+                self.bls_aggregation_service
+                    .process_new_signature(
+                        task_index,
+                        task_response_digest,
+                        signed_task_response.signature(),
+                        signed_task_response.operator_id(),
+                    )
+                    .await?;
+            }
+            *entry >= U96::from(12000) //todo change this
         };
 
         if quorum_reached {
@@ -322,7 +382,8 @@ impl Aggregator {
             {
                 let response =
                     aggregated_response.map_err(AggregatorError::BlsAggregationServiceError)?;
-                self.send_aggregated_response_to_contract(response).await?;
+                self.send_aggregated_response_to_contract(response, signed_task_response)
+                    .await?;
             }
         } else {
             info!(
@@ -330,6 +391,7 @@ impl Aggregator {
                 task_index
             );
         }
+
         Ok(())
     }
 
@@ -345,6 +407,7 @@ impl Aggregator {
     pub async fn send_aggregated_response_to_contract(
         &self,
         response: BlsAggregationServiceResponse,
+        signed_task_response: SignedTaskResponse,
     ) -> Result<(), AggregatorError> {
         let mut non_signer_pub_keys = Vec::<G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
@@ -383,8 +446,7 @@ impl Aggregator {
         };
 
         let task = &self.tasks[&response.task_index];
-        let task_response =
-            &self.tasks_responses[&response.task_index][&response.task_response_digest];
+        let task_response = signed_task_response.task_response;
         self.avs_writer
             .send_aggregated_response(
                 task.clone(),

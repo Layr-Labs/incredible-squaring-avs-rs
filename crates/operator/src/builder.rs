@@ -9,7 +9,6 @@ use alloy::{
     sol_types::{SolEvent, SolValue},
 };
 
-#[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;

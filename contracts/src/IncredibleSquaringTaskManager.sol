@@ -15,6 +15,7 @@ import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
 import "./IIncredibleSquaringTaskManager.sol";
 import {IAllocationManagerTypes} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 import {OperatorSet} from "@eigenlayer/contracts/libraries/OperatorSetLib.sol";
+
 contract IncredibleSquaringTaskManager is
     Initializable,
     OwnableUpgradeable,
@@ -30,6 +31,8 @@ contract IncredibleSquaringTaskManager is
     uint32 public immutable TASK_RESPONSE_WINDOW_BLOCK;
     uint32 public constant TASK_CHALLENGE_WINDOW_BLOCK = 100;
     uint256 internal constant _THRESHOLD_DENOMINATOR = 100;
+    uint256 public constant WADS_TO_SLASH = 10;
+    uint32 public constant OPERATOR_SET_ID = 1;
 
     /* STORAGE */
     // The latest task index
@@ -69,20 +72,24 @@ contract IncredibleSquaringTaskManager is
         IRegistryCoordinator _registryCoordinator,
         IPauserRegistry _pauserRegistry,
         uint32 _taskResponseWindowBlock,
-        address _instantSlasher,
-        address _allocationManager,
         address _serviceManager
     ) BLSSignatureChecker(_registryCoordinator) Pausable(_pauserRegistry) {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
-        instantSlasher = _instantSlasher;
-        allocationManager = _allocationManager;
         serviceManager = _serviceManager;
     }
 
-    function initialize(address initialOwner, address _aggregator, address _generator) public initializer {
+    function initialize(
+        address initialOwner,
+        address _aggregator,
+        address _generator,
+        address _allocationManager,
+        address _slasher
+    ) public initializer {
         _transferOwnership(initialOwner);
         aggregator = _aggregator;
         generator = _generator;
+        allocationManager = _allocationManager;
+        instantSlasher = _slasher;
     }
 
     /* FUNCTIONS */
@@ -184,11 +191,10 @@ contract IncredibleSquaringTaskManager is
             "The challenge period for this task has already expired."
         );
 
-        // logic for checking whether challenge is valid or not
+        // // logic for checking whether challenge is valid or not
         uint256 actualSquaredOutput = numberToBeSquared * numberToBeSquared;
         bool isResponseCorrect = (actualSquaredOutput == taskResponse.numberSquared);
-
-        // if response was correct, no slashing happens so we return
+        // // if response was correct, no slashing happens so we return
         if (isResponseCorrect == true) {
             emit TaskChallengedUnsuccessfully(referenceTaskIndex, msg.sender);
             return;
@@ -219,21 +225,14 @@ contract IncredibleSquaringTaskManager is
                 BLSApkRegistry(address(blsApkRegistry)).pubkeyHashToOperator(hashesOfPubkeysOfNonSigningOperators[i]);
         }
 
-        // @dev the below code is commented out for the upcoming M2 release
-        //      in which there will be no slashing. The slasher is also being redesigned
-        //      so its interface may very well change.
-        // ==========================================
-        // // get the list of all operators who were active when the task was initialized
+        // get the list of all operators who were active when the task was initialized
         Operator[][] memory allOperatorInfo = getOperatorState(
             IRegistryCoordinator(address(registryCoordinator)), task.quorumNumbers, task.taskCreatedBlock
         );
-        // // freeze the operators who signed adversarially
+        // first for loop iterate over quorums
         for (uint256 i = 0; i < allOperatorInfo.length; i++) {
-            //     // first for loop iterate over quorums
-
+            // second for loop iterate over operators active in the quorum when the task was initialized
             for (uint256 j = 0; j < allOperatorInfo[i].length; j++) {
-                // second for loop iterate over operators active in the quorum when the task was initialized
-
                 // get the operator address
                 bytes32 operatorID = allOperatorInfo[i][j].operatorId;
                 address operatorAddress = blsApkRegistry.getOperatorFromPubkeyHash(operatorID);
@@ -249,19 +248,20 @@ contract IncredibleSquaringTaskManager is
                 }
 
                 if (wasSigningOperator == true) {
-                    // IStrategy[] memory istrategy = new IStrategy[](1);
-                    // istrategy[0] = IStrategy(address(0));
-                    OperatorSet memory operatorset = OperatorSet({avs:serviceManager,id:1 });
-                    IStrategy[] memory istrategy= IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
-                    uint256[] memory wadsToSlash = new uint256[](1);
-                    wadsToSlash[0] = 2;
+                    OperatorSet memory operatorset = OperatorSet({avs: serviceManager, id: OPERATOR_SET_ID});
+                    IStrategy[] memory istrategy =
+                        IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
+                    uint256[] memory wadsToSlash = new uint256[](istrategy.length);
+                    for (uint256 z = 0; z < wadsToSlash.length; z++) {
+                        wadsToSlash[z] = WADS_TO_SLASH;
+                    }
                     IAllocationManagerTypes.SlashingParams memory slashingparams = IAllocationManagerTypes
                         .SlashingParams({
                         operator: operatorAddress,
-                        operatorSetId: uint32(1), // todo remove hardcode?
+                        operatorSetId: OPERATOR_SET_ID,
                         strategies: istrategy,
                         wadsToSlash: wadsToSlash,
-                        description: "slash"
+                        description: "slash_the_operator"
                     });
                     InstantSlasher(instantSlasher).fulfillSlashingRequest(slashingparams);
                 }

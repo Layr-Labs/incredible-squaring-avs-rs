@@ -25,6 +25,7 @@ use eigen_utils::allocationmanager::IAllocationManagerTypes::{AllocateParams, Re
 use eigen_utils::registrycoordinator::RegistryCoordinator;
 use eigen_utils::{get_provider, get_signer};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
@@ -418,6 +419,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         if let Some(config_path) = config_path {
             config = IncredibleConfig::load(&config_path)?;
         } else {
+            config.set_service_manager_address(service_manager_address_anvil.to_string());
             config.set_node_api_port_address(node_api_address);
             config.set_metrics_port_address(metrics_address);
             config.set_slash_simulate(slash_simulate);
@@ -668,6 +670,14 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             mine_anvil_block(&rpc_url, current_block_number);
         }
 
+        let task_manager = IncredibleSquaringTaskManager::new(
+            incredible_squaring_task_manager_address_anvil,
+            get_provider(ANVIL_HTTP_URL),
+        );
+        let allo = task_manager.allocationManager().call().await?._0;
+        info!("alllloo{:?}", allo);
+        let islasher = task_manager.instantSlasher().call().await?._0;
+        info!("islasher{:?}", islasher);
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
         let _ = avs_launcher.launch_avs(avs_builder).await;

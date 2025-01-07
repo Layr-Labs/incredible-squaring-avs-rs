@@ -35,7 +35,7 @@ use tracing::info;
 pub struct AvsWriter {
     task_manager_addr: Address,
     signer: String,
-    rpc_url: String,
+    pub rpc_url: String,
 }
 
 impl AvsWriter {
@@ -135,21 +135,31 @@ impl AvsWriter {
 
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
-            task_response,
+            task_response.clone(),
             task_response_metadata,
             pub_keys_of_non_signing_operators,
         );
+        info!("sending raise challenge call");
 
         match challenge_tx_call.send().await {
             Ok(challenge_tx) => {
                 let receipt_result = challenge_tx.get_receipt().await;
                 match receipt_result {
-                    Ok(receipts) => Ok(receipts),
+                    Ok(receipts) => {
+                        info!(
+                            "raiseAndResolveChallenge for index{:?} tx_hash: {:?}",
+                            task_response.referenceTaskIndex, receipts.transaction_hash
+                        );
+                        Ok(receipts)
+                    }
                     Err(e) => Err(ChainIoError::AlloyProviderError(e)),
                 }
             }
 
-            Err(e) => Err(ChainIoError::ContractError(e)),
+            Err(e) => {
+                info!("errror in raise challenge{:?}", e);
+                Err(ChainIoError::ContractError(e))
+            }
         }
     }
 
@@ -168,6 +178,7 @@ impl AvsWriter {
     ) -> Result<(), ChainIoError> {
         let pr = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
+        info!("befofe responding to task");
         let receipt = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
             .send()

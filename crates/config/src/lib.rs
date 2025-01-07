@@ -227,6 +227,10 @@ impl IncredibleConfig {
         self.aggregator_config.ip_address = port;
     }
 
+    pub fn set_service_manager_address(&mut self, address: String) {
+        self.incredible_contracts_config.service_manager_addr = address;
+    }
+
     pub fn set_bls_keystore_path(&mut self, path: String) {
         self.bls_config.keystore_path = path;
     }
@@ -366,6 +370,16 @@ impl IncredibleConfig {
 
     pub fn allocation_delay(&mut self) -> Result<u32, ConfigError> {
         u32::from_str(&self.operator_config.allocation_delay).map_err(ConfigError::ParseIntError)
+    }
+
+    pub fn service_manager_addr(&self) -> Result<Address, ConfigError> {
+        Address::from_hex(
+            &self
+                .incredible_contracts_config
+                .service_manager_addr
+                .as_bytes(),
+        )
+        .map_err(ConfigError::HexParse)
     }
 
     pub fn operator_set_id(&mut self) -> Result<u32, ConfigError> {

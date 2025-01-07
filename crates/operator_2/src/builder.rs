@@ -8,7 +8,6 @@ use alloy::{
 };
 use incredible_operator::{client::ClientAggregator, error::OperatorError};
 
-#[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
