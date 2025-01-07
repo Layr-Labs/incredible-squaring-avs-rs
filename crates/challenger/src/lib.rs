@@ -172,15 +172,10 @@ impl Challenger {
     /// Call challenge
     pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
         if let Some(number_to_be_squared) = self.tasks.get(&task_index) {
-            info!(
-                "challenger:number_to_be_squared{:?}",
-                number_to_be_squared.numberToBeSquared
-            );
             let num_to_square = number_to_be_squared.numberToBeSquared;
 
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
-                info!("answer_by_operator{:?}", answer);
                 if answer != (num_to_square * num_to_square) {
                     info!("calling raise challenge");
                     let _ = self.raise_challenge(task_index).await;

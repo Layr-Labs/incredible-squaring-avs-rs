@@ -674,10 +674,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             incredible_squaring_task_manager_address_anvil,
             get_provider(ANVIL_HTTP_URL),
         );
-        let allo = task_manager.allocationManager().call().await?._0;
-        info!("alllloo{:?}", allo);
-        let islasher = task_manager.instantSlasher().call().await?._0;
-        info!("islasher{:?}", islasher);
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
         let _ = avs_launcher.launch_avs(avs_builder).await;

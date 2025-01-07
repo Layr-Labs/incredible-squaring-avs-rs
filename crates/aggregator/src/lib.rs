@@ -56,6 +56,7 @@ pub const BLOCK_TIME_SECONDS: u32 = 12;
 #[derive(Debug)]
 pub struct Aggregator {
     port_address: String,
+    /// avs writer
     pub avs_writer: AvsWriter,
     bls_aggregation_service: BlsAggregatorService<
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
@@ -258,10 +259,6 @@ impl Aggregator {
             for _ in &task.quorumNumbers {
                 quorum_threshold_percentages.push(task.quorumThresholdPercentage.try_into()?);
             }
-            info!(
-                "quorum_threshold_percentages{:?}",
-                quorum_threshold_percentages
-            );
 
             for val in task.quorumNumbers.iter() {
                 quorum_nums.push(*val);
@@ -283,7 +280,6 @@ impl Aggregator {
                 )
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
-            info!("initialized new task with index{:?}", taskIndex);
         }
 
         Ok(())
@@ -321,7 +317,6 @@ impl Aggregator {
             );
             self.tasks_responses.insert(task_index, inner_map);
         }
-        info!("before_process,index{:?}", task_index);
 
         let quorum_reached = {
             let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
@@ -348,16 +343,15 @@ impl Aggregator {
                     .call()
                     .await?
                     ._0;
-                for (quorum_idx, operators) in state.iter().enumerate() {
+                for operators in state.iter() {
                     for operator in operators {
                         if operator.operator == operator_address {
-                            info!("op_stakee{:?} ,task_index{:?}", operator.stake, task_index);
                             *entry += operator.stake;
                         }
                     }
                 }
             }
-            if *entry < U96::from(12000) {
+            if *entry < U96::from(4000) {
                 self.bls_aggregation_service
                     .process_new_signature(
                         task_index,
@@ -367,7 +361,7 @@ impl Aggregator {
                     )
                     .await?;
             }
-            *entry >= U96::from(12000) //todo change this
+            *entry >= U96::from(4000) //todo change this
         };
 
         if quorum_reached {

@@ -35,6 +35,7 @@ use tracing::info;
 pub struct AvsWriter {
     task_manager_addr: Address,
     signer: String,
+    /// rpc url
     pub rpc_url: String,
 }
 
@@ -139,7 +140,6 @@ impl AvsWriter {
             task_response_metadata,
             pub_keys_of_non_signing_operators,
         );
-        info!("sending raise challenge call");
 
         match challenge_tx_call.send().await {
             Ok(challenge_tx) => {
@@ -156,10 +156,7 @@ impl AvsWriter {
                 }
             }
 
-            Err(e) => {
-                info!("errror in raise challenge{:?}", e);
-                Err(ChainIoError::ContractError(e))
-            }
+            Err(e) => Err(ChainIoError::ContractError(e)),
         }
     }
 
