@@ -175,7 +175,6 @@ impl AvsWriter {
     ) -> Result<(), ChainIoError> {
         let pr = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
-        info!("befofe responding to task");
         let receipt = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
             .send()

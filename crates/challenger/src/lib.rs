@@ -90,15 +90,11 @@ impl Challenger {
 
         let mut task_responded_stream = task_responded_sub.into_stream();
 
-        let task_responded_log = TaskResponded::SIGNATURE_HASH;
-
         loop {
             tokio::select! {
                 Some(log) = task_responded_stream.next() => {
-                    info!("challenger: Picked a task response");
                     let task_index = self.process_task_response_log(log).await?;
                     if self.tasks.contains_key(&task_index) {
-                        info!("calling challenge");
                         self.call_challenge(task_index).await?;
                     }
                 },
@@ -113,11 +109,8 @@ impl Challenger {
                             task: m.task.clone(),
                         };
 
-                        let t_index = self.process_new_task_created_log(new_task_cr);
+                        let _ = self.process_new_task_created_log(new_task_cr);
 
-                        // if self.task_responses.contains_key(&t_index) {
-                        //     self.call_challenge(t_index).await?;
-                        // }
                     }
                 },
                 else => {
@@ -126,36 +119,6 @@ impl Challenger {
                     break;
                 }
             };
-
-            // let topic = log.topic0();
-
-            // if let Some(tp) = topic {
-            //     if *tp == new_task_created_log {
-            //         info!("challenger: picked up a new task ");
-            //         let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
-
-            //         if let Some(data) = new_task_created_option {
-            //             let m = data.data();
-            //             let new_task_cr = NewTaskCreated {
-            //                 taskIndex: m.taskIndex,
-            //                 task: m.task.clone(),
-            //             };
-
-            //             let t_index = self.process_new_task_created_log(new_task_cr);
-
-            //             if self.task_responses.contains_key(&t_index) {
-            //                 self.call_challenge(t_index).await?;
-            //             }
-            //         }
-            //     } else if *tp == task_responded_log {
-            //         info!("challenger: received a task response log");
-
-            //         let task_index = self.process_task_response_log(log).await?;
-            //         if self.tasks.contains_key(&task_index) {
-            //             self.call_challenge(task_index).await?;
-            //         }
-            //     }
-            // }
         }
 
         Ok(())

@@ -41,7 +41,6 @@ use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 pub use rpc_server::SignedTaskResponse;
-use serde::ser;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -318,8 +317,9 @@ impl Aggregator {
             self.tasks_responses.insert(task_index, inner_map);
         }
 
+        let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
+        let old_entry = entry.clone();
         let quorum_reached = {
-            let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
             let registry_coordinator_instance = RegistryCoordinator::new(
                 registry_coordinator,
                 get_provider(&self.avs_writer.rpc_url),
@@ -351,7 +351,7 @@ impl Aggregator {
                     }
                 }
             }
-            if *entry < U96::from(4000) {
+            if old_entry.is_zero() {
                 self.bls_aggregation_service
                     .process_new_signature(
                         task_index,
@@ -360,11 +360,22 @@ impl Aggregator {
                         signed_task_response.operator_id(),
                     )
                     .await?;
+            } else {
+                if old_entry < U96::from(4800) {
+                    self.bls_aggregation_service
+                        .process_new_signature(
+                            task_index,
+                            task_response_digest,
+                            signed_task_response.signature(),
+                            signed_task_response.operator_id(),
+                        )
+                        .await?;
+                }
             }
-            *entry >= U96::from(4000) //todo change this
+            *entry >= U96::from(4800) // total stake is 12000. quorum threshold percentag in new task is 40% . hence 4800.
         };
 
-        if quorum_reached {
+        if quorum_reached && (old_entry < U96::from(4800)) {
             info!("quorum reached for task index: {:?}", task_index);
             if let Some(aggregated_response) = self
                 .bls_aggregation_service
@@ -380,10 +391,17 @@ impl Aggregator {
                     .await?;
             }
         } else {
-            info!(
-                "quorum not reached yet for index:{:?}. waiting to receive more signatures ",
-                task_index
-            );
+            if old_entry >= U96::from(4800) {
+                info!(
+                    "quorum already reached for index{:?}, ignoring more signatures",
+                    task_index
+                );
+            } else {
+                info!(
+                    "quorum not reached yet for index:{:?}. waiting to receive more signatures ",
+                    task_index
+                );
+            }
         }
 
         Ok(())

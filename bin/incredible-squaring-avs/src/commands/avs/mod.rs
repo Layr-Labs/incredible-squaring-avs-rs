@@ -25,7 +25,6 @@ use eigen_utils::allocationmanager::IAllocationManagerTypes::{AllocateParams, Re
 use eigen_utils::registrycoordinator::RegistryCoordinator;
 use eigen_utils::{get_provider, get_signer};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
-use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
@@ -670,10 +669,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             mine_anvil_block(&rpc_url, current_block_number);
         }
 
-        let task_manager = IncredibleSquaringTaskManager::new(
-            incredible_squaring_task_manager_address_anvil,
-            get_provider(ANVIL_HTTP_URL),
-        );
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
         let _ = avs_launcher.launch_avs(avs_builder).await;
@@ -713,6 +708,7 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
         get_logger(),
         allocation_manager,
         delegation_manager_address,
+        rewards_coordinator,
         avs_directory_address,
         permission_controller_address,
         rpc_url.clone(),
