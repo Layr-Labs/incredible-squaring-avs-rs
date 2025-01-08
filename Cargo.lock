@@ -2506,9 +2506,9 @@ version = "0.1.1"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=8bc7d45#8bc7d4598ca7bb77b95dff235c261af584f9c70d"
 dependencies = [
  "eigen-logging",
- "metrics 0.24.1",
- "metrics-exporter-prometheus 0.16.0",
- "metrics-util 0.18.0",
+ "metrics",
+ "metrics-exporter-prometheus",
+ "metrics-util",
 ]
 
 [[package]]
@@ -2517,7 +2517,7 @@ version = "0.1.1"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=8bc7d45#8bc7d4598ca7bb77b95dff235c261af584f9c70d"
 dependencies = [
  "eigen-logging",
- "metrics 0.24.1",
+ "metrics",
 ]
 
 [[package]]
@@ -3481,9 +3481,6 @@ name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
-dependencies = [
- "ahash",
-]
 
 [[package]]
 name = "hashbrown"
@@ -3718,7 +3715,6 @@ dependencies = [
  "http 1.2.0",
  "hyper 1.5.2",
  "hyper-util",
- "log",
  "rustls 0.23.20",
  "rustls-native-certs 0.8.1",
  "rustls-pki-types",
@@ -4036,8 +4032,8 @@ dependencies = [
  "incredible-operator",
  "incredible-operator-2",
  "incredible-task-generator",
- "metrics 0.24.1",
- "metrics-util 0.17.0",
+ "metrics",
+ "metrics-util",
  "ntex",
  "serde",
  "thiserror 2.0.7",
@@ -4130,8 +4126,8 @@ dependencies = [
  "futures-util",
  "incredible-bindings",
  "incredible-config",
- "metrics 0.24.1",
- "metrics-util 0.17.0",
+ "metrics",
+ "metrics-util",
  "reqwest 0.12.9",
  "thiserror 2.0.7",
  "tokio",
@@ -4238,8 +4234,8 @@ dependencies = [
  "incredible-metrics",
  "incredible-operator",
  "incredible-testing-utils",
- "metrics-exporter-prometheus 0.15.3",
- "metrics-util 0.17.0",
+ "metrics-exporter-prometheus",
+ "metrics-util",
  "rust-bls-bn254 0.1.0",
  "tokio",
  "tracing",
@@ -4633,43 +4629,12 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
 name = "metrics"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "884adb57038347dfbaf2d5065887b6cf4312330dc8e94bc30a1a839bd79d3261"
-dependencies = [
- "ahash",
- "portable-atomic",
-]
-
-[[package]]
-name = "metrics"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a7deb012b3b2767169ff203fadb4c6b0b82b947512e5eb9e0b78c2e186ad9e3"
 dependencies = [
  "ahash",
  "portable-atomic",
-]
-
-[[package]]
-name = "metrics-exporter-prometheus"
-version = "0.15.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4f0c8427b39666bf970460908b213ec09b3b350f20c0c2eabcbba51704a08e6"
-dependencies = [
- "base64 0.22.1",
- "http-body-util",
- "hyper 1.5.2",
- "hyper-rustls 0.27.3",
- "hyper-util",
- "indexmap 2.7.0",
- "ipnet",
- "metrics 0.23.0",
- "metrics-util 0.17.0",
- "quanta",
- "thiserror 1.0.69",
- "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -4685,31 +4650,12 @@ dependencies = [
  "hyper-util",
  "indexmap 2.7.0",
  "ipnet",
- "metrics 0.24.1",
- "metrics-util 0.18.0",
+ "metrics",
+ "metrics-util",
  "quanta",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
-]
-
-[[package]]
-name = "metrics-util"
-version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4259040465c955f9f2f1a4a8a16dc46726169bca0f88e8fb2dbeced487c3e828"
-dependencies = [
- "aho-corasick",
- "crossbeam-epoch",
- "crossbeam-utils",
- "hashbrown 0.14.5",
- "indexmap 2.7.0",
- "metrics 0.23.0",
- "num_cpus",
- "ordered-float",
- "quanta",
- "radix_trie",
- "sketches-ddsketch 0.2.2",
 ]
 
 [[package]]
@@ -4723,11 +4669,11 @@ dependencies = [
  "crossbeam-utils",
  "hashbrown 0.15.2",
  "indexmap 2.7.0",
- "metrics 0.24.1",
+ "metrics",
  "ordered-float",
  "quanta",
  "radix_trie",
- "sketches-ddsketch 0.3.0",
+ "sketches-ddsketch",
 ]
 
 [[package]]
@@ -6224,7 +6170,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5065c3f250cbd332cd894be57c40fa52387247659b14a2d6041d121547903b1b"
 dependencies = [
  "aws-lc-rs",
- "log",
  "once_cell",
  "ring 0.17.8",
  "rustls-pki-types",
@@ -6727,12 +6672,6 @@ name = "siphasher"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38b58827f4464d87d377d175e90bf58eb00fd8716ff0a62f80356b5e61555d0d"
-
-[[package]]
-name = "sketches-ddsketch"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85636c14b73d81f541e525f585c0a2109e6744e1565b5c1668e31c70c10ed65c"
 
 [[package]]
 name = "sketches-ddsketch"

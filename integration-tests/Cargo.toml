@@ -2,16 +2,16 @@
 name = "integration-tests"
 version = "0.0.1-alpha"
 edition = "2021"
-rust-version = "1.79"
+rust-version = "1.81"
 repository = "https://github.com/Layr-Labs/incredible-squaring-avs-rust"
 homepage = ""
 license = "Business Source License 1.1"
 description = "integration tests for incredible avs"
 
 [dependencies]
-alloy = { version = "0.4.2", features = ["full","signer-keystore","node-bindings"] }
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "f3a9f32"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "f3a9f32"}
+alloy = { version = "0.7", features = ["full","signer-keystore","node-bindings"] }
+eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8bc7d45"}
+eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8bc7d45"}
 incredible-config = {path = "../crates/config/"}
 incredible-challenger = {path = "../crates/challenger/"}
 incredible-bindings = {path = "../crates/bindings/"}
@@ -25,7 +25,7 @@ toml = "0.8"
 tokio = { version = "1.21", default-features = false }
 eyre = "0.6.12"
 incredible-squaring-avs = {path = "../bin/incredible-squaring-avs/"}
-eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "f3a9f32"}
+eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "8bc7d45"}
 serial_test = "3.1.1"
 
 

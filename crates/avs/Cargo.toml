@@ -16,7 +16,7 @@ serde.workspace = true
 eyre.workspace = true
 tracing.workspace = true
 metrics.workspace = true
-metrics-util = "0.17.0"
+metrics-util = "0.18.0"
 
 #incredible
 incredible-operator-2.workspace = true
