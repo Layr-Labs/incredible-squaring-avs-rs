@@ -21,7 +21,7 @@ futures-util.workspace = true
 
 # eigen-rs
 metrics.workspace = true
-metrics-util = "0.18.0"
+metrics-util.workspace = true
 
 [dev-dependencies]
 eigen-metrics.workspace = true
