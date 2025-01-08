@@ -219,9 +219,9 @@ contract IncredibleSquaringTaskManager is
         );
 
         // get the address of operators who didn't sign
-        address[] memory addresssOfNonSigningOperators = new address[](pubkeysOfNonSigningOperators.length);
+        address[] memory addressOfNonSigningOperators = new address[](pubkeysOfNonSigningOperators.length);
         for (uint256 i = 0; i < pubkeysOfNonSigningOperators.length; i++) {
-            addresssOfNonSigningOperators[i] =
+            addressOfNonSigningOperators[i] =
                 BLSApkRegistry(address(blsApkRegistry)).pubkeyHashToOperator(hashesOfPubkeysOfNonSigningOperators[i]);
         }
 
@@ -239,8 +239,8 @@ contract IncredibleSquaringTaskManager is
 
                 // check whether the operator was a signer for the task
                 bool wasSigningOperator = true;
-                for (uint256 k = 0; k < addresssOfNonSigningOperators.length; k++) {
-                    if (operatorAddress == addresssOfNonSigningOperators[k]) {
+                for (uint256 k = 0; k < addressOfNonSigningOperators.length; k++) {
+                    if (operatorAddress == addressOfNonSigningOperators[k]) {
                         // if the operator was a non-signer, then we set the flag to false
                         wasSigningOperator == false;
                         break;
