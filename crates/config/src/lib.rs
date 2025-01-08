@@ -374,8 +374,7 @@ impl IncredibleConfig {
 
     pub fn service_manager_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(
-            &self
-                .incredible_contracts_config
+            self.incredible_contracts_config
                 .service_manager_addr
                 .as_bytes(),
         )

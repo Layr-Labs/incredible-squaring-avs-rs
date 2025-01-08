@@ -351,7 +351,7 @@ impl Aggregator {
                     }
                 }
             }
-            if old_entry.is_zero() {
+            if old_entry < U96::from(4800) {
                 self.bls_aggregation_service
                     .process_new_signature(
                         task_index,
@@ -360,18 +360,8 @@ impl Aggregator {
                         signed_task_response.operator_id(),
                     )
                     .await?;
-            } else {
-                if old_entry < U96::from(4800) {
-                    self.bls_aggregation_service
-                        .process_new_signature(
-                            task_index,
-                            task_response_digest,
-                            signed_task_response.signature(),
-                            signed_task_response.operator_id(),
-                        )
-                        .await?;
-                }
             }
+
             *entry >= U96::from(4800) // total stake is 12000. quorum threshold percentag in new task is 40% . hence 4800.
         };
 
@@ -390,18 +380,16 @@ impl Aggregator {
                 self.send_aggregated_response_to_contract(response, signed_task_response)
                     .await?;
             }
+        } else if old_entry >= U96::from(4800) {
+            info!(
+                "quorum already reached for index{:?}, ignoring more signatures",
+                task_index
+            );
         } else {
-            if old_entry >= U96::from(4800) {
-                info!(
-                    "quorum already reached for index{:?}, ignoring more signatures",
-                    task_index
-                );
-            } else {
-                info!(
-                    "quorum not reached yet for index:{:?}. waiting to receive more signatures ",
-                    task_index
-                );
-            }
+            info!(
+                "quorum not reached yet for index:{:?}. waiting to receive more signatures ",
+                task_index
+            );
         }
 
         Ok(())
