@@ -12,7 +12,7 @@ mod fake_challenger;
 use alloy::providers::Provider;
 use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::rpc::types::{Log, TransactionReceipt};
-use alloy::sol_types::{SolCall, SolEvent};
+use alloy::sol_types::SolCall;
 use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
@@ -80,8 +80,6 @@ impl Challenger {
         let new_task_created_sub = wa.subscribe_logs(&new_task_created_filter).await?;
 
         let mut new_task_created_stream = new_task_created_sub.into_stream();
-
-        let new_task_created_log = NewTaskCreated::SIGNATURE_HASH;
 
         let task_responded_filter = Filter::new()
             .event("TaskResponded((uint32,uint256),(uint32,bytes32))")
