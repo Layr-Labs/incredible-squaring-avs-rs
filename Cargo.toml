@@ -81,7 +81,6 @@ eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "83
 eigen-types = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-metrics = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
-eigen-contract-bindings = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-cli = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-crypto-bn254 = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }

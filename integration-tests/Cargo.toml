@@ -9,23 +9,29 @@ license = "Business Source License 1.1"
 description = "integration tests for incredible avs"
 
 [dependencies]
-alloy = { version = "0.4.2", features = ["full","signer-keystore","node-bindings"] }
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "f3a9f32"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "f3a9f32"}
-incredible-config = {path = "../crates/config/"}
-incredible-challenger = {path = "../crates/challenger/"}
-incredible-bindings = {path = "../crates/bindings/"}
-incredible-testing-utils = {path = "../crates/testing-utils/"}
-incredible-task-generator = {path = "../crates/task_generator/"}
-incredible-operator = {path = "../crates/operator/" , features = ["integration_tests"]}
-incredible-aggregator = {path = "../crates/aggregator/"}
+alloy = { version = "0.4.2", features = [
+    "full",
+    "signer-keystore",
+    "node-bindings",
+] }
+eigen-utils = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "834b9c7" }
+eigen-logging = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "834b9c7" }
+incredible-config = { path = "../crates/config/" }
+incredible-challenger = { path = "../crates/challenger/" }
+incredible-bindings = { path = "../crates/bindings/" }
+incredible-testing-utils = { path = "../crates/testing-utils/" }
+incredible-task-generator = { path = "../crates/task_generator/" }
+incredible-operator = { path = "../crates/operator/", features = [
+    "integration_tests",
+] }
+incredible-aggregator = { path = "../crates/aggregator/" }
 toml = "0.8"
 
 [dev-dependencies]
 tokio = { version = "1.21", default-features = false }
 eyre = "0.6.12"
-incredible-squaring-avs = {path = "../bin/incredible-squaring-avs/"}
-eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "f3a9f32"}
+incredible-squaring-avs = { path = "../bin/incredible-squaring-avs/" }
+eigen-testing-utils = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "834b9c7" }
 serial_test = "3.1.1"
 
 

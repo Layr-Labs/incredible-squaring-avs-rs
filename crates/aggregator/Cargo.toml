@@ -6,7 +6,7 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "eigen layer aggregator utils "
-    
+
 [lints]
 workspace = true
 
