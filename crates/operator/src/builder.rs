@@ -98,12 +98,11 @@ impl OperatorBuilder {
             info!("Challenger test: setting number to be squared to 9");
         }
 
-        let num_squared;
-        if self.slash_simulate {
-            num_squared = U256::from(28); // not a perfect square, so it can't be correct in any input
+        let num_squared = if self.slash_simulate {
+            U256::from(28) // not a perfect square, so it can't be correct in any input
         } else {
-            num_squared = number_to_be_squared * number_to_be_squared;
-        }
+            number_to_be_squared * number_to_be_squared
+        };
 
         TaskResponse {
             referenceTaskIndex: new_task_created.taskIndex,
