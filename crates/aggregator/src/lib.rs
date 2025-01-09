@@ -318,7 +318,7 @@ impl Aggregator {
         }
 
         let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
-        let old_entry = entry.clone();
+        let old_entry = *entry;
         let quorum_reached = {
             let registry_coordinator_instance = RegistryCoordinator::new(
                 registry_coordinator,
