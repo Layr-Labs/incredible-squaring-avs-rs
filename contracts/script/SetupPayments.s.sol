@@ -34,7 +34,7 @@ contract SetupPayments is Script {
     CoreDeploymentLib.DeploymentData coreDeployment;
     IncredibleSquaringDeploymentLib.DeploymentData incredibleSquaringDeployment;
     string internal constant paymentfilepath = "test/mockData/scratch/payments.json";
-    string internal constant filePath = "test/mockData/scratch/payment_info.json";
+    string internal constant infoFilePath = "test/mockData/scratch/payment_info.json";
 
     uint256 constant NUM_TOKEN_EARNINGS = 1;
     uint256 constant DURATION = 1 weeks;
@@ -50,7 +50,7 @@ contract SetupPayments is Script {
 
     function run() external {
         vm.startBroadcast(deployer);
-        string memory json = vm.readFile(filePath);
+        string memory json = vm.readFile(infoFilePath);
         uint256 amount_per_payment = json.readUint(".amountPerPayment");
         uint32 duration = uint32(json.readUint(".duration"));
         uint32 index_to_prove = uint32(json.readUint(".indexToProve"));

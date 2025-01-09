@@ -65,10 +65,14 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         IStrategy strategy = addStrategy(address(mockToken));
         quorum.strategies.push(StrategyParams({strategy: strategy, multiplier: 10_000}));
 
+        IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig memory isConfig;
+        isConfig.aggregator_addr = AGGREGATOR_ADDR.addr;
+        isConfig.task_generator_addr = TASK_GENERATOR_ADDR.addr;
+
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin, coreDeployment, address(strategy), AGGREGATOR_ADDR.addr, TASK_GENERATOR_ADDR.addr, ADMIN.addr
+            proxyAdmin, coreDeployment, address(strategy), isConfig, ADMIN.addr
         );
-        labelContracts(coreDeployment, incredibleSquaringDeployment);
+        labelContracts();
     }
 
     function addStrategy(address token) public returns (IStrategy) {
@@ -82,10 +86,7 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         return newStrategy;
     }
 
-    function labelContracts(
-        CoreDeploymentLib.DeploymentData memory coreDeployment,
-        IncredibleSquaringDeploymentLib.DeploymentData memory incredibleSquaringDeployment
-    ) internal {
+    function labelContracts() internal {
         vm.label(coreDeployment.delegationManager, "DelegationManager");
         vm.label(coreDeployment.avsDirectory, "AVSDirectory");
         vm.label(coreDeployment.strategyManager, "StrategyManager");
