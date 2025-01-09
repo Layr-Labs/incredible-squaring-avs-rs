@@ -21,7 +21,6 @@ incredible-operator = {path = "../crates/operator/" , features = ["integration_t
 incredible-operator-2 = {path = "../crates/operator_2/" , features = ["integration_tests"]}
 incredible-aggregator = {path = "../crates/aggregator/"}
 toml = "0.8"
-
 [dev-dependencies]
 tokio = { version = "1.21", default-features = false }
 eyre = "0.6.12"
@@ -30,5 +29,3 @@ eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = 
 serial_test = "3.1.1"
 rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
 eigen-crypto-bls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
-
-[workspace]
