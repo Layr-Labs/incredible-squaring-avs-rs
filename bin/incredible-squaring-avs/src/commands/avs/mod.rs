@@ -697,13 +697,14 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     deposit_tokens: U256,
 ) -> eyre::Result<()> {
     let signer;
+    dbg!(operator_pvt_key.clone());
     if let Some(operator_key) = operator_pvt_key {
         signer = PrivateKeySigner::from_str(&operator_key)?;
     } else {
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
-
+    dbg!(signer.address());
     let el_chain_reader = ELChainReader::new(
         get_logger(),
         allocation_manager,
@@ -731,12 +732,15 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
         metadata_url: Some(metadata_uri),
         allocation_delay,
     };
-
-    let _ = el_chain_writer
-        .register_as_operator(operator_details)
-        .await?; // register operator in delegation manager on EigenLayer
-    deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
-
+    let is_already_registered = el_chain_reader
+        .is_operator_registered(signer.address())
+        .await?;
+    if !is_already_registered {
+        let _ = el_chain_writer
+            .register_as_operator(operator_details)
+            .await?; // register operator in delegation manager on EigenLayer
+        deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
+    }
     Ok(())
 }
 

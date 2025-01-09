@@ -385,6 +385,14 @@ impl IncredibleConfig {
         u32::from_str(&self.operator_config.operator_set_id).map_err(ConfigError::ParseIntError)
     }
 
+    pub fn ecdsa_keystore_2_path(&mut self) -> String {
+        self.ecdsa_config.keystore_2_path.clone()
+    }
+
+    pub fn ecdsa_keystore_2_password(&mut self) -> String {
+        self.ecdsa_config.keystore_2_password.clone()
+    }
+
     pub fn operator_1_token_amount(&mut self) -> Result<U256, ConfigError> {
         U256::from_str(&self.operator_config.operator_1_token_amount)
             .map_err(ConfigError::ParseError)

@@ -91,6 +91,7 @@ impl Challenger {
         loop {
             tokio::select! {
                 Some(log) = task_responded_stream.next() => {
+                    info!("challenger:task responded");
                     let task_index = self.process_task_response_log(log).await?;
                     if self.tasks.contains_key(&task_index) {
                         self.call_challenge(task_index).await?;
