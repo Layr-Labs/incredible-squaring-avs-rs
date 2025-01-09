@@ -4,15 +4,15 @@ use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_common::get_ws_provider;
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_logging::get_test_logger;
+use eigen_logging::{get_logger, get_test_logger};
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_blsaggregation::bls_agg::{
-    BlsAggregationServiceError, BlsAggregationServiceResponse, BlsAggregatorService,
-};
+use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
+use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
-use eigen_utils::get_ws_provider;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -95,7 +95,8 @@ impl FakeAggregator {
                 .await;
         });
 
-        let bls_aggregation_service = BlsAggregatorService::new(avs_registry_service_chaincaller);
+        let bls_aggregation_service =
+            BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
         Self {
             port_address: config.aggregator_ip_addr(),

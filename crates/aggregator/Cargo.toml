@@ -23,6 +23,7 @@ eyre.workspace = true
 incredible-chainio.workspace = true
 incredible-config.workspace = true
 incredible-metrics.workspace = true
+eigen-common.workspace = true
 eigen-services-operatorsinfo.workspace = true
 eigen-logging.workspace = true
 eigen-client-avsregistry.workspace = true

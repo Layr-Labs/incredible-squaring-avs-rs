@@ -1,5 +1,6 @@
 //! Challenger crate
-use eigen_utils::{get_provider, get_ws_provider};
+use alloy::consensus::Transaction;
+use eigen_common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
 };
@@ -241,7 +242,7 @@ impl Challenger {
                 match transaction_data_result {
                     Ok(transaction_data_option) => {
                         if let Some(transaction_data) = transaction_data_option {
-                            let calldata = transaction_data.input;
+                            let calldata = transaction_data.inner.input();
                             let decoded = respondToTaskCall::abi_decode(&calldata, false);
 
                             match decoded {
