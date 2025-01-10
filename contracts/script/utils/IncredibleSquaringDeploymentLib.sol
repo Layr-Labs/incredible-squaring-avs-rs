@@ -85,26 +85,21 @@ library IncredibleSquaringDeploymentLib {
         result.registryCoordinator = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
-        OperatorStateRetriever operatorStateRetriever = new OperatorStateRetriever();
         result.strategy = strategy;
-        result.operatorStateRetriever = address(operatorStateRetriever);
+        result.operatorStateRetriever = address(new OperatorStateRetriever());
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
                 IRegistryCoordinator(result.registryCoordinator), IDelegationManager(core.delegationManager)
             )
         );
+        UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
 
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
+        UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
+
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
-        address registryCoordinatorImpl = address(
-            new RegistryCoordinator(
-                IServiceManager(result.incredibleSquaringServiceManager),
-                IStakeRegistry(result.stakeRegistry),
-                IBLSApkRegistry(result.blsapkRegistry),
-                IIndexRegistry(result.indexRegistry)
-            )
-        );
+        UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
 
         address[] memory pausers = new address[](2);
         pausers[0] = admin;
@@ -158,9 +153,14 @@ library IncredibleSquaringDeploymentLib {
             )
         );
 
-        UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
-        UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
-        UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
+        address registryCoordinatorImpl = address(
+            new RegistryCoordinator(
+                IServiceManager(result.incredibleSquaringServiceManager),
+                IStakeRegistry(result.stakeRegistry),
+                IBLSApkRegistry(result.blsapkRegistry),
+                IIndexRegistry(result.indexRegistry)
+            )
+        );
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
@@ -169,8 +169,6 @@ library IncredibleSquaringDeploymentLib {
             core.rewardsCoordinator,
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
-        IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl =
-            new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30);
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );
@@ -179,7 +177,9 @@ library IncredibleSquaringDeploymentLib {
             (IPauserRegistry(address(pausercontract)), admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
         );
         UpgradeableProxyLib.upgradeAndCall(
-            result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
+            result.incredibleSquaringTaskManager,
+            address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
+            (taskmanagerupgradecall)
         );
 
         verify_deployment(result);

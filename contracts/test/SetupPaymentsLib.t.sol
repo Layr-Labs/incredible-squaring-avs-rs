@@ -56,7 +56,7 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
         isConfig.task_generator_addr = TASK_GENERATOR_ADDR.addr;
 
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin, coreDeployment, address(strategy), AGGREGATOR_ADDR.addr, TASK_GENERATOR_ADDR.addr, ADMIN.addr
+            proxyAdmin, coreDeployment, address(strategy), isConfig, ADMIN.addr
         );
         labelContracts();
 
