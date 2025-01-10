@@ -372,6 +372,7 @@ mod tests {
 
     use alloy::primitives::{FixedBytes, U256};
     use eigen_crypto_bls::BlsKeyPair;
+    use eigen_logging::init_logger;
     use eigen_types::test::TestOperator;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -446,6 +447,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_build() {
+        init_logger(eigen_logging::log_level::LogLevel::Info);
         let fake_aggregator = build_aggregator().await;
         fake_aggregator
             .bls_aggregation_service

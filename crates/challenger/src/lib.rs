@@ -291,6 +291,8 @@ signer = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 [ecdsa_config]
 keystore_path = "../testing-utils/src/ecdsakeystore.json"
 keystore_password = "test"
+keystore_2_path = "../testing-utils/src/ecdsa_keystore_2.json"
+keystore_2_password = "test"
 
 [bls_config]
 keystore_path = "../testing-utils/src/blskeystore.json"
@@ -303,6 +305,12 @@ operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
 operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
 operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
+operator_set_id = "1"
+operator_1_token_amount = "5000000000000000000000"
+operator_2_token_amount = "7000000000000000000000"
+allocation_delay = "1"
+slash_simulate = false
+
 [task_manager_config]
 signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 "#;

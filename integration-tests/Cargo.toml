@@ -29,3 +29,6 @@ eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = 
 serial_test = "3.1.1"
 rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
 eigen-crypto-bls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
+
+
+[workspace]
