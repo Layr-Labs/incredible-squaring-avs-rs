@@ -44,7 +44,8 @@ impl TaskManager {
 
     /// Creates new task every 10 seconds
     pub async fn start(&self) -> eyre::Result<()> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        sleep(Duration::from_secs(10)).await; // wait for 10 seconds first
+        let url = Url::parse(&self.rpc_url)?;
         let signer = PrivateKeySigner::from_str(&self.signer)?;
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new()
@@ -53,12 +54,13 @@ impl TaskManager {
             .on_http(url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_address, pr);
-        let mut task_num: U256 = U256::from(0);
+        let mut task_num: U256 = U256::from(1);
 
         loop {
             let number_to_be_squared = task_num;
-            let quorum_threshold_percentage = 100;
-            let quorum_numbers = Bytes::from_str("0x00")?;
+            let quorum_threshold_percentage = 40;
+            let quorum_numbers = Bytes::from_str("0x01")?;
+
             let _ = task_manager_contract
                 .createNewTask(
                     number_to_be_squared,
@@ -66,12 +68,11 @@ impl TaskManager {
                     quorum_numbers.clone(),
                 )
                 .send()
-                .await
-                .unwrap();
+                .await?;
 
-            // Increment the task number for the next iteration
+            // // Increment the task number for the next iteration
             task_num += *TASK_NUMBER_INCREMENT_VALUE;
-            // Wait for 10 seconds before the next iteration
+            // // Wait for 10 seconds before the next iteration
             sleep(Duration::from_secs(10)).await;
         }
     }
@@ -100,8 +101,8 @@ impl TaskManager {
             IncredibleSquaringTaskManager::new(self.task_manager_address, pr);
 
         let number_to_be_squared = task_num;
-        let quorum_threshold_percentage = 100;
-        let quorum_numbers = Bytes::from_str("0x00")?;
+        let quorum_threshold_percentage = 40;
+        let quorum_numbers = Bytes::from_str("0x01")?;
         let s = task_manager_contract
             .createNewTask(
                 number_to_be_squared,

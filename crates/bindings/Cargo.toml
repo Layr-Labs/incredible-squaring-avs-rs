@@ -8,8 +8,6 @@ license.workspace = true
 description = "incredible squaring alloy bindings "
     
 
-
-
 [dependencies]
 alloy = {workspace = true, features = ["sol-types", "contract"]}
 serde.workspace = true

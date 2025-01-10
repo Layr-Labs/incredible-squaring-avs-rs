@@ -1,4 +1,5 @@
 //! Challenger crate
+use alloy::consensus::Transaction;
 use eigen_utils::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
@@ -11,7 +12,7 @@ mod fake_challenger;
 use alloy::providers::Provider;
 use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::rpc::types::{Log, TransactionReceipt};
-use alloy::sol_types::{SolCall, SolEvent};
+use alloy::sol_types::SolCall;
 use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
@@ -80,8 +81,6 @@ impl Challenger {
 
         let mut new_task_created_stream = new_task_created_sub.into_stream();
 
-        let new_task_created_log = NewTaskCreated::SIGNATURE_HASH;
-
         let task_responded_filter = Filter::new()
             .event("TaskResponded((uint32,uint256),(uint32,bytes32))")
             .from_block(BlockNumberOrTag::Latest);
@@ -89,27 +88,16 @@ impl Challenger {
 
         let mut task_responded_stream = task_responded_sub.into_stream();
 
-        let task_responded_log = TaskResponded::SIGNATURE_HASH;
-
         loop {
-            let log = tokio::select! {
+            tokio::select! {
                 Some(log) = task_responded_stream.next() => {
-                    log
+                    info!("challenger:task responded");
+                    let task_index = self.process_task_response_log(log).await?;
+                    if self.tasks.contains_key(&task_index) {
+                        self.call_challenge(task_index).await?;
+                    }
                 },
                 Some(log) = new_task_created_stream.next() => {
-                    log
-                },
-                else => {
-                    // If both streams are exhausted, break the loop.
-                    info!("challenger:No more logs to process, exiting loop.");
-                    break;
-                }
-            };
-
-            let topic = log.topic0();
-
-            if let Some(tp) = topic {
-                if *tp == new_task_created_log {
                     info!("challenger: picked up a new task ");
                     let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
 
@@ -120,21 +108,16 @@ impl Challenger {
                             task: m.task.clone(),
                         };
 
-                        let t_index = self.process_new_task_created_log(new_task_cr);
+                        let _ = self.process_new_task_created_log(new_task_cr);
 
-                        if self.task_responses.contains_key(&t_index) {
-                            self.call_challenge(t_index).await?;
-                        }
                     }
-                } else if *tp == task_responded_log {
-                    info!("challenger: received a task response log");
-
-                    let task_index = self.process_task_response_log(log).await?;
-                    if self.tasks.contains_key(&task_index) {
-                        self.call_challenge(task_index).await?;
-                    }
+                },
+                else => {
+                    // If both streams are exhausted, break the loop.
+                    info!("challenger:No more logs to process, exiting loop.");
+                    break;
                 }
-            }
+            };
         }
 
         Ok(())
@@ -156,6 +139,7 @@ impl Challenger {
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
                 if answer != (num_to_square * num_to_square) {
+                    info!("calling raise challenge");
                     let _ = self.raise_challenge(task_index).await;
                     return Ok(());
                 }
@@ -241,26 +225,23 @@ impl Challenger {
                 match transaction_data_result {
                     Ok(transaction_data_option) => {
                         if let Some(transaction_data) = transaction_data_option {
-                            let calldata = transaction_data.input;
-                            let decoded = respondToTaskCall::abi_decode(&calldata, false);
+                            let calldata = transaction_data.inner.input();
+                            let decoded = respondToTaskCall::abi_decode(calldata, false);
 
                             match decoded {
                                 Ok(decoded) => {
                                     let non_signer_stakes_and_signature =
                                         decoded.nonSignerStakesAndSignature;
 
-                                    let mut non_signing_operator_pub_keys: Vec<G1Point> = vec![];
-
-                                    for (i, pub_key) in non_signer_stakes_and_signature
-                                        .nonSignerPubkeys
-                                        .iter()
-                                        .enumerate()
-                                    {
-                                        non_signing_operator_pub_keys[i] = G1Point {
-                                            X: pub_key.X,
-                                            Y: pub_key.Y,
-                                        };
-                                    }
+                                    let non_signing_operator_pub_keys: Vec<G1Point> =
+                                        non_signer_stakes_and_signature
+                                            .nonSignerPubkeys
+                                            .iter()
+                                            .map(|pub_key| G1Point {
+                                                X: pub_key.X,
+                                                Y: pub_key.Y,
+                                            })
+                                            .collect();
                                     Ok(non_signing_operator_pub_keys)
                                 }
 
@@ -310,6 +291,8 @@ signer = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 [ecdsa_config]
 keystore_path = "../testing-utils/src/ecdsakeystore.json"
 keystore_password = "test"
+keystore_2_path = "../testing-utils/src/ecdsa_keystore_2.json"
+keystore_2_password = "test"
 
 [bls_config]
 keystore_path = "../testing-utils/src/blskeystore.json"
@@ -322,6 +305,12 @@ operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
 operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
 operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
+operator_set_id = "1"
+operator_1_token_amount = "5000000000000000000000"
+operator_2_token_amount = "7000000000000000000000"
+allocation_delay = "1"
+slash_simulate = false
+
 [task_manager_config]
 signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 "#;

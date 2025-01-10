@@ -43,6 +43,7 @@ contract IncredibleSquaringServiceManagerSetup is Test {
     IncredibleSquaringDeploymentLib.DeploymentData internal incredibleSquaringDeployment;
     CoreDeploymentLib.DeploymentData internal coreDeployment;
     CoreDeploymentLib.DeploymentConfigData coreConfigData;
+    IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig iSquaringConfig;
 
     MockERC20 public mockToken;
 
@@ -59,14 +60,14 @@ contract IncredibleSquaringServiceManagerSetup is Test {
 
         coreConfigData = CoreDeploymentLib.readDeploymentConfigValues("test/mockData/config/core/", 1337);
         coreDeployment = CoreDeploymentLib.deployContracts(deployer, proxyAdmin, coreConfigData);
-
+        iSquaringConfig = IncredibleSquaringDeploymentLib.readIncredibleSquaringConfigJson("incredible_squaring_config");
         mockToken = new MockERC20();
 
         IStrategy strategy = addStrategy(address(mockToken));
         quorum.strategies.push(StrategyParams({strategy: strategy, multiplier: 10_000}));
 
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin, coreDeployment, address(strategy), AGGREGATOR_ADDR.addr, TASK_GENERATOR_ADDR.addr, ADMIN.addr
+            proxyAdmin, coreDeployment, address(strategy), iSquaringConfig, ADMIN.addr
         );
         labelContracts(coreDeployment, incredibleSquaringDeployment);
     }

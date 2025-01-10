@@ -5,11 +5,11 @@ use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_logging::get_test_logger;
+use eigen_logging::{get_logger, get_test_logger};
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_blsaggregation::bls_agg::{
-    BlsAggregationServiceError, BlsAggregationServiceResponse, BlsAggregatorService,
-};
+use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
+use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
 use eigen_utils::get_ws_provider;
@@ -95,7 +95,8 @@ impl FakeAggregator {
                 .await;
         });
 
-        let bls_aggregation_service = BlsAggregatorService::new(avs_registry_service_chaincaller);
+        let bls_aggregation_service =
+            BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
         Self {
             port_address: config.aggregator_ip_addr(),
@@ -371,6 +372,7 @@ mod tests {
 
     use alloy::primitives::{FixedBytes, U256};
     use eigen_crypto_bls::BlsKeyPair;
+    use eigen_logging::init_logger;
     use eigen_types::test::TestOperator;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -393,12 +395,19 @@ mod tests {
     [bls_config]
     keystore_path = "../testing-utils/src/blskeystore.json"
     keystore_password = "testpassword"
+    keystore_2_path = "../testing-utils/src/bls_keystore_2.json"
+    keystore_2_password = "test"
 
     [operator_config]
     operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
     operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
     operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
     operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
+    operator_set_id = "1"
+    operator_1_token_amount = "5000000000000000000000"
+    operator_2_token_amount = "7000000000000000000000"
+    allocation_delay = "1"
+    slash_simulate = false
 
     [aggregator_config]
     ip_address = "127.0.0.1:8080"
@@ -438,6 +447,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_build() {
+        init_logger(eigen_logging::log_level::LogLevel::Info);
         let fake_aggregator = build_aggregator().await;
         fake_aggregator
             .bls_aggregation_service

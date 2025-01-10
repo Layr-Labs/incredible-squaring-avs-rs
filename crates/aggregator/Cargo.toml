@@ -13,6 +13,7 @@ workspace = true
 [dependencies]
 incredible-bindings.workspace = true
 ark-bn254.workspace = true
+ark-ec.workspace = true
 alloy.workspace = true
 eigen-types.workspace = true
 serde.workspace = true

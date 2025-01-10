@@ -40,7 +40,7 @@ clippy:
 integration_tests:
 				  $(MAKE) start_docker
 				  $(MAKE) deploy-el-and-avs-contracts
-				  cargo test --manifest-path ./integration-tests/Cargo.toml
+				  cargo test  --manifest-path ./integration-tests/Cargo.toml  -- --nocapture
 
 fmt: 
 	cargo fmt

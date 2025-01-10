@@ -35,6 +35,7 @@ contract WriteToContractsRegistry {
         contractsRegistry.registerContract("delegationManager", address(deploymentdata.delegationManager));
         contractsRegistry.registerContract("strategyManager", address(deploymentdata.strategyManager));
         contractsRegistry.registerContract("avsDirectory", address(deploymentdata.avsDirectory));
+        contractsRegistry.registerContract("rewardsCoordinator", address(deploymentdata.rewardsCoordinator));
     }
 
     function _writeIncredibleSquaringContractsToRegistry(

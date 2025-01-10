@@ -27,7 +27,7 @@ cp contracts/.env.example contracts/.env
 make deploy-el-and-avs-contracts
 ```
 
-- Single command AVS start using the following command (default values)
+- Single command AVS start using the following command (default values)(without simulating slashing)
 ```sh
 cargo run --bin incredible-squaring-avs  start
 ```
@@ -36,6 +36,11 @@ cargo run --bin incredible-squaring-avs  start
 ```
 cargo run --bin incredible-squaring-avs  start --config-path <PATH>
 ```
+- Simulate slashing
+```
+cargo run --bin incredible-squaring-avs  start --slash-simulate
+```
+
 We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rust/tree/master/incredible_config.toml) for reference.
 
 This command launches 5 services(crates) together:
@@ -66,7 +71,7 @@ The architecture of the AVS contains:
 - [Eigenlayer core](https://github.com/Layr-Labs/eigenlayer-contracts/tree/master) contracts
 - AVS contracts
   - [ServiceManager](contracts/src/IncredibleSquaringServiceManager.sol) which will eventually contain slashing logic but for M2 is just a placeholder.
-  - [TaskManager](contracts/src/IncredibleSquaringTaskManager.sol) which contains [task creation](contracts/src/IncredibleSquaringTaskManager.sol#L83) and [task response](contracts/src/IncredibleSquaringTaskManager.sol#L102) logic.
+  - [TaskManager](contracts/src/IncredibleSquaringTaskManager.sol) which contains [task creation](contracts/src/IncredibleSquaringTaskManager.sol#L83) and [task response](contracts/src/IncredibleSquaringTaskManager.sol#L102) logic. Calls `fulfillSlashingRequest` to the [Slasher] contract using the `raiseAndResolveChallenge` function .
   - The [challenge](contracts/src/IncredibleSquaringTaskManager.sol#L176) logic could be separated into its own contract, but we have decided to include it in the TaskManager for this simple task.
   - Set of [registry contracts](https://github.com/Layr-Labs/eigenlayer-middleware) to manage operators opted in to this avs
 - Task Generator
@@ -77,7 +82,6 @@ The architecture of the AVS contains:
 - Operators
   - Square the number sent to the task manager by the task generator, sign it, and send it to the aggregator
 
- ![architecture (1)](https://github.com/user-attachments/assets/389349cd-931f-448c-bf2c-ea49af133542)
 
 
 ## Default Configuration
