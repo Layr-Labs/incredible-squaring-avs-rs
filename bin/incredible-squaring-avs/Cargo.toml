@@ -6,13 +6,13 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "incredible squaring avs in rust"
-    
+
 [lints]
 workspace = true
 
 [dependencies]
 incredible-aggregator.workspace = true
-incredible-operator = {workspace = true , features = ["default"]}
+incredible-operator = { workspace = true, features = ["default"] }
 incredible-cli-runner.workspace = true
 incredible-config.workspace = true
 incredible-avs.workspace = true
@@ -28,6 +28,7 @@ rust-bls-bn254.workspace = true
 eigen-crypto-bls.workspace = true
 metrics-util = "0.17.0"
 # eigen-rs
+eigen-common.workspace = true
 eigen-testing-utils.workspace = true
 eigen-logging.workspace = true
 eigen-utils.workspace = true

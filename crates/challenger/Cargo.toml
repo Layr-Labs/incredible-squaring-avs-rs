@@ -6,7 +6,7 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "incredible squaring challenger "
-    
+
 [lints]
 workspace = true
 
@@ -26,6 +26,7 @@ incredible-testing-utils.workspace = true
 incredible-chainio.workspace = true
 
 #eigen-rs
+eigen-common.workspace = true
 eigen-utils.workspace = true
 
 [dev-dependencies]

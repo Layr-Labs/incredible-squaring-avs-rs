@@ -6,7 +6,7 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "eigen layer operator"
-    
+
 [lints]
 rust.missing_docs = "allow"
 rust.missing_debug_implementations = "warn"
@@ -30,4 +30,4 @@ reqwest.workspace = true
 
 # eigen-rs
 eigen-utils.workspace = true
-
+eigen-common.workspace = true

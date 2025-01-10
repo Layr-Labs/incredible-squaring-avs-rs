@@ -6,11 +6,12 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "eigen layer operator"
-    
+
 [lints]
 workspace = true
 
 [dependencies]
+eigen-common.workspace = true
 eigen-utils.workspace = true
 eigen-testing-utils.workspace = true
 alloy.workspace = true

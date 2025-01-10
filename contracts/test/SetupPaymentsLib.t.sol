@@ -38,8 +38,6 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
     IStrategy public strategy;
     address proxyAdmin;
 
-    string internal constant filePath = "test/mockData/scratch/payments.json";
-
     function setUp() public virtual override {
         Vm.Wallet memory AGGREGATOR_ADDR = vm.createWallet("AGGREGATOR_AGGR");
         Vm.Wallet memory TASK_GENERATOR_ADDR = vm.createWallet("TASK_GENERATOR_ADDR");
@@ -53,10 +51,14 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
         strategy = addStrategy(address(mockToken));
         quorum.strategies.push(StrategyParams({strategy: strategy, multiplier: 10_000}));
 
+        IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig memory isConfig;
+        isConfig.aggregator_addr = AGGREGATOR_ADDR.addr;
+        isConfig.task_generator_addr = TASK_GENERATOR_ADDR.addr;
+
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin, coreDeployment, address(strategy), AGGREGATOR_ADDR.addr, TASK_GENERATOR_ADDR.addr, ADMIN.addr
+            proxyAdmin, coreDeployment, address(strategy), isConfig, ADMIN.addr
         );
-        labelContracts(coreDeployment, incredibleSquaringDeployment);
+        labelContracts();
 
         rewardsCoordinator = IRewardsCoordinator(coreDeployment.rewardsCoordinator);
         mockToken.mint(address(this), 100000);
@@ -78,6 +80,8 @@ contract SetupPaymentsLibTest is Test, TestConstants, IncredibleSquaringServiceM
             SetupPaymentsLib.createEarnerLeaves(earners, tokenLeaves);
 
         cheats.startPrank(address(0), address(0));
+
+        string memory filePath = "test/mockData/scratch/payments.json";
         SetupPaymentsLib.submitRoot(
             rewardsCoordinator, tokenLeaves, earnerLeaves, address(strategy), endTimestamp, NUM_EARNERS, 1, filePath
         );
