@@ -697,14 +697,12 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     deposit_tokens: U256,
 ) -> eyre::Result<()> {
     let signer;
-    dbg!(operator_pvt_key.clone());
     if let Some(operator_key) = operator_pvt_key {
         signer = PrivateKeySigner::from_str(&operator_key)?;
     } else {
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
-    dbg!(signer.address());
     let el_chain_reader = ELChainReader::new(
         get_logger(),
         allocation_manager,
