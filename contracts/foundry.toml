@@ -12,8 +12,5 @@ remappings = [
     "@eigenlayer-middleware/=lib/eigenlayer-middleware/",
     "@openzeppelin/=lib/eigenlayer-middleware/lib/openzeppelin-contracts/",
     "@openzeppelin-upgrades/=lib/eigenlayer-middleware/lib/openzeppelin-contracts-upgradeable/",
-    "forge-std/=lib/forge-std/src/",
+    "forge-std/=lib/eigenlayer-middleware/lib/forge-std/src/",
 ]
-
-
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
