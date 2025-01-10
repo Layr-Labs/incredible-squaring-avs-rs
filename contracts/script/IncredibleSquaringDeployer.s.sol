@@ -116,9 +116,6 @@ contract IncredibleSquaringDeployer is Script {
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
         console.log("instantSlasher", incrediblSquaringDeployment.slasher);
-        // IncredibleSquaringServiceManager serviceManager =
-        //     IncredibleSquaringServiceManager(incrediblSquaringDeployment.incredibleSquaringServiceManager);
-        // serviceManager.initialize(msg.sender, configData.rewardsCoordinator);
 
         FundOperator.fund_operator(
             address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
