@@ -1,4 +1,3 @@
-use alloy::dyn_abi::DynSolValue;
 use alloy::hex;
 use alloy::primitives::aliases::U96;
 use alloy::primitives::{Address, FixedBytes, U256};
@@ -6,12 +5,9 @@ use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_client_avsregistry::error::AvsRegistryError;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
-use eigen_crypto_bls::{
-    alloy_g1_point_to_g1_affine, convert_to_g1_point, convert_to_g2_point, BlsKeyPair,
-};
+use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
 use eigen_testing_utils::anvil_constants::{
@@ -21,7 +17,7 @@ use eigen_testing_utils::anvil_constants::{
 };
 use eigen_types::operator::Operator;
 use eigen_utils::allocationmanager::AllocationManager::{self, OperatorSet};
-use eigen_utils::allocationmanager::IAllocationManagerTypes::{AllocateParams, RegisterParams};
+use eigen_utils::allocationmanager::IAllocationManagerTypes::AllocateParams;
 use eigen_utils::registrycoordinator::RegistryCoordinator;
 use eigen_utils::{get_provider, get_signer};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
@@ -908,56 +904,80 @@ pub async fn register_for_operator_sets(
     }
     let s = signer.to_field_bytes();
     let pvt_key = hex::encode(s).to_string();
-    let allocation_manager_instance =
-        AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
+    let el_chain_reader = ELChainReader::new(
+        get_logger(),
+        allocation_manager,
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        rpc_url.to_string(),
+    ); // zero address means we don't require that address for registering to operator sets
+    let el_chain_writer = ELChainWriter::new(
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        allocation_manager,
+        registry_coordinator_address,
+        el_chain_reader,
+        rpc_url.to_string(),
+        pvt_key,
+    );
+    Ok(el_chain_writer
+        .register_for_operator_sets(
+            signer.address(),
+            avs,
+            [operator_set_id].to_vec(),
+            bls_key_pair,
+            &socket,
+        )
+        .await?)
+    // ALTERNATIVE WAY OF ENCODING DATA MANUALLY USINg ALLOY IF YOU DON"T WANT TO USE ELChainWriter
+    // let g1_hashed_msg_to_sign = contract_registry_coordinator
+    //     .pubkeyRegistrationMessageHash(signer.address())
+    //     .call()
+    //     .await
+    //     .map_err(|_| AvsRegistryError::PubKeyRegistrationMessageHash)?
+    //     ._0;
 
-    let contract_registry_coordinator =
-        RegistryCoordinator::new(registry_coordinator_address, get_provider(rpc_url));
+    // let sig = bls_key_pair
+    //     .sign_hashed_to_curve_message(alloy_g1_point_to_g1_affine(g1_hashed_msg_to_sign))
+    //     .g1_point();
+    // let alloy_g1_point_signed_msg = convert_to_g1_point(sig.g1())?;
+    // let g1_pub_key_bn254 = convert_to_g1_point(bls_key_pair.public_key().g1())?;
+    // let g2_pub_key_bn254 = convert_to_g2_point(bls_key_pair.public_key_g2().g2())?;
 
-    let g1_hashed_msg_to_sign = contract_registry_coordinator
-        .pubkeyRegistrationMessageHash(signer.address())
-        .call()
-        .await
-        .map_err(|_| AvsRegistryError::PubKeyRegistrationMessageHash)?
-        ._0;
-
-    let sig = bls_key_pair
-        .sign_hashed_to_curve_message(alloy_g1_point_to_g1_affine(g1_hashed_msg_to_sign))
-        .g1_point();
-    let alloy_g1_point_signed_msg = convert_to_g1_point(sig.g1())?;
-    let g1_pub_key_bn254 = convert_to_g1_point(bls_key_pair.public_key().g1())?;
-    let g2_pub_key_bn254 = convert_to_g2_point(bls_key_pair.public_key_g2().g2())?;
-
-    let g2_point_x: Vec<DynSolValue> = vec![
-        DynSolValue::Uint(g2_pub_key_bn254.X[0], 256),
-        DynSolValue::Uint(g2_pub_key_bn254.X[1], 256),
-    ];
-    let g2_point_y: Vec<DynSolValue> = vec![
-        DynSolValue::Uint(g2_pub_key_bn254.Y[0], 256),
-        DynSolValue::Uint(g2_pub_key_bn254.Y[1], 256),
-    ];
-    let encoded_params_with_socket = DynSolValue::Tuple(vec![
-        DynSolValue::String(socket),
-        DynSolValue::Uint(alloy_g1_point_signed_msg.X, 256),
-        DynSolValue::Uint(alloy_g1_point_signed_msg.Y, 256),
-        DynSolValue::Uint(g1_pub_key_bn254.X, 256),
-        DynSolValue::Uint(g1_pub_key_bn254.Y, 256),
-        DynSolValue::FixedArray(g2_point_x),
-        DynSolValue::FixedArray(g2_point_y),
-    ])
-    .abi_encode_params();
-    let register_params = RegisterParams {
-        avs,
-        operatorSetIds: vec![operator_set_id],
-        data: encoded_params_with_socket.into(),
-    };
-    Ok(allocation_manager_instance
-        .registerForOperatorSets(signer.address(), register_params)
-        .send()
-        .await?
-        .get_receipt()
-        .await?
-        .transaction_hash)
+    // let g2_point_x: Vec<DynSolValue> = vec![
+    //     DynSolValue::Uint(g2_pub_key_bn254.X[0], 256),
+    //     DynSolValue::Uint(g2_pub_key_bn254.X[1], 256),
+    // ];
+    // let g2_point_y: Vec<DynSolValue> = vec![
+    //     DynSolValue::Uint(g2_pub_key_bn254.Y[0], 256),
+    //     DynSolValue::Uint(g2_pub_key_bn254.Y[1], 256),
+    // ];
+    // let encoded_params_with_socket = DynSolValue::Tuple(vec![
+    //     DynSolValue::String(socket),
+    //     DynSolValue::Uint(alloy_g1_point_signed_msg.X, 256),
+    //     DynSolValue::Uint(alloy_g1_point_signed_msg.Y, 256),
+    //     DynSolValue::Uint(g1_pub_key_bn254.X, 256),
+    //     DynSolValue::Uint(g1_pub_key_bn254.Y, 256),
+    //     DynSolValue::FixedArray(g2_point_x),
+    //     DynSolValue::FixedArray(g2_point_y),
+    // ])
+    // .abi_encode_params();
+    // let register_params = RegisterParams {
+    //     avs,
+    //     operatorSetIds: vec![operator_set_id],
+    //     data: encoded_params_with_socket.into(),
+    // };
+    // Ok(allocation_manager_instance
+    //     .registerForOperatorSets(signer.address(), register_params)
+    //     .send()
+    //     .await?
+    //     .get_receipt()
+    //     .await?
+    //     .transaction_hash)
 }
 
 /// Deposit into strategy
