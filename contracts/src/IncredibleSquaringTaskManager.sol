@@ -11,7 +11,7 @@ import {BLSSignatureChecker, IRegistryCoordinator} from "@eigenlayer-middleware/
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 import {InstantSlasher} from "@eigenlayer-middleware/src/slashers/InstantSlasher.sol";
 import "@eigenlayer-middleware/src/libraries/BN254.sol";
-import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
+// import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
 import "./IIncredibleSquaringTaskManager.sol";
 import {IAllocationManagerTypes} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 import {OperatorSet} from "@eigenlayer/contracts/libraries/OperatorSetLib.sol";
@@ -170,7 +170,9 @@ contract IncredibleSquaringTaskManager is
         Task calldata task,
         TaskResponse calldata taskResponse,
         TaskResponseMetadata calldata taskResponseMetadata,
-        BN254.G1Point[] memory pubkeysOfNonSigningOperators
+        BN254.G1Point[] memory pubkeysOfNonSigningOperators,
+        IStrategy[] memory istrategy,
+        uint256[] memory wads_to_slash
     ) external {
         uint32 referenceTaskIndex = taskResponse.referenceTaskIndex;
         uint256 numberToBeSquared = task.numberToBeSquared;
@@ -247,20 +249,20 @@ contract IncredibleSquaringTaskManager is
                 }
 
                 if (wasSigningOperator == true) {
-                    OperatorSet memory operatorset =
-                        OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
-                    IStrategy[] memory istrategy =
-                        IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
-                    uint256[] memory wadsToSlash = new uint256[](istrategy.length);
-                    for (uint256 z = 0; z < wadsToSlash.length; z++) {
-                        wadsToSlash[z] = WADS_TO_SLASH;
-                    }
+                    // OperatorSet memory operatorset =
+                    //     OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
+                    // IStrategy[] memory istrategy =
+                    //     IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
+                    // uint256[] memory wadsToSlash = new uint256[](istrategy.length);
+                    // for (uint256 z = 0; z < wadsToSlash.length; z++) {
+                    //     wadsToSlash[z] = WADS_TO_SLASH;
+                    // }
                     IAllocationManagerTypes.SlashingParams memory slashingparams = IAllocationManagerTypes
                         .SlashingParams({
                         operator: operatorAddress,
                         operatorSetId: uint8(task.quorumNumbers[i]),
                         strategies: istrategy,
-                        wadsToSlash: wadsToSlash,
+                        wadsToSlash: wads_to_slash,
                         description: "slash_the_operator"
                     });
                     InstantSlasher(instantSlasher).fulfillSlashingRequest(slashingparams);
