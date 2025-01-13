@@ -247,7 +247,8 @@ contract IncredibleSquaringTaskManager is
                 }
 
                 if (wasSigningOperator == true) {
-                    OperatorSet memory operatorset = OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
+                    OperatorSet memory operatorset =
+                        OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
                     IStrategy[] memory istrategy =
                         IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
                     uint256[] memory wadsToSlash = new uint256[](istrategy.length);

@@ -131,7 +131,6 @@ library IncredibleSquaringDeploymentLib {
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
                 IIndexRegistry(result.indexRegistry),
-                IAVSDirectory(core.avsDirectory),
                 IPauserRegistry(coredata.pauserRegistry)
             )
         );

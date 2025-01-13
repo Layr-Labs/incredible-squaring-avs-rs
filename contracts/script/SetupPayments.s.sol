@@ -5,7 +5,7 @@ import {Script} from "forge-std/Script.sol";
 import {IncredibleSquaringDeploymentLib} from "./utils/IncredibleSquaringDeploymentLib.sol";
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
 import {SetupPaymentsLib} from "./utils/SetupPaymentsLib.sol";
-import {IRewardsCoordinator,IRewardsCoordinatorTypes} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
+import {IRewardsCoordinator, IRewardsCoordinatorTypes} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 import {console2} from "forge-std/console2.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 
@@ -132,9 +132,12 @@ contract SetupPayments is Script {
             amountPerPayment,
             incredibleSquaringDeployment.strategy
         );
+        console2.log("token_leaves[0]");
+        console2.logBytes32(tokenLeaves[0]);
         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory earnerLeaves =
             SetupPaymentsLib.createEarnerLeaves(earners, tokenLeaves);
-
+        console2.log("earner_tokenroot[0]");
+        console2.logBytes32(earnerLeaves[0].earnerTokenRoot);
         SetupPaymentsLib.submitRoot(
             IRewardsCoordinator(coreDeployment.rewardsCoordinator),
             tokenLeaves,
