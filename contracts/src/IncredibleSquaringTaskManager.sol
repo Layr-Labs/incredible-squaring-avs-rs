@@ -32,7 +32,6 @@ contract IncredibleSquaringTaskManager is
     uint32 public constant TASK_CHALLENGE_WINDOW_BLOCK = 100;
     uint256 internal constant _THRESHOLD_DENOMINATOR = 100;
     uint256 public constant WADS_TO_SLASH = 10;
-    uint32 public constant OPERATOR_SET_ID = 1;
 
     /* STORAGE */
     // The latest task index
@@ -248,7 +247,7 @@ contract IncredibleSquaringTaskManager is
                 }
 
                 if (wasSigningOperator == true) {
-                    OperatorSet memory operatorset = OperatorSet({avs: serviceManager, id: OPERATOR_SET_ID});
+                    OperatorSet memory operatorset = OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
                     IStrategy[] memory istrategy =
                         IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
                     uint256[] memory wadsToSlash = new uint256[](istrategy.length);
@@ -258,7 +257,7 @@ contract IncredibleSquaringTaskManager is
                     IAllocationManagerTypes.SlashingParams memory slashingparams = IAllocationManagerTypes
                         .SlashingParams({
                         operator: operatorAddress,
-                        operatorSetId: OPERATOR_SET_ID,
+                        operatorSetId: uint8(task.quorumNumbers[i]),
                         strategies: istrategy,
                         wadsToSlash: wadsToSlash,
                         description: "slash_the_operator"
