@@ -60,9 +60,7 @@ interface IIncredibleSquaringTaskManager {
         Task calldata task,
         TaskResponse calldata taskResponse,
         TaskResponseMetadata calldata taskResponseMetadata,
-        BN254.G1Point[] memory pubkeysOfNonSigningOperators,
-        IStrategy[] memory istrategy,
-        uint256[] memory wads_to_slash
+        BN254.G1Point[] memory pubkeysOfNonSigningOperators
     ) external;
 
     /// @notice Returns the TASK_RESPONSE_WINDOW_BLOCK
