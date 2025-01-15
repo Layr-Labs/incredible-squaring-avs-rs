@@ -28,6 +28,7 @@ import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
 import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 import {
     RegistryCoordinator,
@@ -40,6 +41,8 @@ import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRe
 
 library TestnetISDeploymentLib {
     using stdJson for *;
+    using Strings for *;
+    using UpgradeableProxyLib for address;
 
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
@@ -60,9 +63,6 @@ library TestnetISDeploymentLib {
         uint256[] operatorParams;
         address operator_addr;
         address operator_2_addr;
-        address contracts_registry_addr;
-        address task_generator_addr;
-        address aggregator_addr;
     }
 
     function deployContracts(
@@ -72,7 +72,6 @@ library TestnetISDeploymentLib {
         IncredibleSquaringSetupConfig memory isConfig,
         address admin
     ) internal returns (DeploymentData memory) {
-
         DeploymentData memory result;
 
         // First, deploy upgradeable proxy contracts that will point to the implementations.
@@ -84,16 +83,16 @@ library TestnetISDeploymentLib {
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.strategy = strategy;
         result.operatorStateRetriever = address(new OperatorStateRetriever());
-        vm.label(result.incredibleSquaringServiceManager,"serviceManager");
-        vm.label(result.stakeRegistry,"stakeRegistry");
-        vm.label(result.incredibleSquaringTaskManager,"taskManager");
-        vm.label(result.registryCoordinator,"registryCoordinator");
-        vm.label(result.blsapkRegistry,"blsapkRegistry");
-        vm.label(result.registryCoordinator,"registryCoordinator");
-        vm.label(result.blsapkRegistry,"blsapkRegistry");
-        vm.label(result.indexRegistry,"indexRegistry");
-        vm.label(result.strategy,"strategy");
-        vm.label(result.operatorStateRetriever,"operatorStateRetriever");
+        vm.label(result.incredibleSquaringServiceManager, "serviceManager");
+        vm.label(result.stakeRegistry, "stakeRegistry");
+        vm.label(result.incredibleSquaringTaskManager, "taskManager");
+        vm.label(result.registryCoordinator, "registryCoordinator");
+        vm.label(result.blsapkRegistry, "blsapkRegistry");
+        vm.label(result.registryCoordinator, "registryCoordinator");
+        vm.label(result.blsapkRegistry, "blsapkRegistry");
+        vm.label(result.indexRegistry, "indexRegistry");
+        vm.label(result.strategy, "strategy");
+        vm.label(result.operatorStateRetriever, "operatorStateRetriever");
 
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
@@ -180,10 +179,8 @@ library TestnetISDeploymentLib {
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );
-        bytes memory taskmanagerupgradecall = abi.encodeCall(
-            IncredibleSquaringTaskManager.initialize,
-            (IPauserRegistry(address(pausercontract)), admin, isConfig.aggregator_addr, isConfig.task_generator_addr)
-        );
+        bytes memory taskmanagerupgradecall =
+            abi.encodeCall(IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin));
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager,
             address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
@@ -206,11 +203,75 @@ library TestnetISDeploymentLib {
         IncredibleSquaringSetupConfig memory data;
         data.numQuorums = json.readUint(".num_quorums");
         data.operatorParams = json.readUintArray(".operator_params");
-        data.aggregator_addr = json.readAddress(".aggregator_addr");
-        data.contracts_registry_addr = json.readAddress(".contracts_registry_addr");
         data.operator_addr = json.readAddress(".operator_addr");
-        data.task_generator_addr = json.readAddress(".task_generator_addr");
         data.operator_2_addr = json.readAddress(".operator_2_addr");
         return data;
+    }
+
+    /// write to default output path
+    function writeDeploymentJson(DeploymentData memory data) internal {
+        writeDeploymentJson("script/deployments/incredible-squaring/", block.chainid, data);
+    }
+
+    function writeDeploymentJson(string memory outputPath, uint256 chainId, DeploymentData memory data) internal {
+        address proxyAdmin = address(UpgradeableProxyLib.getProxyAdmin(data.incredibleSquaringServiceManager));
+
+        string memory deploymentData = _generateDeploymentJson(data, proxyAdmin);
+
+        string memory fileName = string.concat(outputPath, vm.toString(chainId), ".json");
+        if (!vm.exists(outputPath)) {
+            vm.createDir(outputPath, true);
+        }
+
+        vm.writeFile(fileName, deploymentData);
+        console2.log("Deployment artifacts written to:", fileName);
+    }
+
+    function _generateDeploymentJson(DeploymentData memory data, address proxyAdmin)
+        private
+        view
+        returns (string memory)
+    {
+        return string.concat(
+            '{"lastUpdate":{"timestamp":"',
+            vm.toString(block.timestamp),
+            '","block_number":"',
+            vm.toString(block.number),
+            '"},"addresses":',
+            _generateContractsJson(data, proxyAdmin),
+            "}"
+        );
+    }
+
+    function _generateContractsJson(DeploymentData memory data, address proxyAdmin)
+        private
+        view
+        returns (string memory)
+    {
+        return string.concat(
+            '{"proxyAdmin":"',
+            proxyAdmin.toHexString(),
+            '","IncredibleSquaringServiceManager":"',
+            data.incredibleSquaringServiceManager.toHexString(),
+            '","incredibleSquaringServiceManagerImpl":"',
+            data.incredibleSquaringServiceManager.getImplementation().toHexString(),
+            '","IncredibleSquaringTaskManager":"',
+            data.incredibleSquaringTaskManager.toHexString(),
+            '","registryCoordinator":"',
+            data.registryCoordinator.toHexString(),
+            '","blsapkRegistry":"',
+            data.blsapkRegistry.toHexString(),
+            '","indexRegistry":"',
+            data.indexRegistry.toHexString(),
+            '","stakeRegistry":"',
+            data.stakeRegistry.toHexString(),
+            '","operatorStateRetriever":"',
+            data.operatorStateRetriever.toHexString(),
+            '","strategy":"',
+            data.strategy.toHexString(),
+            '","token":"',
+            data.token.toHexString(),
+            '"}'
+        );
     }
 }

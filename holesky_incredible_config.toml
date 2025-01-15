@@ -1,0 +1,61 @@
+[rpc_config]
+chain_id = 17000
+http_rpc_url = "https://ethereum-holesky-rpc.publicnode.com"
+ws_rpc_url = "wss://ethereum-holesky-rpc.publicnode.com"
+signer = ""
+
+[ecdsa_config]
+keystore_path = "crates/testing-utils/src/holesky/ecdsa_keystore.json"
+keystore_password = "test"
+keystore_2_path = "crates/testing-utils/src/holesky/ecdsa_keystore_2.json"
+keystore_2_password = "test"
+
+[bls_config]
+keystore_path = "crates/testing-utils/src/holesky/bls_keystore.json"
+keystore_password = "testpassword"
+keystore_2_path = "crates/testing-utils/src/holesky/bls_keystore_2.json"
+keystore_2_password = "test"
+
+[operator_config]
+operator_address = "0x7d0174360dc6166983c361734da04f6885cd01fd"
+operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+operator_2_address = "0xa93156357f6d05d06c2d1629572b5b7c1a151636"
+operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
+
+[aggregator_config]
+ip_address = "127.0.0.1:8080"
+
+[operator_registration_config]
+register_operator = true
+operator_to_avs_registration_sig_salt = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+quorum_number = "00"
+sig_expiry = "10"
+socket = "incredible"
+
+[operator_2_registration_config]
+register_operator = true
+operator_to_avs_registration_sig_salt = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+quorum_number = "00"
+sig_expiry = "10"
+socket = "incredible"
+
+[metrics_config]
+port_address = "127.0.0.1:9001"
+
+[node_config]
+node_port_address = "127.0.0.1:8085"
+
+[task_manager_config]
+signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+
+[el_config]
+registry_coordinator_addr = "0x6cfc7bb464f6148078a922e0fc2188391040104e"
+operator_state_retriever_addr = "0x20c923007026b520b5e0c09c809a47eeacd16119"
+delegation_manager_addr = "0xA44151489861Fe9e3055d95adC98FbD462B948e7"
+avs_directory_addr = "0x055733000064333CaDDbC92763c58BF0192fFeBf"
+strategy_manager_addr = "0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6"
+
+[incredible_contracts_config]
+task_manager_addr = "0x392728616a3a177389e8c7db67b707e8a68d575a"
+service_manager_addr = "0x1471ed265975c383211fde87b388b11df6694d82"
+erc20_mock_strategy_addr = "0x7ea370c9373a3e3ab7294cfc53b392307b984870"

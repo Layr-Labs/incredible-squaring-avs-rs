@@ -43,43 +43,21 @@ contract IncredibleSquaringTaskManager is
 
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
 
-    address public aggregator;
-    address public generator;
-
-    /* MODIFIERS */
-    modifier onlyAggregator() {
-        require(msg.sender == aggregator, "Aggregator must be the caller");
-        _;
-    }
-
-    // onlyTaskGenerator is used to restrict createNewTask from only being called by a permissioned entity
-    // in a real world scenario, this would be removed by instead making createNewTask a payable function
-    modifier onlyTaskGenerator() {
-        require(msg.sender == generator, "Task generator must be the caller");
-        _;
-    }
-
     constructor(IRegistryCoordinator _registryCoordinator, uint32 _taskResponseWindowBlock)
         BLSSignatureChecker(_registryCoordinator)
     {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
     }
 
-    function initialize(IPauserRegistry _pauserRegistry, address initialOwner, address _aggregator, address _generator)
-        public
-        initializer
-    {
+    function initialize(IPauserRegistry _pauserRegistry, address initialOwner) public initializer {
         _initializePauser(_pauserRegistry, UNPAUSE_ALL);
         _transferOwnership(initialOwner);
-        aggregator = _aggregator;
-        generator = _generator;
     }
 
     /* FUNCTIONS */
     // NOTE: this function creates new task, assigns it a taskId
     function createNewTask(uint256 numberToBeSquared, uint32 quorumThresholdPercentage, bytes calldata quorumNumbers)
         external
-        onlyTaskGenerator
     {
         // create a new task struct
         Task memory newTask;
@@ -99,7 +77,7 @@ contract IncredibleSquaringTaskManager is
         Task calldata task,
         TaskResponse calldata taskResponse,
         NonSignerStakesAndSignature memory nonSignerStakesAndSignature
-    ) external onlyAggregator {
+    ) external {
         uint32 taskCreatedBlock = task.taskCreatedBlock;
         bytes calldata quorumNumbers = task.quorumNumbers;
         uint32 quorumThresholdPercentage = task.quorumThresholdPercentage;

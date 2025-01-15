@@ -69,7 +69,7 @@ contract HoleskyIncredibleSquaringDeployer is Script {
         // Eigenlayer contracts
         vm.startBroadcast(vm.rememberKey(vm.envUint("HOLESKY_DEPLOYER_KEY"))); // 0x08ebac0c47e1afbc8355816ed68ecd97796797c3
         TestnetISDeploymentLib.IncredibleSquaringSetupConfig memory isConfig =
-            TestnetISDeploymentLib.readIncredibleSquaringConfigJson("incredible_squaring_config");
+            TestnetISDeploymentLib.readIncredibleSquaringConfigJson("holesky_config");
 
         configData = CoreDeploymentLib.DeploymentData({
             delegationManager: TestnetCoreLib.DELEGATION_MANAGER_ADDRESS,
@@ -85,16 +85,13 @@ contract HoleskyIncredibleSquaringDeployer is Script {
         erc20Mock = new MockERC20();
         FundOperator.fund_operator(address(erc20Mock), isConfig.operator_addr, 10e18);
         FundOperator.fund_operator(address(erc20Mock), isConfig.operator_2_addr, 10e18);
-        // console.log(isConfig.operator_2_addr);
-        // (bool s,) = isConfig.operator_2_addr.call{value: 0.1 ether}("");
-        // require(s);
-        // console.log(isConfig.operator_2_addr.balance);
+        (bool s,) = isConfig.operator_2_addr.call{value: 0.02 ether}("");
+        require(s);
+        (bool ss,) = isConfig.operator_addr.call{value: 0.02 ether}("");
+        require(ss);
         incredibleSquaringStrategy = IStrategy(StrategyFactory(configData.strategyFactory).deployNewStrategy(erc20Mock));
-        // rewardscoordinator = configData.rewardsCoordinator;
 
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
-        // require(address(incredibleSquaringStrategy) != address(0));
-        // require(address(incredibleSquaringStrategy) != address(0));
         incrediblSquaringDeployment = TestnetISDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
@@ -102,7 +99,7 @@ contract HoleskyIncredibleSquaringDeployer is Script {
         //     address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
         // );
 
-        // IncredibleSquaringDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
+        TestnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
 
         vm.stopBroadcast();
     }
