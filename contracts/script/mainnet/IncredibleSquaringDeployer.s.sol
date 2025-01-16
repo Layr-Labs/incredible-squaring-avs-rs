@@ -9,8 +9,8 @@ import {FundOperator} from "../utils/FundOperator.sol";
 import {IStrategyManager, IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {StrategyFactory} from "@eigenlayer/contracts/strategies/StrategyFactory.sol";
 import {UpgradeableProxyLib} from "../utils/UpgradeableProxyLib.sol";
-import {TestnetISDeploymentLib} from "../utils/holesky/TestnetISDeploymentLib.sol";
-import {TestnetCoreLib} from "../utils/holesky/TestnetCoreLib.sol";
+import {MainnetISDeploymentLib} from "../utils/mainnet/MainnetISDeploymentLib.sol";
+import {MainnetCoreLib} from "../utils/mainnet/MainnetCoreLib.sol";
 
 contract HoleskyIncredibleSquaringDeployer is Script {
     // DEPLOYMENT CONSTANTS
@@ -54,13 +54,16 @@ contract HoleskyIncredibleSquaringDeployer is Script {
     IStrategy incredibleSquaringStrategy;
     address private deployer;
     MockERC20 public erc20Mock;
-    TestnetISDeploymentLib.DeploymentData incrediblSquaringDeployment;
+    MainnetISDeploymentLib.DeploymentData incrediblSquaringDeployment;
 
     using UpgradeableProxyLib for address;
 
     address proxyAdmin;
 
     function setUp() public virtual {
+        uint256 forkId = vm.createFork("MAINNET_RPC_URL");
+        vm.selectFork(forkId);
+
         deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.label(deployer, "Deployer");
     }
@@ -68,19 +71,19 @@ contract HoleskyIncredibleSquaringDeployer is Script {
     function run() external {
         // Eigenlayer contracts
         vm.startBroadcast(vm.rememberKey(vm.envUint("HOLESKY_DEPLOYER_KEY"))); // 0x08ebac0c47e1afbc8355816ed68ecd97796797c3
-        TestnetISDeploymentLib.IncredibleSquaringSetupConfig memory isConfig =
-            TestnetISDeploymentLib.readIncredibleSquaringConfigJson("holesky_config");
+        MainnetISDeploymentLib.IncredibleSquaringSetupConfig memory isConfig =
+            MainnetISDeploymentLib.readIncredibleSquaringConfigJson("holesky_config");
 
         configData = CoreDeploymentLib.DeploymentData({
-            delegationManager: TestnetCoreLib.DELEGATION_MANAGER_ADDRESS,
-            avsDirectory: TestnetCoreLib.AVS_DIRECTORY_ADDRESS,
-            strategyManager: TestnetCoreLib.STRATEGY_MANAGER_ADDRESS,
-            eigenPodManager: TestnetCoreLib.EIGEN_POD_MANAGER_ADDRESS,
-            rewardsCoordinator: TestnetCoreLib.REWARDS_COORDINATOR_ADDRESS,
-            eigenPodBeacon: TestnetCoreLib.EIGEN_POD_BEACON_ADDRESS,
-            pauserRegistry: TestnetCoreLib.PAUSER_REGISTRY_ADDRESS,
-            strategyFactory: TestnetCoreLib.STRATEGY_FACTORY_ADDRESS,
-            strategyBeacon: TestnetCoreLib.STRATEGY_BEACON_ADDRESS
+            delegationManager: MainnetCoreLib.DELEGATION_MANAGER_ADDRESS,
+            avsDirectory: MainnetCoreLib.AVS_DIRECTORY_ADDRESS,
+            strategyManager: MainnetCoreLib.STRATEGY_MANAGER_ADDRESS,
+            eigenPodManager: MainnetCoreLib.EIGEN_POD_MANAGER_ADDRESS,
+            rewardsCoordinator: MainnetCoreLib.REWARDS_COORDINATOR_ADDRESS,
+            eigenPodBeacon: MainnetCoreLib.EIGEN_POD_BEACON_ADDRESS,
+            pauserRegistry: MainnetCoreLib.PAUSER_REGISTRY_ADDRESS,
+            strategyFactory: MainnetCoreLib.STRATEGY_FACTORY_ADDRESS,
+            strategyBeacon: MainnetCoreLib.STRATEGY_BEACON_ADDRESS
         });
         erc20Mock = new MockERC20();
         FundOperator.fund_operator(address(erc20Mock), isConfig.operator_addr, 10e18);
@@ -92,14 +95,14 @@ contract HoleskyIncredibleSquaringDeployer is Script {
         incredibleSquaringStrategy = IStrategy(StrategyFactory(configData.strategyFactory).deployNewStrategy(erc20Mock));
 
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
-        incrediblSquaringDeployment = TestnetISDeploymentLib.deployContracts(
+        incrediblSquaringDeployment = MainnetISDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
         // FundOperator.fund_operator(
         //     address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
         // );
 
-        TestnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
+        MainnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
 
         vm.stopBroadcast();
     }

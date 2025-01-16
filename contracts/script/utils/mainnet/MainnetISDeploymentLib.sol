@@ -39,7 +39,7 @@ import {
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 
-library TestnetISDeploymentLib {
+library MainnetISDeploymentLib {
     using stdJson for *;
     using Strings for *;
     using UpgradeableProxyLib for address;
@@ -176,6 +176,8 @@ library TestnetISDeploymentLib {
             core.rewardsCoordinator,
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
+        console2.log("service_manager");
+        console2.log(result.incredibleSquaringServiceManager);
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );

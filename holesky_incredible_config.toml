@@ -49,7 +49,7 @@ node_port_address = "127.0.0.1:8085"
 signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 
 [el_config]
-registry_coordinator_addr = "0x6cfc7bb464f6148078a922e0fc2188391040104e"
+registry_coordinator_addr = "0x32210d13de63b9309aa0ecbac7d60535a8d9dd21"
 operator_state_retriever_addr = "0x20c923007026b520b5e0c09c809a47eeacd16119"
 delegation_manager_addr = "0xA44151489861Fe9e3055d95adC98FbD462B948e7"
 avs_directory_addr = "0x055733000064333CaDDbC92763c58BF0192fFeBf"

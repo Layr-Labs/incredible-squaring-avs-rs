@@ -1,17 +1,16 @@
 {
-  "lastUpdate": { "timestamp": "1736930460", "block_number": "3149228" },
+  "lastUpdate": { "timestamp": "1736948904", "block_number": "3150654" },
   "addresses": {
-    "proxyAdmin": "0xc5df5f6a5ccd4ddfe26dc101335a80475244493d",
-    "IncredibleSquaringServiceManager": "0x1471ed265975c383211fde87b388b11df6694d82",
-    "incredibleSquaringServiceManagerImpl": "0xbc5763b9ed20a7823b14552473a89d7d2e955b6a",
-    "IncredibleSquaringTaskManager": "0x392728616a3a177389e8c7db67b707e8a68d575a",
-    "registryCoordinator": "0x6cfc7bb464f6148078a922e0fc2188391040104e",
-    "blsapkRegistry": "0xf61b71b8d5237e7c8fbd09647edba14feea62309",
-    "indexRegistry": "0x689c48a1dac94d0608e0ecef77c9ca0757488b0c",
-    "stakeRegistry": "0xbfa6428c27c675b5293a59259f262ff42fba589b",
-    "operatorStateRetriever": "0x20c923007026b520b5e0c09c809a47eeacd16119",
-    "strategy": "0x7ea370c9373a3e3ab7294cfc53b392307b984870",
+    "proxyAdmin": "0x198aa4ebf55a4bbc96469abedce88a0abfd11cf1",
+    "IncredibleSquaringServiceManager": "0x16901741873fb705905636e1805e32b0604f9052",
+    "incredibleSquaringServiceManagerImpl": "0xf4677fa15e39caa494350b32e3d430702631c950",
+    "IncredibleSquaringTaskManager": "0xabd88929384d1c2f9880f6207c3facd4320b2e2d",
+    "registryCoordinator": "0x32210d13de63b9309aa0ecbac7d60535a8d9dd21",
+    "blsapkRegistry": "0x666d6cd44c0d8de604c21fc5bcc277984679404d",
+    "indexRegistry": "0x03fef6a01d939dc9425b3e582247ce9f25f5b392",
+    "stakeRegistry": "0x35e53a2087b31f91a60a62ecd09c79388bb70cf9",
+    "operatorStateRetriever": "0x82a7328a484f85f06f318d9cda105bb1bdb266f8",
+    "strategy": "0xda123ccbb124750c3306e7837d9d707cffbcbe78",
     "token": "0x0000000000000000000000000000000000000000"
   }
 }
-

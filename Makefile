@@ -13,8 +13,8 @@ deploy-el-and-avs-contracts:
 	$(MAKE) deploy-eigenlayer
 	$(MAKE) deploy-avs
 
-deploy-avs-holesky:
-	./contracts/anvil/deploy-avs-testnet.sh
+avs-mainnet-fork:
+	./contracts/anvil/deploy-avs-mainnet.sh
 
 
 __TESTING__: ##

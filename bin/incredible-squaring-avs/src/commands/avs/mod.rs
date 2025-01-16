@@ -1,4 +1,4 @@
-use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use alloy::primitives::{address, Address, Bytes, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
@@ -15,6 +15,8 @@ use eigen_testing_utils::anvil_constants::{
     ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
+use eigen_utils::deploy::registrycoordinator::RegistryCoordinator;
+use eigen_utils::middleware::delegationmanager::DelegationManager;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -451,11 +453,10 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         }
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
-        info!("chain_idd{:?}",config.chain_id());
         if register_operator {
             let _ = register_operator_with_el_and_avs(
                 config.operator_pvt_key(),
-                rpc_url.clone(),
+                config.http_rpc_url().clone(),
                 ecdsa_keystore_path.clone(),
                 ecdsa_keystore_password.clone(),
                 config.registry_coordinator_addr()?,
@@ -476,7 +477,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
             let _ = register_operator_with_el_and_avs(
                 config.operator_2_pvt_key(),
-                rpc_url.clone(),
+                config.http_rpc_url().clone(),
                 ecdsa_keystore_2_path.clone(),
                 ecdsa_keystore_2_password.clone(),
                 config.registry_coordinator_addr()?,
@@ -548,6 +549,13 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
+    info!("opera{:?}",operator_state_retriever_address);
+    let contr = RegistryCoordinator::new(registry_coordinator_address, get_provider(&rpc_url));
+    let s = contr.serviceManager().call().await.unwrap()._0;
+    let b = contr.blsApkRegistry().call().await.unwrap()._0;
+    let b = contr.stakeRegistry().call().await.unwrap()._0;
+
+    let dele = DelegationManager::new(address!("A44151489861Fe9e3055d95adC98FbD462B948e7"), get_provider(&rpc_url));
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
         rpc_url.clone(),
@@ -571,7 +579,6 @@ pub async fn register_operator_with_el_and_avs(
         rpc_url.clone(),
     );
     let el_chain_writer = ELChainWriter::new(
-        delegation_manager_address,
         strategy_manager_address,
         Address::ZERO,
         el_chain_reader.clone(),
