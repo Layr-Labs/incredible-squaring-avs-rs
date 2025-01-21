@@ -3,9 +3,9 @@ src = "src"
 out = "out"
 libs = ["lib"]
 fs_permissions = [{ access = "read-write", path = "./" }]
-solc = "0.8.26"
+solc = "0.8.27"
 via-ir = true
-
+optimizer = true
 remappings = [
     "@eigenlayer/=lib/eigenlayer-middleware/lib/eigenlayer-contracts/src/",
     "@eigenlayer-scripts/=lib/eigenlayer-middleware/lib/eigenlayer-contracts/script/",
@@ -15,5 +15,3 @@ remappings = [
     "forge-std/=lib/eigenlayer-middleware/lib/forge-std/src/",
 ]
 
-[rpc_endpoints]
-mainnet = "https://rpc.ankr.com/eth"

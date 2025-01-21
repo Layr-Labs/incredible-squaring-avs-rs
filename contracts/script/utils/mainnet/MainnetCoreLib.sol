@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.26;
 
 /// Existing Mainnet addresses
 library MainnetCoreLib {

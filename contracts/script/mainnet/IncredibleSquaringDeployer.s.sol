@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.26;
 
 import {Script} from "forge-std/Script.sol";
 import {CoreDeploymentLib} from "../utils/CoreDeploymentLib.sol";
