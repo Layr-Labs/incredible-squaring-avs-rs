@@ -24,7 +24,7 @@ contract MainnetIncredibleSquaringDeployer is Script {
     address public CONTRACTS_REGISTRY_ADDR;
     address public OPERATOR_ADDR;
     address public OPERATOR_2_ADDR;
- 
+
     CoreDeploymentLib.DeploymentData internal configData;
     IStrategy incredibleSquaringStrategy;
     address private deployer;
@@ -37,7 +37,7 @@ contract MainnetIncredibleSquaringDeployer is Script {
 
     function setUp() public virtual {
         require(block.number > 0);
-        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"),block.number);
+        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), block.number);
 
         deployer = vm.rememberKey(vm.envUint("MAINNET_DEPLOYER_KEY"));
         vm.label(deployer, "Deployer");
@@ -61,7 +61,7 @@ contract MainnetIncredibleSquaringDeployer is Script {
             strategyBeacon: MainnetCoreLib.STRATEGY_BEACON_ADDRESS
         });
 
-        incredibleSquaringStrategy  = IStrategy(MainnetCoreLib.ST_ETH_STRATEGY_ADDRESS);
+        incredibleSquaringStrategy = IStrategy(MainnetCoreLib.ST_ETH_STRATEGY_ADDRESS);
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
 
         incrediblSquaringDeployment = MainnetISDeploymentLib.deployContracts(
@@ -73,4 +73,3 @@ contract MainnetIncredibleSquaringDeployer is Script {
         vm.stopBroadcast();
     }
 }
-

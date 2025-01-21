@@ -38,6 +38,8 @@ import {
 } from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
+import {ISocketRegistry} from "@eigenlayer-middleware/src/interfaces/ISocketRegistry.sol";
+import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
 
 library MainnetISDeploymentLib {
     using stdJson for *;
@@ -54,6 +56,7 @@ library MainnetISDeploymentLib {
         address blsapkRegistry;
         address indexRegistry;
         address stakeRegistry;
+        address socketRegistry;
         address strategy;
         address token;
     }
@@ -82,6 +85,7 @@ library MainnetISDeploymentLib {
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.strategy = strategy;
+        result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.operatorStateRetriever = address(new OperatorStateRetriever());
         vm.label(result.incredibleSquaringServiceManager, "serviceManager");
         vm.label(result.stakeRegistry, "stakeRegistry");
@@ -161,34 +165,39 @@ library MainnetISDeploymentLib {
             )
         );
 
+        address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
+
         address registryCoordinatorImpl = address(
             new RegistryCoordinator(
                 IServiceManager(result.incredibleSquaringServiceManager),
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
-                IIndexRegistry(result.indexRegistry)
+                IIndexRegistry(result.indexRegistry),
+                ISocketRegistry(result.socketRegistry)
             )
         );
-        // UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
-        // IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
-        //     (IAVSDirectory(core.avsDirectory)),
-        //     IRegistryCoordinator(result.registryCoordinator),
-        //     IStakeRegistry(result.stakeRegistry),
-        //     core.rewardsCoordinator,
-        //     IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
-        // );
-        // console2.log("service_manager");
-        // console2.log(result.incredibleSquaringServiceManager);
-        // UpgradeableProxyLib.upgrade(
-        //     result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
-        // );
-        // bytes memory taskmanagerupgradecall =
-        //     abi.encodeCall(IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin));
-        // UpgradeableProxyLib.upgradeAndCall(
-        //     result.incredibleSquaringTaskManager,
-        //     address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
-        //     (taskmanagerupgradecall)
-        // );
+        UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
+
+        UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
+        IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
+            (IAVSDirectory(core.avsDirectory)),
+            IRegistryCoordinator(result.registryCoordinator),
+            IStakeRegistry(result.stakeRegistry),
+            core.rewardsCoordinator,
+            IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
+        );
+        console2.log("service_manager");
+        console2.log(result.incredibleSquaringServiceManager);
+        UpgradeableProxyLib.upgrade(
+            result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
+        );
+        bytes memory taskmanagerupgradecall =
+            abi.encodeCall(IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin));
+        UpgradeableProxyLib.upgradeAndCall(
+            result.incredibleSquaringTaskManager,
+            address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
+            (taskmanagerupgradecall)
+        );
 
         // verify_deployment(result);
 

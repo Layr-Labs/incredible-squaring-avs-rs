@@ -502,8 +502,8 @@ mod tests {
     use super::BlsConfig;
     use super::PathBuf;
     use crate::AggregatorConfig;
-    use crate::ElConfig;
     use crate::EcdsaConfig;
+    use crate::ElConfig;
     use crate::IncredibleConfig;
     use crate::OperatorConfig;
     use crate::OperatorRegistrationConfig;

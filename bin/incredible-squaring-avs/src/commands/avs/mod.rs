@@ -332,7 +332,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         } = *self;
         if let Some(config_path) = config_path {
             config = IncredibleConfig::load(&config_path)?;
-            info!("chain_id{:?}",config.chain_id());
+            info!("chain_id{:?}", config.chain_id());
         } else {
             debug!("Executing AVS command");
             debug!("chain id : {:?}", chain_id);
@@ -549,13 +549,16 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
-    info!("opera{:?}",operator_state_retriever_address);
+    info!("opera{:?}", operator_state_retriever_address);
     let contr = RegistryCoordinator::new(registry_coordinator_address, get_provider(&rpc_url));
     let s = contr.serviceManager().call().await.unwrap()._0;
     let b = contr.blsApkRegistry().call().await.unwrap()._0;
     let b = contr.stakeRegistry().call().await.unwrap()._0;
 
-    let dele = DelegationManager::new(address!("A44151489861Fe9e3055d95adC98FbD462B948e7"), get_provider(&rpc_url));
+    let dele = DelegationManager::new(
+        address!("A44151489861Fe9e3055d95adC98FbD462B948e7"),
+        get_provider(&rpc_url),
+    );
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
         rpc_url.clone(),

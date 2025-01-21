@@ -31,7 +31,9 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
         IStakeRegistry _stakeRegistry,
         address rewards_coordinator,
         IIncredibleSquaringTaskManager _incredibleSquaringTaskManager
-    ) ServiceManagerBase(_avsDirectory, _registryCoordinator, _stakeRegistry) {
+    )
+        ServiceManagerBase(_avsDirectory, IRewardsCoordinator(rewards_coordinator), _registryCoordinator, _stakeRegistry)
+    {
         incredibleSquaringTaskManager = _incredibleSquaringTaskManager;
     }
 

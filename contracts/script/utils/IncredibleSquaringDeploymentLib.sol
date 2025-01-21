@@ -8,6 +8,8 @@ import {console2} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
+import {ISocketRegistry} from "@eigenlayer-middleware/src/interfaces/ISocketRegistry.sol";
+import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
 import {
     IncredibleSquaringServiceManager,
     IServiceManager,
@@ -50,6 +52,7 @@ library IncredibleSquaringDeploymentLib {
         address blsapkRegistry;
         address indexRegistry;
         address stakeRegistry;
+        address socketRegistry;
         address strategy;
         address token;
     }
@@ -86,6 +89,7 @@ library IncredibleSquaringDeploymentLib {
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.strategy = strategy;
+        result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.operatorStateRetriever = address(new OperatorStateRetriever());
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
@@ -158,9 +162,12 @@ library IncredibleSquaringDeploymentLib {
                 IServiceManager(result.incredibleSquaringServiceManager),
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
-                IIndexRegistry(result.indexRegistry)
+                IIndexRegistry(result.indexRegistry),
+                ISocketRegistry(result.socketRegistry)
             )
         );
+        address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
+        UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
