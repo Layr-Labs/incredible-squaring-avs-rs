@@ -68,7 +68,7 @@ contract MainnetIncredibleSquaringDeployer is Script {
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
 
-        MainnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
+        // MainnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
 
         vm.stopBroadcast();
     }

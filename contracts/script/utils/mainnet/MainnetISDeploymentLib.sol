@@ -97,8 +97,6 @@ library MainnetISDeploymentLib {
         vm.label(result.indexRegistry, "indexRegistry");
         vm.label(result.strategy, "strategy");
         vm.label(result.operatorStateRetriever, "operatorStateRetriever");
-        console2.log("admin");
-        console2.log(admin);
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
@@ -176,28 +174,29 @@ library MainnetISDeploymentLib {
                 ISocketRegistry(result.socketRegistry)
             )
         );
-        UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
 
-        UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
-        IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
-            (IAVSDirectory(core.avsDirectory)),
-            IRegistryCoordinator(result.registryCoordinator),
-            IStakeRegistry(result.stakeRegistry),
-            core.rewardsCoordinator,
-            IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
-        );
-        console2.log("service_manager");
-        console2.log(result.incredibleSquaringServiceManager);
-        UpgradeableProxyLib.upgrade(
-            result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
-        );
-        bytes memory taskmanagerupgradecall =
-            abi.encodeCall(IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin));
-        UpgradeableProxyLib.upgradeAndCall(
-            result.incredibleSquaringTaskManager,
-            address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
-            (taskmanagerupgradecall)
-        );
+        // UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
+
+        // UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
+        // IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
+        //     (IAVSDirectory(core.avsDirectory)),
+        //     IRegistryCoordinator(result.registryCoordinator),
+        //     IStakeRegistry(result.stakeRegistry),
+        //     core.rewardsCoordinator,
+        //     IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
+        // );
+        // console2.log("service_manager");
+        // console2.log(result.incredibleSquaringServiceManager);
+        // UpgradeableProxyLib.upgrade(
+        //     result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
+        // );
+        // bytes memory taskmanagerupgradecall =
+        //     abi.encodeCall(IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin));
+        // UpgradeableProxyLib.upgradeAndCall(
+        //     result.incredibleSquaringTaskManager,
+        //     address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
+        //     (taskmanagerupgradecall)
+        // );
 
         // verify_deployment(result);
 
