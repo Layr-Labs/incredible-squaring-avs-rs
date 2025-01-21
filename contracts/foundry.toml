@@ -14,3 +14,6 @@ remappings = [
     "@openzeppelin-upgrades/=lib/eigenlayer-middleware/lib/openzeppelin-contracts-upgradeable/",
     "forge-std/=lib/eigenlayer-middleware/lib/forge-std/src/",
 ]
+
+[rpc_endpoints]
+mainnet = "https://rpc.ankr.com/eth"

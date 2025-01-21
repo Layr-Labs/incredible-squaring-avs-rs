@@ -5,14 +5,16 @@ import {Script} from "forge-std/Script.sol";
 import {CoreDeploymentLib} from "../utils/CoreDeploymentLib.sol";
 import {IncredibleSquaringDeploymentLib} from "../utils/IncredibleSquaringDeploymentLib.sol";
 import "../../src/MockERC20.sol";
+import {console2} from "forge-std/console2.sol";
 import {FundOperator} from "../utils/FundOperator.sol";
 import {IStrategyManager, IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
+import {Ownable} from "@eigenlayer-middleware/lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {StrategyFactory} from "@eigenlayer/contracts/strategies/StrategyFactory.sol";
 import {UpgradeableProxyLib} from "../utils/UpgradeableProxyLib.sol";
 import {MainnetISDeploymentLib} from "../utils/mainnet/MainnetISDeploymentLib.sol";
 import {MainnetCoreLib} from "../utils/mainnet/MainnetCoreLib.sol";
 
-contract HoleskyIncredibleSquaringDeployer is Script {
+contract MainnetIncredibleSquaringDeployer is Script {
     // DEPLOYMENT CONSTANTS
     uint256 public constant QUORUM_THRESHOLD_PERCENTAGE = 100;
     uint32 public constant TASK_RESPONSE_WINDOW_BLOCK = 30;
@@ -22,34 +24,7 @@ contract HoleskyIncredibleSquaringDeployer is Script {
     address public CONTRACTS_REGISTRY_ADDR;
     address public OPERATOR_ADDR;
     address public OPERATOR_2_ADDR;
-    // ContractsRegistry contractsRegistry;
-
-    // StrategyBaseTVLLimits public erc20MockStrategy;
-
-    // address public rewardscoordinator;
-
-    // ProxyAdmin public incredibleSquaringProxyAdmin;
-    // PauserRegistry public incredibleSquaringPauserReg;
-
-    // regcoord.RegistryCoordinator public registryCoordinator;
-    // regcoord.IRegistryCoordinator public registryCoordinatorImplementation;
-
-    // IBLSApkRegistry public blsApkRegistry;
-    // IBLSApkRegistry public blsApkRegistryImplementation;
-
-    // IIndexRegistry public indexRegistry;
-    // IIndexRegistry public indexRegistryImplementation;
-
-    // IStakeRegistry public stakeRegistry;
-    // IStakeRegistry public stakeRegistryImplementation;
-
-    // OperatorStateRetriever public operatorStateRetriever;
-
-    // IncredibleSquaringServiceManager public incredibleSquaringServiceManager;
-    // IServiceManager public incredibleSquaringServiceManagerImplementation;
-
-    // IncredibleSquaringTaskManager public incredibleSquaringTaskManager;
-    // IIncredibleSquaringTaskManager public incredibleSquaringTaskManagerImplementation;
+ 
     CoreDeploymentLib.DeploymentData internal configData;
     IStrategy incredibleSquaringStrategy;
     address private deployer;
@@ -61,18 +36,18 @@ contract HoleskyIncredibleSquaringDeployer is Script {
     address proxyAdmin;
 
     function setUp() public virtual {
-        uint256 forkId = vm.createFork("MAINNET_RPC_URL");
-        vm.selectFork(forkId);
+        require(block.number > 0);
+        vm.createSelectFork(vm.envString("MAINNET_RPC_URL"),block.number);
 
-        deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
+        deployer = vm.rememberKey(vm.envUint("MAINNET_DEPLOYER_KEY"));
         vm.label(deployer, "Deployer");
     }
 
     function run() external {
         // Eigenlayer contracts
-        vm.startBroadcast(vm.rememberKey(vm.envUint("HOLESKY_DEPLOYER_KEY"))); // 0x08ebac0c47e1afbc8355816ed68ecd97796797c3
+        vm.startBroadcast(vm.rememberKey(vm.envUint("MAINNET_DEPLOYER_KEY"))); // 0x08ebac0c47e1afbc8355816ed68ecd97796797c3
         MainnetISDeploymentLib.IncredibleSquaringSetupConfig memory isConfig =
-            MainnetISDeploymentLib.readIncredibleSquaringConfigJson("holesky_config");
+            MainnetISDeploymentLib.readIncredibleSquaringConfigJson("mainnet_config");
 
         configData = CoreDeploymentLib.DeploymentData({
             delegationManager: MainnetCoreLib.DELEGATION_MANAGER_ADDRESS,
@@ -85,25 +60,17 @@ contract HoleskyIncredibleSquaringDeployer is Script {
             strategyFactory: MainnetCoreLib.STRATEGY_FACTORY_ADDRESS,
             strategyBeacon: MainnetCoreLib.STRATEGY_BEACON_ADDRESS
         });
-        erc20Mock = new MockERC20();
-        FundOperator.fund_operator(address(erc20Mock), isConfig.operator_addr, 10e18);
-        FundOperator.fund_operator(address(erc20Mock), isConfig.operator_2_addr, 10e18);
-        (bool s,) = isConfig.operator_2_addr.call{value: 0.02 ether}("");
-        require(s);
-        (bool ss,) = isConfig.operator_addr.call{value: 0.02 ether}("");
-        require(ss);
-        incredibleSquaringStrategy = IStrategy(StrategyFactory(configData.strategyFactory).deployNewStrategy(erc20Mock));
 
+        incredibleSquaringStrategy  = IStrategy(MainnetCoreLib.ST_ETH_STRATEGY_ADDRESS);
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
+
         incrediblSquaringDeployment = MainnetISDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
-        // FundOperator.fund_operator(
-        //     address(erc20Mock), incrediblSquaringDeployment.incredibleSquaringServiceManager, 1e18
-        // );
 
         MainnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
 
         vm.stopBroadcast();
     }
 }
+
