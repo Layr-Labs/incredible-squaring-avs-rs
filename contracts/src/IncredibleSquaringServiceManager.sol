@@ -37,6 +37,10 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
         incredibleSquaringTaskManager = _incredibleSquaringTaskManager;
     }
 
+    function initialize(address initialOwner, address rewardsInitiator) public initializer {
+        __ServiceManagerBase_init(initialOwner, rewardsInitiator);
+    }
+
     /// @notice Called in the event of challenge resolution, in order to forward a call to the Slasher, which 'freezes' the `operator`.
     /// @dev The Slasher contract is under active development and its interface expected to change.
     ///      We recommend writing slashing logic without integrating with the Slasher at this point in time.
