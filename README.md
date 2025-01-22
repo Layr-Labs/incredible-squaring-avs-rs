@@ -97,8 +97,6 @@ The architecture of the AVS contains:
 - Operators
   - Square the number sent to the task manager by the task generator, sign it, and send it to the aggregator
 
- ![architecture (1)](https://github.com/user-attachments/assets/389349cd-931f-448c-bf2c-ea49af133542)
-
 
 ## Default Configuration
 - Metrics http endpoint - `http://localhost:9001/metrics`
