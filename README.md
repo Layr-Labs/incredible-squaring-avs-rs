@@ -8,7 +8,7 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 - [Docker](https://www.docker.com/) 
 
 
-## To run 
+## Anvil 
 
 - Start anvil in a separate terminal 
 ```sh
@@ -46,7 +46,26 @@ This command launches 5 services(crates) together:
 - Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
 - Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
 
+## Mainnet 
+We support mainnet deployment simulation of AVS contracts 
 
+1)  git submodule and copy env 
+    ```sh
+    git submodule update --init --recursive
+    cp contracts/.env.example contracts/.env
+    ```
+
+2) Paste your .env variables 
+  - `MAINNET_DEPLOYER_KEY` , `MAINNET_RPC_URL` , `ETHERSCAN_API_KEY`
+
+3) Run this to simulate
+   ```sh
+    make simulate-avs-mainnet-deployment
+   ```
+4) To actually deploy(Optional)
+   Add --broadcast in the forge script [command]()
+
+   
 ## Testing 
 
 - To run unit tests(start anvil in a separate terminal)
