@@ -65,7 +65,10 @@ We support mainnet deployment simulation of AVS contracts
 4) To actually deploy(Optional)
    Add --broadcast in the forge script [command]()
    Update the `mainnet_incredible_config.toml` file with correct addresses to run the avs 
-
+   Then run 
+   ```sh
+   cargo run --bin incredible-squaring-avs  start --config-path <mainnet config path>
+   ```
    
 ## Testing 
 
