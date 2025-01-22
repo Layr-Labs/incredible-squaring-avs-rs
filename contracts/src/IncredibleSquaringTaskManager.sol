@@ -42,6 +42,13 @@ contract IncredibleSquaringTaskManager is
     mapping(uint32 => bytes32) public allTaskResponses;
 
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
+    address public aggregator;
+
+    /* MODIFIERS */
+    modifier onlyAggregator() {
+        require(msg.sender == aggregator, "Aggregator must be the caller");
+        _;
+    }
 
     constructor(IRegistryCoordinator _registryCoordinator, uint32 _taskResponseWindowBlock)
         BLSSignatureChecker(_registryCoordinator)
@@ -49,9 +56,13 @@ contract IncredibleSquaringTaskManager is
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
     }
 
-    function initialize(IPauserRegistry _pauserRegistry, address initialOwner) public initializer {
+    function initialize(IPauserRegistry _pauserRegistry, address initialOwner, address _aggregator)
+        public
+        initializer
+    {
         _initializePauser(_pauserRegistry, UNPAUSE_ALL);
         _transferOwnership(initialOwner);
+        aggregator = _aggregator;
     }
 
     /* FUNCTIONS */
@@ -77,7 +88,7 @@ contract IncredibleSquaringTaskManager is
         Task calldata task,
         TaskResponse calldata taskResponse,
         NonSignerStakesAndSignature memory nonSignerStakesAndSignature
-    ) external {
+    ) external onlyAggregator {
         uint32 taskCreatedBlock = task.taskCreatedBlock;
         bytes calldata quorumNumbers = task.quorumNumbers;
         uint32 quorumThresholdPercentage = task.quorumThresholdPercentage;

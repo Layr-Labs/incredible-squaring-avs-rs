@@ -179,8 +179,9 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );
-        bytes memory taskmanagerupgradecall =
-            abi.encodeCall(IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin));
+        bytes memory taskmanagerupgradecall = abi.encodeCall(
+            IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin, admin)
+        );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager,
             address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
