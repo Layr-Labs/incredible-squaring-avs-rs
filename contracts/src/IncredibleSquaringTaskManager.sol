@@ -9,8 +9,12 @@ import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {RegistryCoordinator} from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
 import {BLSSignatureChecker, IRegistryCoordinator} from "@eigenlayer-middleware/src/BLSSignatureChecker.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
+import {InstantSlasher} from "@eigenlayer-middleware/src/slashers/InstantSlasher.sol";
 import "@eigenlayer-middleware/src/libraries/BN254.sol";
+// import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
 import "./IIncredibleSquaringTaskManager.sol";
+import {IAllocationManagerTypes} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
+import {OperatorSet} from "@eigenlayer/contracts/libraries/OperatorSetLib.sol";
 
 contract IncredibleSquaringTaskManager is
     Initializable,
@@ -27,6 +31,7 @@ contract IncredibleSquaringTaskManager is
     uint32 public immutable TASK_RESPONSE_WINDOW_BLOCK;
     uint32 public constant TASK_CHALLENGE_WINDOW_BLOCK = 100;
     uint256 internal constant _THRESHOLD_DENOMINATOR = 100;
+    uint256 public constant WADS_TO_SLASH = 100000000000000000; // 10%
 
     /* STORAGE */
     // The latest task index
@@ -45,6 +50,9 @@ contract IncredibleSquaringTaskManager is
 
     address public aggregator;
     address public generator;
+    address public instantSlasher;
+    address public allocationManager;
+    address public serviceManager;
 
     /* MODIFIERS */
     modifier onlyAggregator() {
@@ -59,20 +67,28 @@ contract IncredibleSquaringTaskManager is
         _;
     }
 
-    constructor(IRegistryCoordinator _registryCoordinator, uint32 _taskResponseWindowBlock)
-        BLSSignatureChecker(_registryCoordinator)
-    {
+    constructor(
+        IRegistryCoordinator _registryCoordinator,
+        IPauserRegistry _pauserRegistry,
+        uint32 _taskResponseWindowBlock,
+        address _serviceManager
+    ) BLSSignatureChecker(_registryCoordinator) Pausable(_pauserRegistry) {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
+        serviceManager = _serviceManager;
     }
 
-    function initialize(IPauserRegistry _pauserRegistry, address initialOwner, address _aggregator, address _generator)
-        public
-        initializer
-    {
-        _initializePauser(_pauserRegistry, UNPAUSE_ALL);
+    function initialize(
+        address initialOwner,
+        address _aggregator,
+        address _generator,
+        address _allocationManager,
+        address _slasher
+    ) public initializer {
         _transferOwnership(initialOwner);
         aggregator = _aggregator;
         generator = _generator;
+        allocationManager = _allocationManager;
+        instantSlasher = _slasher;
     }
 
     /* FUNCTIONS */
@@ -150,9 +166,6 @@ contract IncredibleSquaringTaskManager is
         return latestTaskNum;
     }
 
-    // NOTE: this function enables a challenger to raise and resolve a challenge.
-    // TODO: require challenger to pay a bond for raising a challenge
-    // TODO(samlaf): should we check that quorumNumbers is same as the one recorded in the task?
     function raiseAndResolveChallenge(
         Task calldata task,
         TaskResponse calldata taskResponse,
@@ -177,11 +190,10 @@ contract IncredibleSquaringTaskManager is
             "The challenge period for this task has already expired."
         );
 
-        // logic for checking whether challenge is valid or not
+        // // logic for checking whether challenge is valid or not
         uint256 actualSquaredOutput = numberToBeSquared * numberToBeSquared;
         bool isResponseCorrect = (actualSquaredOutput == taskResponse.numberSquared);
-
-        // if response was correct, no slashing happens so we return
+        // // if response was correct, no slashing happens so we return
         if (isResponseCorrect == true) {
             emit TaskChallengedUnsuccessfully(referenceTaskIndex, msg.sender);
             return;
@@ -206,69 +218,55 @@ contract IncredibleSquaringTaskManager is
         );
 
         // get the address of operators who didn't sign
-        address[] memory addresssOfNonSigningOperators = new address[](pubkeysOfNonSigningOperators.length);
+        address[] memory addressOfNonSigningOperators = new address[](pubkeysOfNonSigningOperators.length);
         for (uint256 i = 0; i < pubkeysOfNonSigningOperators.length; i++) {
-            addresssOfNonSigningOperators[i] =
+            addressOfNonSigningOperators[i] =
                 BLSApkRegistry(address(blsApkRegistry)).pubkeyHashToOperator(hashesOfPubkeysOfNonSigningOperators[i]);
         }
 
-        // @dev the below code is commented out for the upcoming M2 release
-        //      in which there will be no slashing. The slasher is also being redesigned
-        //      so its interface may very well change.
-        // ==========================================
-        // // get the list of all operators who were active when the task was initialized
-        // Operator[][] memory allOperatorInfo = getOperatorState(
-        //     IRegistryCoordinator(address(registryCoordinator)),
-        //     task.quorumNumbers,
-        //     task.taskCreatedBlock
-        // );
-        // // freeze the operators who signed adversarially
-        // for (uint i = 0; i < allOperatorInfo.length; i++) {
-        //     // first for loop iterate over quorums
+        // get the list of all operators who were active when the task was initialized
+        Operator[][] memory allOperatorInfo = getOperatorState(
+            IRegistryCoordinator(address(registryCoordinator)), task.quorumNumbers, task.taskCreatedBlock
+        );
+        // first for loop iterate over quorums
+        for (uint256 i = 0; i < allOperatorInfo.length; i++) {
+            // second for loop iterate over operators active in the quorum when the task was initialized
+            for (uint256 j = 0; j < allOperatorInfo[i].length; j++) {
+                // get the operator address
+                bytes32 operatorID = allOperatorInfo[i][j].operatorId;
+                address operatorAddress = blsApkRegistry.getOperatorFromPubkeyHash(operatorID);
 
-        //     for (uint j = 0; j < allOperatorInfo[i].length; j++) {
-        //         // second for loop iterate over operators active in the quorum when the task was initialized
+                // check whether the operator was a signer for the task
+                bool wasSigningOperator = true;
+                for (uint256 k = 0; k < addressOfNonSigningOperators.length; k++) {
+                    if (operatorAddress == addressOfNonSigningOperators[k]) {
+                        // if the operator was a non-signer, then we set the flag to false
+                        wasSigningOperator == false;
+                        break;
+                    }
+                }
 
-        //         // get the operator address
-        //         bytes32 operatorID = allOperatorInfo[i][j].operatorId;
-        //         address operatorAddress = BLSPubkeyRegistry(
-        //             address(blsPubkeyRegistry)
-        //         ).pubkeyCompendium().pubkeyHashToOperator(operatorID);
-
-        //         // check if the operator has already NOT been frozen
-        //         if (
-        //             IServiceManager(
-        //                 address(
-        //                     BLSRegistryCoordinatorWithIndices(
-        //                         address(registryCoordinator)
-        //                     ).serviceManager()
-        //                 )
-        //             ).slasher().isFrozen(operatorAddress) == false
-        //         ) {
-        //             // check whether the operator was a signer for the task
-        //             bool wasSigningOperator = true;
-        //             for (
-        //                 uint k = 0;
-        //                 k < addresssOfNonSigningOperators.length;
-        //                 k++
-        //             ) {
-        //                 if (
-        //                     operatorAddress == addresssOfNonSigningOperators[k]
-        //                 ) {
-        //                     // if the operator was a non-signer, then we set the flag to false
-        //                     wasSigningOperator == false;
-        //                     break;
-        //                 }
-        //             }
-
-        //             if (wasSigningOperator == true) {
-        //                 BLSRegistryCoordinatorWithIndices(
-        //                     address(registryCoordinator)
-        //                 ).serviceManager().freezeOperator(operatorAddress);
-        //             }
-        //         }
-        //     }
-        // }
+                if (wasSigningOperator == true) {
+                    OperatorSet memory operatorset =
+                        OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
+                    IStrategy[] memory istrategy =
+                        IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
+                    uint256[] memory wadsToSlash = new uint256[](istrategy.length);
+                    for (uint256 z = 0; z < wadsToSlash.length; z++) {
+                        wadsToSlash[z] = WADS_TO_SLASH;
+                    }
+                    IAllocationManagerTypes.SlashingParams memory slashingparams = IAllocationManagerTypes
+                        .SlashingParams({
+                        operator: operatorAddress,
+                        operatorSetId: uint8(task.quorumNumbers[i]),
+                        strategies: istrategy,
+                        wadsToSlash: wadsToSlash,
+                        description: "slash_the_operator"
+                    });
+                    InstantSlasher(instantSlasher).fulfillSlashingRequest(slashingparams);
+                }
+            }
+        }
 
         // the task response has been challenged successfully
         taskSuccesfullyChallenged[referenceTaskIndex] = true;

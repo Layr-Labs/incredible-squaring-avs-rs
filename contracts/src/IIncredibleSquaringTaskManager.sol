@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@eigenlayer-middleware/src/libraries/BN254.sol";
+import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
 
 interface IIncredibleSquaringTaskManager {
     // EVENTS

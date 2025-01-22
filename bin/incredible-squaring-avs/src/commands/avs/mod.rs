@@ -1,25 +1,31 @@
-use alloy::primitives::{Address, Bytes, FixedBytes, U256};
+use alloy::hex;
+use alloy::primitives::aliases::U96;
+use alloy::primitives::{Address, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
 use eigen_testing_utils::anvil_constants::{
-    get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
-    ANVIL_HTTP_URL,
+    get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
+    get_permission_controller_address, get_rewards_coordinator_address,
+    get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::get_provider;
+use eigen_utils::allocationmanager::AllocationManager::{self, OperatorSet};
+use eigen_utils::allocationmanager::IAllocationManagerTypes::AllocateParams;
+use eigen_utils::registrycoordinator::RegistryCoordinator;
+use eigen_utils::{get_provider, get_signer};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
-    get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
+    get_incredible_squaring_service_manager, get_incredible_squaring_strategy_address,
+    get_incredible_squaring_task_manager,
 };
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
@@ -28,7 +34,7 @@ use std::net::SocketAddr;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::debug;
+use tracing::{debug, info};
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -130,6 +136,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "BLS_KEYSTORE_2_PASSWORD", default_value = "test")]
     bls_keystore_2_password: String,
 
+    /// operator set id
+    #[arg(long, value_name = "OPERATOR_SET_ID", default_value = "1")]
+    operator_set_id: String,
+
     /// Operator Id
     #[arg(
         long,
@@ -138,13 +148,17 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_id: String,
 
-    /// Operator Id
+    /// Operator2 Id
     #[arg(
         long,
         value_name = "OPERATOR_2_ID",
         default_value = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
     )]
     operator_2_id: String,
+
+    /// Allocation Delay , default 1
+    #[arg(long, value_name = "ALLOCATION_DELAY", default_value = "1")]
+    allocation_delay: String,
 
     /// Operator State retreiver
     #[arg(long, value_name = "OPERATOR_STATE_RETRIEVER_ADDRESS")]
@@ -194,7 +208,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "SOCKET", default_value = "incredible-socket")]
     socket: String,
 
-    #[arg(long, value_name = "QUORUM_NUMBER", default_value = "00")]
+    #[arg(long, value_name = "QUORUM_NUMBER", default_value = "1")]
     quorum_number: String,
 
     #[arg(long, value_name = "SIG_EXPIRY")]
@@ -212,6 +226,15 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
 
     #[arg(long, value_name = "ERC20_MOCK_STRATEGY_ADDRESS")]
     erc20_mock_strategy_address: Option<String>,
+
+    // metadata uri
+    #[arg(
+        long,
+        value_name = "METADATA_URI",
+        default_value = "incredible-squaring-avs"
+    )]
+    metadata_uri: String,
+
     // default is no.2 of anvil
     #[arg(
         long,
@@ -227,6 +250,9 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_pvt_key: String,
 
+    #[arg(long, value_name = "SLASH_SIMULATE", default_value_t = false)]
+    slash_simulate: bool,
+
     #[arg(
         long,
         value_name = "OPERATOR_2_PVT_KEY",
@@ -236,6 +262,20 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
 
     #[arg(long, value_name = "OPERATOR_2_SIG_EXPIRY")]
     operator_2_sig_expiry: Option<String>,
+
+    #[arg(
+        long,
+        value_name = "OPERATOR_1_TOKEN_AMOUNT",
+        default_value = "5000000000000000000000"
+    )]
+    operator_1_token_amount: String,
+
+    #[arg(
+        long,
+        value_name = "OPERATOR_2_TOKEN_AMOUNT",
+        default_value = "7000000000000000000000"
+    )]
+    operator_2_token_amount: String,
 
     #[arg(
         long,
@@ -295,18 +335,22 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
         let operator_state_retriever_address_anvil =
             get_incredible_squaring_operator_state_retriever().await;
-
         let delegation_manager_address_anvil =
             get_delegation_manager_address(ANVIL_HTTP_URL.to_string()).await;
         let avs_directory_address_anvil =
             get_avs_directory_address(ANVIL_HTTP_URL.to_string()).await;
-
+        let rewards_coordinator_address_anvil =
+            get_rewards_coordinator_address(ANVIL_HTTP_URL.to_string()).await;
         let strategy_manager_address_anvil =
             get_strategy_manager_address(ANVIL_HTTP_URL.to_string()).await;
         let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
         let incredible_squaring_task_manager_address_anvil =
             get_incredible_squaring_task_manager().await;
-
+        let allocation_manager_address_anvil =
+            get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await;
+        let permission_controller_address_anvil =
+            get_permission_controller_address(ANVIL_HTTP_URL.to_string()).await;
+        let service_manager_address_anvil = get_incredible_squaring_service_manager().await;
         let default_anvil = AnvilValues::new(
             registry_coordinator_address_anvil,
             operator_state_retriever_address_anvil,
@@ -359,18 +403,25 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_2_sig_expiry,
             operator_2_address,
             operator_2_id,
+            operator_set_id,
+            operator_1_token_amount,
+            operator_2_token_amount,
+            allocation_delay,
+            metadata_uri,
+            slash_simulate,
             ..
         } = *self;
         if let Some(config_path) = config_path {
             config = IncredibleConfig::load(&config_path)?;
         } else {
+            config.set_service_manager_address(service_manager_address_anvil.to_string());
             config.set_node_api_port_address(node_api_address);
             config.set_metrics_port_address(metrics_address);
-
+            config.set_slash_simulate(slash_simulate);
             // there's a default value ,so using unwrap is no issue
             config.set_task_manager_signer(task_manager_signer);
             config.set_signer(signer); // there's a default value ,so using unwrap is no issue
-
+            config.set_operator_set_id(operator_set_id);
             config.set_chain_id(chain_id);
             config.set_http_rpc_url(rpc_url.clone());
             config.set_ws_rpc_url(ws_rpc_url);
@@ -379,10 +430,11 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_aggregator_ip_address(aggregator_ip_address);
             config.set_bls_keystore_path(bls_keystore_path.clone());
             config.set_bls_keystore_password(bls_keystore_password.clone());
-
+            config.set_allocation_delay(allocation_delay);
             config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
             config.set_socket(socket);
-            config.set_quorum_number(quorum_number);
+
+            config.set_quorum_number(quorum_number.clone());
             config.set_operator_id(operator_id);
             config.set_operator_address(operator_address);
             config.set_operator_2_address(operator_2_address);
@@ -396,7 +448,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 .clone()
                 .unwrap_or(delegation_manager_address_anvil.to_string()),
         );
-        config.set_operator_2_quorum_number("00".to_string());
+        config.set_operator_2_quorum_number(quorum_number);
         config.set_avs_directory_address(
             avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
         );
@@ -420,7 +472,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         config.set_task_manager_address(
             task_manager_addr.unwrap_or(incredible_squaring_task_manager_address_anvil.to_string()),
         );
-
+        config.set_rewards_coordinator_address(rewards_coordinator_address_anvil.to_string());
+        config.set_permission_controller_address(permission_controller_address_anvil.to_string());
         config.set_ecdsa_keystore_2_path(ecdsa_keystore_2_path.clone());
         config.set_ecdsa_keystore_2_pasword(ecdsa_keystore_2_password.clone());
         config
@@ -444,50 +497,155 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 .unwrap_or(expiry.to_string())
                 .to_string(),
         );
+        config.set_operator_1_token_amount(operator_1_token_amount);
+        config.set_operator_2_token_amount(operator_2_token_amount);
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
+
+        // enable operator sets
+        // this can only be called by registry coordinator's owner.
+        // in our case the deployer key in scripts was anvil's 0 index key which is same as operator1
+        let enable_operator_sets_tx_hash = enable_operator_sets(
+            config.registry_coordinator_addr()?,
+            config.operator_pvt_key(),
+            config.ecdsa_keystore_path(),
+            config.ecdsa_keystore_password(),
+            &rpc_url,
+        )
+        .await?;
+        info!(tx_hash = %enable_operator_sets_tx_hash,"enable operator sets tx_hash");
+
+        let total_delegated_quorum_create_tx_hash = create_total_delegated_stake_quorum(
+            config.erc20_mock_strategy_addr()?,
+            config.registry_coordinator_addr()?,
+            config.operator_pvt_key(),
+            config.ecdsa_keystore_path(),
+            config.ecdsa_keystore_password(),
+            &rpc_url,
+        )
+        .await?;
+        info!(tx_hash = %total_delegated_quorum_create_tx_hash,"total delegated stake quorum create tx_hash");
+
         if register_operator {
-            let _ = register_operator_with_el_and_avs(
+            let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
+                metadata_uri.clone(),
+                config.allocation_delay()?,
                 config.operator_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_path.clone(),
                 ecdsa_keystore_password.clone(),
+                config.permission_controller_address()?,
+                config.rewards_coordinator_address()?,
+                allocation_manager_address_anvil,
                 config.registry_coordinator_addr()?,
-                config.operator_state_retriever_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
                 config.strategy_manager_addr()?,
                 config.erc20_mock_strategy_addr()?,
-                &bls_keystore_path,
-                &bls_keystore_password,
-                config.operator_to_avs_registration_sig_salt()?,
-                config.sig_expiry()?,
-                config.quorum_number()?,
-                config.socket().to_string(),
-                U256::from(5000),
+                config.operator_1_token_amount()?,
             )
             .await;
 
-            let _ = register_operator_with_el_and_avs(
+            let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
+                metadata_uri,
+                config.allocation_delay()?,
                 config.operator_2_pvt_key(),
                 rpc_url.clone(),
                 ecdsa_keystore_2_path.clone(),
                 ecdsa_keystore_2_password.clone(),
+                config.permission_controller_address()?,
+                config.rewards_coordinator_address()?,
+                allocation_manager_address_anvil,
                 config.registry_coordinator_addr()?,
-                config.operator_state_retriever_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
                 config.strategy_manager_addr()?,
                 config.erc20_mock_strategy_addr()?,
-                &bls_keystore_2_path,
-                &bls_keystore_2_password,
-                config.operator_2_to_avs_registration_sig_salt()?,
-                config.operator_2_sig_expiry()?,
-                config.operator_2_quorum_number()?,
-                config.operator_2_socket().to_string(),
-                U256::from(7000),
+                config.operator_2_token_amount()?,
             )
             .await;
+
+            let allocation_delay_set_tx_hash = set_allocation_delay(
+                config.allocation_delay()?,
+                allocation_manager_address_anvil,
+                config.operator_pvt_key(),
+                config.ecdsa_keystore_path(),
+                config.ecdsa_keystore_password(),
+                &rpc_url,
+            )
+            .await?;
+            info!(
+                "set allocation delay for operator1 {:?}",
+                allocation_delay_set_tx_hash
+            );
+
+            let modify_allocation_for_operator1_tx_hash = modify_allocation_for_operator(
+                config.operator_set_id()?,
+                allocation_manager_address_anvil,
+                config.operator_pvt_key(),
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+                vec![config.erc20_mock_strategy_addr()?],
+                vec![100],
+            )
+            .await?;
+
+            info!(tx_hash = %modify_allocation_for_operator1_tx_hash,strategy_address = %config.erc20_mock_strategy_addr()?,"allocation by operator1 for strategy");
+
+            let modify_allocation_for_operator2_tx_hash = modify_allocation_for_operator(
+                config.operator_set_id()?,
+                allocation_manager_address_anvil,
+                config.operator_2_pvt_key(),
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+                vec![config.erc20_mock_strategy_addr()?],
+                vec![100],
+            )
+            .await?;
+            info!(tx_hash = %modify_allocation_for_operator2_tx_hash,strategy_address = %config.erc20_mock_strategy_addr()?,"allocation by operator2 for strategy");
+            let keystore = Keystore::from_file(&config.bls_keystore_path())?
+                .decrypt(&config.bls_keystore_password())
+                .unwrap();
+            let fr_key: String = keystore.iter().map(|&value| value as char).collect();
+            let key_pair = BlsKeyPair::new(fr_key)?;
+            let register_for_operator_sets_by_operator1_txhash = register_for_operator_sets(
+                config.operator_set_id()?,
+                key_pair,
+                config.registry_coordinator_addr()?,
+                allocation_manager_address_anvil,
+                config.operator_pvt_key(),
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+                config.socket().to_string(),
+            )
+            .await?;
+
+            info!(tx_hash = %register_for_operator_sets_by_operator1_txhash,"register for operator sets by operator1");
+            let keystore = Keystore::from_file(&config.bls_keystore_2_path())?
+                .decrypt(&config.bls_keystore_2_password())
+                .unwrap();
+            let fr_key: String = keystore.iter().map(|&value| value as char).collect();
+            let key_pair_2 = BlsKeyPair::new(fr_key)?;
+            let register_for_operator_sets_by_operator2_txhash = register_for_operator_sets(
+                config.operator_set_id()?,
+                key_pair_2,
+                config.registry_coordinator_addr()?,
+                allocation_manager_address_anvil,
+                config.operator_2_pvt_key(),
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
+                config.operator_2_socket().to_string(),
+            )
+            .await?;
+            info!(tx_hash = %register_for_operator_sets_by_operator2_txhash,"register for operator sets by operator2");
 
             let current_block_number = get_provider(&rpc_url).get_block_number().await?;
 
@@ -506,6 +664,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             }
             mine_anvil_block(&rpc_url, current_block_number);
         }
+
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
         let _ = avs_launcher.launch_avs(avs_builder).await;
@@ -516,23 +675,21 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
 #[allow(clippy::too_many_arguments)]
 /// Register operator in eigenlayer and avs
-pub async fn register_operator_with_el_and_avs(
+pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
+    metadata_uri: String,
+    allocation_delay: u32,
     operator_pvt_key: Option<String>,
     rpc_url: String,
     ecdsa_keystore_path: String,
     ecdsa_keystore_password: String,
+    permission_controller_address: Address,
+    rewards_coordinator: Address,
+    allocation_manager: Address,
     registry_coordinator_address: Address,
-    operator_state_retriever_address: Address,
     delegation_manager_address: Address,
     avs_directory_address: Address,
     strategy_manager_address: Address,
     erc20_strategy_address: Address,
-    bls_keystore_path: &str,
-    bls_keystore_password: &str,
-    operator_to_avs_registration_sig_salt: FixedBytes<32>,
-    operator_to_avs_registration_sig_expiry: U256,
-    quorum_numbers: Bytes,
-    socket: String,
     deposit_tokens: U256,
 ) -> eyre::Result<()> {
     let signer;
@@ -542,64 +699,285 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
-    let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
-        get_logger(),
-        rpc_url.clone(),
-        hex::encode(s).to_string(),
-        registry_coordinator_address,
-        operator_state_retriever_address,
-    )
-    .await?;
-
-    // Read BlsKey from path
-    let keystore = Keystore::from_file(bls_keystore_path)?
-        .decrypt(bls_keystore_password)
-        .unwrap();
-    let fr_key: String = keystore.iter().map(|&value| value as char).collect();
-    let key_pair = BlsKeyPair::new(fr_key)?;
     let el_chain_reader = ELChainReader::new(
         get_logger(),
-        Address::ZERO,
+        allocation_manager,
         delegation_manager_address,
+        rewards_coordinator,
         avs_directory_address,
+        permission_controller_address,
         rpc_url.clone(),
     );
     let el_chain_writer = ELChainWriter::new(
         delegation_manager_address,
         strategy_manager_address,
-        Address::ZERO,
+        rewards_coordinator,
+        permission_controller_address,
+        allocation_manager,
+        registry_coordinator_address,
         el_chain_reader.clone(),
         rpc_url.clone(),
         hex::encode(s).to_string(),
     );
-
     let operator_details = Operator {
         address: signer.address(),
-        earnings_receiver_address: signer.address(),
-        delegation_approver_address: Address::ZERO,
-        staker_opt_out_window_blocks: 200,
-        metadata_url: Some("url".to_string()),
+        delegation_approver_address: signer.address(),
+        staker_opt_out_window_blocks: 0,
+        metadata_url: Some(metadata_uri),
+        allocation_delay,
     };
-
-    let _ = el_chain_writer
-        .register_as_operator(operator_details)
+    let is_already_registered = el_chain_reader
+        .is_operator_registered(signer.address())
         .await?;
-    deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
-    let tx_hash = avs_registry_writer
-        .register_operator_in_quorum_with_avs_registry_coordinator(
-            key_pair,
-            operator_to_avs_registration_sig_salt,
-            operator_to_avs_registration_sig_expiry,
-            quorum_numbers.clone(),
-            socket,
-        )
-        .await?;
-    debug!(
-        "tx hash for registering operator in quorum with avs registry coordinator {:?}",
-        tx_hash
-    );
-
+    if !is_already_registered {
+        let _ = el_chain_writer
+            .register_as_operator(operator_details)
+            .await?; // register operator in delegation manager on EigenLayer
+        deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
+    }
     Ok(())
+}
+
+/// set allocation delay
+pub async fn set_allocation_delay(
+    allocation_delay: u32,
+    allocation_manager: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+) -> eyre::Result<FixedBytes<32>> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+
+    let allocation_manager =
+        AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
+    Ok(allocation_manager
+        .setAllocationDelay(signer.address(), allocation_delay)
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash)
+}
+
+/// Creates Total Delegated stake
+pub async fn create_total_delegated_stake_quorum(
+    strategy_address: Address,
+    registry_coordinator_address: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+) -> eyre::Result<FixedBytes<32>> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+
+    let registry_coordinator_instance =
+        RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
+
+    let operator_set_param =
+        eigen_utils::registrycoordinator::IRegistryCoordinator::OperatorSetParam {
+            maxOperatorCount: 3,
+            kickBIPsOfOperatorStake: 100,
+            kickBIPsOfTotalStake: 1000,
+        };
+    let minimum_stake: U96 = U96::from(0);
+    let strategy_params = vec![
+        eigen_utils::registrycoordinator::IStakeRegistry::StrategyParams {
+            strategy: strategy_address,
+            multiplier: U96::from(1),
+        },
+    ];
+
+    let s = registry_coordinator_instance
+        .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
+        .send()
+        .await
+        .unwrap()
+        .get_receipt()
+        .await
+        .unwrap()
+        .transaction_hash;
+    Ok(s)
+}
+
+/// Enable operator sets for the avs' registry coordinator
+pub async fn enable_operator_sets(
+    registry_coordinator_address: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+) -> eyre::Result<FixedBytes<32>> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+
+    let reg_coor =
+        RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
+    Ok(reg_coor
+        .enableOperatorSets()
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash)
+}
+
+/// modify allocation for the operator for the particular operator set id
+#[allow(clippy::too_many_arguments)]
+pub async fn modify_allocation_for_operator(
+    operator_set_id: u32,
+    allocation_manager: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+    avs: Address,
+    strategies: Vec<Address>,
+    new_magnitude: Vec<u64>,
+) -> eyre::Result<FixedBytes<32>> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+    let allocation_manager_instance =
+        AllocationManager::new(allocation_manager, get_signer(&pvt_key, rpc_url));
+    let allocate_params = vec![AllocateParams {
+        operatorSet: OperatorSet {
+            avs,
+            id: operator_set_id,
+        },
+        strategies,
+        newMagnitudes: new_magnitude,
+    }];
+    Ok(allocation_manager_instance
+        .modifyAllocations(signer.address(), allocate_params)
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash)
+}
+
+/// registers the operator to the operator set by calling the allocation manager
+#[allow(clippy::too_many_arguments)]
+pub async fn register_for_operator_sets(
+    operator_set_id: u32,
+    bls_key_pair: BlsKeyPair,
+    registry_coordinator_address: Address,
+    allocation_manager: Address,
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    rpc_url: &str,
+    avs: Address,
+    socket: String,
+) -> eyre::Result<FixedBytes<32>> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+    let el_chain_reader = ELChainReader::new(
+        get_logger(),
+        allocation_manager,
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        rpc_url.to_string(),
+    ); // zero address means we don't require that address for registering to operator sets
+    let el_chain_writer = ELChainWriter::new(
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        allocation_manager,
+        registry_coordinator_address,
+        el_chain_reader,
+        rpc_url.to_string(),
+        pvt_key,
+    );
+    Ok(el_chain_writer
+        .register_for_operator_sets(
+            signer.address(),
+            avs,
+            [operator_set_id].to_vec(),
+            bls_key_pair,
+            &socket,
+        )
+        .await?)
+    // ALTERNATIVE WAY OF ENCODING DATA MANUALLY USINg ALLOY IF YOU DON"T WANT TO USE ELChainWriter
+    // let g1_hashed_msg_to_sign = contract_registry_coordinator
+    //     .pubkeyRegistrationMessageHash(signer.address())
+    //     .call()
+    //     .await
+    //     .map_err(|_| AvsRegistryError::PubKeyRegistrationMessageHash)?
+    //     ._0;
+
+    // let sig = bls_key_pair
+    //     .sign_hashed_to_curve_message(alloy_g1_point_to_g1_affine(g1_hashed_msg_to_sign))
+    //     .g1_point();
+    // let alloy_g1_point_signed_msg = convert_to_g1_point(sig.g1())?;
+    // let g1_pub_key_bn254 = convert_to_g1_point(bls_key_pair.public_key().g1())?;
+    // let g2_pub_key_bn254 = convert_to_g2_point(bls_key_pair.public_key_g2().g2())?;
+
+    // let g2_point_x: Vec<DynSolValue> = vec![
+    //     DynSolValue::Uint(g2_pub_key_bn254.X[0], 256),
+    //     DynSolValue::Uint(g2_pub_key_bn254.X[1], 256),
+    // ];
+    // let g2_point_y: Vec<DynSolValue> = vec![
+    //     DynSolValue::Uint(g2_pub_key_bn254.Y[0], 256),
+    //     DynSolValue::Uint(g2_pub_key_bn254.Y[1], 256),
+    // ];
+    // let encoded_params_with_socket = DynSolValue::Tuple(vec![
+    //     DynSolValue::String(socket),
+    //     DynSolValue::Uint(alloy_g1_point_signed_msg.X, 256),
+    //     DynSolValue::Uint(alloy_g1_point_signed_msg.Y, 256),
+    //     DynSolValue::Uint(g1_pub_key_bn254.X, 256),
+    //     DynSolValue::Uint(g1_pub_key_bn254.Y, 256),
+    //     DynSolValue::FixedArray(g2_point_x),
+    //     DynSolValue::FixedArray(g2_point_y),
+    // ])
+    // .abi_encode_params();
+    // let register_params = RegisterParams {
+    //     avs,
+    //     operatorSetIds: vec![operator_set_id],
+    //     data: encoded_params_with_socket.into(),
+    // };
+    // Ok(allocation_manager_instance
+    //     .registerForOperatorSets(signer.address(), register_params)
+    //     .send()
+    //     .await?
+    //     .get_receipt()
+    //     .await?
+    //     .transaction_hash)
 }
 
 /// Deposit into strategy
@@ -615,8 +993,8 @@ pub async fn deposit_into_strategy(
     amount: U256,
     el_writer: ELChainWriter,
 ) -> Result<(), ElContractsError> {
-    let _ = el_writer
+    el_writer
         .deposit_erc20_into_strategy(strategy_address, amount)
-        .await;
+        .await?;
     Ok(())
 }

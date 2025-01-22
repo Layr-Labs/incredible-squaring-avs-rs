@@ -18,16 +18,17 @@ incredible-config.workspace = true
 incredible-avs.workspace = true
 incredible-metrics.workspace = true
 incredible-testing-utils.workspace = true
+incredible-bindings.workspace = true
 clap = { workspace = true, features = ["derive", "env"] }
 eyre.workspace = true
 alloy.workspace = true
 tracing.workspace = true
-hex = "0.4.3"
-metrics-exporter-prometheus = "0.15.3"
+hex = "0.4"
+metrics-exporter-prometheus = "0.16"
 rust-bls-bn254.workspace = true
 eigen-crypto-bls.workspace = true
-metrics-util = "0.17.0"
-# eigen-rs
+metrics-util.workspace = true
+# eigensdk-rs
 eigen-testing-utils.workspace = true
 eigen-logging.workspace = true
 eigen-utils.workspace = true

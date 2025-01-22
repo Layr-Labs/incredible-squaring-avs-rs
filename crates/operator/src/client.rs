@@ -49,8 +49,8 @@ impl ClientAggregator {
             if let Some(request) = self.client.as_ref() {
                 let s: bool = request
                     .request("process_signed_task_response", params)
-                    .await
-                    .unwrap();
+                    .await?;
+
                 if s {
                     incredible_metrics::inc_num_tasks_accepted_by_aggregator();
                     return Ok(());

@@ -5,9 +5,10 @@ import {Script} from "forge-std/Script.sol";
 import {IncredibleSquaringDeploymentLib} from "./utils/IncredibleSquaringDeploymentLib.sol";
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
 import {SetupPaymentsLib} from "./utils/SetupPaymentsLib.sol";
-import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
+import {IRewardsCoordinator, IRewardsCoordinatorTypes} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 import {console2} from "forge-std/console2.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
+
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 
@@ -62,7 +63,7 @@ contract SetupPayments is Script {
         createAVSRewardsSubmissions(num_payments, amount_per_payment, duration, start_time);
         submitPaymentRoot(earners, uint32(block.timestamp - 1000), uint32(num_payments), uint32(amount_per_payment));
 
-        IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinator.EarnerTreeMerkleLeaf({
+        IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinatorTypes.EarnerTreeMerkleLeaf({
             earner: earners[index_to_prove],
             earnerTokenRoot: earner_token_roots[index_to_prove]
         });
@@ -103,14 +104,14 @@ contract SetupPayments is Script {
     }
 
     function processClaim(
-        string memory filePath,
+        string memory filepath,
         uint256 indexToProve,
         address recipient,
         IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf
     ) public {
         SetupPaymentsLib.processClaim(
             IRewardsCoordinator(coreDeployment.rewardsCoordinator),
-            filePath,
+            filepath,
             indexToProve,
             recipient,
             earnerLeaf,
@@ -133,7 +134,6 @@ contract SetupPayments is Script {
         );
         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory earnerLeaves =
             SetupPaymentsLib.createEarnerLeaves(earners, tokenLeaves);
-
         SetupPaymentsLib.submitRoot(
             IRewardsCoordinator(coreDeployment.rewardsCoordinator),
             tokenLeaves,

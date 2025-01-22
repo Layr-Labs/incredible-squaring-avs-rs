@@ -35,7 +35,8 @@ use tracing::info;
 pub struct AvsWriter {
     task_manager_addr: Address,
     signer: String,
-    rpc_url: String,
+    /// rpc url
+    pub rpc_url: String,
 }
 
 impl AvsWriter {
@@ -135,7 +136,7 @@ impl AvsWriter {
 
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
-            task_response,
+            task_response.clone(),
             task_response_metadata,
             pub_keys_of_non_signing_operators,
         );
@@ -144,7 +145,13 @@ impl AvsWriter {
             Ok(challenge_tx) => {
                 let receipt_result = challenge_tx.get_receipt().await;
                 match receipt_result {
-                    Ok(receipts) => Ok(receipts),
+                    Ok(receipts) => {
+                        info!(
+                            "raiseAndResolveChallenge for index{:?} tx_hash: {:?}",
+                            task_response.referenceTaskIndex, receipts.transaction_hash
+                        );
+                        Ok(receipts)
+                    }
                     Err(e) => Err(ChainIoError::AlloyProviderError(e)),
                 }
             }

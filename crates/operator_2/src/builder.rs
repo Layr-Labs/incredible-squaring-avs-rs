@@ -8,7 +8,6 @@ use alloy::{
 };
 use incredible_operator::{client::ClientAggregator, error::OperatorError};
 
-#[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
@@ -45,6 +44,8 @@ pub struct OperatorBuilder {
     registry_coordinator: Address,
 
     operator_state_retriever: Address,
+
+    slash_simulate: bool,
 }
 
 impl OperatorBuilder {
@@ -65,6 +66,7 @@ impl OperatorBuilder {
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
         let operator_address = config.operator_2_address()?;
+        let slash = config.slash_simulate();
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
             ws_rpc_url: config.ws_rpc_url(),
@@ -74,6 +76,7 @@ impl OperatorBuilder {
             client,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
+            slash_simulate: slash,
         })
     }
 
@@ -94,7 +97,11 @@ impl OperatorBuilder {
             info!("Challenger test: setting number to be squared to 9");
         }
 
-        let num_squared = number_to_be_squared * number_to_be_squared;
+        let num_squared = if self.slash_simulate {
+            U256::from(24) // not a perfect square, so it can't be correct in any input
+        } else {
+            number_to_be_squared * number_to_be_squared
+        };
 
         TaskResponse {
             referenceTaskIndex: new_task_created.taskIndex,
@@ -159,7 +166,7 @@ impl OperatorBuilder {
         let encoded_response = TaskResponse::abi_encode(&task_response);
         let hash_msg = keccak256(encoded_response);
 
-        let signed_msg = self.key_pair.sign_message(hash_msg.as_slice());
+        let signed_msg = self.key_pair.sign_message(&hash_msg);
         let signed_task_response =
             SignedTaskResponse::new(task_response, signed_msg, self.operator_id);
         Ok(signed_task_response)
@@ -308,7 +315,7 @@ mod tests {
         let hash_msg = keccak256(encoded_response);
         assert!(verify_message(
             bls_key_pair.public_key_g2().g2(),
-            hash_msg.as_slice(),
+            &hash_msg,
             signed_task_response.signature().g1_point().g1()
         ));
     }
