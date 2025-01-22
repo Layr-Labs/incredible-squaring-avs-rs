@@ -1,6 +1,5 @@
 #!/bin/bash
 
-RPC_URL=https://eth.llamarpc.com
 # Source the .env file
 ENV_FILE_PATH="contracts/.env"
 

@@ -223,11 +223,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "OPERATOR_PVT_KEY")]
     operator_pvt_key: Option<String>,
 
-    #[arg(
-        long,
-        value_name = "OPERATOR_2_PVT_KEY"
-        // default_value = "0x9385907a38014b53604fd848bf907453f3b4f774db8ffa72b9960f06b238eb15"
-    )]
+    #[arg(long, value_name = "OPERATOR_2_PVT_KEY")]
     operator_2_pvt_key: Option<String>,
 
     #[arg(long, value_name = "OPERATOR_2_SIG_EXPIRY")]
