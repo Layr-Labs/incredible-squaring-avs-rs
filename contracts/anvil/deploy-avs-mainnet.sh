@@ -15,4 +15,4 @@ parent_path=$(
 cd "$parent_path"
 
 cd ../
-forge script script/mainnet/IncredibleSquaringDeployer.s.sol --private-key $MAINNET_DEPLOYER_KEY --verifier etherscan --verifier-api-key ETHERSCAN_API_KEY 
+forge script script/mainnet/IncredibleSquaringDeployer.s.sol --private-key $MAINNET_DEPLOYER_KEY --verifier etherscan --verifier-api-key $ETHERSCAN_API_KEY 
