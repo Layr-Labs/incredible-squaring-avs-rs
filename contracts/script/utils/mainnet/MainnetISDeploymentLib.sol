@@ -123,8 +123,6 @@ library MainnetISDeploymentLib {
         IRegistryCoordinator.OperatorSetParam[] memory quorumsOperatorSetParams =
             new IRegistryCoordinator.OperatorSetParam[](numQuorums);
         uint256[] memory operator_params = isConfig.operatorParams;
-        console2.log("operator_params[0]");
-        console2.log(operator_params[0]);
         for (uint256 i = 0; i < numQuorums; i++) {
             quorumsOperatorSetParams[i] = IRegistryCoordinator.OperatorSetParam({
                 maxOperatorCount: uint32(operator_params[i]),
@@ -186,9 +184,11 @@ library MainnetISDeploymentLib {
             core.rewardsCoordinator,
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
+        
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );
+
         bytes memory taskmanagerupgradecall =
             abi.encodeCall(IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin));
         UpgradeableProxyLib.upgradeAndCall(

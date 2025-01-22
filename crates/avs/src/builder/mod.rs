@@ -58,7 +58,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         )
         .await?;
 
-        // let mut challenge = Challenger::build(avs.config.clone()).await?;
+        let mut challenge = Challenger::build(avs.config.clone()).await?;
         let operator_service = operator_builder
             .start_operator()
             .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
@@ -67,42 +67,42 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .start_operator()
             .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
-        // let challenger_service = challenge
-        //     .start_challenger()
-        //     .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-        // let aggregator = Aggregator::new(avs.config.clone()).await?;
+        let challenger_service = challenge
+            .start_challenger()
+            .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
+        let aggregator = Aggregator::new(avs.config.clone()).await?;
 
-        // let aggregator_service_with_rpc_client = aggregator
-        //     .start(avs.config.ws_rpc_url().clone())
-        //     .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+        let aggregator_service_with_rpc_client = aggregator
+            .start(avs.config.ws_rpc_url().clone())
+            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
 
-        // let task_manager = TaskManager::new(
-        //     avs.config.task_manager_addr()?,
-        //     avs.config.http_rpc_url(),
-        //     avs.config.task_manager_signer(),
-        // );
+        let task_manager = TaskManager::new(
+            avs.config.task_manager_addr()?,
+            avs.config.http_rpc_url(),
+            avs.config.task_manager_signer(),
+        );
 
-        // let task_spam_service = task_manager
-        //     .start()
-        //     .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
+        let task_spam_service = task_manager
+            .start()
+            .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
 
-        // let node_api = NodeApi::new("incredible-squaring", "v0.0.1");
-        // let node_api_address = avs.config.node_api_port_address();
-        // info!("node_api_address{:?}", node_api_address);
+        let node_api = NodeApi::new("incredible-squaring", "v0.0.1");
+        let node_api_address = avs.config.node_api_port_address();
+        info!("node_api_address{:?}", node_api_address);
 
-        // std::thread::spawn(move || {
-        //     let _ = System::new("node_api_system").block_on(async move {
-        //         let node_api_server = create_server(node_api, node_api_address).unwrap();
-        //         node_api_server.await
-        //     });
-        // });
+        std::thread::spawn(move || {
+            let _ = System::new("node_api_system").block_on(async move {
+                let node_api_server = create_server(node_api, node_api_address).unwrap();
+                node_api_server.await
+            });
+        });
 
-        let _ = futures::future::try_join(
+        let _ = futures::future::try_join5(
             operator_service,
             operator2_service,
-            // challenger_service,
-            // aggregator_service_with_rpc_client,
-            // task_spam_service,
+            challenger_service,
+            aggregator_service_with_rpc_client,
+            task_spam_service,
         )
         .await?;
 

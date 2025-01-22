@@ -77,6 +77,7 @@ dependencies = [
  "alloy-core",
  "alloy-eips",
  "alloy-genesis",
+ "alloy-json-rpc",
  "alloy-network",
  "alloy-provider",
  "alloy-pubsub",
@@ -2376,13 +2377,9 @@ dependencies = [
 [[package]]
 name = "eigen-cli"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "alloy",
- "alloy-json-rpc",
- "alloy-primitives",
- "alloy-provider",
- "alloy-transport",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
  "ark-serialize 0.5.0",
@@ -2410,12 +2407,9 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "alloy",
- "alloy-primitives",
- "alloy-signer",
- "alloy-signer-local",
  "ark-ff 0.5.0",
  "async-trait",
  "eigen-client-elcontracts",
@@ -2432,10 +2426,9 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "alloy",
- "alloy-primitives",
  "eigen-common",
  "eigen-logging",
  "eigen-types",
@@ -2447,12 +2440,9 @@ dependencies = [
 [[package]]
 name = "eigen-client-eth"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "alloy",
- "alloy-json-rpc",
- "alloy-primitives",
- "alloy-rlp",
  "async-trait",
  "eigen-logging",
  "eigen-metrics-collectors-rpc-calls",
@@ -2464,22 +2454,18 @@ dependencies = [
 [[package]]
 name = "eigen-common"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
- "alloy-provider",
- "alloy-pubsub",
- "alloy-signer-local",
- "alloy-transport",
- "alloy-transport-http",
+ "alloy",
  "url",
 ]
 
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
- "alloy-primitives",
+ "alloy",
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
@@ -2494,7 +2480,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
@@ -2505,7 +2491,7 @@ dependencies = [
 [[package]]
 name = "eigen-logging"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "ctor",
  "once_cell",
@@ -2516,7 +2502,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "eigen-logging",
  "metrics 0.24.1",
@@ -2527,7 +2513,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "eigen-logging",
  "metrics 0.24.1",
@@ -2536,7 +2522,7 @@ dependencies = [
 [[package]]
 name = "eigen-nodeapi"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "ntex",
  "serde",
@@ -2548,9 +2534,9 @@ dependencies = [
 [[package]]
 name = "eigen-services-avsregistry"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
- "alloy-primitives",
+ "alloy",
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
  "async-trait",
@@ -2564,10 +2550,9 @@ dependencies = [
 [[package]]
 name = "eigen-services-blsaggregation"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "alloy",
- "alloy-primitives",
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
  "eigen-client-avsregistry",
@@ -2587,10 +2572,9 @@ dependencies = [
 [[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "alloy",
- "alloy-primitives",
  "async-trait",
  "eigen-client-avsregistry",
  "eigen-common",
@@ -2609,12 +2593,9 @@ dependencies = [
 [[package]]
 name = "eigen-testing-utils"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
- "alloy-primitives",
- "alloy-provider",
- "alloy-rpc-types",
- "alloy-transport",
+ "alloy",
  "eigen-common",
  "eigen-utils",
  "serde",
@@ -2626,9 +2607,9 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
- "alloy-primitives",
+ "alloy",
  "eigen-crypto-bls",
  "ethers",
  "num-bigint",
@@ -2639,7 +2620,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.1.3"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=d4ef497#d4ef49764d6a58af93835a0f581cf1cf49f3304e"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=1d1b436#1d1b43609f194c90878859840f907c85847cc4a9"
 dependencies = [
  "alloy",
  "reqwest 0.12.12",
@@ -3386,10 +3367,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
 dependencies = [
  "cfg-if 1.0.0",
- "js-sys",
  "libc",
  "wasi",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -3736,7 +3715,6 @@ dependencies = [
  "tokio",
  "tokio-rustls 0.26.1",
  "tower-service",
- "webpki-roots 0.26.7",
 ]
 
 [[package]]
@@ -5751,58 +5729,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 
 [[package]]
-name = "quinn"
-version = "0.11.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62e96808277ec6f97351a2380e6c25114bc9e67037775464979f3037c92d05ef"
-dependencies = [
- "bytes",
- "pin-project-lite",
- "quinn-proto",
- "quinn-udp",
- "rustc-hash 2.1.0",
- "rustls 0.23.20",
- "socket2",
- "thiserror 2.0.10",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "quinn-proto"
-version = "0.11.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2fe5ef3495d7d2e377ff17b1a8ce2ee2ec2a18cde8b6ad6619d65d0701c135d"
-dependencies = [
- "bytes",
- "getrandom",
- "rand",
- "ring 0.17.8",
- "rustc-hash 2.1.0",
- "rustls 0.23.20",
- "rustls-pki-types",
- "slab",
- "thiserror 2.0.10",
- "tinyvec",
- "tracing",
- "web-time",
-]
-
-[[package]]
-name = "quinn-udp"
-version = "0.5.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c40286217b4ba3a71d644d752e6a0b71f13f1b6a2c5311acfcbe0c2418ed904"
-dependencies = [
- "cfg_aliases",
- "libc",
- "once_cell",
- "socket2",
- "tracing",
- "windows-sys 0.59.0",
-]
-
-[[package]]
 name = "quote"
 version = "1.0.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6052,10 +5978,7 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "quinn",
- "rustls 0.23.20",
  "rustls-pemfile 2.2.0",
- "rustls-pki-types",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -6063,14 +5986,12 @@ dependencies = [
  "system-configuration 0.6.1",
  "tokio",
  "tokio-native-tls",
- "tokio-rustls 0.26.1",
  "tower",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webpki-roots 0.26.7",
  "windows-registry",
 ]
 
@@ -6363,9 +6284,6 @@ name = "rustls-pki-types"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2bf47e6ff922db3825eb750c4e2ff784c6ff8fb9e13046ef6a1d1c5401b0b37"
-dependencies = [
- "web-time",
-]
 
 [[package]]
 name = "rustls-webpki"
@@ -7891,16 +7809,6 @@ name = "web-sys"
 version = "0.3.76"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04dd7223427d52553d3702c004d3b2fe07c148165faa56313cb00211e31c12bc"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "web-time"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
