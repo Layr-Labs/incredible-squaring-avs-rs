@@ -36,7 +36,6 @@ contract MainnetIncredibleSquaringDeployer is Script {
     address proxyAdmin;
 
     function setUp() public virtual {
-        require(block.number > 0);
         vm.createSelectFork(vm.envString("MAINNET_RPC_URL"), block.number);
 
         deployer = vm.rememberKey(vm.envUint("MAINNET_DEPLOYER_KEY"));
@@ -68,7 +67,7 @@ contract MainnetIncredibleSquaringDeployer is Script {
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
 
-        // MainnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
+        MainnetISDeploymentLib.writeDeploymentJson(incrediblSquaringDeployment);
 
         vm.stopBroadcast();
     }

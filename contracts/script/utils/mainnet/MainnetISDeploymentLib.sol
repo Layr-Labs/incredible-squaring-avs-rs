@@ -184,7 +184,7 @@ library MainnetISDeploymentLib {
             core.rewardsCoordinator,
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
-        
+
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );

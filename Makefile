@@ -13,7 +13,7 @@ deploy-el-and-avs-contracts:
 	$(MAKE) deploy-eigenlayer
 	$(MAKE) deploy-avs
 
-avs-mainnet-fork:
+simulate-avs-mainnet-deployment:
 	./contracts/anvil/deploy-avs-mainnet.sh
 
 
