@@ -1,6 +1,4 @@
 {
     "num_quorums": 1,
-    "operator_params": [100,8000,4000],
-    "operator_addr": "0x7d0174360dc6166983c361734da04f6885cd01fd",
-    "operator_2_addr":"0xa93156357f6d05d06c2d1629572b5b7c1a151636"
+    "operator_params": [100,8000,4000]
 }

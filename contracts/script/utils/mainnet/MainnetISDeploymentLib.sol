@@ -64,8 +64,6 @@ library MainnetISDeploymentLib {
     struct IncredibleSquaringSetupConfig {
         uint256 numQuorums;
         uint256[] operatorParams;
-        address operator_addr;
-        address operator_2_addr;
     }
 
     function deployContracts(
@@ -213,8 +211,6 @@ library MainnetISDeploymentLib {
         IncredibleSquaringSetupConfig memory data;
         data.numQuorums = json.readUint(".num_quorums");
         data.operatorParams = json.readUintArray(".operator_params");
-        data.operator_addr = json.readAddress(".operator_addr");
-        data.operator_2_addr = json.readAddress(".operator_2_addr");
         return data;
     }
 
