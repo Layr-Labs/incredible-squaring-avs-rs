@@ -27,7 +27,6 @@ use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::No
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
-use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
@@ -45,6 +44,89 @@ pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
 /// Block Time Seconds : 12 seconds
 pub const BLOCK_TIME_SECONDS: u32 = 12;
 
+#[allow(missing_docs)]
+pub mod is_impl {
+    use std::{collections::HashMap, future::Future, sync::Arc, time::Duration};
+
+    use alloy::sol_types::SolEvent;
+    use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
+    use incredible_bindings::incrediblesquaringtaskmanager::{
+        IIncredibleSquaringTaskManager::Task, IncredibleSquaringTaskManager::NewTaskCreated,
+    };
+
+    // TODO: maybe `TaskMetadata` would be a better name
+    #[derive(Debug)]
+    /// Metadata related to a task. Used for signature aggregation.
+    pub struct TaskInfo {
+        pub task_index: TaskIndex,
+        pub task_created_block: u32,
+        pub quorum_nums: Vec<u8>,
+        pub quorum_threshold_percentages: QuorumThresholdPercentages,
+        pub time_to_expiry: Duration,
+    }
+
+    /// Abstracts task-specific behaviour
+    pub trait TaskProcessor {
+        /// The event type expected by the task processor
+        type NewTaskEvent: SolEvent + Send + Sync + 'static;
+
+        /// Processes a task, returning metadata related to signature aggregation
+        fn process_new_task(
+            &self,
+            event: Self::NewTaskEvent,
+        ) -> impl Future<Output = TaskInfo> + Send;
+    }
+
+    #[derive(Debug, Default)]
+    /// Task Processor for the Incredible Squaring Task Manager
+    pub struct ISTaskProcessor {
+        /// HashMap to store tasks
+        pub tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
+    }
+
+    /// Task Challenge Window Block : 100 blocks
+    pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
+    /// Block Time Seconds : 12 seconds
+    pub const BLOCK_TIME_SECONDS: u32 = 12;
+
+    impl TaskProcessor for ISTaskProcessor {
+        type NewTaskEvent = NewTaskCreated;
+
+        async fn process_new_task(&self, event: Self::NewTaskEvent) -> TaskInfo {
+            let NewTaskCreated {
+                taskIndex: task_index,
+                task,
+            } = event;
+            self.tasks.lock().await.insert(task_index, task.clone());
+
+            let mut quorum_nums: Vec<u8> = vec![];
+            let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
+            for _ in &task.quorumNumbers {
+                // TODO: error handling
+                quorum_threshold_percentages
+                    .push(task.quorumThresholdPercentage.try_into().unwrap());
+            }
+
+            for val in task.quorumNumbers.iter() {
+                quorum_nums.push(*val);
+            }
+
+            let time_to_expiry = tokio::time::Duration::from_secs(
+                (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
+            );
+            TaskInfo {
+                task_index,
+                task_created_block: task.taskCreatedBlock,
+                quorum_nums,
+                quorum_threshold_percentages,
+                time_to_expiry,
+            }
+        }
+    }
+}
+
+use is_impl::{ISTaskProcessor, TaskProcessor};
+
 /// Aggregator
 #[derive(Debug)]
 pub struct Aggregator {
@@ -58,6 +140,8 @@ pub struct Aggregator {
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+
+    tp: ISTaskProcessor,
 }
 
 impl Aggregator {
@@ -117,6 +201,7 @@ impl Aggregator {
             tasks: HashMap::new(),
             task_quorum: HashMap::new(),
             bls_aggregation_service,
+            tp: ISTaskProcessor::default(),
         })
     }
 
@@ -218,42 +303,27 @@ impl Aggregator {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;
 
-        let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
+        let filter = Filter::new()
+            .event_signature(<ISTaskProcessor as TaskProcessor>::NewTaskEvent::SIGNATURE_HASH);
         let sub = provider.subscribe_logs(&filter).await?;
         let mut stream = sub.into_stream();
 
         while let Some(log) = stream.next().await {
-            let NewTaskCreated { taskIndex, task } = log.log_decode()?.inner.data;
+            let event: <ISTaskProcessor as TaskProcessor>::NewTaskEvent =
+                log.log_decode()?.inner.data;
 
-            aggregator
-                .lock()
-                .await
-                .tasks
-                .insert(taskIndex, task.clone());
+            let info = aggregator.lock().await.tp.process_new_task(event).await;
 
-            let mut quorum_nums: Vec<u8> = vec![];
-            let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
-            for _ in &task.quorumNumbers {
-                quorum_threshold_percentages.push(task.quorumThresholdPercentage.try_into()?);
-            }
-
-            for val in task.quorumNumbers.iter() {
-                quorum_nums.push(*val);
-            }
-
-            let time_to_expiry = tokio::time::Duration::from_secs(
-                (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
-            );
             let _ = aggregator
                 .lock()
                 .await
                 .bls_aggregation_service
                 .initialize_new_task(
-                    taskIndex,
-                    task.taskCreatedBlock,
-                    quorum_nums.clone(),
-                    quorum_threshold_percentages.clone(),
-                    time_to_expiry,
+                    info.task_index,
+                    info.task_created_block,
+                    info.quorum_nums,
+                    info.quorum_threshold_percentages,
+                    info.time_to_expiry,
                 )
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
