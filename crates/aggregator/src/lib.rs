@@ -6,7 +6,6 @@ pub mod error;
 pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
-use alloy::dyn_abi::SolType;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
@@ -34,6 +33,7 @@ use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 pub use rpc_server::SignedTaskResponse;
+use rpc_server::SignedTaskResponseImpl;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -48,10 +48,11 @@ pub const BLOCK_TIME_SECONDS: u32 = 12;
 pub mod is_impl {
     use std::{collections::HashMap, future::Future, sync::Arc, time::Duration};
 
-    use alloy::sol_types::SolEvent;
+    use alloy::{dyn_abi::SolType, primitives::B256, sol_types::SolEvent};
     use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
     use incredible_bindings::incrediblesquaringtaskmanager::{
-        IIncredibleSquaringTaskManager::Task, IncredibleSquaringTaskManager::NewTaskCreated,
+        IIncredibleSquaringTaskManager::{Task, TaskResponse},
+        IncredibleSquaringTaskManager::NewTaskCreated,
     };
 
     // TODO: maybe `TaskMetadata` would be a better name
@@ -70,11 +71,17 @@ pub mod is_impl {
         /// The event type expected by the task processor
         type NewTaskEvent: SolEvent + Send + Sync + 'static;
 
+        /// The response type expected by the task processor
+        type TaskResponse: Send + Sync + 'static;
+
         /// Processes a task, returning metadata related to signature aggregation
         fn process_new_task(
             &self,
             event: Self::NewTaskEvent,
         ) -> impl Future<Output = TaskInfo> + Send;
+
+        /// Hashes a task response
+        fn hash_task_response(&self, task_response: &Self::TaskResponse) -> B256;
     }
 
     #[derive(Debug, Default)]
@@ -91,6 +98,7 @@ pub mod is_impl {
 
     impl TaskProcessor for ISTaskProcessor {
         type NewTaskEvent = NewTaskCreated;
+        type TaskResponse = TaskResponse;
 
         async fn process_new_task(&self, event: Self::NewTaskEvent) -> TaskInfo {
             let NewTaskCreated {
@@ -121,6 +129,10 @@ pub mod is_impl {
                 quorum_threshold_percentages,
                 time_to_expiry,
             }
+        }
+
+        fn hash_task_response(&self, task_response: &Self::TaskResponse) -> B256 {
+            alloy::primitives::keccak256(TaskResponse::abi_encode(task_response))
         }
     }
 }
@@ -251,12 +263,13 @@ impl Aggregator {
             move |params: Params| {
                 let aggregator = Arc::clone(&aggregator);
                 async move {
-                    let signed_task_response: SignedTaskResponse = match params {
-                        Params::Map(map) => serde_json::from_value(map["params"].clone()).expect(
-                            "Error in adding method in io handler for start_server function",
-                        ),
-                        _ => return Err(Error::invalid_params("Expected a map")),
+                    let Params::Map(map) = params else {
+                        return Err(Error::invalid_params("Expected a map"));
                     };
+                    let signed_task_response: SignedTaskResponseImpl<
+                        <ISTaskProcessor as TaskProcessor>::TaskResponse,
+                    > = serde_json::from_value(map["params"].clone())
+                        .expect("Error in adding method in io handler for start_server function");
                     // Call the process_signed_task_response function
                     let result = aggregator
                         .lock()
@@ -343,13 +356,15 @@ impl Aggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_signed_task_response(
         &mut self,
-        signed_task_response: SignedTaskResponse,
+        signed_task_response: SignedTaskResponseImpl<
+            <ISTaskProcessor as TaskProcessor>::TaskResponse,
+        >,
     ) -> Result<(), AggregatorError> {
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
-        let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
-            &signed_task_response.task_response,
-        ));
+        let task_response_digest = self
+            .tp
+            .hash_task_response(&signed_task_response.task_response);
 
         let response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
