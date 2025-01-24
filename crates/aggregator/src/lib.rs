@@ -360,11 +360,11 @@ impl Aggregator {
             <ISTaskProcessor as TaskProcessor>::TaskResponse,
         >,
     ) -> Result<(), AggregatorError> {
-        let task_index = signed_task_response.task_response.referenceTaskIndex;
+        let task_index = signed_task_response.task_response().referenceTaskIndex;
 
         let task_response_digest = self
             .tp
-            .hash_task_response(&signed_task_response.task_response);
+            .hash_task_response(&signed_task_response.task_response());
 
         let response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
@@ -373,7 +373,7 @@ impl Aggregator {
             let mut inner_map = HashMap::new();
             inner_map.insert(
                 task_response_digest,
-                signed_task_response.clone().task_response,
+                signed_task_response.task_response().clone(),
             );
             self.tasks_responses.insert(task_index, inner_map);
         }
