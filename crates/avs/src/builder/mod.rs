@@ -10,6 +10,9 @@ use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use std::{future::Future, sync::Arc};
 use tracing::info;
+
+use incredible_aggregator::ISTaskProcessor;
+
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
     /// Launch Avs
@@ -70,7 +73,14 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-        let aggregator = Aggregator::new(avs.config.clone()).await?;
+
+        let task_processor = ISTaskProcessor::new(
+            avs.config.registry_coordinator_addr()?,
+            avs.config.http_rpc_url(),
+            avs.config.get_signer(),
+        )
+        .await;
+        let aggregator = Aggregator::new(avs.config.clone(), task_processor).await?;
 
         let aggregator_service_with_rpc_client = aggregator
             .start(avs.config.ws_rpc_url().clone())

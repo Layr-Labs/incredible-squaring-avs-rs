@@ -7,6 +7,10 @@ pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
 
+mod aggregator_impl;
+pub use aggregator_impl::ISTaskProcessor;
+
+use alloy::primitives::B256;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
@@ -17,230 +21,79 @@ use eigen_logging::get_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
+use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
 use futures_util::StreamExt;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 use rpc_server::SignedTaskResponseImpl;
-use std::collections::HashMap;
-use std::net::SocketAddr;
-use std::sync::Arc;
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, future::Future, net::SocketAddr, sync::Arc, time::Duration};
 use tracing::info;
 
 pub use error::AggregatorError;
 pub use rpc_server::SignedTaskResponse;
 
-/// Task Challenge Window Block : 100 blocks
-pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
-/// Block Time Seconds : 12 seconds
-pub const BLOCK_TIME_SECONDS: u32 = 12;
-
-#[allow(missing_docs)]
-pub mod is_impl {
-    use std::{collections::HashMap, future::Future, sync::Arc, time::Duration};
-
-    use alloy::{
-        primitives::{Address, B256},
-        sol_types::{SolEvent, SolValue},
-    };
-    use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-    use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
-    use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
-    use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
-    use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
-        Task, TaskResponse as SolTaskResponse,
-    };
-    use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
-    use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
-    use incredible_chainio::AvsWriter;
-
-    // TODO: maybe `TaskMetadata` would be a better name
-    #[derive(Debug)]
-    /// Metadata related to a task. Used for signature aggregation.
-    pub struct TaskInfo {
-        pub task_index: TaskIndex,
-        pub task_created_block: u32,
-        pub quorum_nums: Vec<u8>,
-        pub quorum_threshold_percentages: QuorumThresholdPercentages,
-        pub time_to_expiry: Duration,
-    }
-
-    /// Abstracts task-specific behaviour
-    pub trait TaskProcessor {
-        /// The event type expected by the task processor
-        type NewTaskEvent: SolEvent + Send + Sync + 'static;
-
-        /// The response type expected by the task processor
-        type TaskResponse: TaskResponse + Send + Sync + 'static;
-
-        /// Processes a task, returning metadata related to signature aggregation
-        fn process_new_task(
-            &self,
-            event: Self::NewTaskEvent,
-        ) -> impl Future<Output = TaskInfo> + Send;
-
-        /// Processes a task response, returning the response's digest
-        fn process_task_response(
-            &self,
-            event: Self::TaskResponse,
-        ) -> impl Future<Output = B256> + Send;
-
-        fn process_aggregated_response(
-            &self,
-            response: BlsAggregationServiceResponse,
-        ) -> impl Future<Output = ()>;
-    }
-
-    pub trait TaskResponse {
-        fn task_index(&self) -> TaskIndex;
-    }
-
-    #[derive(Debug)]
-    /// Task Processor for the Incredible Squaring Task Manager
-    pub struct ISTaskProcessor {
-        /// HashMap to store tasks
-        tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
-        /// HashMap to store tasks
-        task_responses: Arc<tokio::sync::Mutex<HashMap<B256, ISTaskResponse>>>,
-        /// AVS Writer
-        avs_writer: AvsWriter,
-    }
-
-    impl ISTaskProcessor {
-        pub async fn new(regcoord_addr: Address, http_rpc_url: String, signer: String) -> Self {
-            let avs_writer = AvsWriter::new(regcoord_addr, http_rpc_url, signer)
-                .await
-                .unwrap();
-            ISTaskProcessor {
-                tasks: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
-                task_responses: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
-                avs_writer,
-            }
-        }
-    }
-
-    /// Task Challenge Window Block : 100 blocks
-    pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
-    /// Block Time Seconds : 12 seconds
-    pub const BLOCK_TIME_SECONDS: u32 = 12;
-
-    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-    pub struct ISTaskResponse(pub SolTaskResponse);
-
-    impl TaskResponse for ISTaskResponse {
-        fn task_index(&self) -> TaskIndex {
-            self.0.referenceTaskIndex
-        }
-    }
-
-    impl TaskProcessor for ISTaskProcessor {
-        type NewTaskEvent = NewTaskCreated;
-        type TaskResponse = ISTaskResponse;
-
-        async fn process_new_task(&self, event: Self::NewTaskEvent) -> TaskInfo {
-            let NewTaskCreated {
-                taskIndex: task_index,
-                task,
-            } = event;
-            self.tasks.lock().await.insert(task_index, task.clone());
-
-            let mut quorum_nums: Vec<u8> = vec![];
-            let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
-            for _ in &task.quorumNumbers {
-                // TODO: error handling
-                quorum_threshold_percentages
-                    .push(task.quorumThresholdPercentage.try_into().unwrap());
-            }
-
-            for val in task.quorumNumbers.iter() {
-                quorum_nums.push(*val);
-            }
-
-            let time_to_expiry = tokio::time::Duration::from_secs(
-                (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
-            );
-            TaskInfo {
-                task_index,
-                task_created_block: task.taskCreatedBlock,
-                quorum_nums,
-                quorum_threshold_percentages,
-                time_to_expiry,
-            }
-        }
-
-        async fn process_task_response(&self, task_response: Self::TaskResponse) -> B256 {
-            let hash = alloy::primitives::keccak256(task_response.0.abi_encode());
-            self.task_responses.lock().await.insert(hash, task_response);
-            hash
-        }
-
-        async fn process_aggregated_response(&self, response: BlsAggregationServiceResponse) {
-            let mut non_signer_pub_keys = Vec::<G1Point>::new();
-            for pub_key in response.non_signers_pub_keys_g1.iter() {
-                let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
-                non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
-            }
-
-            let mut quorum_apks = Vec::<G1Point>::new();
-            for pub_key in response.quorum_apks_g1.iter() {
-                let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
-                quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
-            }
-
-            let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
-                nonSignerPubkeys: non_signer_pub_keys,
-                nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
-                quorumApks: quorum_apks,
-                apkG2: G2Point {
-                    X: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().X,
-                    Y: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().Y,
-                },
-                sigma: G1Point {
-                    X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                        .unwrap()
-                        .X,
-                    Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                        .unwrap()
-                        .Y,
-                },
-                quorumApkIndices: response.quorum_apk_indices,
-                totalStakeIndices: response.total_stake_indices,
-                nonSignerStakeIndices: response.non_signer_stake_indices,
-            };
-
-            let task = &self.tasks.lock().await[&response.task_index];
-            let task_response = self.task_responses.lock().await[&response.task_response_digest]
-                .0
-                .clone();
-            self.avs_writer
-                .send_aggregated_response(
-                    task.clone(),
-                    task_response,
-                    non_signer_stakes_and_signature,
-                )
-                .await
-                .unwrap();
-        }
-    }
+// TODO: maybe `TaskMetadata` would be a better name
+#[derive(Debug)]
+/// Metadata related to a task. Used for signature aggregation.
+pub struct TaskInfo {
+    /// Index of the task
+    pub task_index: TaskIndex,
+    /// Block the task was created
+    pub task_created_block: u32,
+    /// Quorum numbers which should respond to the task
+    pub quorum_nums: Vec<u8>,
+    /// Thresholds for each quorum
+    pub quorum_threshold_percentages: QuorumThresholdPercentages,
+    /// Time before expiry of the task response aggregation
+    pub time_to_expiry: Duration,
 }
 
-use is_impl::{ISTaskProcessor, TaskProcessor, TaskResponse};
+/// Abstracts task-specific behaviour
+pub trait TaskProcessor {
+    /// The event type expected by the task processor
+    type NewTaskEvent: SolEvent + Send + Sync + 'static;
+
+    /// The response type expected by the task processor
+    type TaskResponse: TaskResponse + Send + Sync + 'static;
+
+    /// Processes a task, returning metadata related to signature aggregation
+    fn process_new_task(&self, event: Self::NewTaskEvent) -> impl Future<Output = TaskInfo> + Send;
+
+    /// Processes a task response, returning the response's digest
+    fn process_task_response(&self, event: Self::TaskResponse)
+        -> impl Future<Output = B256> + Send;
+
+    /// Process the result of a BLS aggregation
+    fn process_aggregated_response(
+        &self,
+        response: BlsAggregationServiceResponse,
+    ) -> impl Future<Output = ()> + Send;
+}
+
+/// Task response trait
+pub trait TaskResponse: for<'de> Deserialize<'de> + Serialize {
+    /// Returns the index of the task
+    fn task_index(&self) -> TaskIndex;
+}
 
 /// Aggregator
 #[derive(Debug)]
-pub struct Aggregator {
+pub struct Aggregator<TP> {
     port_address: String,
     bls_aggregation_service: BlsAggregatorService<
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
     task_quorum: HashMap<u32, u32>,
 
-    tp: ISTaskProcessor,
+    tp: TP,
 }
 
-impl Aggregator {
+impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
     /// Creates a new aggregator
     ///
     /// # Arguments
@@ -250,7 +103,7 @@ impl Aggregator {
     /// # Returns
     ///
     /// * `Self` - The aggregator
-    pub async fn new(config: IncredibleConfig) -> Result<Self, AggregatorError> {
+    pub async fn new(config: IncredibleConfig, tp: TP) -> Result<Self, AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
             config.registry_coordinator_addr()?,
@@ -283,12 +136,12 @@ impl Aggregator {
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
-        let tp = ISTaskProcessor::new(
-            config.registry_coordinator_addr()?,
-            config.http_rpc_url(),
-            config.get_signer(),
-        )
-        .await;
+        // let tp = ISTaskProcessor::new(
+        //     config.registry_coordinator_addr()?,
+        //     config.http_rpc_url(),
+        //     config.get_signer(),
+        // )
+        // .await;
 
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
@@ -347,10 +200,10 @@ impl Aggregator {
                     let Params::Map(map) = params else {
                         return Err(Error::invalid_params("Expected a map"));
                     };
-                    let signed_task_response: SignedTaskResponseImpl<
-                        <ISTaskProcessor as TaskProcessor>::TaskResponse,
-                    > = serde_json::from_value(map["params"].clone())
-                        .expect("Error in adding method in io handler for start_server function");
+                    let signed_task_response: SignedTaskResponseImpl<TP::TaskResponse> =
+                        serde_json::from_value(map["params"].clone()).expect(
+                            "Error in adding method in io handler for start_server function",
+                        );
                     // Call the process_signed_task_response function
                     let result = aggregator
                         .lock()
@@ -397,14 +250,12 @@ impl Aggregator {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;
 
-        let filter = Filter::new()
-            .event_signature(<ISTaskProcessor as TaskProcessor>::NewTaskEvent::SIGNATURE_HASH);
+        let filter = Filter::new().event_signature(TP::NewTaskEvent::SIGNATURE_HASH);
         let sub = provider.subscribe_logs(&filter).await?;
         let mut stream = sub.into_stream();
 
         while let Some(log) = stream.next().await {
-            let event: <ISTaskProcessor as TaskProcessor>::NewTaskEvent =
-                log.log_decode()?.inner.data;
+            let event: TP::NewTaskEvent = log.log_decode()?.inner.data;
 
             let info = aggregator.lock().await.tp.process_new_task(event).await;
 
@@ -437,9 +288,7 @@ impl Aggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_signed_task_response(
         &mut self,
-        signed_task_response: SignedTaskResponseImpl<
-            <ISTaskProcessor as TaskProcessor>::TaskResponse,
-        >,
+        signed_task_response: SignedTaskResponseImpl<TP::TaskResponse>,
     ) -> Result<(), AggregatorError> {
         let SignedTaskResponseImpl {
             task_response,
