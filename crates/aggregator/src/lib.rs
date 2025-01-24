@@ -13,21 +13,16 @@ use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_common::get_ws_provider;
-use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_logging::get_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
-use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
 use futures_util::StreamExt;
-use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
-use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
-use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
@@ -240,7 +235,6 @@ use is_impl::{ISTaskProcessor, TaskProcessor};
 #[derive(Debug)]
 pub struct Aggregator {
     port_address: String,
-    avs_writer: AvsWriter,
     bls_aggregation_service: BlsAggregatorService<
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
@@ -269,13 +263,6 @@ impl Aggregator {
             config.registry_coordinator_addr()?,
             config.operator_state_retriever_addr()?,
             config.http_rpc_url(),
-        )
-        .await?;
-
-        let avs_writer = AvsWriter::new(
-            config.registry_coordinator_addr()?,
-            config.http_rpc_url(),
-            config.get_signer(),
         )
         .await?;
 
@@ -312,7 +299,6 @@ impl Aggregator {
 
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
-            avs_writer,
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
             task_quorum: HashMap::new(),
@@ -522,61 +508,6 @@ impl Aggregator {
                 task_index
             );
         }
-        Ok(())
-    }
-
-    /// Sends the aggregated response to the contract
-    ///
-    /// # Arguments
-    ///
-    /// * [`BlsAggregationServiceResponse`] - The aggregated response
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn send_aggregated_response_to_contract(
-        &self,
-        response: BlsAggregationServiceResponse,
-    ) -> Result<(), AggregatorError> {
-        let mut non_signer_pub_keys = Vec::<G1Point>::new();
-        for pub_key in response.non_signers_pub_keys_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1())?;
-            non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
-        }
-
-        let mut quorum_apks = Vec::<G1Point>::new();
-        for pub_key in response.quorum_apks_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1())?;
-            quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
-        }
-
-        let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
-            nonSignerPubkeys: non_signer_pub_keys,
-            nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
-            quorumApks: quorum_apks,
-            apkG2: G2Point {
-                X: convert_to_g2_point(response.signers_apk_g2.g2())?.X,
-                Y: convert_to_g2_point(response.signers_apk_g2.g2())?.Y,
-            },
-            sigma: G1Point {
-                X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.X,
-                Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.Y,
-            },
-            quorumApkIndices: response.quorum_apk_indices,
-            totalStakeIndices: response.total_stake_indices,
-            nonSignerStakeIndices: response.non_signer_stake_indices,
-        };
-
-        let task = &self.tasks[&response.task_index];
-        let task_response =
-            &self.tasks_responses[&response.task_index][&response.task_response_digest];
-        self.avs_writer
-            .send_aggregated_response(
-                task.clone(),
-                task_response.clone(),
-                non_signer_stakes_and_signature,
-            )
-            .await?;
         Ok(())
     }
 }
