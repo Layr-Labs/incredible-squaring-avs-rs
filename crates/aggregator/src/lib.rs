@@ -6,11 +6,12 @@ pub mod error;
 pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
+/// Traits
+pub mod traits;
 
 mod aggregator_impl;
 pub use aggregator_impl::ISTaskProcessor;
 
-use alloy::primitives::B256;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
@@ -21,65 +22,19 @@ use eigen_logging::get_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
-use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
-use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
 use futures_util::StreamExt;
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 use rpc_server::SignedTaskResponseImpl;
-use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, future::Future, net::SocketAddr, sync::Arc, time::Duration};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tracing::info;
+use traits::{TaskProcessor, TaskResponse};
 
 pub use error::AggregatorError;
 pub use rpc_server::SignedTaskResponse;
-
-// TODO: maybe `TaskMetadata` would be a better name
-#[derive(Debug)]
-/// Metadata related to a task. Used for signature aggregation.
-pub struct TaskInfo {
-    /// Index of the task
-    pub task_index: TaskIndex,
-    /// Block the task was created
-    pub task_created_block: u32,
-    /// Quorum numbers which should respond to the task
-    pub quorum_nums: Vec<u8>,
-    /// Thresholds for each quorum
-    pub quorum_threshold_percentages: QuorumThresholdPercentages,
-    /// Time before expiry of the task response aggregation
-    pub time_to_expiry: Duration,
-}
-
-/// Abstracts task-specific behaviour
-pub trait TaskProcessor {
-    /// The event type expected by the task processor
-    type NewTaskEvent: SolEvent + Send + Sync + 'static;
-
-    /// The response type expected by the task processor
-    type TaskResponse: TaskResponse + Send + Sync + 'static;
-
-    /// Processes a task, returning metadata related to signature aggregation
-    fn process_new_task(&self, event: Self::NewTaskEvent) -> impl Future<Output = TaskInfo> + Send;
-
-    /// Processes a task response, returning the response's digest
-    fn process_task_response(&self, event: Self::TaskResponse)
-        -> impl Future<Output = B256> + Send;
-
-    /// Process the result of a BLS aggregation
-    fn process_aggregated_response(
-        &self,
-        response: BlsAggregationServiceResponse,
-    ) -> impl Future<Output = ()> + Send;
-}
-
-/// Task response trait
-pub trait TaskResponse: for<'de> Deserialize<'de> + Serialize {
-    /// Returns the index of the task
-    fn task_index(&self) -> TaskIndex;
-}
 
 /// Aggregator
 #[derive(Debug)]

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use super::{TaskInfo, TaskProcessor, TaskResponse};
+use super::{traits::TaskInfo, traits::TaskResponse, TaskProcessor};
 use alloy::{
     primitives::{Address, B256},
     sol_types::SolValue,
