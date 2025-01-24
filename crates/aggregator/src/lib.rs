@@ -18,11 +18,7 @@ use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
-use eigen_types::avs::TaskResponseDigest;
 use futures_util::StreamExt;
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
-    Task, TaskResponse,
-};
 use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
@@ -239,10 +235,6 @@ pub struct Aggregator {
         AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
     >,
     task_quorum: HashMap<u32, u32>,
-    /// HashMap to store tasks
-    pub tasks: HashMap<u32, Task>,
-    /// HashMap to store task responses
-    pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
 
     tp: ISTaskProcessor,
 }
@@ -299,8 +291,6 @@ impl Aggregator {
 
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
-            tasks_responses: HashMap::new(),
-            tasks: HashMap::new(),
             task_quorum: HashMap::new(),
             bls_aggregation_service,
             tp,
@@ -459,18 +449,6 @@ impl Aggregator {
             .hash_task_response(&signed_task_response.task_response())
             .await;
 
-        let response =
-            check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
-
-        if response.is_none() {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
-                task_response_digest,
-                signed_task_response.task_response().clone(),
-            );
-            self.tasks_responses.insert(task_index, inner_map);
-        }
-
         self.bls_aggregation_service
             .process_new_signature(
                 task_index,
@@ -509,40 +487,5 @@ impl Aggregator {
             );
         }
         Ok(())
-    }
-}
-
-fn check_double_mapping(
-    outer_map: &HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
-    outer_key: u32,
-    inner_key: TaskResponseDigest,
-) -> Option<&TaskResponse> {
-    if let Some(inner_map) = outer_map.get(&outer_key) {
-        if let Some(value) = inner_map.get(&inner_key) {
-            return Some(value);
-        }
-    }
-    None
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_check_double_mapping() {
-        let mut outer_map = HashMap::new();
-        let mut inner_map = HashMap::new();
-        inner_map.insert(
-            TaskResponseDigest::default(),
-            TaskResponse {
-                referenceTaskIndex: "0".parse().unwrap(),
-                numberSquared: "0".parse().unwrap(),
-            },
-        );
-        outer_map.insert(1, inner_map);
-        let result = check_double_mapping(&outer_map, 1, TaskResponseDigest::default());
-        assert!(result.is_some());
     }
 }
