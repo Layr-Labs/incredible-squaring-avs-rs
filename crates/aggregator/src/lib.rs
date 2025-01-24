@@ -82,20 +82,25 @@ pub mod is_impl {
             event: Self::NewTaskEvent,
         ) -> impl Future<Output = TaskInfo> + Send;
 
+        /// Processes a task response, returning the response's digest
+        fn process_task_response(
+            &self,
+            event: Self::TaskResponse,
+        ) -> impl Future<Output = B256> + Send;
+
         fn process_aggregated_response(
             &self,
             response: BlsAggregationServiceResponse,
         ) -> impl Future<Output = ()>;
 
         // TODO: move these to a separate "TaskResponse" trait
-        /// Hashes a task response
-        fn hash_task_response(
-            &self,
-            task_response: &Self::TaskResponse,
-        ) -> impl Future<Output = B256>;
 
         fn task_response_get_task_index(task_response: &Self::TaskResponse) -> TaskIndex;
     }
+
+    // pub trait TaskResponse {
+    //     fn hash(&self) -> B256;
+    // }
 
     #[derive(Debug)]
     /// Task Processor for the Incredible Squaring Task Manager
@@ -161,12 +166,9 @@ pub mod is_impl {
             }
         }
 
-        async fn hash_task_response(&self, task_response: &Self::TaskResponse) -> B256 {
-            let hash = alloy::primitives::keccak256(TaskResponse::abi_encode(task_response));
-            self.task_responses
-                .lock()
-                .await
-                .insert(hash, task_response.clone());
+        async fn process_task_response(&self, task_response: Self::TaskResponse) -> B256 {
+            let hash = alloy::primitives::keccak256(TaskResponse::abi_encode(&task_response));
+            self.task_responses.lock().await.insert(hash, task_response);
             hash
         }
 
@@ -437,22 +439,18 @@ impl Aggregator {
             <ISTaskProcessor as TaskProcessor>::TaskResponse,
         >,
     ) -> Result<(), AggregatorError> {
-        let task_index = <ISTaskProcessor as TaskProcessor>::task_response_get_task_index(
-            signed_task_response.task_response(),
-        );
+        let SignedTaskResponseImpl {
+            task_response,
+            signature,
+            operator_id,
+        } = signed_task_response;
+        let task_index =
+            <ISTaskProcessor as TaskProcessor>::task_response_get_task_index(&task_response);
 
-        let task_response_digest = self
-            .tp
-            .hash_task_response(&signed_task_response.task_response())
-            .await;
+        let task_response_digest = self.tp.process_task_response(task_response).await;
 
         self.bls_aggregation_service
-            .process_new_signature(
-                task_index,
-                task_response_digest,
-                signed_task_response.signature(),
-                signed_task_response.operator_id(),
-            )
+            .process_new_signature(task_index, task_response_digest, signature, operator_id)
             .await?;
         info!("processed signature for index {:?}", task_index);
         let quorum_reached = {

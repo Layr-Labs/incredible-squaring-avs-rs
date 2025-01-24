@@ -10,9 +10,12 @@ pub type SignedTaskResponse = SignedTaskResponseImpl<TaskResponse>;
 /// Signed Task Response
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignedTaskResponseImpl<T> {
-    task_response: T,
-    signature: Signature,
-    operator_id: OperatorId,
+    /// A response to a task
+    pub task_response: T,
+    /// Signature of the task response
+    pub signature: Signature,
+    /// ID of the operator corresponding to the signature
+    pub operator_id: OperatorId,
 }
 
 impl<T: Serialize + for<'de> Deserialize<'de>> SignedTaskResponseImpl<T> {
@@ -33,10 +36,5 @@ impl<T: Serialize + for<'de> Deserialize<'de>> SignedTaskResponseImpl<T> {
     /// [`OperatorId`]
     pub fn operator_id(&self) -> OperatorId {
         self.operator_id
-    }
-
-    /// [`TaskResponse`]
-    pub fn task_response(&self) -> &T {
-        &self.task_response
     }
 }
