@@ -6,6 +6,7 @@ pub mod error;
 pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
+
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
@@ -20,7 +21,6 @@ use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregation
 use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
-pub use error::AggregatorError;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -32,12 +32,14 @@ use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
-pub use rpc_server::SignedTaskResponse;
 use rpc_server::SignedTaskResponseImpl;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tracing::info;
+
+pub use error::AggregatorError;
+pub use rpc_server::SignedTaskResponse;
 
 /// Task Challenge Window Block : 100 blocks
 pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
@@ -48,12 +50,21 @@ pub const BLOCK_TIME_SECONDS: u32 = 12;
 pub mod is_impl {
     use std::{collections::HashMap, future::Future, sync::Arc, time::Duration};
 
-    use alloy::{dyn_abi::SolType, primitives::B256, sol_types::SolEvent};
-    use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
-    use incredible_bindings::incrediblesquaringtaskmanager::{
-        IIncredibleSquaringTaskManager::{Task, TaskResponse},
-        IncredibleSquaringTaskManager::NewTaskCreated,
+    use alloy::{
+        dyn_abi::SolType,
+        primitives::{Address, B256},
+        sol_types::SolEvent,
     };
+    use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
+    use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
+    use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
+    use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
+    use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
+        Task, TaskResponse,
+    };
+    use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
+    use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
+    use incredible_chainio::AvsWriter;
 
     // TODO: maybe `TaskMetadata` would be a better name
     #[derive(Debug)]
@@ -80,15 +91,43 @@ pub mod is_impl {
             event: Self::NewTaskEvent,
         ) -> impl Future<Output = TaskInfo> + Send;
 
+        fn send_aggregated_response_to_contract(
+            &self,
+            response: BlsAggregationServiceResponse,
+        ) -> impl Future<Output = ()>;
+
+        // TODO: move these to a separate "TaskResponse" trait
         /// Hashes a task response
-        fn hash_task_response(&self, task_response: &Self::TaskResponse) -> B256;
+        fn hash_task_response(
+            &self,
+            task_response: &Self::TaskResponse,
+        ) -> impl Future<Output = B256>;
+
+        fn task_response_get_task_index(task_response: &Self::TaskResponse) -> TaskIndex;
     }
 
-    #[derive(Debug, Default)]
+    #[derive(Debug)]
     /// Task Processor for the Incredible Squaring Task Manager
     pub struct ISTaskProcessor {
         /// HashMap to store tasks
-        pub tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
+        tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
+        /// HashMap to store tasks
+        task_responses: Arc<tokio::sync::Mutex<HashMap<B256, TaskResponse>>>,
+        /// AVS Writer
+        avs_writer: AvsWriter,
+    }
+
+    impl ISTaskProcessor {
+        pub async fn new(regcoord_addr: Address, http_rpc_url: String, signer: String) -> Self {
+            let avs_writer = AvsWriter::new(regcoord_addr, http_rpc_url, signer)
+                .await
+                .unwrap();
+            ISTaskProcessor {
+                tasks: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
+                task_responses: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
+                avs_writer,
+            }
+        }
     }
 
     /// Task Challenge Window Block : 100 blocks
@@ -131,8 +170,66 @@ pub mod is_impl {
             }
         }
 
-        fn hash_task_response(&self, task_response: &Self::TaskResponse) -> B256 {
-            alloy::primitives::keccak256(TaskResponse::abi_encode(task_response))
+        async fn hash_task_response(&self, task_response: &Self::TaskResponse) -> B256 {
+            let hash = alloy::primitives::keccak256(TaskResponse::abi_encode(task_response));
+            self.task_responses
+                .lock()
+                .await
+                .insert(hash, task_response.clone());
+            hash
+        }
+
+        fn task_response_get_task_index(task_response: &Self::TaskResponse) -> TaskIndex {
+            task_response.referenceTaskIndex
+        }
+
+        async fn send_aggregated_response_to_contract(
+            &self,
+            response: BlsAggregationServiceResponse,
+        ) {
+            let mut non_signer_pub_keys = Vec::<G1Point>::new();
+            for pub_key in response.non_signers_pub_keys_g1.iter() {
+                let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+                non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
+            }
+
+            let mut quorum_apks = Vec::<G1Point>::new();
+            for pub_key in response.quorum_apks_g1.iter() {
+                let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+                quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
+            }
+
+            let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
+                nonSignerPubkeys: non_signer_pub_keys,
+                nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
+                quorumApks: quorum_apks,
+                apkG2: G2Point {
+                    X: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().X,
+                    Y: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().Y,
+                },
+                sigma: G1Point {
+                    X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
+                        .unwrap()
+                        .X,
+                    Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
+                        .unwrap()
+                        .Y,
+                },
+                quorumApkIndices: response.quorum_apk_indices,
+                totalStakeIndices: response.total_stake_indices,
+                nonSignerStakeIndices: response.non_signer_stake_indices,
+            };
+
+            let task = &self.tasks.lock().await[&response.task_index];
+            let task_response = &self.task_responses.lock().await[&response.task_response_digest];
+            self.avs_writer
+                .send_aggregated_response(
+                    task.clone(),
+                    task_response.clone(),
+                    non_signer_stakes_and_signature,
+                )
+                .await
+                .unwrap();
         }
     }
 }
@@ -206,6 +303,13 @@ impl Aggregator {
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
+        let tp = ISTaskProcessor::new(
+            config.registry_coordinator_addr()?,
+            config.http_rpc_url(),
+            config.get_signer(),
+        )
+        .await;
+
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
             avs_writer,
@@ -213,7 +317,7 @@ impl Aggregator {
             tasks: HashMap::new(),
             task_quorum: HashMap::new(),
             bls_aggregation_service,
-            tp: ISTaskProcessor::default(),
+            tp,
         })
     }
 
@@ -360,11 +464,14 @@ impl Aggregator {
             <ISTaskProcessor as TaskProcessor>::TaskResponse,
         >,
     ) -> Result<(), AggregatorError> {
-        let task_index = signed_task_response.task_response().referenceTaskIndex;
+        let task_index = <ISTaskProcessor as TaskProcessor>::task_response_get_task_index(
+            signed_task_response.task_response(),
+        );
 
         let task_response_digest = self
             .tp
-            .hash_task_response(&signed_task_response.task_response());
+            .hash_task_response(&signed_task_response.task_response())
+            .await;
 
         let response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
@@ -404,8 +511,10 @@ impl Aggregator {
                 .await
             {
                 info!("sending aggregated response to contract");
-                self.send_aggregated_response_to_contract(aggregated_response?)
-                    .await?;
+                // TODO: add error handling
+                self.tp
+                    .send_aggregated_response_to_contract(aggregated_response?)
+                    .await;
             }
         } else {
             info!(
