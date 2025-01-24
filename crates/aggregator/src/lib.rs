@@ -42,16 +42,15 @@ pub mod is_impl {
     use std::{collections::HashMap, future::Future, sync::Arc, time::Duration};
 
     use alloy::{
-        dyn_abi::SolType,
         primitives::{Address, B256},
-        sol_types::SolEvent,
+        sol_types::{SolEvent, SolValue},
     };
     use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
     use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
     use eigen_types::{avs::TaskIndex, operator::QuorumThresholdPercentages};
     use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
-        Task, TaskResponse,
+        Task, TaskResponse as SolTaskResponse,
     };
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
     use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
@@ -74,7 +73,7 @@ pub mod is_impl {
         type NewTaskEvent: SolEvent + Send + Sync + 'static;
 
         /// The response type expected by the task processor
-        type TaskResponse: Send + Sync + 'static;
+        type TaskResponse: TaskResponse + Send + Sync + 'static;
 
         /// Processes a task, returning metadata related to signature aggregation
         fn process_new_task(
@@ -92,15 +91,11 @@ pub mod is_impl {
             &self,
             response: BlsAggregationServiceResponse,
         ) -> impl Future<Output = ()>;
-
-        // TODO: move these to a separate "TaskResponse" trait
-
-        fn task_response_get_task_index(task_response: &Self::TaskResponse) -> TaskIndex;
     }
 
-    // pub trait TaskResponse {
-    //     fn hash(&self) -> B256;
-    // }
+    pub trait TaskResponse {
+        fn task_index(&self) -> TaskIndex;
+    }
 
     #[derive(Debug)]
     /// Task Processor for the Incredible Squaring Task Manager
@@ -108,7 +103,7 @@ pub mod is_impl {
         /// HashMap to store tasks
         tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
         /// HashMap to store tasks
-        task_responses: Arc<tokio::sync::Mutex<HashMap<B256, TaskResponse>>>,
+        task_responses: Arc<tokio::sync::Mutex<HashMap<B256, ISTaskResponse>>>,
         /// AVS Writer
         avs_writer: AvsWriter,
     }
@@ -131,9 +126,18 @@ pub mod is_impl {
     /// Block Time Seconds : 12 seconds
     pub const BLOCK_TIME_SECONDS: u32 = 12;
 
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    pub struct ISTaskResponse(pub SolTaskResponse);
+
+    impl TaskResponse for ISTaskResponse {
+        fn task_index(&self) -> TaskIndex {
+            self.0.referenceTaskIndex
+        }
+    }
+
     impl TaskProcessor for ISTaskProcessor {
         type NewTaskEvent = NewTaskCreated;
-        type TaskResponse = TaskResponse;
+        type TaskResponse = ISTaskResponse;
 
         async fn process_new_task(&self, event: Self::NewTaskEvent) -> TaskInfo {
             let NewTaskCreated {
@@ -167,13 +171,9 @@ pub mod is_impl {
         }
 
         async fn process_task_response(&self, task_response: Self::TaskResponse) -> B256 {
-            let hash = alloy::primitives::keccak256(TaskResponse::abi_encode(&task_response));
+            let hash = alloy::primitives::keccak256(task_response.0.abi_encode());
             self.task_responses.lock().await.insert(hash, task_response);
             hash
-        }
-
-        fn task_response_get_task_index(task_response: &Self::TaskResponse) -> TaskIndex {
-            task_response.referenceTaskIndex
         }
 
         async fn process_aggregated_response(&self, response: BlsAggregationServiceResponse) {
@@ -211,11 +211,13 @@ pub mod is_impl {
             };
 
             let task = &self.tasks.lock().await[&response.task_index];
-            let task_response = &self.task_responses.lock().await[&response.task_response_digest];
+            let task_response = self.task_responses.lock().await[&response.task_response_digest]
+                .0
+                .clone();
             self.avs_writer
                 .send_aggregated_response(
                     task.clone(),
-                    task_response.clone(),
+                    task_response,
                     non_signer_stakes_and_signature,
                 )
                 .await
@@ -224,7 +226,7 @@ pub mod is_impl {
     }
 }
 
-use is_impl::{ISTaskProcessor, TaskProcessor};
+use is_impl::{ISTaskProcessor, TaskProcessor, TaskResponse};
 
 /// Aggregator
 #[derive(Debug)]
@@ -444,8 +446,7 @@ impl Aggregator {
             signature,
             operator_id,
         } = signed_task_response;
-        let task_index =
-            <ISTaskProcessor as TaskProcessor>::task_response_get_task_index(&task_response);
+        let task_index = task_response.task_index();
 
         let task_response_digest = self.tp.process_task_response(task_response).await;
 
