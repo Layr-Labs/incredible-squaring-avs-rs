@@ -82,7 +82,7 @@ pub mod is_impl {
             event: Self::NewTaskEvent,
         ) -> impl Future<Output = TaskInfo> + Send;
 
-        fn send_aggregated_response_to_contract(
+        fn process_aggregated_response(
             &self,
             response: BlsAggregationServiceResponse,
         ) -> impl Future<Output = ()>;
@@ -174,10 +174,7 @@ pub mod is_impl {
             task_response.referenceTaskIndex
         }
 
-        async fn send_aggregated_response_to_contract(
-            &self,
-            response: BlsAggregationServiceResponse,
-        ) {
+        async fn process_aggregated_response(&self, response: BlsAggregationServiceResponse) {
             let mut non_signer_pub_keys = Vec::<G1Point>::new();
             for pub_key in response.non_signers_pub_keys_g1.iter() {
                 let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
@@ -477,7 +474,7 @@ impl Aggregator {
                 info!("sending aggregated response to contract");
                 // TODO: add error handling
                 self.tp
-                    .send_aggregated_response_to_contract(aggregated_response?)
+                    .process_aggregated_response(aggregated_response?)
                     .await;
             }
         } else {
