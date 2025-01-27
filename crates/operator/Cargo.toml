@@ -21,6 +21,7 @@ futures-util.workspace = true
 
 # eigen-rs
 eigen-client-avsregistry.workspace = true
+eigen-config.workspace = true
 eigen-crypto-bls.workspace = true
 eigen-types.workspace = true
 

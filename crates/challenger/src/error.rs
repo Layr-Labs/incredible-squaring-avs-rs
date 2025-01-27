@@ -1,7 +1,7 @@
 use alloy::contract::Error as AlloyError;
 use alloy::sol_types::Error as AlloySolTypeError;
+use eigen_config::error::ConfigError;
 use incredible_chainio::error::ChainIoError;
-use incredible_config::error::ConfigError;
 use thiserror::Error;
 
 /// Error returned by chainio

@@ -23,8 +23,9 @@ tracing.workspace = true
 reqwest.workspace = true
 
 #eigen-rs
-eigen-common.workspace = true
 eigen-client-avsregistry.workspace = true
+eigen-common.workspace = true
+eigen-config.workspace = true
 eigen-types.workspace = true
 eigen-utils.workspace = true
 eigen-logging.workspace = true

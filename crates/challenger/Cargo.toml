@@ -26,6 +26,7 @@ incredible-chainio.workspace = true
 
 #eigen-rs
 eigen-common.workspace = true
+eigen-config.workspace = true
 eigen-utils.workspace = true
 
 [dev-dependencies]

@@ -5,7 +5,7 @@ use alloy::{
     transports::{RpcError, TransportErrorKind},
 };
 use eigen_client_avsregistry::error::AvsRegistryError;
-use incredible_config::error::ConfigError;
+use eigen_config::error::ConfigError;
 use thiserror::Error;
 /// Error returned by chainio
 #[derive(Debug, Error)]
