@@ -114,7 +114,7 @@ impl TaskProcessor for ISTaskProcessor {
         &self,
         task_response: Self::TaskResponse,
     ) -> Result<B256, TaskProcessorError> {
-        let hash = alloy::primitives::keccak256(task_response.0.abi_encode());
+        let hash = task_response.digest();
         self.task_responses.lock().await.insert(hash, task_response);
         Ok(hash)
     }
