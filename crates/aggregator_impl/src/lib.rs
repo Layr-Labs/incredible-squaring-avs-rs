@@ -3,7 +3,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use alloy::{
-    primitives::{Address, B256},
+    primitives::{keccak256, Address, B256},
     sol_types::SolValue,
 };
 use eigen_aggregator::{
@@ -63,6 +63,10 @@ pub struct ISTaskResponse(pub SolTaskResponse);
 impl TaskResponse for ISTaskResponse {
     fn task_index(&self) -> TaskIndex {
         self.0.referenceTaskIndex
+    }
+
+    fn digest(&self) -> B256 {
+        keccak256(self.0.abi_encode())
     }
 }
 
