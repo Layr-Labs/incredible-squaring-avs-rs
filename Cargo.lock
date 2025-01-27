@@ -2381,8 +2381,6 @@ dependencies = [
  "eyre",
  "futures-util",
  "hex",
- "incredible-chainio",
- "incredible-config",
  "incredible-operator",
  "incredible-testing-utils",
  "jsonrpc-core",

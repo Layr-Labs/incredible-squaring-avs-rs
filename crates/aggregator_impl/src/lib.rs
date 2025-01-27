@@ -21,7 +21,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
 };
 use incredible_chainio::AvsWriter;
 
-pub use eigen_aggregator::Aggregator;
+pub use eigen_aggregator::{Aggregator, AggregatorConfig};
 
 pub type SignedTaskResponse = SignedTaskResponseImpl<SolTaskResponse>;
 

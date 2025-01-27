@@ -1,7 +1,7 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
 use eigen_nodeapi::{create_server, NodeApi};
 use futures::TryFutureExt;
-use incredible_aggregator::Aggregator;
+use incredible_aggregator::{Aggregator, AggregatorConfig};
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
@@ -80,7 +80,15 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             avs.config.get_signer(),
         )
         .await;
-        let aggregator = Aggregator::new(avs.config.clone(), task_processor).await?;
+
+        let aggregator_cfg = AggregatorConfig {
+            server_address: avs.config.aggregator_ip_addr(),
+            http_rpc_url: avs.config.http_rpc_url(),
+            ws_rpc_url: avs.config.ws_rpc_url(),
+            registry_coordinator: avs.config.registry_coordinator_addr()?,
+            operator_state_retriever: avs.config.operator_state_retriever_addr()?,
+        };
+        let aggregator = Aggregator::new(aggregator_cfg, task_processor).await?;
 
         let aggregator_service_with_rpc_client = aggregator
             .start(avs.config.ws_rpc_url().clone())

@@ -7,6 +7,7 @@ pub mod rpc_server;
 /// Traits
 pub mod traits;
 
+use alloy::primitives::Address;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
@@ -19,16 +20,30 @@ use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use futures_util::StreamExt;
-use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tracing::info;
 use traits::{TaskProcessor, TaskResponse};
 
 pub use error::AggregatorError;
 pub use rpc_server::SignedTaskResponse;
+
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[serde(default)]
+// TODO: add docs
+#[allow(missing_docs)]
+pub struct AggregatorConfig {
+    pub server_address: String,
+
+    pub http_rpc_url: String,
+    pub ws_rpc_url: String,
+
+    pub registry_coordinator: Address,
+    pub operator_state_retriever: Address,
+}
 
 /// Aggregator
 #[derive(Debug)]
@@ -52,19 +67,19 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
     /// # Returns
     ///
     /// * `Self` - The aggregator
-    pub async fn new(config: IncredibleConfig, tp: TP) -> Result<Self, AggregatorError> {
+    pub async fn new(config: AggregatorConfig, tp: TP) -> Result<Self, AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
-            config.registry_coordinator_addr()?,
-            config.operator_state_retriever_addr()?,
-            config.http_rpc_url(),
+            config.registry_coordinator,
+            config.operator_state_retriever,
+            config.http_rpc_url,
         )
         .await?;
 
         let operators_info_service = OperatorInfoServiceInMemory::new(
             get_logger(),
             avs_registry_chain_reader.clone(),
-            config.ws_rpc_url(),
+            config.ws_rpc_url.clone(),
         )
         .await?
         .0;
@@ -73,7 +88,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
             avs_registry_chain_reader,
             operators_info_service.clone(),
         );
-        let provider = get_ws_provider(config.ws_rpc_url().as_str()).await?;
+        let provider = get_ws_provider(config.ws_rpc_url.as_str()).await?;
 
         let current_block_number = provider.get_block_number().await?;
         tokio::spawn(async move {
@@ -86,7 +101,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
         Ok(Self {
-            port_address: config.aggregator_ip_addr(),
+            port_address: config.server_address,
             task_quorum: HashMap::new(),
             bls_aggregation_service,
             tp,

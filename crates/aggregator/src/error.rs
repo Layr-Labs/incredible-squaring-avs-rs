@@ -1,31 +1,33 @@
-use alloy::transports::{RpcError, TransportErrorKind};
+use alloy::{
+    primitives::ruint,
+    transports::{RpcError, TransportErrorKind},
+};
 use eigen_client_avsregistry::error::AvsRegistryError;
 use eigen_crypto_bls::error::BlsError;
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceError;
-use incredible_chainio::error::ChainIoError;
-use incredible_config::error::ConfigError;
+use hex::FromHexError;
 use jsonrpc_core::serde_json::Error;
 use thiserror::Error;
+
 /// Error returned by chainio
 #[derive(Debug, Error)]
 pub enum AggregatorError {
     /// Bls Aggregation Service Error
     #[error("Bls Aggregation Service Error : {0}")]
     BlsAggregationServiceError(#[from] BlsAggregationServiceError),
+
     /// Task Response not found
     #[error("Task Response not found")]
     TaskResponseNotFound,
+
     /// parse error
     #[error("Config parse error")]
     ParseError(#[from] ConfigError),
+
     /// Build avs registry chain reader
     #[error("Failed to build avs registry chain reader ")]
     BuildAvsRegistryChainReader(#[from] AvsRegistryError),
-
-    /// build avswriter
-    #[error("Failed to build avs wrtier in chain io ")]
-    BuildAvsWriter(#[from] ChainIoError),
 
     /// Bls crate error
     #[error("Bls Crate Error SDK")]
@@ -46,4 +48,15 @@ pub enum AggregatorError {
     /// Operator Info service error
     #[error("Operator Info Service error")]
     OperatorInfoServiceError(#[from] OperatorInfoServiceError),
+}
+
+/// Error returned by config
+#[derive(Debug, Error)]
+pub enum ConfigError {
+    /// Failed to parse to Address or FixedBytes<32>
+    #[error("FromHexError :{0}")]
+    HexParse(#[from] FromHexError),
+    /// Parse Error
+    #[error("Parse Error :{0}")]
+    ParseError(#[from] ruint::ParseError),
 }
