@@ -18,7 +18,6 @@ rustdoc.all = "warn"
 [dependencies]
 alloy.workspace = true
 alloy-provider.workspace = true
-incredible-config.workspace = true
 thiserror.workspace = true
 incredible-bindings.workspace = true
 eyre.workspace = true
@@ -29,5 +28,4 @@ tracing.workspace = true
 reqwest.workspace = true
 
 # eigen-rs
-eigen-utils.workspace = true
 eigen-common.workspace = true

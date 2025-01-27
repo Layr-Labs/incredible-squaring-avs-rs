@@ -16,7 +16,6 @@ serde.workspace = true
 eyre.workspace = true
 tracing.workspace = true
 metrics.workspace = true
-metrics-util = "0.17.0"
 
 #incredible
 incredible-operator-2.workspace = true
@@ -36,5 +35,4 @@ futures = "0.3.30"
 #thiserror
 thiserror.workspace = true
 
-clap.workspace = true
 ntex = { version = "2.0", features = ["tokio"] }
