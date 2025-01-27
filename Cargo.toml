@@ -67,7 +67,7 @@ incredible-operator-2 = { path = "crates/operator_2_impl/", features = [
 incredible-aggregator = { path = "crates/aggregator_impl/" }
 incredible-squaring-avs = { path = "bin/incredible-squaring-avs/" }
 incredible-cli-runner = { path = "crates/cli/" }
-incredible-config = { path = "crates/config/" }
+incredible-config = { path = "crates/config_incredible/" }
 incredible-bindings = { path = "crates/bindings/" }
 incredible-metrics = { path = "crates/metrics/" }
 incredible-avs = { path = "crates/avs/" }
@@ -80,6 +80,7 @@ incredible-task-generator = { path = "crates/task_generator/" }
 
 eigen-operator = { path = "crates/operator/" }
 eigen-aggregator = { path = "crates/aggregator/" }
+eigen-config = { path = "crates/config/" }
 eigen-common = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }

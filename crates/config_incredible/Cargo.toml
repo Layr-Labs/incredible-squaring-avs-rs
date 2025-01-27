@@ -1,5 +1,5 @@
 [package]
-name = "eigen-config"
+name = "incredible-config"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -23,6 +23,7 @@ alloy.workspace = true
 serde.workspace = true
 confy = "0.6.1"
 thiserror.workspace = true
+eigen-config.workspace = true
 
 #config
 toml.workspace = true
