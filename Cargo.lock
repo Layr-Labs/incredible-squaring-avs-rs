@@ -2374,6 +2374,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-aggregator"
+version = "0.0.1-alpha"
+dependencies = [
+ "alloy",
+ "ark-bn254 0.4.0",
+ "ark-serialize 0.4.2",
+ "ark-std 0.4.0",
+ "eigen-client-avsregistry",
+ "eigen-common",
+ "eigen-crypto-bls",
+ "eigen-logging",
+ "eigen-services-avsregistry",
+ "eigen-services-blsaggregation",
+ "eigen-services-operatorsinfo",
+ "eigen-types",
+ "eigen-utils",
+ "eyre",
+ "futures-util",
+ "hex",
+ "incredible-bindings",
+ "incredible-chainio",
+ "incredible-config",
+ "incredible-metrics",
+ "incredible-operator",
+ "incredible-testing-utils",
+ "jsonrpc-core",
+ "jsonrpc-http-server",
+ "reqwest 0.12.12",
+ "serde",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-util 0.7.13",
+ "toml",
+ "tracing",
+]
+
+[[package]]
 name = "eigen-cli"
 version = "0.1.2"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=834b9c7#834b9c70c07a1c69eaa66773f0dd6b1a1e39689e"
@@ -4003,6 +4040,7 @@ dependencies = [
  "ark-bn254 0.4.0",
  "ark-serialize 0.4.2",
  "ark-std 0.4.0",
+ "eigen-aggregator",
  "eigen-client-avsregistry",
  "eigen-common",
  "eigen-crypto-bls",
@@ -4160,6 +4198,7 @@ dependencies = [
  "alloy-provider",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
+ "eigen-aggregator",
  "eigen-cli",
  "eigen-client-avsregistry",
  "eigen-client-eth",
@@ -4172,7 +4211,6 @@ dependencies = [
  "eyre",
  "futures-util",
  "hex",
- "incredible-aggregator",
  "incredible-bindings",
  "incredible-config",
  "incredible-metrics",
@@ -4196,6 +4234,7 @@ dependencies = [
  "alloy-provider",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
+ "eigen-aggregator",
  "eigen-cli",
  "eigen-client-avsregistry",
  "eigen-client-eth",
@@ -4208,7 +4247,6 @@ dependencies = [
  "eyre",
  "futures-util",
  "hex",
- "incredible-aggregator",
  "incredible-bindings",
  "incredible-config",
  "incredible-metrics",

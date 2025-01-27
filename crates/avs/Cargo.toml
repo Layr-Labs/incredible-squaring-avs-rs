@@ -6,7 +6,7 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "incredible avs builder "
-    
+
 [lints]
 workspace = true
 

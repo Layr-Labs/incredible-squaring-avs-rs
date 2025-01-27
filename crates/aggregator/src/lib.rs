@@ -9,9 +9,6 @@ pub mod rpc_server;
 /// Traits
 pub mod traits;
 
-mod aggregator_impl;
-pub use aggregator_impl::ISTaskProcessor;
-
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
@@ -90,13 +87,6 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
 
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
-
-        // let tp = ISTaskProcessor::new(
-        //     config.registry_coordinator_addr()?,
-        //     config.http_rpc_url(),
-        //     config.get_signer(),
-        // )
-        // .await;
 
         Ok(Self {
             port_address: config.aggregator_ip_addr(),

@@ -1,10 +1,12 @@
+// TODO: add docs
+#![allow(missing_docs)]
 use std::{collections::HashMap, sync::Arc};
 
-use super::{traits::TaskInfo, traits::TaskResponse, TaskProcessor};
 use alloy::{
     primitives::{Address, B256},
     sol_types::SolValue,
 };
+use eigen_aggregator::traits::{TaskInfo, TaskProcessor, TaskResponse};
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_types::avs::TaskIndex;
@@ -15,6 +17,8 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
     BN254::{G1Point, G2Point},
 };
 use incredible_chainio::AvsWriter;
+
+pub use eigen_aggregator::Aggregator;
 
 #[derive(Debug)]
 /// Task Processor for the Incredible Squaring Task Manager

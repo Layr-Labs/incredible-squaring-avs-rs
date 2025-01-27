@@ -1,5 +1,5 @@
 [package]
-name = "eigen-aggregator"
+name = "incredible-aggregator"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,6 +11,7 @@ description = "eigen layer aggregator"
 workspace = true
 
 [dependencies]
+eigen-aggregator.workspace = true
 incredible-bindings.workspace = true
 ark-bn254.workspace = true
 alloy.workspace = true
