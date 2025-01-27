@@ -1,4 +1,5 @@
 use alloy::rpc::client::{ReqwestClient, RpcClient};
+use alloy::transports::http::Http;
 use eyre::Result;
 pub use incredible_aggregator::SignedTaskResponse;
 use reqwest::Client;
@@ -10,7 +11,7 @@ use tracing::{debug, info};
 #[derive(Debug, Clone)]
 pub struct ClientAggregator {
     /// Alloy rpc client to send requests to aggregator
-    pub client: Option<RpcClient<alloy::transports::http::Http<Client>>>,
+    pub client: Option<RpcClient<Http<Client>>>,
     aggregator_ip_port_address: String,
 }
 
@@ -46,21 +47,25 @@ impl ClientAggregator {
                 "id": 1,
                 "jsonrpc": "2.0"
             });
-            if let Some(request) = self.client.as_ref() {
-                let s: bool = request
-                    .request("process_signed_task_response", params)
-                    .await
-                    .unwrap();
-                if s {
-                    incredible_metrics::inc_num_tasks_accepted_by_aggregator();
-                    return Ok(());
-                }
-
-                // Exponential backoff
-                info!("Retrying in {} seconds...", delay.as_secs());
-                sleep(delay).await;
-                delay *= 2; // Double the delay for the next retry
+            let Some(request) = self.client.as_ref() else {
+                continue;
+            };
+            let s = request
+                .request("process_signed_task_response", params)
+                .await
+                .map_err(|e| {
+                    debug!("Error sending signed task response to aggregator: {:?}", e);
+                    e
+                })?;
+            if s {
+                incredible_metrics::inc_num_tasks_accepted_by_aggregator();
+                return Ok(());
             }
+
+            // Exponential backoff
+            info!("Retrying in {} seconds...", delay.as_secs());
+            sleep(delay).await;
+            delay *= 2; // Double the delay for the next retry
         }
         debug!("Could not send signed task response to aggregator. Tried 5 times.");
         Ok(())

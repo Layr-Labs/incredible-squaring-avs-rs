@@ -1,21 +1,17 @@
 use std::sync::Arc;
 
-use crate::client::ClientAggregator;
 use alloy::{
     primitives::{keccak256, Address},
     providers::WsConnect,
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
-use eigen_operator::error::OperatorError;
-
-#[cfg(feature = "integration_tests")]
-use alloy::primitives::U256;
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_logger;
+use eigen_operator::{client::ClientAggregator, error::OperatorError};
 use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
@@ -84,7 +80,7 @@ impl OperatorBuilder {
 
         #[cfg(feature = "integration_tests")]
         {
-            number_to_be_squared = U256::from(9);
+            number_to_be_squared = alloy::primitives::U256::from(9);
             info!("Challenger test: setting number to be squared to 9");
         }
 
