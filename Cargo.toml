@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/aggregator",
+    "crates/aggregator_impl",
     "crates/operator",
     "bin/incredible-squaring-avs",
     "crates/cli",
