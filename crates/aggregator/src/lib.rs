@@ -1,8 +1,5 @@
 //! Aggregator crate
 
-// TODO list:
-// 4. Add error handling to traits
-
 /// Aggregator error
 pub mod error;
 /// RPC server
@@ -219,7 +216,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
         while let Some(log) = stream.next().await {
             let event: TP::NewTaskEvent = log.log_decode()?.inner.data;
 
-            let info = aggregator.lock().await.tp.process_new_task(event).await;
+            let info = aggregator.lock().await.tp.process_new_task(event).await?;
 
             let _ = aggregator
                 .lock()
@@ -258,7 +255,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
         } = signed_task_response;
         let task_index = task_response.task_index();
 
-        let task_response_digest = self.tp.process_task_response(task_response).await;
+        let task_response_digest = self.tp.process_task_response(task_response).await?;
 
         self.bls_aggregation_service
             .process_new_signature(task_index, task_response_digest, signature, operator_id)
@@ -281,10 +278,9 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
                 .await
             {
                 info!("sending aggregated response to contract");
-                // TODO: add error handling
                 self.tp
                     .process_aggregated_response(aggregated_response?)
-                    .await;
+                    .await?;
             }
         } else {
             info!(

@@ -8,7 +8,7 @@ use alloy::{
 };
 use eigen_aggregator::{
     rpc_server::SignedTaskResponse as SignedTaskResponseImpl,
-    traits::{TaskInfo, TaskProcessor, TaskResponse},
+    traits::{box_error, TaskInfo, TaskProcessor, TaskProcessorError, TaskResponse},
 };
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
@@ -19,7 +19,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
     IncredibleSquaringTaskManager::NewTaskCreated,
     BN254::{G1Point, G2Point},
 };
-use incredible_chainio::AvsWriter;
+use incredible_chainio::{error::ChainIoError, AvsWriter};
 
 pub use eigen_aggregator::{Aggregator, AggregatorConfig};
 
@@ -38,15 +38,17 @@ pub struct ISTaskProcessor {
 
 impl ISTaskProcessor {
     /// Creates a new task processor for the Incredible Squaring
-    pub async fn new(regcoord_addr: Address, http_rpc_url: String, signer: String) -> Self {
-        let avs_writer = AvsWriter::new(regcoord_addr, http_rpc_url, signer)
-            .await
-            .unwrap();
-        ISTaskProcessor {
+    pub async fn new(
+        regcoord_addr: Address,
+        http_rpc_url: String,
+        signer: String,
+    ) -> Result<Self, ChainIoError> {
+        let avs_writer = AvsWriter::new(regcoord_addr, http_rpc_url, signer).await?;
+        Ok(ISTaskProcessor {
             tasks: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
             task_responses: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
             avs_writer,
-        }
+        })
     }
 }
 
@@ -68,7 +70,10 @@ impl TaskProcessor for ISTaskProcessor {
     type NewTaskEvent = NewTaskCreated;
     type TaskResponse = ISTaskResponse;
 
-    async fn process_new_task(&self, event: Self::NewTaskEvent) -> TaskInfo {
+    async fn process_new_task(
+        &self,
+        event: Self::NewTaskEvent,
+    ) -> Result<TaskInfo, TaskProcessorError> {
         let NewTaskCreated {
             taskIndex: task_index,
             task,
@@ -78,8 +83,11 @@ impl TaskProcessor for ISTaskProcessor {
         let mut quorum_nums: Vec<u8> = vec![];
         let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
         for _ in &task.quorumNumbers {
-            // TODO: error handling
-            quorum_threshold_percentages.push(task.quorumThresholdPercentage.try_into().unwrap());
+            quorum_threshold_percentages.push(
+                task.quorumThresholdPercentage
+                    .try_into()
+                    .map_err(box_error)?,
+            );
         }
 
         for val in task.quorumNumbers.iter() {
@@ -89,31 +97,37 @@ impl TaskProcessor for ISTaskProcessor {
         let time_to_expiry = tokio::time::Duration::from_secs(
             (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
         );
-        TaskInfo {
+        Ok(TaskInfo {
             task_index,
             task_created_block: task.taskCreatedBlock,
             quorum_nums,
             quorum_threshold_percentages,
             time_to_expiry,
-        }
+        })
     }
 
-    async fn process_task_response(&self, task_response: Self::TaskResponse) -> B256 {
+    async fn process_task_response(
+        &self,
+        task_response: Self::TaskResponse,
+    ) -> Result<B256, TaskProcessorError> {
         let hash = alloy::primitives::keccak256(task_response.0.abi_encode());
         self.task_responses.lock().await.insert(hash, task_response);
-        hash
+        Ok(hash)
     }
 
-    async fn process_aggregated_response(&self, response: BlsAggregationServiceResponse) {
+    async fn process_aggregated_response(
+        &self,
+        response: BlsAggregationServiceResponse,
+    ) -> Result<(), TaskProcessorError> {
         let mut non_signer_pub_keys = Vec::<G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+            let g1 = convert_to_g1_point(pub_key.g1()).map_err(box_error)?;
             non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
         let mut quorum_apks = Vec::<G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+            let g1 = convert_to_g1_point(pub_key.g1()).map_err(box_error)?;
             quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
@@ -122,15 +136,19 @@ impl TaskProcessor for ISTaskProcessor {
             nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
             quorumApks: quorum_apks,
             apkG2: G2Point {
-                X: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().X,
-                Y: convert_to_g2_point(response.signers_apk_g2.g2()).unwrap().Y,
+                X: convert_to_g2_point(response.signers_apk_g2.g2())
+                    .map_err(box_error)?
+                    .X,
+                Y: convert_to_g2_point(response.signers_apk_g2.g2())
+                    .map_err(box_error)?
+                    .Y,
             },
             sigma: G1Point {
                 X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                    .unwrap()
+                    .map_err(box_error)?
                     .X,
                 Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                    .unwrap()
+                    .map_err(box_error)?
                     .Y,
             },
             quorumApkIndices: response.quorum_apk_indices,
@@ -145,6 +163,8 @@ impl TaskProcessor for ISTaskProcessor {
         self.avs_writer
             .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
             .await
-            .unwrap();
+            .map_err(box_error)?;
+
+        Ok(())
     }
 }
