@@ -1,5 +1,10 @@
 //! Aggregator crate
 
+// TODO list:
+// 2. Refactor tests to remove incredible deps
+// 3. Add more documentation
+// 4. Add error handling to traits
+
 /// Aggregator error
 pub mod error;
 /// RPC server
@@ -17,7 +22,6 @@ use eigen_common::get_ws_provider;
 use eigen_logging::get_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
 use eigen_services_blsaggregation::bls_agg::BlsAggregatorService;
-use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use futures_util::StreamExt;
 use jsonrpc_core::serde_json;
@@ -109,7 +113,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
     }
 
     /// Starts the aggregator service
-    pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
+    pub async fn start(self, ws_rpc_url: String) -> Result<(), AggregatorError> {
         info!("Starting aggregator");
 
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
@@ -127,9 +131,8 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
                 server_result?;
                 process_result?;
             }
-            Err(e) => {
-                eprintln!("Error in task execution: {:?}", e);
-                return Err(eyre::eyre!("Task execution failed"));
+            Err(_e) => {
+                return Err(AggregatorError::JoinError);
             }
         }
 
@@ -144,10 +147,10 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
     ///
     /// # Returns
     ///
-    /// * `eyre::Result<()>` - The result of the operation
+    /// * `Result<(), AggregatorError>` - The result of the operation
     pub async fn start_server(
         aggregator: Arc<tokio::sync::Mutex<Self>>,
-    ) -> eyre::Result<(), AggregatorError> {
+    ) -> Result<(), AggregatorError> {
         let mut io = IoHandler::new();
         io.add_method("process_signed_task_response", {
             let aggregator = Arc::clone(&aggregator);
@@ -199,11 +202,11 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
     ///
     /// # Returns
     ///
-    /// * `eyre::Result<()>` - The result of the operation
+    /// * `Result<(), AggregatorError>` - The result of the operation
     pub async fn process_tasks(
         ws_rpc_url: String,
         aggregator: Arc<tokio::sync::Mutex<Self>>,
-    ) -> eyre::Result<()> {
+    ) -> Result<(), AggregatorError> {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;
 
@@ -227,8 +230,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
                     info.quorum_threshold_percentages,
                     info.time_to_expiry,
                 )
-                .await
-                .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
+                .await?;
         }
 
         Ok(())
@@ -242,7 +244,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
     ///
     /// # Returns
     ///
-    /// * `eyre::Result<()>` - The result of the operation
+    /// * `Result<(), AggregatorError>` - The result of the operation
     pub async fn process_signed_task_response(
         &mut self,
         signed_task_response: SignedTaskResponse<TP::TaskResponse>,

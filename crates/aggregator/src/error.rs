@@ -1,12 +1,8 @@
-use alloy::{
-    primitives::ruint,
-    transports::{RpcError, TransportErrorKind},
-};
+use alloy::transports::{RpcError, TransportErrorKind};
 use eigen_client_avsregistry::error::AvsRegistryError;
 use eigen_crypto_bls::error::BlsError;
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceError;
-use hex::FromHexError;
 use jsonrpc_core::serde_json::Error;
 use thiserror::Error;
 
@@ -21,9 +17,13 @@ pub enum AggregatorError {
     #[error("Task Response not found")]
     TaskResponseNotFound,
 
-    /// parse error
-    #[error("Config parse error")]
-    ParseError(#[from] ConfigError),
+    /// Task Response not found
+    #[error("Task panicked or got cancelled")]
+    JoinError,
+
+    /// Decoding of the new task event failed
+    #[error("Log decode failed")]
+    LogDecodeFailed(#[from] alloy::sol_types::Error),
 
     /// Build avs registry chain reader
     #[error("Failed to build avs registry chain reader ")]
@@ -48,15 +48,4 @@ pub enum AggregatorError {
     /// Operator Info service error
     #[error("Operator Info Service error")]
     OperatorInfoServiceError(#[from] OperatorInfoServiceError),
-}
-
-/// Error returned by config
-#[derive(Debug, Error)]
-pub enum ConfigError {
-    /// Failed to parse to Address or FixedBytes<32>
-    #[error("FromHexError :{0}")]
-    HexParse(#[from] FromHexError),
-    /// Parse Error
-    #[error("Parse Error :{0}")]
-    ParseError(#[from] ruint::ParseError),
 }

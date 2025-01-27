@@ -2378,7 +2378,6 @@ dependencies = [
  "eigen-services-operatorsinfo",
  "eigen-types",
  "eigen-utils",
- "eyre",
  "futures-util",
  "hex",
  "incredible-operator",
