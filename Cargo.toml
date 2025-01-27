@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/aggregator",
+    "crates/operator",
     "crates/operator_impl",
     "crates/operator_2_impl",
     "bin/incredible-squaring-avs",
@@ -77,6 +78,7 @@ incredible-task-generator = { path = "crates/task_generator/" }
 
 # eigensdk-rs 
 
+eigen-operator = { path = "crates/operator/" }
 eigen-aggregator = { path = "crates/aggregator/" }
 eigen-common = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }

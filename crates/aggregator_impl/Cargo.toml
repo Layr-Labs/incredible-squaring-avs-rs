@@ -40,5 +40,5 @@ tokio-util = "0.7.11"
 incredible-testing-utils.workspace = true
 toml.workspace = true
 ark-std = { version = "0.4.0", default-features = false }
-incredible-operator.workspace = true
+eigen-operator.workspace = true
 reqwest.workspace = true
