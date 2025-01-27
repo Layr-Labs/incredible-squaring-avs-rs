@@ -1953,16 +1953,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
-name = "colored"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "117725a109d387c937a1533ce01b450cbde6b88abceea8473c4d7a85853cda3c"
-dependencies = [
- "lazy_static",
- "windows-sys 0.59.0",
-]
-
-[[package]]
 name = "concurrent-queue"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2404,40 +2394,6 @@ dependencies = [
  "tokio-util 0.7.13",
  "toml",
  "tracing",
-]
-
-[[package]]
-name = "eigen-cli"
-version = "0.1.2"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=834b9c7#834b9c70c07a1c69eaa66773f0dd6b1a1e39689e"
-dependencies = [
- "alloy",
- "alloy-json-rpc",
- "alloy-primitives",
- "alloy-provider",
- "alloy-transport",
- "ark-ec 0.5.0",
- "ark-ff 0.5.0",
- "ark-serialize 0.5.0",
- "clap",
- "colored",
- "eigen-common",
- "eigen-crypto-bls",
- "eigen-testing-utils",
- "eigen-types",
- "eigen-utils",
- "eth-keystore",
- "hex",
- "k256",
- "num-bigint",
- "rand",
- "rand_core",
- "rust-bls-bn254 0.2.1",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
- "tokio",
- "uuid 1.11.0",
 ]
 
 [[package]]
@@ -4166,17 +4122,9 @@ dependencies = [
 name = "incredible-metrics"
 version = "0.0.1-alpha"
 dependencies = [
- "alloy",
- "alloy-provider",
  "eigen-metrics",
- "eyre",
- "futures-util",
- "incredible-bindings",
- "incredible-config",
  "metrics 0.24.1",
- "metrics-util 0.17.0",
  "reqwest 0.12.12",
- "thiserror 1.0.69",
  "tokio",
 ]
 
@@ -4188,7 +4136,6 @@ dependencies = [
  "alloy-provider",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
- "eigen-cli",
  "eigen-client-avsregistry",
  "eigen-client-eth",
  "eigen-crypto-bls",
@@ -4224,7 +4171,6 @@ dependencies = [
  "alloy-provider",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
- "eigen-cli",
  "eigen-client-avsregistry",
  "eigen-client-eth",
  "eigen-crypto-bls",
@@ -7769,9 +7715,6 @@ name = "uuid"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8c5f0a0af699448548ad1a2fbf920fb4bee257eae39953ba95cb84891a0446a"
-dependencies = [
- "getrandom",
-]
 
 [[package]]
 name = "valuable"
