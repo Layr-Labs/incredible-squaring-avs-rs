@@ -2368,7 +2368,6 @@ name = "eigen-aggregator"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "ark-std 0.4.0",
  "eigen-client-avsregistry",
  "eigen-common",
  "eigen-crypto-bls",
@@ -2380,16 +2379,12 @@ dependencies = [
  "eigen-utils",
  "futures-util",
  "hex",
- "incredible-operator",
- "incredible-testing-utils",
  "jsonrpc-core",
  "jsonrpc-http-server",
- "reqwest 0.12.12",
  "serde",
  "thiserror 1.0.69",
  "tokio",
  "tokio-util 0.7.13",
- "toml",
  "tracing",
 ]
 

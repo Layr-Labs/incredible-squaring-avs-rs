@@ -1,7 +1,6 @@
 //! Aggregator crate
 
 // TODO list:
-// 2. Refactor tests to remove incredible deps
 // 3. Add more documentation
 // 4. Add error handling to traits
 
