@@ -218,7 +218,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
 
             let info = aggregator.lock().await.tp.process_new_task(event).await?;
 
-            let _ = aggregator
+            aggregator
                 .lock()
                 .await
                 .bls_aggregation_service
