@@ -55,6 +55,9 @@ pub trait TaskProcessor {
 pub trait TaskResponse: for<'de> Deserialize<'de> + Serialize {
     /// Returns the index of the task
     fn task_index(&self) -> TaskIndex;
+
+    /// Returns a 32-byte digest of the response
+    fn digest(&self) -> B256;
 }
 
 /// Utility function for boxing errors

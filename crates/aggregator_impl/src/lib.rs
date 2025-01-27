@@ -3,7 +3,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use alloy::{
-    primitives::{Address, B256},
+    primitives::{keccak256, Address, B256},
     sol_types::SolValue,
 };
 use eigen_aggregator::{
@@ -64,6 +64,10 @@ impl TaskResponse for ISTaskResponse {
     fn task_index(&self) -> TaskIndex {
         self.0.referenceTaskIndex
     }
+
+    fn digest(&self) -> B256 {
+        keccak256(self.0.abi_encode())
+    }
 }
 
 impl TaskProcessor for ISTaskProcessor {
@@ -110,7 +114,7 @@ impl TaskProcessor for ISTaskProcessor {
         &self,
         task_response: Self::TaskResponse,
     ) -> Result<B256, TaskProcessorError> {
-        let hash = alloy::primitives::keccak256(task_response.0.abi_encode());
+        let hash = task_response.digest();
         self.task_responses.lock().await.insert(hash, task_response);
         Ok(hash)
     }

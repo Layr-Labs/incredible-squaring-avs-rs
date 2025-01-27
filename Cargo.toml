@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/aggregator",
+    "crates/aggregator_impl",
     "crates/operator",
     "crates/operator_impl",
     "crates/operator_2_impl",
