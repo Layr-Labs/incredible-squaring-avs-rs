@@ -1,4 +1,4 @@
-///! Incredible configuration module.
+//! Incredible configuration module.
 use alloy::hex::FromHex;
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use eigen_config::{
