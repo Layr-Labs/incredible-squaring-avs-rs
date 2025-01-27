@@ -11,7 +11,6 @@ description = "eigen layer aggregator"
 workspace = true
 
 [dependencies]
-incredible-bindings.workspace = true
 ark-bn254.workspace = true
 alloy.workspace = true
 eigen-types.workspace = true
@@ -22,7 +21,6 @@ eigen-crypto-bls.workspace = true
 eyre.workspace = true
 incredible-chainio.workspace = true
 incredible-config.workspace = true
-incredible-metrics.workspace = true
 eigen-common.workspace = true
 eigen-services-operatorsinfo.workspace = true
 eigen-logging.workspace = true

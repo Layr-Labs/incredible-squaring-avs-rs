@@ -1,15 +1,10 @@
 use eigen_crypto_bls::Signature;
 use eigen_types::operator::OperatorId;
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use serde::{Deserialize, Serialize};
-// use alloy::sol_types::SolCall;x
-
-/// Signed Task Response
-pub type SignedTaskResponse = SignedTaskResponseImpl<TaskResponse>;
 
 /// Signed Task Response
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SignedTaskResponseImpl<T> {
+pub struct SignedTaskResponse<T> {
     /// A response to a task
     pub task_response: T,
     /// Signature of the task response
@@ -18,7 +13,7 @@ pub struct SignedTaskResponseImpl<T> {
     pub operator_id: OperatorId,
 }
 
-impl<T: Serialize + for<'de> Deserialize<'de>> SignedTaskResponseImpl<T> {
+impl<T: Serialize + for<'de> Deserialize<'de>> SignedTaskResponse<T> {
     /// Create a new [`SignedTaskResponse`]
     pub fn new(task_response: T, bls_signature: Signature, operator_id: OperatorId) -> Self {
         Self {

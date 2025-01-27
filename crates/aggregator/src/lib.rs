@@ -2,8 +2,6 @@
 
 /// Aggregator error
 pub mod error;
-#[allow(missing_docs)]
-pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
 /// Traits
@@ -25,7 +23,6 @@ use incredible_config::IncredibleConfig;
 use jsonrpc_core::serde_json;
 use jsonrpc_core::{Error, IoHandler, Params, Value};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
-use rpc_server::SignedTaskResponseImpl;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tracing::info;
 use traits::{TaskProcessor, TaskResponse};
@@ -145,7 +142,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
                     let Params::Map(map) = params else {
                         return Err(Error::invalid_params("Expected a map"));
                     };
-                    let signed_task_response: SignedTaskResponseImpl<TP::TaskResponse> =
+                    let signed_task_response: SignedTaskResponse<TP::TaskResponse> =
                         serde_json::from_value(map["params"].clone()).expect(
                             "Error in adding method in io handler for start_server function",
                         );
@@ -233,9 +230,9 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_signed_task_response(
         &mut self,
-        signed_task_response: SignedTaskResponseImpl<TP::TaskResponse>,
+        signed_task_response: SignedTaskResponse<TP::TaskResponse>,
     ) -> Result<(), AggregatorError> {
-        let SignedTaskResponseImpl {
+        let SignedTaskResponse {
             task_response,
             signature,
             operator_id,

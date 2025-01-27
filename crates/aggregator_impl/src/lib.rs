@@ -6,7 +6,10 @@ use alloy::{
     primitives::{Address, B256},
     sol_types::SolValue,
 };
-use eigen_aggregator::traits::{TaskInfo, TaskProcessor, TaskResponse};
+use eigen_aggregator::{
+    rpc_server::SignedTaskResponse as SignedTaskResponseImpl,
+    traits::{TaskInfo, TaskProcessor, TaskResponse},
+};
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_types::avs::TaskIndex;
@@ -19,6 +22,8 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
 use incredible_chainio::AvsWriter;
 
 pub use eigen_aggregator::Aggregator;
+
+pub type SignedTaskResponse = SignedTaskResponseImpl<SolTaskResponse>;
 
 #[derive(Debug)]
 /// Task Processor for the Incredible Squaring Task Manager
