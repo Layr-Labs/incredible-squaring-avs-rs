@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use crate::client::ClientAggregator;
-use crate::error::OperatorError;
 use alloy::{
     primitives::{keccak256, Address},
     providers::WsConnect,
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
+use eigen_operator::error::OperatorError;
 
 #[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
@@ -32,19 +32,13 @@ use tracing::info;
 #[derive(Debug)]
 pub struct OperatorBuilder {
     http_rpc_url: String,
-
     ws_rpc_url: String,
-
     operator_addr: Address,
-
     key_pair: BlsKeyPair,
-
     operator_id: OperatorId,
     /// [`ClientAggregator`]
     pub client: ClientAggregator,
-
     registry_coordinator: Address,
-
     operator_state_retriever: Address,
 }
 

@@ -15,14 +15,15 @@ alloy.workspace = true
 alloy-provider.workspace = true
 incredible-config.workspace = true
 thiserror.workspace = true
-incredible-bindings.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
+incredible-bindings.workspace = true
 incredible-operator.workspace = true
 
 # eigen-rs
 eigen-client-avsregistry.workspace = true
 eigen-crypto-bls.workspace = true
+eigen-operator.workspace = true
 eigen-types.workspace = true
 incredible-aggregator.workspace = true
 

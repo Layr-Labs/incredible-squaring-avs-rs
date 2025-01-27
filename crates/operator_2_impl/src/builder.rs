@@ -6,7 +6,8 @@ use alloy::{
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
-use incredible_operator::{client::ClientAggregator, error::OperatorError};
+use eigen_operator::error::OperatorError;
+use incredible_operator::client::ClientAggregator;
 
 #[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;

@@ -13,27 +13,16 @@ use std::path::PathBuf;
 #[allow(missing_docs)]
 pub struct IncredibleConfig {
     rpc_config: RpcConfig,
-
     ecdsa_config: EcdsaConfig,
-
     bls_config: BlsConfig,
-
     operator_config: OperatorConfig,
-
     aggregator_config: AggregatorConfig,
-
     el_config: ELConfig,
-
     operator_registration_config: OperatorRegistrationConfig,
-
     operator_2_registration_config: Operator2RegistrationConfig,
-
     incredible_contracts_config: IncredibleContractsConfig,
-
     task_manager_config: TaskManagerConfig,
-
     metrics_config: MetricsConfig,
-
     node_config: NodeConfig,
 }
 
