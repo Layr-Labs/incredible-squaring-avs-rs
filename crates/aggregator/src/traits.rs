@@ -21,30 +21,43 @@ pub struct TaskInfo {
     pub time_to_expiry: Duration,
 }
 
+/// Error returned by the task processor
+pub type TaskProcessorError = Box<dyn core::error::Error + Send>;
+
 /// Abstracts task-specific behaviour
 pub trait TaskProcessor {
-    /// The event type expected by the task processor
+    /// Event type expected by the task processor
     type NewTaskEvent: SolEvent + Send + Sync + 'static;
 
-    /// The response type expected by the task processor
+    /// Response type expected by the task processor
     type TaskResponse: TaskResponse + Send + Sync + 'static;
 
     /// Processes a task, returning metadata related to signature aggregation
-    fn process_new_task(&self, event: Self::NewTaskEvent) -> impl Future<Output = TaskInfo> + Send;
+    fn process_new_task(
+        &self,
+        event: Self::NewTaskEvent,
+    ) -> impl Future<Output = Result<TaskInfo, TaskProcessorError>> + Send;
 
     /// Processes a task response, returning the response's digest
-    fn process_task_response(&self, event: Self::TaskResponse)
-        -> impl Future<Output = B256> + Send;
+    fn process_task_response(
+        &self,
+        event: Self::TaskResponse,
+    ) -> impl Future<Output = Result<B256, TaskProcessorError>> + Send;
 
     /// Process the result of a BLS aggregation
     fn process_aggregated_response(
         &self,
         response: BlsAggregationServiceResponse,
-    ) -> impl Future<Output = ()> + Send;
+    ) -> impl Future<Output = Result<(), TaskProcessorError>> + Send;
 }
 
 /// Task response trait
 pub trait TaskResponse: for<'de> Deserialize<'de> + Serialize {
     /// Returns the index of the task
     fn task_index(&self) -> TaskIndex;
+}
+
+/// Utility function for boxing errors
+pub fn box_error<E: core::error::Error + Send + 'static>(e: E) -> TaskProcessorError {
+    Box::new(e)
 }

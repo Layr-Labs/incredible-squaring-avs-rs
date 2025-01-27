@@ -79,7 +79,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             avs.config.http_rpc_url(),
             avs.config.get_signer(),
         )
-        .await;
+        .await?;
 
         let aggregator_cfg = AggregatorConfig {
             server_address: avs.config.aggregator_ip_addr(),
@@ -88,11 +88,13 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             registry_coordinator: avs.config.registry_coordinator_addr()?,
             operator_state_retriever: avs.config.operator_state_retriever_addr()?,
         };
-        let aggregator = Aggregator::new(aggregator_cfg, task_processor).await?;
+        let aggregator = Aggregator::new(aggregator_cfg, task_processor)
+            .await
+            .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
 
         let aggregator_service_with_rpc_client = aggregator
             .start(avs.config.ws_rpc_url().clone())
-            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+            .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
 
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,

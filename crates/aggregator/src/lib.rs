@@ -1,9 +1,5 @@
 //! Aggregator crate
 
-// TODO list:
-// 3. Add more documentation
-// 4. Add error handling to traits
-
 /// Aggregator error
 pub mod error;
 /// RPC server
@@ -36,15 +32,19 @@ pub use rpc_server::SignedTaskResponse;
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(default)]
-// TODO: add docs
-#[allow(missing_docs)]
+/// Configuration for the [`Aggregator`]
 pub struct AggregatorConfig {
+    /// IP address and port the aggregation server will use
     pub server_address: String,
 
+    /// URL of the Ethereum HTTP RPC
     pub http_rpc_url: String,
+    /// URL of the Ethereum WebSocket RPC
     pub ws_rpc_url: String,
 
+    /// Address of the RegistryCoordinator contract
     pub registry_coordinator: Address,
+    /// Address of the OperatorStateRetriever contract
     pub operator_state_retriever: Address,
 }
 
@@ -216,9 +216,9 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
         while let Some(log) = stream.next().await {
             let event: TP::NewTaskEvent = log.log_decode()?.inner.data;
 
-            let info = aggregator.lock().await.tp.process_new_task(event).await;
+            let info = aggregator.lock().await.tp.process_new_task(event).await?;
 
-            let _ = aggregator
+            aggregator
                 .lock()
                 .await
                 .bls_aggregation_service
@@ -255,7 +255,7 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
         } = signed_task_response;
         let task_index = task_response.task_index();
 
-        let task_response_digest = self.tp.process_task_response(task_response).await;
+        let task_response_digest = self.tp.process_task_response(task_response).await?;
 
         self.bls_aggregation_service
             .process_new_signature(task_index, task_response_digest, signature, operator_id)
@@ -278,10 +278,9 @@ impl<TP: TaskProcessor + Send + 'static> Aggregator<TP> {
                 .await
             {
                 info!("sending aggregated response to contract");
-                // TODO: add error handling
                 self.tp
                     .process_aggregated_response(aggregated_response?)
-                    .await;
+                    .await?;
             }
         } else {
             info!(
