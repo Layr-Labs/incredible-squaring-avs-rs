@@ -1,21 +1,15 @@
 use std::sync::Arc;
 
-use alloy::{
-    primitives::{keccak256, Address},
-    providers::WsConnect,
-    rpc::types::Filter,
-    sol_types::{SolEvent, SolValue},
-};
+use alloy::{primitives::Address, providers::WsConnect, rpc::types::Filter, sol_types::SolEvent};
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_logger;
-use eigen_operator::{client::ClientAggregator, error::OperatorError};
+use eigen_operator::{client::ClientAggregator, error::OperatorError, operator};
 use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
-use incredible_aggregator::SignedTaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
     self, NewTaskCreated,
@@ -131,7 +125,11 @@ impl OperatorBuilder {
                     );
                     incredible_metrics::increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
-                    let signed_task_response = self.sign_task_response(task_response)?;
+                    let signed_task_response = operator::sign_task_response(
+                        &self.key_pair,
+                        &self.operator_id,
+                        task_response,
+                    )?;
                     if let Some(client) = &self.client {
                         let _ = client.send_signed_task_response(signed_task_response).await;
                     }
@@ -146,11 +144,12 @@ impl OperatorBuilder {
 mod tests {
 
     use super::*;
-    use alloy::primitives::Bytes;
-    use alloy::primitives::U256;
+    use alloy::primitives::{keccak256, Bytes, U256};
+    use alloy::sol_types::SolValue;
     use ark_ec::AffineRepr;
     use ark_ff::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
+    use eigen_operator::operator;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -275,9 +274,12 @@ mod tests {
         let operator_builder = OperatorBuilder::build(incredible_config, None)
             .await
             .unwrap();
-        let signed_task_response = operator_builder
-            .sign_task_response(task_response.clone())
-            .unwrap();
+        let signed_task_response = operator::sign_task_response(
+            &operator_builder.key_pair,
+            &operator_builder.operator_id,
+            task_response.clone(),
+        )
+        .unwrap();
 
         let bls_key_pair = operator_builder.bls_key_pair();
         let encoded_response = TaskResponse::abi_encode(&task_response);

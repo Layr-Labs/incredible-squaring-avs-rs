@@ -2552,6 +2552,7 @@ dependencies = [
  "alloy-provider",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
+ "eigen-aggregator",
  "eigen-client-avsregistry",
  "eigen-client-eth",
  "eigen-config",

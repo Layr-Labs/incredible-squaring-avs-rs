@@ -1,21 +1,15 @@
 use std::sync::Arc;
 
-use alloy::{
-    primitives::{keccak256, Address},
-    providers::WsConnect,
-    rpc::types::Filter,
-    sol_types::{SolEvent, SolValue},
-};
+use alloy::{primitives::Address, providers::WsConnect, rpc::types::Filter, sol_types::SolEvent};
 use alloy_provider::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_logger;
-use eigen_operator::{client::ClientAggregator, error::OperatorError};
+use eigen_operator::{client::ClientAggregator, error::OperatorError, operator};
 use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
-use incredible_aggregator::SignedTaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
     self, NewTaskCreated,
@@ -133,7 +127,11 @@ impl OperatorBuilder {
                     );
                     incredible_metrics::increment_num_tasks_received();
                     let task_response = self.process_new_task(new_task_created);
-                    let signed_task_response = self.sign_task_response(task_response)?;
+                    let signed_task_response = operator::sign_task_response(
+                        &self.key_pair,
+                        &self.operator_id,
+                        task_response,
+                    )?;
                     let _ = arc_client
                         .send_signed_task_response(signed_task_response)
                         .await;
@@ -142,28 +140,16 @@ impl OperatorBuilder {
         }
         Ok(())
     }
-
-    /// Sign the task response
-    pub fn sign_task_response(
-        &self,
-        task_response: TaskResponse,
-    ) -> Result<SignedTaskResponse, OperatorError> {
-        let encoded_response = TaskResponse::abi_encode(&task_response);
-        let hash_msg = keccak256(encoded_response);
-
-        let signed_msg = self.key_pair.sign_message(&hash_msg);
-        let signed_task_response =
-            SignedTaskResponse::new(task_response, signed_msg, self.operator_id);
-        Ok(signed_task_response)
-    }
 }
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
-    use alloy::primitives::Bytes;
-    use alloy::primitives::U256;
+    use alloy::{
+        primitives::{keccak256, Bytes, U256},
+        sol_types::SolValue,
+    };
     use ark_ec::AffineRepr;
     use ark_ff::fields::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
@@ -283,9 +269,12 @@ mod tests {
                 .to_string(),
         );
         let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
-        let signed_task_response = operator_builder
-            .sign_task_response(task_response.clone())
-            .unwrap();
+        let signed_task_response = operator::sign_task_response(
+            &operator_builder.key_pair,
+            &operator_builder.operator_id,
+            task_response.clone(),
+        )
+        .unwrap();
 
         let bls_key_pair = operator_builder.bls_key_pair();
         let encoded_response = TaskResponse::abi_encode(&task_response);
