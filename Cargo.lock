@@ -4071,7 +4071,10 @@ name = "incredible-avs"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
+ "eigen-client-avsregistry",
+ "eigen-logging",
  "eigen-nodeapi",
+ "eigen-operator",
  "eyre",
  "futures",
  "incredible-aggregator",

@@ -17,7 +17,7 @@ eyre.workspace = true
 tracing.workspace = true
 metrics.workspace = true
 
-#incredible
+# incredible
 incredible-operator-2.workspace = true
 incredible-config.workspace = true
 incredible-operator.workspace = true
@@ -25,7 +25,13 @@ incredible-challenger.workspace = true
 incredible-aggregator.workspace = true
 incredible-task-generator.workspace = true
 incredible-metrics.workspace = true
+
+# eigen-rs
+eigen-client-avsregistry.workspace = true
+eigen-logging.workspace = true
 eigen-nodeapi.workspace = true
+eigen-operator.workspace = true
+
 #tokio
 tokio.workspace = true
 

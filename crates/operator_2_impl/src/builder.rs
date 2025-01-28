@@ -85,59 +85,6 @@ impl OperatorBuilder {
             numberSquared: num_squared,
         }
     }
-
-    /// Start the operator
-    pub async fn start_operator(&mut self) -> Result<()> {
-        let avs_registry_reader = AvsRegistryChainReader::new(
-            get_logger(),
-            self.registry_coordinator,
-            self.operator_state_retriever,
-            self.http_rpc_url.clone(),
-        )
-        .await?;
-        let is_registered = avs_registry_reader
-            .is_operator_registered(self.operator_addr)
-            .await?;
-        info!("is_operator2_registered {}", is_registered);
-        if is_registered {
-            info!("Starting operator");
-
-            let ws = WsConnect::new(self.ws_rpc_url.clone());
-            let provider = ProviderBuilder::new().on_ws(ws).await?;
-
-            let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
-            let sub = provider.subscribe_logs(&filter).await?;
-            let mut stream = sub.into_stream();
-
-            while let Some(log) = stream.next().await {
-                let task_option = log
-                    .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
-                    .ok();
-                if let Some(task) = task_option {
-                    let data = task.data();
-                    let new_task_created = NewTaskCreated {
-                        task: data.task.clone(),
-                        taskIndex: data.taskIndex,
-                    };
-                    info!(
-                        "operator2 picked up a new task , index: {} ",
-                        data.taskIndex
-                    );
-                    incredible_metrics::increment_num_tasks_received();
-                    let task_response = self.process_new_task(new_task_created);
-                    let signed_task_response = operator::sign_task_response(
-                        &self.key_pair,
-                        &self.operator_id,
-                        task_response,
-                    )?;
-                    if let Some(client) = &self.client {
-                        let _ = client.send_signed_task_response(signed_task_response).await;
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
 }
 
 #[cfg(test)]

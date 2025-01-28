@@ -21,15 +21,15 @@ use tracing::info;
 /// Main Operator
 #[derive(Debug)]
 pub struct OperatorBuilder {
-    http_rpc_url: String,
-    ws_rpc_url: String,
-    operator_addr: Address,
-    key_pair: BlsKeyPair,
-    operator_id: OperatorId,
+    pub http_rpc_url: String,
+    pub ws_rpc_url: String,
+    pub operator_addr: Address,
+    pub key_pair: BlsKeyPair,
+    pub operator_id: OperatorId,
     /// [`ClientAggregator`]
     pub client: ClientAggregator,
-    registry_coordinator: Address,
-    operator_state_retriever: Address,
+    pub registry_coordinator: Address,
+    pub operator_state_retriever: Address,
 }
 
 impl OperatorBuilder {
@@ -65,86 +65,10 @@ impl OperatorBuilder {
     pub fn bls_key_pair(&self) -> BlsKeyPair {
         self.key_pair.clone()
     }
-
-    /// Processes new task
-    pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
-        #[allow(unused_mut)]
-        #[allow(unused_assignments)]
-        let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
-
-        #[cfg(feature = "integration_tests")]
-        {
-            number_to_be_squared = alloy::primitives::U256::from(9);
-            info!("Challenger test: setting number to be squared to 9");
-        }
-
-        let num_squared = number_to_be_squared * number_to_be_squared;
-
-        TaskResponse {
-            referenceTaskIndex: new_task_created.taskIndex,
-            numberSquared: num_squared,
-        }
-    }
-
-    /// Start the operator
-    pub async fn start_operator(&mut self) -> Result<()> {
-        let avs_registry_reader = AvsRegistryChainReader::new(
-            get_logger(),
-            self.registry_coordinator,
-            self.operator_state_retriever,
-            self.http_rpc_url.clone(),
-        )
-        .await
-        .unwrap();
-        let is_registered = avs_registry_reader
-            .is_operator_registered(self.operator_addr)
-            .await?;
-        info!("is_operator1_registered {}", is_registered);
-        let arc_client = Arc::new(self.client.clone());
-        if is_registered {
-            info!("Starting operator");
-
-            let ws = WsConnect::new(self.ws_rpc_url.clone());
-            let provider = ProviderBuilder::new().on_ws(ws).await?;
-
-            let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
-            let sub = provider.subscribe_logs(&filter).await?;
-            let mut stream = sub.into_stream();
-
-            while let Some(log) = stream.next().await {
-                let task_option = log
-                    .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
-                    .ok();
-                if let Some(task) = task_option {
-                    let data = task.data();
-                    let new_task_created = NewTaskCreated {
-                        task: data.task.clone(),
-                        taskIndex: data.taskIndex,
-                    };
-                    info!(
-                        "operator1 picked up a new task , index: {} ",
-                        data.taskIndex
-                    );
-                    incredible_metrics::increment_num_tasks_received();
-                    let task_response = self.process_new_task(new_task_created);
-                    let signed_task_response = operator::sign_task_response(
-                        &self.key_pair,
-                        &self.operator_id,
-                        task_response,
-                    )?;
-                    let _ = arc_client
-                        .send_signed_task_response(signed_task_response)
-                        .await;
-                }
-            }
-        }
-        Ok(())
-    }
 }
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use alloy::{
         primitives::{keccak256, Bytes, U256},

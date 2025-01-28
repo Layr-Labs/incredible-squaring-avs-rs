@@ -1,6 +1,10 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
+use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_logging::get_logger;
 use eigen_nodeapi::{create_server, NodeApi};
+use eigen_operator::operator;
 use futures::TryFutureExt;
+use incredible_aggregator::ISTaskProcessor;
 use incredible_aggregator::{Aggregator, AggregatorConfig};
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
@@ -10,8 +14,6 @@ use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use std::{future::Future, sync::Arc};
 use tracing::info;
-
-use incredible_aggregator::ISTaskProcessor;
 
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
@@ -62,6 +64,28 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         .await?;
 
         let mut challenge = Challenger::build(avs.config.clone()).await?;
+        let registry_coordinator = operator_builder.registry_coordinator;
+        let operator_state_retriever = operator_builder.operator_state_retriever;
+        let http_rpc_url = avs.config.http_rpc_url().clone();
+        let avs_registry_reader = AvsRegistryChainReader::new(
+            get_logger(),
+            registry_coordinator,
+            operator_state_retriever,
+            http_rpc_url,
+        )
+        .await?;
+
+        let operator_service = operator::start_operator(
+            &avs_registry_reader,
+            key_pair,
+            operator_id,
+            operator_address,
+            operator_name,
+            client_aggregator,
+            ws_rpc_url,
+        )
+        .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+
         let operator_service = operator_builder
             .start_operator()
             .map_err(|e| eyre::eyre!("Operator error: {:?}", e));

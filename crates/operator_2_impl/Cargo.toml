@@ -17,34 +17,32 @@ incredible-config.workspace = true
 thiserror.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
-incredible-bindings.workspace = true
-incredible-operator.workspace = true
 
 # eigen-rs
 eigen-client-avsregistry.workspace = true
 eigen-crypto-bls.workspace = true
 eigen-operator.workspace = true
 eigen-types.workspace = true
-incredible-aggregator.workspace = true
-
-incredible-metrics.workspace = true
-
-rust-bls-bn254.workspace = true
-
-#incredible
-reqwest.workspace = true
-
-hex = { version = "0.4.3", features = ["alloc"] }
-tokio.workspace = true
-serde_json.workspace = true
-toml.workspace = true
-tracing.workspace = true
-rand_core.workspace = true
 eigen-logging.workspace = true
 eigen-crypto-bn254.workspace = true
 eigen-metrics-collectors-rpc-calls.workspace = true
 eigen-client-eth.workspace = true
 eigen-utils.workspace = true
+
+#incredible
+incredible-aggregator.workspace = true
+incredible-bindings.workspace = true
+incredible-metrics.workspace = true
+incredible-operator.workspace = true
+
+hex = { version = "0.4.3", features = ["alloc"] }
+reqwest.workspace = true
+rust-bls-bn254.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+toml.workspace = true
+tracing.workspace = true
+rand_core.workspace = true
 
 [dev-dependencies]
 incredible-testing-utils.workspace = true
