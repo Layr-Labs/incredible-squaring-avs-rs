@@ -18,6 +18,7 @@ thiserror.workspace = true
 incredible-bindings.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
+serde.workspace = true
 
 # eigen-rs
 eigen-aggregator.workspace = true

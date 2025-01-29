@@ -1,14 +1,17 @@
 use alloy::primitives::Address;
+use eigen_aggregator::traits::TaskResponse;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_operator::traits::Operator;
 use eigen_operator::{client::ClientAggregator, error::OperatorError};
+use eigen_types::avs::TaskIndex;
 use eigen_types::operator::OperatorId;
 use eyre::Result;
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse as SolTaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
+use serde::{Deserialize, Serialize};
 
 /// Main Operator
 #[derive(Debug)]
@@ -31,24 +34,41 @@ pub struct IncredibleSquareOperator {
     pub operator_state_retriever: Address,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+/// Task Response for Incredible Square Operator
+pub struct IncredibleTaskResponse(SolTaskResponse);
+
+impl TaskResponse for IncredibleTaskResponse {
+    fn task_index(&self) -> TaskIndex {
+        self.0.referenceTaskIndex
+    }
+    fn digest(&self) -> alloy::primitives::B256 {
+        todo!()
+    }
+}
+
 impl Operator for IncredibleSquareOperator {
-    fn process_new_task(new_task_created: NewTaskCreated) -> TaskResponse {
+    type TaskResponse = IncredibleTaskResponse;
+
+    fn process_new_task(new_task_created: NewTaskCreated) -> Self::TaskResponse {
         #[allow(unused_mut)]
         #[allow(unused_assignments)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
         #[cfg(feature = "integration_tests")]
         {
+            use tracing::info;
+
             number_to_be_squared = alloy::primitives::U256::from(9);
             info!("Challenger test: setting number to be squared to 9");
         }
 
         let num_squared = number_to_be_squared * number_to_be_squared;
 
-        TaskResponse {
+        IncredibleTaskResponse(SolTaskResponse {
             referenceTaskIndex: new_task_created.taskIndex,
             numberSquared: num_squared,
-        }
+        })
     }
 }
 
@@ -173,8 +193,8 @@ mod tests {
 
         let task_response = IncredibleSquareOperator::process_new_task(new_task_created);
 
-        assert_eq!(task_response.numberSquared, U256::from(16));
-        assert_eq!(task_response.referenceTaskIndex, 1u32);
+        assert_eq!(task_response.0.numberSquared, U256::from(16));
+        assert_eq!(task_response.0.referenceTaskIndex, 1u32);
     }
 
     #[tokio::test]
@@ -219,7 +239,7 @@ mod tests {
         let signed_task_response = IncredibleSquareOperator::sign_task_response(
             &operator_builder.key_pair,
             &operator_builder.operator_id,
-            task_response.clone(),
+            super::IncredibleTaskResponse(task_response.clone()),
         )
         .unwrap();
 

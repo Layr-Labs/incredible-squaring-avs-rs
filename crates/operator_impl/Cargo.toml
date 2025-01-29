@@ -21,29 +21,31 @@ futures-util.workspace = true
 
 # eigen-rs
 eigen-client-avsregistry.workspace = true
+eigen-client-eth.workspace = true
 eigen-crypto-bls.workspace = true
+eigen-crypto-bn254.workspace = true
+eigen-logging.workspace = true
+eigen-metrics-collectors-rpc-calls.workspace = true
 eigen-operator.workspace = true
 eigen-types.workspace = true
-
-incredible-metrics.workspace = true
+eigen-utils.workspace = true
+eigen-aggregator.workspace = true
 
 rust-bls-bn254.workspace = true
 
 #incredible
 incredible-aggregator.workspace = true
+incredible-metrics.workspace = true
+
 reqwest.workspace = true
 
 hex = { version = "0.4.3", features = ["alloc"] }
 tokio.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true
 tracing.workspace = true
 rand_core.workspace = true
-eigen-logging.workspace = true
-eigen-crypto-bn254.workspace = true
-eigen-metrics-collectors-rpc-calls.workspace = true
-eigen-client-eth.workspace = true
-eigen-utils.workspace = true
 
 [dev-dependencies]
 incredible-testing-utils.workspace = true

@@ -1,24 +1,15 @@
 use super::error::OperatorError;
-use alloy::{
-    primitives::{keccak256, Address},
-    providers::WsConnect,
-    rpc::types::Filter,
-    sol_types::{SolEvent, SolValue},
-};
-//use eigen_aggregator::rpc_server::SignedTaskResponse;
-use incredible_aggregator::SignedTaskResponse;
-//traits::TaskResponse
+use alloy::{primitives::Address, providers::WsConnect, rpc::types::Filter, sol_types::SolEvent};
+use eigen_aggregator::rpc_server::SignedTaskResponse;
+use eigen_aggregator::traits::TaskResponse;
+use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_types::operator::OperatorId;
-// TODO: change this for the generic version.
-// TODO: change this for the generic version.
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eyre::Result;
 // TODO: change this for the generic version.
 use crate::client::ClientAggregator;
 use alloy_provider::{Provider, ProviderBuilder};
 use futures_util::StreamExt;
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
     self, NewTaskCreated,
 };
@@ -27,11 +18,12 @@ use tracing::info;
 
 /// Operator methods
 pub trait Operator {
-    //    type TaskResponse: TaskResponse;
+    /// Task response
+    type TaskResponse: TaskResponse + Send;
 
     /// Processes new task
     // TODO! generalize this function
-    fn process_new_task(new_task_created: NewTaskCreated) -> TaskResponse;
+    fn process_new_task(new_task_created: NewTaskCreated) -> Self::TaskResponse;
 
     /// Start the operator
     fn start_operator(
@@ -91,11 +83,9 @@ pub trait Operator {
     fn sign_task_response(
         key_pair: &BlsKeyPair,
         operator_id: &OperatorId,
-        task_response: TaskResponse,
-    ) -> Result<SignedTaskResponse, OperatorError> {
-        let encoded_response = TaskResponse::abi_encode(&task_response);
-        let hash_msg = keccak256(encoded_response);
-
+        task_response: Self::TaskResponse,
+    ) -> Result<SignedTaskResponse<Self::TaskResponse>, OperatorError> {
+        let hash_msg = task_response.digest();
         let signed_msg = key_pair.sign_message(&hash_msg);
         let signed_task_response = SignedTaskResponse::new(task_response, signed_msg, *operator_id);
         Ok(signed_task_response)
