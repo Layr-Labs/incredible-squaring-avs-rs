@@ -18,7 +18,6 @@ tracing.workspace = true
 metrics.workspace = true
 
 # incredible
-incredible-operator-2.workspace = true
 incredible-config.workspace = true
 incredible-operator.workspace = true
 incredible-challenger.workspace = true

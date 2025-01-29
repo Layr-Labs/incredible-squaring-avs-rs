@@ -73,7 +73,10 @@ mod tests {
     use ark_ec::AffineRepr;
     use ark_ff::fields::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
+    use eigen_operator::operator;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
+    use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
+    use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator,
@@ -146,9 +149,8 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
 
-        let task_response = operator_builder.process_new_task(new_task_created);
+        let task_response = operator::process_new_task(new_task_created);
 
         assert_eq!(task_response.numberSquared, U256::from(16));
         assert_eq!(task_response.referenceTaskIndex, 1u32);

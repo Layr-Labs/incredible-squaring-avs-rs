@@ -4,7 +4,6 @@ members = [
     "crates/aggregator_impl",
     "crates/operator",
     "crates/operator_impl",
-    "crates/operator_2_impl",
     "bin/incredible-squaring-avs",
     "crates/cli",
     "crates/config",
@@ -62,9 +61,6 @@ toml = "0.8"
 
 
 incredible-operator = { path = "crates/operator_impl/", features = ["default"] }
-incredible-operator-2 = { path = "crates/operator_2_impl/", features = [
-    "default",
-] }
 incredible-aggregator = { path = "crates/aggregator_impl/" }
 incredible-squaring-avs = { path = "bin/incredible-squaring-avs/" }
 incredible-cli-runner = { path = "crates/cli/" }
