@@ -8,7 +8,7 @@ use incredible_aggregator::ISTaskProcessor;
 use incredible_aggregator::{Aggregator, AggregatorConfig};
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
-use incredible_operator::builder::IncredibleSquareOperator;
+use incredible_operator::incredible_square_operator::IncredibleSquareOperator;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use std::future::Future;
