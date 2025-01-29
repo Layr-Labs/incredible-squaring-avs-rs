@@ -12,7 +12,7 @@ use rust_bls_bn254::keystores::base_keystore::Keystore;
 
 /// Main Operator
 #[derive(Debug)]
-pub struct OperatorBuilder {
+pub struct IncredibleSquareOperator {
     /// HTTP RPC URL
     pub http_rpc_url: String,
     /// WS RPC URL
@@ -31,7 +31,7 @@ pub struct OperatorBuilder {
     pub operator_state_retriever: Address,
 }
 
-impl Operator for OperatorBuilder {
+impl Operator for IncredibleSquareOperator {
     fn process_new_task(new_task_created: NewTaskCreated) -> TaskResponse {
         #[allow(unused_mut)]
         #[allow(unused_assignments)]
@@ -52,9 +52,9 @@ impl Operator for OperatorBuilder {
     }
 }
 
-impl OperatorBuilder {
+impl IncredibleSquareOperator {
     /// Build the Operator Builder
-    pub async fn build(config: IncredibleConfig) -> Result<Self, OperatorError> {
+    pub async fn new(config: IncredibleConfig) -> Result<Self, OperatorError> {
         let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url()).await;
         // Read BlsKey from path
         let keystore = Keystore::from_file(&config.bls_keystore_path())?
@@ -125,7 +125,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
+        let operator_builder = IncredibleSquareOperator::new(incredible_config)
+            .await
+            .unwrap();
 
         assert_eq!(
             U256::from_limbs(
@@ -169,7 +171,7 @@ mod tests {
                 .to_string(),
         );
 
-        let task_response = OperatorBuilder::process_new_task(new_task_created);
+        let task_response = IncredibleSquareOperator::process_new_task(new_task_created);
 
         assert_eq!(task_response.numberSquared, U256::from(16));
         assert_eq!(task_response.referenceTaskIndex, 1u32);
@@ -188,7 +190,9 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let _ = OperatorBuilder::build(incredible_config).await.unwrap();
+        let _ = IncredibleSquareOperator::new(incredible_config)
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -209,8 +213,10 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
-        let signed_task_response = OperatorBuilder::sign_task_response(
+        let operator_builder = IncredibleSquareOperator::new(incredible_config)
+            .await
+            .unwrap();
+        let signed_task_response = IncredibleSquareOperator::sign_task_response(
             &operator_builder.key_pair,
             &operator_builder.operator_id,
             task_response.clone(),

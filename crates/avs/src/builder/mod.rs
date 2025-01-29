@@ -8,7 +8,7 @@ use incredible_aggregator::ISTaskProcessor;
 use incredible_aggregator::{Aggregator, AggregatorConfig};
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
-use incredible_operator::builder::OperatorBuilder;
+use incredible_operator::builder::IncredibleSquareOperator;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use std::future::Future;
@@ -55,8 +55,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
         // start operator
-        let operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
-        let operator_builder2 = OperatorBuilder::build(avs.config.clone()).await?;
+        let operator_builder = IncredibleSquareOperator::new(avs.config.clone()).await?;
+        let operator_builder2 = IncredibleSquareOperator::new(avs.config.clone()).await?;
 
         let mut challenge = Challenger::build(avs.config.clone()).await?;
         let registry_coordinator = operator_builder.registry_coordinator;
@@ -77,7 +77,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let operator_name = "operator1";
         let client_aggregator = &operator_builder.client;
         let ws_rpc_url = &operator_builder.ws_rpc_url;
-        let operator_service = OperatorBuilder::start_operator(
+        let operator_service = IncredibleSquareOperator::start_operator(
             &avs_registry_reader,
             key_pair,
             operator_id,
@@ -95,7 +95,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let operator_name = "operator2";
         let client_aggregator = operator_builder.client.clone();
         let ws_rpc_url = &operator_builder2.ws_rpc_url;
-        let operator2_service = OperatorBuilder::start_operator(
+        let operator2_service = IncredibleSquareOperator::start_operator(
             &avs_registry_reader,
             key_pair,
             operator_id,
