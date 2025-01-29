@@ -1,34 +1,30 @@
-use std::sync::Arc;
-
-use alloy::{primitives::Address, providers::WsConnect, rpc::types::Filter, sol_types::SolEvent};
-use alloy_provider::{Provider, ProviderBuilder};
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use alloy::primitives::Address;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
-use eigen_logging::get_logger;
-use eigen_operator::{client::ClientAggregator, error::OperatorError, operator};
+use eigen_operator::{client::ClientAggregator, error::OperatorError};
 use eigen_types::operator::OperatorId;
 use eyre::Result;
-use futures_util::StreamExt;
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
-use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
-    self, NewTaskCreated,
-};
 use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
-use tracing::info;
 
 /// Main Operator
 #[derive(Debug)]
 pub struct OperatorBuilder {
+    /// HTTP RPC URL
     pub http_rpc_url: String,
+    /// WS RPC URL
     pub ws_rpc_url: String,
+    /// Operator Address
     pub operator_addr: Address,
+    /// [`BlsKeyPair`]
     pub key_pair: BlsKeyPair,
+    /// Operator ID
     pub operator_id: OperatorId,
     /// [`ClientAggregator`]
     pub client: ClientAggregator,
+    /// Registry Coordinator Address
     pub registry_coordinator: Address,
+    /// Operator State Retriever Address
     pub operator_state_retriever: Address,
 }
 

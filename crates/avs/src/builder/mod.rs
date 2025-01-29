@@ -9,10 +9,9 @@ use incredible_aggregator::{Aggregator, AggregatorConfig};
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
-use incredible_operator_2::builder::OperatorBuilder as OperatorBuilder2;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use std::{future::Future, sync::Arc};
+use std::future::Future;
 use tracing::info;
 
 /// Launch Avs trait
@@ -56,12 +55,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
         // start operator
-        let mut operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
-        let mut operator_builder2 = OperatorBuilder2::build(
-            avs.config.clone(),
-            Some(Arc::new(operator_builder.client.clone())),
-        )
-        .await?;
+        let operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
+        let operator_builder2 = OperatorBuilder::build(avs.config.clone()).await?;
 
         let mut challenge = Challenger::build(avs.config.clone()).await?;
         let registry_coordinator = operator_builder.registry_coordinator;
@@ -75,6 +70,13 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         )
         .await?;
 
+        // Start Operator 1
+        let key_pair = &operator_builder.key_pair;
+        let operator_id = &operator_builder.operator_id;
+        let operator_address = operator_builder.operator_addr;
+        let operator_name = "operator1";
+        let client_aggregator = &operator_builder.client;
+        let ws_rpc_url = &operator_builder.ws_rpc_url;
         let operator_service = operator::start_operator(
             &avs_registry_reader,
             key_pair,
@@ -86,13 +88,23 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         )
         .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
-        let operator_service = operator_builder
-            .start_operator()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
-
-        let operator2_service = operator_builder2
-            .start_operator()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+        // Start operator 2
+        let key_pair = &operator_builder2.key_pair;
+        let operator_id = &operator_builder2.operator_id;
+        let operator_address = operator_builder2.operator_addr;
+        let operator_name = "operator2";
+        let client_aggregator = operator_builder.client.clone();
+        let ws_rpc_url = &operator_builder2.ws_rpc_url;
+        let operator2_service = operator::start_operator(
+            &avs_registry_reader,
+            key_pair,
+            operator_id,
+            operator_address,
+            operator_name,
+            &client_aggregator,
+            ws_rpc_url,
+        )
+        .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
         let challenger_service = challenge
             .start_challenger()
