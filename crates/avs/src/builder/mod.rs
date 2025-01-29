@@ -2,7 +2,7 @@
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_logging::get_logger;
 use eigen_nodeapi::{create_server, NodeApi};
-use eigen_operator::operator;
+use eigen_operator::traits::Operator;
 use futures::TryFutureExt;
 use incredible_aggregator::ISTaskProcessor;
 use incredible_aggregator::{Aggregator, AggregatorConfig};
@@ -77,7 +77,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let operator_name = "operator1";
         let client_aggregator = &operator_builder.client;
         let ws_rpc_url = &operator_builder.ws_rpc_url;
-        let operator_service = operator::start_operator(
+        let operator_service = OperatorBuilder::start_operator(
             &avs_registry_reader,
             key_pair,
             operator_id,
@@ -95,7 +95,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let operator_name = "operator2";
         let client_aggregator = operator_builder.client.clone();
         let ws_rpc_url = &operator_builder2.ws_rpc_url;
-        let operator2_service = operator::start_operator(
+        let operator2_service = OperatorBuilder::start_operator(
             &avs_registry_reader,
             key_pair,
             operator_id,

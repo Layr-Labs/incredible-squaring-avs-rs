@@ -1,6 +1,7 @@
 use alloy::primitives::Address;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
+use eigen_operator::traits::Operator;
 use eigen_operator::{client::ClientAggregator, error::OperatorError};
 use eigen_types::operator::OperatorId;
 use eyre::Result;
@@ -27,6 +28,8 @@ pub struct OperatorBuilder {
     /// Operator State Retriever Address
     pub operator_state_retriever: Address,
 }
+
+impl Operator for OperatorBuilder {}
 
 impl OperatorBuilder {
     /// Build the Operator Builder
@@ -73,7 +76,7 @@ mod tests {
     use ark_ec::AffineRepr;
     use ark_ff::fields::PrimeField;
     use eigen_crypto_bn254::utils::verify_message;
-    use eigen_operator::operator;
+    use eigen_operator::traits::Operator;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
@@ -150,7 +153,7 @@ mod tests {
                 .to_string(),
         );
 
-        let task_response = operator::process_new_task(new_task_created);
+        let task_response = OperatorBuilder::process_new_task(new_task_created);
 
         assert_eq!(task_response.numberSquared, U256::from(16));
         assert_eq!(task_response.referenceTaskIndex, 1u32);
@@ -191,7 +194,7 @@ mod tests {
                 .to_string(),
         );
         let operator_builder = OperatorBuilder::build(incredible_config).await.unwrap();
-        let signed_task_response = operator::sign_task_response(
+        let signed_task_response = OperatorBuilder::sign_task_response(
             &operator_builder.key_pair,
             &operator_builder.operator_id,
             task_response.clone(),
