@@ -5,6 +5,8 @@ use eigen_operator::traits::Operator;
 use eigen_operator::{client::ClientAggregator, error::OperatorError};
 use eigen_types::operator::OperatorId;
 use eyre::Result;
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 
@@ -29,7 +31,26 @@ pub struct OperatorBuilder {
     pub operator_state_retriever: Address,
 }
 
-impl Operator for OperatorBuilder {}
+impl Operator for OperatorBuilder {
+    fn process_new_task(new_task_created: NewTaskCreated) -> TaskResponse {
+        #[allow(unused_mut)]
+        #[allow(unused_assignments)]
+        let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
+
+        #[cfg(feature = "integration_tests")]
+        {
+            number_to_be_squared = alloy::primitives::U256::from(9);
+            info!("Challenger test: setting number to be squared to 9");
+        }
+
+        let num_squared = number_to_be_squared * number_to_be_squared;
+
+        TaskResponse {
+            referenceTaskIndex: new_task_created.taskIndex,
+            numberSquared: num_squared,
+        }
+    }
+}
 
 impl OperatorBuilder {
     /// Build the Operator Builder
@@ -58,11 +79,6 @@ impl OperatorBuilder {
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
         })
-    }
-
-    /// Get the [`BlsKeyPair`]
-    pub fn bls_key_pair(&self) -> BlsKeyPair {
-        self.key_pair.clone()
     }
 }
 
@@ -201,7 +217,7 @@ mod tests {
         )
         .unwrap();
 
-        let bls_key_pair = operator_builder.bls_key_pair();
+        let bls_key_pair = &operator_builder.key_pair;
         let encoded_response = TaskResponse::abi_encode(&task_response);
         let hash_msg = keccak256(encoded_response);
         assert!(verify_message(

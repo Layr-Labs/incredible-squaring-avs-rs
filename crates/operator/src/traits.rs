@@ -29,6 +29,10 @@ use tracing::info;
 pub trait Operator {
     //    type TaskResponse: TaskResponse;
 
+    /// Processes new task
+    // TODO! generalize this function
+    fn process_new_task(new_task_created: NewTaskCreated) -> TaskResponse;
+
     /// Start the operator
     fn start_operator(
         avs_registry_reader: &AvsRegistryChainReader,
@@ -95,26 +99,5 @@ pub trait Operator {
         let signed_msg = key_pair.sign_message(&hash_msg);
         let signed_task_response = SignedTaskResponse::new(task_response, signed_msg, *operator_id);
         Ok(signed_task_response)
-    }
-
-    /// Processes new task
-    // TODO! generalize this function
-    fn process_new_task(new_task_created: NewTaskCreated) -> TaskResponse {
-        #[allow(unused_mut)]
-        #[allow(unused_assignments)]
-        let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
-
-        #[cfg(feature = "integration_tests")]
-        {
-            number_to_be_squared = alloy::primitives::U256::from(9);
-            info!("Challenger test: setting number to be squared to 9");
-        }
-
-        let num_squared = number_to_be_squared * number_to_be_squared;
-
-        TaskResponse {
-            referenceTaskIndex: new_task_created.taskIndex,
-            numberSquared: num_squared,
-        }
     }
 }
