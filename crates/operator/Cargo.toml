@@ -13,9 +13,7 @@ workspace = true
 [dependencies]
 alloy.workspace = true
 alloy-provider.workspace = true
-incredible-config.workspace = true
 thiserror.workspace = true
-incredible-bindings.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
 serde.workspace = true
@@ -27,12 +25,8 @@ eigen-config.workspace = true
 eigen-crypto-bls.workspace = true
 eigen-types.workspace = true
 
-incredible-metrics.workspace = true
-
 rust-bls-bn254.workspace = true
 
-#incredible
-incredible-aggregator.workspace = true
 reqwest.workspace = true
 
 hex = { version = "0.4.3", features = ["alloc"] }
@@ -46,12 +40,6 @@ eigen-crypto-bn254.workspace = true
 eigen-metrics-collectors-rpc-calls.workspace = true
 eigen-client-eth.workspace = true
 eigen-utils.workspace = true
-
-[dev-dependencies]
-incredible-testing-utils.workspace = true
-tempfile.workspace = true
-ark-ec = "0.5.0"
-ark-ff = "0.5.0"
 
 [features]
 default = []

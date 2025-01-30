@@ -1,18 +1,14 @@
 use super::error::OperatorError;
+use crate::client::ClientAggregator;
 use alloy::{primitives::Address, providers::WsConnect, rpc::types::Filter, sol_types::SolEvent};
+use alloy_provider::{Provider, ProviderBuilder};
 use eigen_aggregator::rpc_server::SignedTaskResponse;
 use eigen_aggregator::traits::TaskResponse;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_types::operator::OperatorId;
 use eyre::Result;
-// TODO: change this for the generic version.
-use crate::client::ClientAggregator;
-use alloy_provider::{Provider, ProviderBuilder};
 use futures_util::StreamExt;
-use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
-    self, NewTaskCreated,
-};
 use std::sync::Arc;
 use tracing::info;
 
@@ -20,10 +16,12 @@ use tracing::info;
 pub trait Operator {
     /// Task response
     type TaskResponse: TaskResponse + Send;
+    /// New task event
+    type NewTaskEvent: SolEvent + Send;
 
     /// Processes new task
     // TODO! generalize this function
-    fn process_new_task(new_task_created: NewTaskCreated) -> Self::TaskResponse;
+    fn process_new_task(new_task_created: Self::NewTaskEvent) -> Self::TaskResponse;
 
     /// Start the operator
     fn start_operator(
@@ -41,39 +39,29 @@ pub trait Operator {
                 .await?;
             info!("is {} registered {}", operator_name, is_registered);
             let arc_client = Arc::new(client_aggregator);
-            if is_registered {
-                info!("Starting operator");
+            if !is_registered {
+                return Err(eyre::eyre!("Operator not registered"));
+            }
 
-                let ws = WsConnect::new(ws_rpc_url);
-                let provider = ProviderBuilder::new().on_ws(ws).await?;
+            info!("Starting operator");
 
-                let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
-                let sub = provider.subscribe_logs(&filter).await?;
-                let mut stream = sub.into_stream();
+            let ws = WsConnect::new(ws_rpc_url);
+            let provider = ProviderBuilder::new().on_ws(ws).await?;
 
-                while let Some(log) = stream.next().await {
-                    let task_option = log
-                        .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
-                        .ok();
-                    if let Some(task) = task_option {
-                        let data = task.data();
-                        let new_task_created = NewTaskCreated {
-                            task: data.task.clone(),
-                            taskIndex: data.taskIndex,
-                        };
-                        info!(
-                            "{} picked up a new task, index: {} ",
-                            operator_name, data.taskIndex
-                        );
-                        incredible_metrics::increment_num_tasks_received();
-                        let task_response = Self::process_new_task(new_task_created);
-                        let signed_task_response =
-                            Self::sign_task_response(key_pair, operator_id, task_response)?;
-                        let _ = arc_client
-                            .send_signed_task_response(signed_task_response)
-                            .await;
-                    }
-                }
+            let filter = Filter::new().event_signature(Self::NewTaskEvent::SIGNATURE_HASH);
+            let sub = provider.subscribe_logs(&filter).await?;
+            let mut stream = sub.into_stream();
+
+            while let Some(log) = stream.next().await {
+                // TODO: check error handling (maybe use continue)
+                let data: Self::NewTaskEvent = log.log_decode()?.inner.data;
+                info!("{} picked up a new task", operator_name);
+                let task_response = Self::process_new_task(data);
+                let signed_task_response =
+                    Self::sign_task_response(key_pair, operator_id, task_response)?;
+                let _ = arc_client
+                    .send_signed_task_response(signed_task_response)
+                    .await;
             }
             Ok(())
         }

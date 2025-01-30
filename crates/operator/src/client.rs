@@ -58,7 +58,6 @@ impl ClientAggregator {
                     e
                 })?;
             if s {
-                incredible_metrics::inc_num_tasks_accepted_by_aggregator();
                 return Ok(());
             }
 

@@ -49,6 +49,7 @@ impl TaskResponse for IncredibleTaskResponse {
 
 impl Operator for IncredibleSquareOperator {
     type TaskResponse = IncredibleTaskResponse;
+    type NewTaskEvent = NewTaskCreated;
 
     fn process_new_task(new_task_created: NewTaskCreated) -> Self::TaskResponse {
         #[allow(unused_mut)]
