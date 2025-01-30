@@ -19,7 +19,9 @@ use eigen_testing_utils::anvil_constants::{
 use eigen_types::operator::Operator;
 use eigen_utils::core::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigen_utils::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
-use eigen_utils::middleware::registrycoordinator::RegistryCoordinator;
+use eigen_utils::middleware::registrycoordinator::{
+    IRegistryCoordinator, IStakeRegistry, RegistryCoordinator,
+};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -788,19 +790,16 @@ pub async fn create_total_delegated_stake_quorum(
     let registry_coordinator_instance =
         RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
 
-    let operator_set_param =
-        eigen_utils::registrycoordinator::IRegistryCoordinator::OperatorSetParam {
-            maxOperatorCount: 3,
-            kickBIPsOfOperatorStake: 100,
-            kickBIPsOfTotalStake: 1000,
-        };
+    let operator_set_param = IRegistryCoordinator::OperatorSetParam {
+        maxOperatorCount: 3,
+        kickBIPsOfOperatorStake: 100,
+        kickBIPsOfTotalStake: 1000,
+    };
     let minimum_stake: U96 = U96::from(0);
-    let strategy_params = vec![
-        eigen_utils::registrycoordinator::IStakeRegistry::StrategyParams {
-            strategy: strategy_address,
-            multiplier: U96::from(1),
-        },
-    ];
+    let strategy_params = vec![IStakeRegistry::StrategyParams {
+        strategy: strategy_address,
+        multiplier: U96::from(1),
+    }];
 
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
