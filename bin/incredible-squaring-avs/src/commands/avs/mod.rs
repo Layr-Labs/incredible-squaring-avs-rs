@@ -561,13 +561,18 @@ pub async fn register_operator_with_el_and_avs(
         get_logger(),
         Address::ZERO,
         delegation_manager_address,
+        Address::ZERO,
         avs_directory_address,
+        Address::ZERO,
         rpc_url.clone(),
     );
     let el_chain_writer = ELChainWriter::new(
         delegation_manager_address,
         strategy_manager_address,
         Address::ZERO,
+        Address::ZERO,
+        Address::ZERO,
+        registry_coordinator_address,
         el_chain_reader.clone(),
         rpc_url.clone(),
         hex::encode(s).to_string(),
@@ -575,10 +580,10 @@ pub async fn register_operator_with_el_and_avs(
 
     let operator_details = Operator {
         address: signer.address(),
-        earnings_receiver_address: signer.address(),
         delegation_approver_address: Address::ZERO,
         staker_opt_out_window_blocks: 200,
         metadata_url: Some("url".to_string()),
+        allocation_delay: 0,
     };
 
     let _ = el_chain_writer

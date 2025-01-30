@@ -8,7 +8,7 @@ use alloy::{
 };
 use eigen_aggregator::{
     rpc_server::SignedTaskResponse as SignedTaskResponseImpl,
-    traits::{box_error, TaskInfo, TaskProcessor, TaskProcessorError, TaskResponse},
+    traits::{box_error, TaskMetadata, TaskProcessor, TaskProcessorError, TaskResponse},
 };
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
@@ -77,7 +77,7 @@ impl TaskProcessor for ISTaskProcessor {
     async fn process_new_task(
         &self,
         event: Self::NewTaskEvent,
-    ) -> Result<TaskInfo, TaskProcessorError> {
+    ) -> Result<TaskMetadata, TaskProcessorError> {
         let NewTaskCreated {
             taskIndex: task_index,
             task,
@@ -101,7 +101,7 @@ impl TaskProcessor for ISTaskProcessor {
         let time_to_expiry = tokio::time::Duration::from_secs(
             (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
         );
-        Ok(TaskInfo {
+        Ok(TaskMetadata {
             task_index,
             task_created_block: task.taskCreatedBlock,
             quorum_nums,
