@@ -7,7 +7,6 @@ use eigen_aggregator::traits::TaskResponse;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_types::operator::OperatorId;
-use eyre::Result;
 use futures_util::StreamExt;
 use std::sync::Arc;
 use tracing::info;
@@ -20,7 +19,6 @@ pub trait Operator {
     type NewTaskEvent: SolEvent + Send;
 
     /// Processes new task
-    // TODO! generalize this function
     fn process_new_task(new_task_created: Self::NewTaskEvent) -> Self::TaskResponse;
 
     /// Start the operator
@@ -32,29 +30,41 @@ pub trait Operator {
         operator_name: &str,
         client_aggregator: &ClientAggregator,
         ws_rpc_url: &str,
-    ) -> impl std::future::Future<Output = Result<()>> + Send {
+    ) -> impl std::future::Future<Output = Result<(), OperatorError>> + Send {
         async move {
             let is_registered = avs_registry_reader
                 .is_operator_registered(operator_address)
-                .await?;
+                .await
+                .map_err(|_| OperatorError::RegistrationError)?;
             info!("is {} registered {}", operator_name, is_registered);
             let arc_client = Arc::new(client_aggregator);
             if !is_registered {
-                return Err(eyre::eyre!("Operator not registered"));
+                return Err(OperatorError::RegistrationError);
             }
 
             info!("Starting operator");
 
             let ws = WsConnect::new(ws_rpc_url);
-            let provider = ProviderBuilder::new().on_ws(ws).await?;
+            let provider = ProviderBuilder::new()
+                .on_ws(ws)
+                .await
+                .map_err(|_| OperatorError::TransportError)?;
 
             let filter = Filter::new().event_signature(Self::NewTaskEvent::SIGNATURE_HASH);
-            let sub = provider.subscribe_logs(&filter).await?;
+            let sub = provider
+                .subscribe_logs(&filter)
+                .await
+                .map_err(|_| OperatorError::SubscribeLogsError)?;
             let mut stream = sub.into_stream();
 
+            // TODO: this loop could be a separate function
             while let Some(log) = stream.next().await {
                 // TODO: check error handling (maybe use continue)
-                let data: Self::NewTaskEvent = log.log_decode()?.inner.data;
+                let data: Self::NewTaskEvent = log
+                    .log_decode()
+                    .map_err(|_| OperatorError::SubscribeLogsError)?
+                    .inner
+                    .data;
                 info!("{} picked up a new task", operator_name);
                 let task_response = Self::process_new_task(data);
                 let signed_task_response =

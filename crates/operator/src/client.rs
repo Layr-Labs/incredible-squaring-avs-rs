@@ -1,11 +1,11 @@
 use alloy::rpc::client::{ReqwestClient, RpcClient};
 use alloy::transports::http::Http;
-use eyre::Result;
+use alloy::transports::{RpcError, TransportErrorKind};
 use reqwest::Client;
 use serde::Serialize;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 /// Client Aggregator
 #[derive(Debug, Clone)]
@@ -25,7 +25,7 @@ impl ClientAggregator {
     }
 
     /// new http rpc client instance using the aggregator ip port address
-    pub fn dial_aggregator_rpc_client(&mut self) -> Result<()> {
+    pub fn dial_aggregator_rpc_client(&mut self) -> Result<(), url::ParseError> {
         let url = reqwest::Url::parse(&format!("http://{}", &self.aggregator_ip_port_address))?;
         let client = ReqwestClient::new_http(url);
 
@@ -37,7 +37,7 @@ impl ClientAggregator {
     pub async fn send_signed_task_response(
         &self,
         signed_task_response: impl Serialize,
-    ) -> Result<()> {
+    ) -> Result<(), RpcError<TransportErrorKind>> {
         #[allow(unused_mut)]
         let mut delay = Duration::from_secs(1);
 
@@ -66,7 +66,8 @@ impl ClientAggregator {
             sleep(delay).await;
             delay *= 2; // Double the delay for the next retry
         }
-        debug!("Could not send signed task response to aggregator. Tried 5 times.");
+        error!("Could not send signed task response to aggregator. Tried 5 times.");
+        // TODO: return error indicating that the task response could not be sent
         Ok(())
     }
 }

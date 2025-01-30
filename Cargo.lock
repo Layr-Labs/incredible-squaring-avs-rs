@@ -2552,7 +2552,6 @@ dependencies = [
  "eigen-logging",
  "eigen-types",
  "eigen-utils",
- "eyre",
  "futures-util",
  "hex",
  "rand_core",
@@ -2564,6 +2563,7 @@ dependencies = [
  "tokio",
  "toml",
  "tracing",
+ "url",
 ]
 
 [[package]]

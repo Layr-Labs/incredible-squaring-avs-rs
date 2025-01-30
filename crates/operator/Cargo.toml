@@ -14,7 +14,7 @@ workspace = true
 alloy.workspace = true
 alloy-provider.workspace = true
 thiserror.workspace = true
-eyre.workspace = true
+#eyre.workspace = true
 futures-util.workspace = true
 serde.workspace = true
 
@@ -38,6 +38,7 @@ rand_core.workspace = true
 eigen-logging.workspace = true
 eigen-crypto-bn254.workspace = true
 eigen-utils.workspace = true
+url.workspace = true
 
 [features]
 default = []

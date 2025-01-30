@@ -10,7 +10,15 @@ pub enum OperatorError {
     /// Failed to parse ECDSA keystore signer
     #[error("Failed to parse ecdsa keystore signer")]
     ECDSAKeystoreSigner,
-
+    /// Operator Registration Error
+    #[error("Failed to register operator")]
+    RegistrationError,
+    /// Operator Subscribe Logs Error
+    #[error("Failed to subscribe logs")]
+    SubscribeLogsError,
+    /// Operator Transport Error
+    #[error("Could not connect")]
+    TransportError,
     /// Failed to derive Cargo Manfest Dir
     #[error("Could not derive cargo manifest path")]
     CargoManifestDir,
