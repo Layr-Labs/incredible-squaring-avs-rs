@@ -11,7 +11,6 @@ use alloy::{
 
 use alloy::primitives::U256;
 use alloy::providers::{Provider, ProviderBuilder};
-use eigen_aggregator::rpc_server::SignedTaskResponse;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
@@ -19,6 +18,7 @@ use eigen_logging::get_logger;
 use eigen_types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
+use incredible_aggregator::SignedTaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
     self, NewTaskCreated,
@@ -311,7 +311,7 @@ mod tests {
         assert!(verify_message(
             bls_key_pair.public_key_g2().g2(),
             &hash_msg,
-            signed_task_response.signature().g1_point().g1()
+            signed_task_response.signature.g1_point().g1()
         ));
     }
 }
