@@ -1,5 +1,5 @@
 [package]
-name = "eigen-aggregator"
+name = "incredible-aggregator"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,11 +11,16 @@ description = "eigen layer aggregator"
 workspace = true
 
 [dependencies]
+eigen-aggregator.workspace = true
+incredible-bindings.workspace = true
 alloy.workspace = true
 eigen-types.workspace = true
 serde.workspace = true
 hex = "0.4.3"
 eigen-crypto-bls.workspace = true
+eyre.workspace = true
+incredible-chainio.workspace = true
+incredible-config.workspace = true
 eigen-common.workspace = true
 eigen-services-operatorsinfo.workspace = true
 eigen-logging.workspace = true
@@ -30,3 +35,10 @@ tokio.workspace = true
 thiserror.workspace = true
 futures-util.workspace = true
 tokio-util = "0.7.11"
+
+[dev-dependencies]
+incredible-testing-utils.workspace = true
+toml.workspace = true
+ark-std = { version = "0.4.0", default-features = false }
+incredible-operator.workspace = true
+reqwest.workspace = true

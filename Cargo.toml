@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "crates/aggregator",
-    "crates/aggregator_impl",
     "crates/operator",
     "bin/incredible-squaring-avs",
     "crates/cli",
@@ -61,7 +60,7 @@ toml = "0.8"
 
 
 incredible-operator = { path = "crates/operator/", features = ["default"] }
-incredible-aggregator = { path = "crates/aggregator_impl/" }
+incredible-aggregator = { path = "crates/aggregator/" }
 incredible-squaring-avs = { path = "bin/incredible-squaring-avs/" }
 incredible-cli-runner = { path = "crates/cli/" }
 incredible-config = { path = "crates/config/" }
@@ -76,7 +75,7 @@ incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 
 # eigensdk-rs 
 
-eigen-aggregator = { path = "crates/aggregator/" }
+eigen-aggregator = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "sdk-ux-improvement" }
 eigen-common = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
 eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "834b9c7" }
