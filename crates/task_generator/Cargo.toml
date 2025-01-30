@@ -6,7 +6,7 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "eigen layer operator"
-    
+
 [lints]
 rust.missing_docs = "allow"
 rust.missing_debug_implementations = "warn"
@@ -17,7 +17,6 @@ rustdoc.all = "warn"
 
 [dependencies]
 alloy.workspace = true
-alloy-provider.workspace = true
 incredible-config.workspace = true
 thiserror.workspace = true
 incredible-bindings.workspace = true
@@ -29,5 +28,5 @@ tracing.workspace = true
 reqwest.workspace = true
 
 # eigen-rs
+eigen-common.workspace = true
 eigen-utils.workspace = true
-

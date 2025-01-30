@@ -50,9 +50,8 @@ metrics-util = "0.19.0"
 reqwest = "0.12.9"
 serde_json = "1.0.120"
 #alloy
-alloy = { version = "0.7", features = ["full", "signer-keystore", "reqwest"] }
+alloy = { version = "0.9", features = ["full", "signer-keystore", "reqwest"] }
 alloy-primitives = "0.8"
-alloy-provider = "0.7"
 serde = "1.0.203"
 tracing = "0.1.40"
 tempfile = "3"
@@ -77,9 +76,10 @@ incredible-testing-utils = { path = "crates/testing-utils/" }
 incredible-task-generator = { path = "crates/task_generator/" }
 incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 incredible-slasher = { path = "crates/slasher/" }
-# eigensdk-rs 
 
+# eigensdk-rs
 eigen-aggregator = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "sdk-ux-improvment" }
+eigen-common = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "sdk-ux-improvment" }
 eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "sdk-ux-improvment" }
 eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "sdk-ux-improvment" }
 eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "sdk-ux-improvment" }

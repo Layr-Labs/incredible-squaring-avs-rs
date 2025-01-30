@@ -6,13 +6,12 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "eigen layer operator"
-    
+
 [lints]
 workspace = true
 
 [dependencies]
 alloy.workspace = true
-alloy-provider.workspace = true
 incredible-config.workspace = true
 thiserror.workspace = true
 incredible-bindings.workspace = true
@@ -34,7 +33,7 @@ rust-bls-bn254.workspace = true
 incredible-aggregator.workspace = true
 reqwest.workspace = true
 
-hex = {version =  "0.4.3" , features = ["alloc"]}
+hex = { version = "0.4.3", features = ["alloc"] }
 tokio.workspace = true
 serde_json.workspace = true
 toml.workspace = true
