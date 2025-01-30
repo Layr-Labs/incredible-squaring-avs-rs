@@ -2459,18 +2459,12 @@ dependencies = [
 name = "eigen-config"
 version = "0.0.1-alpha"
 dependencies = [
- "alloy",
- "confy",
- "eigen-types",
  "hex",
  "incredible-testing-utils",
  "ruint",
  "serde",
  "tempfile",
  "thiserror 1.0.69",
- "tokio",
- "toml",
- "tracing",
 ]
 
 [[package]]
@@ -2552,12 +2546,10 @@ dependencies = [
  "alloy-provider",
  "eigen-aggregator",
  "eigen-client-avsregistry",
- "eigen-client-eth",
  "eigen-config",
  "eigen-crypto-bls",
  "eigen-crypto-bn254",
  "eigen-logging",
- "eigen-metrics-collectors-rpc-calls",
  "eigen-types",
  "eigen-utils",
  "eyre",
@@ -4046,7 +4038,6 @@ dependencies = [
  "hex",
  "incredible-bindings",
  "incredible-chainio",
- "incredible-config",
  "incredible-testing-utils",
  "jsonrpc-core",
  "jsonrpc-http-server",
@@ -4107,7 +4098,6 @@ dependencies = [
  "eyre",
  "futures-util",
  "incredible-bindings",
- "incredible-config",
  "reqwest 0.12.12",
  "thiserror 1.0.69",
  "tokio",
@@ -4194,10 +4184,8 @@ dependencies = [
  "eyre",
  "futures-util",
  "hex",
- "incredible-aggregator",
  "incredible-bindings",
  "incredible-config",
- "incredible-metrics",
  "incredible-testing-utils",
  "rand_core",
  "reqwest 0.12.12",

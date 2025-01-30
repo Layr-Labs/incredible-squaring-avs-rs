@@ -33,10 +33,6 @@ eigen-aggregator.workspace = true
 
 rust-bls-bn254.workspace = true
 
-#incredible
-incredible-aggregator.workspace = true
-incredible-metrics.workspace = true
-
 reqwest.workspace = true
 
 hex = { version = "0.4.3", features = ["alloc"] }
