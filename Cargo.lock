@@ -1955,16 +1955,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
-name = "colored"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "117725a109d387c937a1533ce01b450cbde6b88abceea8473c4d7a85853cda3c"
-dependencies = [
- "lazy_static",
- "windows-sys 0.59.0",
-]
-
-[[package]]
 name = "concurrent-queue"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2401,39 +2391,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "eigen-cli"
-version = "0.1.2"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=sdk-ux-improvment#76216cf1d1acc716d1a0b3f354626f7bb458afd3"
-dependencies = [
- "alloy",
- "alloy-json-rpc",
- "alloy-primitives",
- "alloy-provider",
- "alloy-transport",
- "ark-ec 0.5.0",
- "ark-ff 0.5.0",
- "ark-serialize 0.5.0",
- "clap",
- "colored",
- "eigen-common",
- "eigen-crypto-bls",
- "eigen-testing-utils",
- "eigen-utils",
- "eth-keystore",
- "hex",
- "k256",
- "num-bigint",
- "rand",
- "rand_core",
- "rust-bls-bn254 0.2.1",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
- "tokio",
- "uuid 1.11.0",
-]
-
-[[package]]
 name = "eigen-client-avsregistry"
 version = "0.1.2"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=sdk-ux-improvment#76216cf1d1acc716d1a0b3f354626f7bb458afd3"
@@ -2499,6 +2456,17 @@ dependencies = [
  "alloy-transport",
  "alloy-transport-http",
  "url",
+]
+
+[[package]]
+name = "eigen-config"
+version = "0.1.2"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=sdk-ux-improvment#76216cf1d1acc716d1a0b3f354626f7bb458afd3"
+dependencies = [
+ "hex",
+ "ruint",
+ "serde",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -2570,6 +2538,34 @@ dependencies = [
  "serde_json",
  "thiserror 1.0.69",
  "tracing",
+]
+
+[[package]]
+name = "eigen-operator"
+version = "0.1.2"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=sdk-ux-improvment#76216cf1d1acc716d1a0b3f354626f7bb458afd3"
+dependencies = [
+ "alloy",
+ "alloy-provider",
+ "eigen-aggregator",
+ "eigen-client-avsregistry",
+ "eigen-config",
+ "eigen-crypto-bls",
+ "eigen-crypto-bn254",
+ "eigen-logging",
+ "eigen-types",
+ "eigen-utils",
+ "futures-util",
+ "hex",
+ "rand_core",
+ "reqwest 0.12.9",
+ "rust-bls-bn254 0.2.1",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+ "url",
 ]
 
 [[package]]
@@ -4074,7 +4070,6 @@ dependencies = [
  "incredible-config",
  "incredible-metrics",
  "incredible-operator",
- "incredible-operator-2",
  "incredible-task-generator",
  "metrics",
  "metrics-util",
@@ -4184,62 +4179,26 @@ dependencies = [
  "alloy",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
- "eigen-cli",
+ "eigen-aggregator",
  "eigen-client-avsregistry",
  "eigen-client-eth",
  "eigen-crypto-bls",
  "eigen-crypto-bn254",
  "eigen-logging",
  "eigen-metrics-collectors-rpc-calls",
+ "eigen-operator",
  "eigen-types",
  "eigen-utils",
  "eyre",
  "futures-util",
  "hex",
- "incredible-aggregator",
  "incredible-bindings",
  "incredible-config",
- "incredible-metrics",
  "incredible-testing-utils",
  "rand_core",
  "reqwest 0.12.9",
  "rust-bls-bn254 0.1.0",
- "serde_json",
- "tempfile",
- "thiserror 2.0.7",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
-name = "incredible-operator-2"
-version = "0.0.1-alpha"
-dependencies = [
- "alloy",
- "ark-ec 0.5.0",
- "ark-ff 0.5.0",
- "eigen-cli",
- "eigen-client-avsregistry",
- "eigen-client-eth",
- "eigen-crypto-bls",
- "eigen-crypto-bn254",
- "eigen-logging",
- "eigen-metrics-collectors-rpc-calls",
- "eigen-types",
- "eigen-utils",
- "eyre",
- "futures-util",
- "hex",
- "incredible-aggregator",
- "incredible-bindings",
- "incredible-config",
- "incredible-metrics",
- "incredible-operator",
- "incredible-testing-utils",
- "rand_core",
- "reqwest 0.12.9",
- "rust-bls-bn254 0.1.0",
+ "serde",
  "serde_json",
  "tempfile",
  "thiserror 2.0.7",
@@ -7704,9 +7663,6 @@ name = "uuid"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8c5f0a0af699448548ad1a2fbf920fb4bee257eae39953ba95cb84891a0446a"
-dependencies = [
- "getrandom",
-]
 
 [[package]]
 name = "valuable"

@@ -6,7 +6,7 @@ rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 description = "incredible avs builder "
-    
+
 [lints]
 workspace = true
 
@@ -19,7 +19,6 @@ metrics.workspace = true
 metrics-util.workspace = true
 
 #incredible
-incredible-operator-2.workspace = true
 incredible-config.workspace = true
 incredible-operator.workspace = true
 incredible-challenger.workspace = true
