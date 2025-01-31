@@ -22,8 +22,6 @@ use eigen_utils::core::allocationmanager::IAllocationManagerTypes::AllocateParam
 use eigen_utils::middleware::registrycoordinator::{
     IRegistryCoordinator, IStakeRegistry, RegistryCoordinator,
 };
-use incredible_avs::avs::DefaultAvsLauncher;
-use incredible_avs::traits::LaunchAvs;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
@@ -668,7 +666,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             mine_anvil_block(&rpc_url, current_block_number);
         }
 
-        let _ = DefaultAvsLauncher::launch_avs(config).await;
+        let _ = incredible_avs::launch_avs(config).await;
 
         Ok(())
     }
