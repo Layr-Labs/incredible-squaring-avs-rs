@@ -78,16 +78,26 @@ impl IncredibleSquareOperator {
     pub async fn new(config: IncredibleConfig) -> Result<Self, OperatorError> {
         let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url()).await;
         // Read BlsKey from path
-        let keystore = Keystore::from_file(&config.bls_keystore_path())?
-            .decrypt(&config.bls_keystore_password())?;
+        let keystore = Keystore::from_file(&config.bls_keystore_path())
+            .map_err(|_| OperatorError::RegistrationError)? // TODO: change error type
+            .decrypt(&config.bls_keystore_password())
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
 
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let key_pair = BlsKeyPair::new(fr_key)?;
-        let operator_id = config.get_operator_id()?;
-        let registry_coordinator_addr = config.registry_coordinator_addr()?;
-        let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
-        let operator_address = config.operator_address()?;
+        let operator_id = config
+            .get_operator_id()
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
+        let registry_coordinator_addr = config
+            .registry_coordinator_addr()
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
+        let operator_statr_retriever_addr = config
+            .operator_state_retriever_addr()
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
+        let operator_address = config
+            .operator_address()
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO change error type
         let mut client = ClientAggregator::new(config.aggregator_ip_addr());
         let _ = client.dial_aggregator_rpc_client();
         Ok(Self {
