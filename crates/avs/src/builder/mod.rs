@@ -1,15 +1,19 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
+use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_logging::get_logger;
 use eigen_nodeapi::{create_server, NodeApi};
+use eigen_operator::traits::Operator;
 use futures::TryFutureExt;
-use incredible_aggregator::{Aggregator, AggregatorConfig, ISTaskProcessor};
+use incredible_aggregator::ISTaskProcessor;
+use incredible_aggregator::{Aggregator, AggregatorConfig};
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
-use incredible_operator::builder::OperatorBuilder;
-use incredible_operator_2::builder::OperatorBuilder as OperatorBuilder2;
+use incredible_operator::incredible_square_operator::IncredibleSquareOperator;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use std::{future::Future, sync::Arc};
+use std::future::Future;
 use tracing::info;
+
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
     /// Launch Avs
@@ -51,25 +55,61 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
         // start operator
-        let mut operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
-        let mut operator_builder2 = OperatorBuilder2::build(
-            avs.config.clone(),
-            Some(Arc::new(operator_builder.client.clone())),
+        let operator_builder = IncredibleSquareOperator::new(avs.config.clone()).await?;
+        let operator_builder2 = IncredibleSquareOperator::new(avs.config.clone()).await?;
+
+        let mut challenge = Challenger::build(avs.config.clone()).await?;
+        let registry_coordinator = operator_builder.registry_coordinator;
+        let operator_state_retriever = operator_builder.operator_state_retriever;
+        let http_rpc_url = avs.config.http_rpc_url().clone();
+        let avs_registry_reader = AvsRegistryChainReader::new(
+            get_logger(),
+            registry_coordinator,
+            operator_state_retriever,
+            http_rpc_url,
         )
         .await?;
 
-        let mut challenge = Challenger::build(avs.config.clone()).await?;
-        let operator_service = operator_builder
-            .start_operator()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+        // Start Operator 1
+        let key_pair = &operator_builder.key_pair;
+        let operator_id = &operator_builder.operator_id;
+        let operator_address = operator_builder.operator_addr;
+        let operator_name = "operator1";
+        let client_aggregator = &operator_builder.client;
+        let ws_rpc_url = &operator_builder.ws_rpc_url;
+        let operator_service = IncredibleSquareOperator::start_operator(
+            &avs_registry_reader,
+            key_pair,
+            operator_id,
+            operator_address,
+            operator_name,
+            client_aggregator,
+            ws_rpc_url,
+        )
+        .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
-        let operator2_service = operator_builder2
-            .start_operator()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+        // Start operator 2
+        let key_pair = &operator_builder2.key_pair;
+        let operator_id = &operator_builder2.operator_id;
+        let operator_address = operator_builder2.operator_addr;
+        let operator_name = "operator2";
+        let client_aggregator = operator_builder.client.clone();
+        let ws_rpc_url = &operator_builder2.ws_rpc_url;
+        let operator2_service = IncredibleSquareOperator::start_operator(
+            &avs_registry_reader,
+            key_pair,
+            operator_id,
+            operator_address,
+            operator_name,
+            &client_aggregator,
+            ws_rpc_url,
+        )
+        .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
+
         let task_processor = ISTaskProcessor::new(
             avs.config.registry_coordinator_addr()?,
             avs.config.http_rpc_url(),
@@ -90,7 +130,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
 
         let aggregator_service_with_rpc_client = aggregator
             .start(avs.config.ws_rpc_url().clone())
-            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+            .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
 
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,

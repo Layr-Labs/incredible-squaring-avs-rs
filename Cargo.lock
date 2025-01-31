@@ -4061,8 +4061,10 @@ name = "incredible-avs"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "clap",
+ "eigen-client-avsregistry",
+ "eigen-logging",
  "eigen-nodeapi",
+ "eigen-operator",
  "eyre",
  "futures",
  "incredible-aggregator",
@@ -4072,7 +4074,6 @@ dependencies = [
  "incredible-operator",
  "incredible-task-generator",
  "metrics",
- "metrics-util",
  "ntex",
  "serde",
  "thiserror 2.0.7",

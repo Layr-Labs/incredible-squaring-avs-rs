@@ -16,16 +16,21 @@ serde.workspace = true
 eyre.workspace = true
 tracing.workspace = true
 metrics.workspace = true
-metrics-util.workspace = true
 
-#incredible
+# incredible
 incredible-config.workspace = true
 incredible-operator.workspace = true
 incredible-challenger.workspace = true
 incredible-aggregator.workspace = true
 incredible-task-generator.workspace = true
 incredible-metrics.workspace = true
+
+# eigen-rs
+eigen-client-avsregistry.workspace = true
+eigen-logging.workspace = true
 eigen-nodeapi.workspace = true
+eigen-operator.workspace = true
+
 #tokio
 tokio.workspace = true
 
@@ -35,5 +40,4 @@ futures = "0.3.30"
 #thiserror
 thiserror.workspace = true
 
-clap.workspace = true
 ntex = { version = "2.0", features = ["tokio"] }
