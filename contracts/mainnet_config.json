@@ -1,0 +1,4 @@
+{
+    "num_quorums": 1,
+    "operator_params": [100,8000,4000]
+}

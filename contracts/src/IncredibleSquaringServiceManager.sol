@@ -31,8 +31,14 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
         IStakeRegistry _stakeRegistry,
         address rewards_coordinator,
         IIncredibleSquaringTaskManager _incredibleSquaringTaskManager
-    ) ServiceManagerBase(_avsDirectory, _registryCoordinator, _stakeRegistry) {
+    )
+        ServiceManagerBase(_avsDirectory, IRewardsCoordinator(rewards_coordinator), _registryCoordinator, _stakeRegistry)
+    {
         incredibleSquaringTaskManager = _incredibleSquaringTaskManager;
+    }
+
+    function initialize(address initialOwner, address rewardsInitiator) public initializer {
+        __ServiceManagerBase_init(initialOwner, rewardsInitiator);
     }
 
     /// @notice Called in the event of challenge resolution, in order to forward a call to the Slasher, which 'freezes' the `operator`.

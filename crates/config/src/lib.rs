@@ -22,7 +22,7 @@ pub struct IncredibleConfig {
 
     aggregator_config: AggregatorConfig,
 
-    el_config: ELConfig,
+    el_config: ElConfig,
 
     operator_registration_config: OperatorRegistrationConfig,
 
@@ -116,7 +116,7 @@ pub struct OperatorConfig {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
-pub struct ELConfig {
+pub struct ElConfig {
     pub registry_coordinator_addr: String,
 
     pub operator_state_retriever_addr: String,
@@ -269,8 +269,8 @@ impl IncredibleConfig {
         self.operator_registration_config.sig_expiry = expiry;
     }
 
-    pub fn set_operator_signing_key(&mut self, pvt_key: String) {
-        self.operator_registration_config.operator_pvt_key = Some(pvt_key);
+    pub fn set_operator_signing_key(&mut self, pvt_key: Option<String>) {
+        self.operator_registration_config.operator_pvt_key = pvt_key;
     }
 
     pub fn set_operator_2_registration_sig_salt(&mut self, salt: String) {
@@ -290,8 +290,8 @@ impl IncredibleConfig {
         self.operator_2_registration_config.sig_expiry = expiry;
     }
 
-    pub fn set_operator_2_signing_key(&mut self, pvt_key: String) {
-        self.operator_2_registration_config.operator_pvt_key = Some(pvt_key);
+    pub fn set_operator_2_signing_key(&mut self, pvt_key: Option<String>) {
+        self.operator_2_registration_config.operator_pvt_key = pvt_key;
     }
 
     pub fn set_avs_directory_address(&mut self, address: String) {
@@ -502,8 +502,8 @@ mod tests {
     use super::BlsConfig;
     use super::PathBuf;
     use crate::AggregatorConfig;
-    use crate::ELConfig;
     use crate::EcdsaConfig;
+    use crate::ElConfig;
     use crate::IncredibleConfig;
     use crate::OperatorConfig;
     use crate::OperatorRegistrationConfig;
@@ -638,7 +638,7 @@ mod tests {
         strategy_manager_addr ="0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6"
         "#;
 
-        let _config: ELConfig = toml::from_str(config_file).unwrap();
+        let _config: ElConfig = toml::from_str(config_file).unwrap();
 
         assert_eq!(
             _config.registry_coordinator_addr,

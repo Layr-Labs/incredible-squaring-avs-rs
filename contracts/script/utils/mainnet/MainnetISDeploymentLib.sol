@@ -1,32 +1,34 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.26;
 
+import {CoreDeploymentLib} from "../CoreDeploymentLib.sol";
+import {UpgradeableProxyLib} from "../UpgradeableProxyLib.sol";
+import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
+import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
+import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {Script} from "forge-std/Script.sol";
 import {console2} from "forge-std/Test.sol";
+import {stdJson} from "forge-std/StdJson.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
-import {ISocketRegistry} from "@eigenlayer-middleware/src/interfaces/ISocketRegistry.sol";
-import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
 import {
     IncredibleSquaringServiceManager,
     IServiceManager,
     IIncredibleSquaringTaskManager
-} from "../../src/IncredibleSquaringServiceManager.sol";
-import {IncredibleSquaringTaskManager} from "../../src/IncredibleSquaringTaskManager.sol";
+} from "../../../src/IncredibleSquaringServiceManager.sol";
+import {IncredibleSquaringTaskManager} from "../../../src/IncredibleSquaringTaskManager.sol";
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
 import {Quorum} from "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistryEventsAndErrors.sol";
-import {UpgradeableProxyLib} from "./UpgradeableProxyLib.sol";
-import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
 import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
-import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 import {
     RegistryCoordinator,
@@ -36,8 +38,10 @@ import {
 } from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
+import {ISocketRegistry} from "@eigenlayer-middleware/src/interfaces/ISocketRegistry.sol";
+import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
 
-library IncredibleSquaringDeploymentLib {
+library MainnetISDeploymentLib {
     using stdJson for *;
     using Strings for *;
     using UpgradeableProxyLib for address;
@@ -60,11 +64,6 @@ library IncredibleSquaringDeploymentLib {
     struct IncredibleSquaringSetupConfig {
         uint256 numQuorums;
         uint256[] operatorParams;
-        address operator_addr;
-        address operator_2_addr;
-        address contracts_registry_addr;
-        address task_generator_addr;
-        address aggregator_addr;
     }
 
     function deployContracts(
@@ -74,11 +73,6 @@ library IncredibleSquaringDeploymentLib {
         IncredibleSquaringSetupConfig memory isConfig,
         address admin
     ) internal returns (DeploymentData memory) {
-        /// read EL deployment address
-        CoreDeploymentLib.DeploymentData memory coredata =
-            readCoreDeploymentJson("script/deployments/core/", block.chainid);
-        address avsdirectory = coredata.avsDirectory;
-
         DeploymentData memory result;
 
         // First, deploy upgradeable proxy contracts that will point to the implementations.
@@ -91,6 +85,16 @@ library IncredibleSquaringDeploymentLib {
         result.strategy = strategy;
         result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.operatorStateRetriever = address(new OperatorStateRetriever());
+        vm.label(result.incredibleSquaringServiceManager, "serviceManager");
+        vm.label(result.stakeRegistry, "stakeRegistry");
+        vm.label(result.incredibleSquaringTaskManager, "taskManager");
+        vm.label(result.registryCoordinator, "registryCoordinator");
+        vm.label(result.blsapkRegistry, "blsapkRegistry");
+        vm.label(result.registryCoordinator, "registryCoordinator");
+        vm.label(result.blsapkRegistry, "blsapkRegistry");
+        vm.label(result.indexRegistry, "indexRegistry");
+        vm.label(result.strategy, "strategy");
+        vm.label(result.operatorStateRetriever, "operatorStateRetriever");
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
@@ -117,7 +121,6 @@ library IncredibleSquaringDeploymentLib {
         IRegistryCoordinator.OperatorSetParam[] memory quorumsOperatorSetParams =
             new IRegistryCoordinator.OperatorSetParam[](numQuorums);
         uint256[] memory operator_params = isConfig.operatorParams;
-
         for (uint256 i = 0; i < numQuorums; i++) {
             quorumsOperatorSetParams[i] = IRegistryCoordinator.OperatorSetParam({
                 maxOperatorCount: uint32(operator_params[i]),
@@ -157,6 +160,8 @@ library IncredibleSquaringDeploymentLib {
             )
         );
 
+        address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
+
         address registryCoordinatorImpl = address(
             new RegistryCoordinator(
                 IServiceManager(result.incredibleSquaringServiceManager),
@@ -166,20 +171,22 @@ library IncredibleSquaringDeploymentLib {
                 ISocketRegistry(result.socketRegistry)
             )
         );
-        address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
+
         UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
+
         UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
-            (IAVSDirectory(avsdirectory)),
+            (IAVSDirectory(core.avsDirectory)),
             IRegistryCoordinator(result.registryCoordinator),
             IStakeRegistry(result.stakeRegistry),
             core.rewardsCoordinator,
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
+
         UpgradeableProxyLib.upgrade(
             result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
         );
-        IncredibleSquaringServiceManager(result.incredibleSquaringServiceManager).initialize(admin, admin);
+
         bytes memory taskmanagerupgradecall = abi.encodeCall(
             IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin, admin)
         );
@@ -194,10 +201,6 @@ library IncredibleSquaringDeploymentLib {
         return result;
     }
 
-    function readDeploymentJson(uint256 chainId) internal returns (DeploymentData memory) {
-        return readDeploymentJson("script/deployments/incredible-squaring/", chainId);
-    }
-
     function readIncredibleSquaringConfigJson(string memory directoryPath)
         internal
         returns (IncredibleSquaringSetupConfig memory)
@@ -209,33 +212,6 @@ library IncredibleSquaringDeploymentLib {
         IncredibleSquaringSetupConfig memory data;
         data.numQuorums = json.readUint(".num_quorums");
         data.operatorParams = json.readUintArray(".operator_params");
-        data.aggregator_addr = json.readAddress(".aggregator_addr");
-        data.contracts_registry_addr = json.readAddress(".contracts_registry_addr");
-        data.operator_addr = json.readAddress(".operator_addr");
-        data.task_generator_addr = json.readAddress(".task_generator_addr");
-        data.operator_2_addr = json.readAddress(".operator_2_addr");
-        return data;
-    }
-
-    function readDeploymentJson(string memory directoryPath, uint256 chainId)
-        internal
-        returns (DeploymentData memory)
-    {
-        string memory fileName = string.concat(directoryPath, vm.toString(chainId), ".json");
-
-        require(vm.exists(fileName), "Deployment file does not exist");
-
-        string memory json = vm.readFile(fileName);
-
-        DeploymentData memory data;
-        data.incredibleSquaringServiceManager = json.readAddress(".addresses.IncredibleSquaringServiceManager");
-        data.incredibleSquaringTaskManager = json.readAddress(".addresses.IncredibleSquaringTaskManager");
-        data.registryCoordinator = json.readAddress(".addresses.registryCoordinator");
-        data.operatorStateRetriever = json.readAddress(".addresses.operatorStateRetriever");
-        data.stakeRegistry = json.readAddress(".addresses.stakeRegistry");
-        data.strategy = json.readAddress(".addresses.strategy");
-        data.token = json.readAddress(".addresses.token");
-
         return data;
     }
 
@@ -304,33 +280,6 @@ library IncredibleSquaringDeploymentLib {
             data.token.toHexString(),
             '"}'
         );
-    }
-
-    function readCoreDeploymentJson(string memory directoryPath, uint256 chainId)
-        internal
-        returns (CoreDeploymentLib.DeploymentData memory)
-    {
-        return readCoreDeploymentJson(directoryPath, string.concat(vm.toString(chainId), ".json"));
-    }
-
-    function readCoreDeploymentJson(string memory path, string memory fileName)
-        internal
-        returns (CoreDeploymentLib.DeploymentData memory)
-    {
-        string memory pathToFile = string.concat(path, fileName);
-
-        require(vm.exists(pathToFile), "Deployment file does not exist");
-
-        string memory json = vm.readFile(pathToFile);
-
-        CoreDeploymentLib.DeploymentData memory data;
-        data.strategyFactory = json.readAddress(".addresses.strategyFactory");
-        data.strategyManager = json.readAddress(".addresses.strategyManager");
-        data.eigenPodManager = json.readAddress(".addresses.eigenPodManager");
-        data.delegationManager = json.readAddress(".addresses.delegation");
-        data.avsDirectory = json.readAddress(".addresses.avsDirectory");
-
-        return data;
     }
 
     function verify_deployment(DeploymentData memory result) internal view {

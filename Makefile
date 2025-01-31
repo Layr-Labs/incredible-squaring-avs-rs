@@ -13,6 +13,9 @@ deploy-el-and-avs-contracts:
 	$(MAKE) deploy-eigenlayer
 	$(MAKE) deploy-avs
 
+simulate-avs-mainnet-deployment:
+	./contracts/anvil/deploy-avs-mainnet.sh
+
 
 __TESTING__: ##
 

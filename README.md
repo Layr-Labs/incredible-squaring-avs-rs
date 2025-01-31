@@ -8,7 +8,7 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 - [Docker](https://www.docker.com/) 
 
 
-## To run 
+## Anvil 
 
 - Start anvil in a separate terminal 
 ```sh
@@ -46,7 +46,30 @@ This command launches 5 services(crates) together:
 - Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
 - Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
 
+## Mainnet 
+We support mainnet deployment simulation of AVS contracts 
 
+1)  git submodule and copy env 
+    ```sh
+    git submodule update --init --recursive
+    cp contracts/.env.example contracts/.env
+    ```
+
+2) Paste your .env variables 
+  - `MAINNET_DEPLOYER_KEY` , `MAINNET_RPC_URL` , `ETHERSCAN_API_KEY`
+
+3) Run this to simulate
+   ```sh
+    make simulate-avs-mainnet-deployment
+   ```
+4) To actually deploy(Optional)
+   Add --broadcast in the forge script [command]()
+   Update the `mainnet_incredible_config.toml` file with correct addresses to run the avs 
+   Then run 
+   ```sh
+   cargo run --bin incredible-squaring-avs  start --config-path <mainnet config path>
+   ```
+   
 ## Testing 
 
 - To run unit tests(start anvil in a separate terminal)
@@ -76,8 +99,6 @@ The architecture of the AVS contains:
   - For this simple demo, the aggregator is not an operator, and thus does not need to register with eigenlayer or the AVS contract. It's IP address is simply hardcoded into the operators' config.
 - Operators
   - Square the number sent to the task manager by the task generator, sign it, and send it to the aggregator
-
- ![architecture (1)](https://github.com/user-attachments/assets/389349cd-931f-448c-bf2c-ea49af133542)
 
 
 ## Default Configuration
