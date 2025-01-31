@@ -260,7 +260,7 @@ mod tests {
         assert!(verify_message(
             bls_key_pair.public_key_g2().g2(),
             &hash_msg,
-            signed_task_response.signature().g1_point().g1()
+            signed_task_response.signature.g1_point().g1()
         ));
     }
 }
