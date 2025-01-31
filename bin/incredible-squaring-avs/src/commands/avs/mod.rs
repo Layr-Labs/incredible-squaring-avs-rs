@@ -22,7 +22,9 @@ use eigen_utils::core::allocationmanager::IAllocationManagerTypes::AllocateParam
 use eigen_utils::middleware::registrycoordinator::{
     IRegistryCoordinator, IStakeRegistry, RegistryCoordinator,
 };
-use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
+use incredible_avs::avs::DefaultAvsLauncher;
+use incredible_avs::avs_builder::AvsBuilder;
+use incredible_avs::traits::LaunchAvs;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,

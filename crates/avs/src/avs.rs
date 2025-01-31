@@ -1,4 +1,6 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
+use crate::avs_builder::AvsBuilder;
+use crate::traits::LaunchAvs;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_logging::get_logger;
 use eigen_nodeapi::{create_server, NodeApi};
@@ -7,31 +9,10 @@ use futures::TryFutureExt;
 use incredible_aggregator::ISTaskProcessor;
 use incredible_aggregator::{Aggregator, AggregatorConfig};
 use incredible_challenger::Challenger;
-use incredible_config::IncredibleConfig;
 use incredible_operator::incredible_square_operator::IncredibleSquareOperator;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use std::future::Future;
 use tracing::info;
-
-/// Launch Avs trait
-pub trait LaunchAvs<T: Send + 'static> {
-    /// Launch Avs
-    fn launch_avs(self, avs: T) -> impl Future<Output = eyre::Result<()>> + Send;
-}
-
-/// Avs builder
-#[derive(Debug)]
-pub struct AvsBuilder {
-    config: IncredibleConfig,
-}
-
-impl AvsBuilder {
-    /// new
-    pub fn new(config: IncredibleConfig) -> Self {
-        Self { config }
-    }
-}
 
 /// Default avs launcher
 #[derive(Debug)]
@@ -57,6 +38,12 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         // start operator
         let operator_builder = IncredibleSquareOperator::new(avs.config.clone()).await?;
         let operator_builder2 = IncredibleSquareOperator::new(avs.config.clone()).await?;
+
+        println!("@@@ operator_builder 1 key {:?}", operator_builder.key_pair);
+        println!(
+            "@@@ operator_builder 2 key {:?}",
+            operator_builder2.key_pair
+        );
 
         let mut challenge = Challenger::build(avs.config.clone()).await?;
         let registry_coordinator = operator_builder.registry_coordinator;
