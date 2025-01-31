@@ -37,10 +37,6 @@ pub async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
         let operator_builder =
             IncredibleSquareOperator::new(avs_config.clone(), config.clone()).await?;
 
-        // println!(
-        //     "@@@ operator_builder 1 key {:?}",
-        //     operator_builders[0].key_pair
-        // );
         let avs_registry_reader = avs_registry_reader.clone();
 
         joinset.spawn(async move {
@@ -50,6 +46,7 @@ pub async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
             let operator_name = format!("operator{i}");
             let client_aggregator = &operator_builder.client;
             let ws_rpc_url = &operator_builder.ws_rpc_url;
+            println!("@@@ {operator_name} key {:?}", key_pair);
             let operator_service = IncredibleSquareOperator::start_operator(
                 &avs_registry_reader,
                 key_pair,
