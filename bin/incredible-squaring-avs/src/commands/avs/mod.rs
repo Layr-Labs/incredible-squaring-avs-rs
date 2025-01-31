@@ -668,8 +668,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             mine_anvil_block(&rpc_url, current_block_number);
         }
 
-        let avs_launcher = DefaultAvsLauncher::new();
-        let _ = avs_launcher.launch_avs(config).await;
+        let _ = DefaultAvsLauncher::launch_avs(config).await;
 
         Ok(())
     }

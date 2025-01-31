@@ -15,24 +15,11 @@ use ntex::rt::System;
 use tracing::info;
 
 /// Default avs launcher
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct DefaultAvsLauncher {}
 
-impl DefaultAvsLauncher {
-    /// new
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Default for DefaultAvsLauncher {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl LaunchAvs<IncredibleConfig> for DefaultAvsLauncher {
-    async fn launch_avs(self, avs_config: IncredibleConfig) -> eyre::Result<()> {
+    async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
         // start operator
