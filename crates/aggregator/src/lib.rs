@@ -3,7 +3,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use alloy::{
-    primitives::{keccak256, Address, B256},
+    primitives::{keccak256, Address, B256, U256},
     sol_types::SolValue,
 };
 use eigen_aggregator::{
@@ -59,6 +59,15 @@ const BLOCK_TIME_SECONDS: u32 = 12;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct ISTaskResponse(pub SolTaskResponse);
+
+impl ISTaskResponse {
+    pub fn new(task_index: u32, number_squared: U256) -> Self {
+        ISTaskResponse(SolTaskResponse {
+            referenceTaskIndex: task_index,
+            numberSquared: number_squared,
+        })
+    }
+}
 
 impl TaskResponse for ISTaskResponse {
     fn task_index(&self) -> TaskIndex {

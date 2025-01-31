@@ -1,17 +1,14 @@
 use alloy::primitives::Address;
-use eigen_aggregator::traits::TaskResponse;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_operator::traits::Operator;
 use eigen_operator::{client::ClientAggregator, error::OperatorError};
-use eigen_types::avs::TaskIndex;
 use eigen_types::operator::OperatorId;
 use eyre::Result;
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse as SolTaskResponse;
+use incredible_aggregator::ISTaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
 use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
-use serde::{Deserialize, Serialize};
 
 /// Main Operator
 #[derive(Debug)]
@@ -34,24 +31,11 @@ pub struct IncredibleSquareOperator {
     pub operator_state_retriever: Address,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-/// Task Response for Incredible Square Operator
-pub struct IncredibleTaskResponse(SolTaskResponse);
-
-impl TaskResponse for IncredibleTaskResponse {
-    fn task_index(&self) -> TaskIndex {
-        self.0.referenceTaskIndex
-    }
-    fn digest(&self) -> alloy::primitives::B256 {
-        todo!()
-    }
-}
-
 impl Operator for IncredibleSquareOperator {
-    type TaskResponse = IncredibleTaskResponse;
+    type TaskResponse = ISTaskResponse;
     type NewTaskEvent = NewTaskCreated;
 
-    fn process_new_task(new_task_created: NewTaskCreated) -> Self::TaskResponse {
+    fn process_new_task(new_task_created: Self::NewTaskEvent) -> Self::TaskResponse {
         #[allow(unused_mut)]
         #[allow(unused_assignments)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
@@ -66,10 +50,7 @@ impl Operator for IncredibleSquareOperator {
 
         let num_squared = number_to_be_squared * number_to_be_squared;
 
-        IncredibleTaskResponse(SolTaskResponse {
-            referenceTaskIndex: new_task_created.taskIndex,
-            numberSquared: num_squared,
-        })
+        ISTaskResponse::new(new_task_created.taskIndex, num_squared)
     }
 }
 
@@ -116,16 +97,13 @@ impl IncredibleSquareOperator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy::{
-        primitives::{keccak256, Bytes, U256},
-        sol_types::SolValue,
-    };
+    use alloy::primitives::{Bytes, U256};
     use ark_ec::AffineRepr;
     use ark_ff::fields::PrimeField;
+    use eigen_aggregator::traits::TaskResponse;
     use eigen_crypto_bn254::utils::verify_message;
     use eigen_operator::traits::Operator;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
-    use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -228,10 +206,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_sign_task_response() {
-        let task_response = TaskResponse {
-            referenceTaskIndex: 1,
-            numberSquared: U256::from(16),
-        };
+        let task_response = ISTaskResponse::new(1, U256::from(16));
 
         let mut incredible_config: IncredibleConfig = toml::from_str(&get_config_path()).unwrap();
         incredible_config.set_registry_coordinator_addr(
@@ -250,13 +225,12 @@ mod tests {
         let signed_task_response = IncredibleSquareOperator::sign_task_response(
             &operator_builder.key_pair,
             &operator_builder.operator_id,
-            super::IncredibleTaskResponse(task_response.clone()),
+            task_response.clone(),
         )
         .unwrap();
 
         let bls_key_pair = &operator_builder.key_pair;
-        let encoded_response = TaskResponse::abi_encode(&task_response);
-        let hash_msg = keccak256(encoded_response);
+        let hash_msg = task_response.digest();
         assert!(verify_message(
             bls_key_pair.public_key_g2().g2(),
             &hash_msg,

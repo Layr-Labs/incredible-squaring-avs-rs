@@ -4193,6 +4193,7 @@ dependencies = [
  "eyre",
  "futures-util",
  "hex",
+ "incredible-aggregator",
  "incredible-bindings",
  "incredible-config",
  "incredible-testing-utils",
