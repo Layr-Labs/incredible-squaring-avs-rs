@@ -23,7 +23,6 @@ use eigen_utils::middleware::registrycoordinator::{
     IRegistryCoordinator, IStakeRegistry, RegistryCoordinator,
 };
 use incredible_avs::avs::DefaultAvsLauncher;
-use incredible_avs::avs_builder::AvsBuilder;
 use incredible_avs::traits::LaunchAvs;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -670,8 +669,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         }
 
         let avs_launcher = DefaultAvsLauncher::new();
-        let avs_builder = AvsBuilder::new(config);
-        let _ = avs_launcher.launch_avs(avs_builder).await;
+        let _ = avs_launcher.launch_avs(config).await;
 
         Ok(())
     }
