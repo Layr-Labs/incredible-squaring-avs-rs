@@ -83,7 +83,7 @@ make integration-tests
 ```
 
 ## Branches
-- Master - Tracks latest middleware mainnet contracts
+- master - Tracks latest middleware mainnet contracts
 - dev - Tracks middleware 's dev branch(a.k.a slashing!) 
 
 ## Architecture
