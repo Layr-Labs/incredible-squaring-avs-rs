@@ -84,7 +84,7 @@ make integration-tests
 
 ## Branches
 - master - Tracks latest middleware mainnet contracts
-- dev - Tracks middleware 's dev branch(a.k.a slashing!) 
+- dev - Tracks middleware's dev branch(a.k.a slashing!) 
 
 ## Architecture
 
