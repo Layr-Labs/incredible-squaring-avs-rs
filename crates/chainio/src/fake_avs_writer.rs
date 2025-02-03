@@ -1,6 +1,6 @@
 use crate::error::ChainIoError;
 use alloy::primitives::{Address, TxHash};
-use eigen_utils::get_signer;
+use eigen_common::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::{
     IBLSSignatureChecker::NonSignerStakesAndSignature,
     IIncredibleSquaringTaskManager::{Task, TaskResponse, TaskResponseMetadata},

@@ -5,25 +5,23 @@ edition.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
-description = "eigen layer aggregator utils "
-    
+description = "eigen layer aggregator"
+
 [lints]
 workspace = true
 
 [dependencies]
+eigen-aggregator.workspace = true
 incredible-bindings.workspace = true
-ark-bn254.workspace = true
-ark-ec.workspace = true
 alloy.workspace = true
 eigen-types.workspace = true
 serde.workspace = true
-ark-serialize = "0.4.2"
 hex = "0.4.3"
 eigen-crypto-bls.workspace = true
 eyre.workspace = true
 incredible-chainio.workspace = true
 incredible-config.workspace = true
-incredible-metrics.workspace = true
+eigen-common.workspace = true
 eigen-services-operatorsinfo.workspace = true
 eigen-logging.workspace = true
 eigen-client-avsregistry.workspace = true

@@ -9,26 +9,33 @@ license = "Business Source License 1.1"
 description = "integration tests for incredible avs"
 
 [dependencies]
-alloy = { version = "0.7", features = ["full","signer-keystore","node-bindings"] }
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
-incredible-config = {path = "../crates/config/"}
-incredible-challenger = {path = "../crates/challenger/"}
-incredible-bindings = {path = "../crates/bindings/"}
-incredible-testing-utils = {path = "../crates/testing-utils/"}
-incredible-task-generator = {path = "../crates/task_generator/"}
-incredible-operator = {path = "../crates/operator/" , features = ["integration_tests"]}
-incredible-operator-2 = {path = "../crates/operator_2/" , features = ["integration_tests"]}
-incredible-aggregator = {path = "../crates/aggregator/"}
+alloy = { version = "0.7", features = [
+    "full",
+    "signer-keystore",
+    "node-bindings",
+] }
+eigen-utils = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "046d497" }
+eigen-logging = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "046d497" }
+incredible-config = { path = "../crates/config/" }
+incredible-challenger = { path = "../crates/challenger/" }
+incredible-bindings = { path = "../crates/bindings/" }
+incredible-testing-utils = { path = "../crates/testing-utils/" }
+incredible-task-generator = { path = "../crates/task_generator/" }
+incredible-operator = { path = "../crates/operator/", features = [
+    "integration_tests",
+] }
+incredible-aggregator = { path = "../crates/aggregator/" }
 toml = "0.8"
 [dev-dependencies]
 tokio = { version = "1.21", default-features = false }
 eyre = "0.6.12"
-incredible-squaring-avs = {path = "../bin/incredible-squaring-avs/"}
-eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
+incredible-squaring-avs = { path = "../bin/incredible-squaring-avs/" }
+eigen-testing-utils = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "046d497" }
 serial_test = "3.1.1"
-rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
-eigen-crypto-bls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
+rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = [
+    "std",
+] }
+eigen-crypto-bls = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "046d497" }
 
 
 [workspace]
