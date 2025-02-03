@@ -33,7 +33,7 @@ pub async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
     // start operators
     let mut joinset = JoinSet::new();
 
-    for (i, config) in avs_config.get_operator_configs().iter().enumerate() {
+    for (i, config) in avs_config.get_operator_configs().into_iter().enumerate() {
         let operator_builder =
             IncredibleSquareOperator::new(avs_config.clone(), config.clone()).await?;
 
