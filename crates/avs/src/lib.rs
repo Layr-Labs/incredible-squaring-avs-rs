@@ -18,8 +18,14 @@ pub async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
     info!("launching crates: incredible-squaring-avs-rs");
     incredible_metrics::new();
     // start operator
-    let operator_builder = IncredibleSquareOperator::new(avs_config.clone()).await?;
-    let operator_builder2 = IncredibleSquareOperator::new(avs_config.clone()).await?;
+    let cfg1 = avs_config.clone();
+    let operator_builder = IncredibleSquareOperator::new(cfg1).await?;
+    let mut cfg2 = avs_config.clone();
+    cfg2.set_bls_keystore_path(avs_config.bls_keystore_2_path());
+    cfg2.set_bls_keystore_password(avs_config.bls_keystore_2_password());
+    cfg2.set_operator_address(avs_config.operator_2_address()?.to_string());
+    cfg2.set_operator_id(avs_config.get_operator_2_id()?.to_string());
+    let operator_builder2 = IncredibleSquareOperator::new(cfg2).await?;
 
     println!("@@@ operator_builder 1 key {:?}", operator_builder.key_pair);
     println!(
