@@ -11,16 +11,25 @@ use incredible_config::IncredibleConfig;
 use incredible_operator::incredible_square_operator::IncredibleSquareOperator;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use tokio::task::JoinSet;
 use tracing::info;
 
 /// Launches all the services for the AVS.
 pub async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
     info!("launching crates: incredible-squaring-avs-rs");
     incredible_metrics::new();
+    // start operator
+    let operator_builder = IncredibleSquareOperator::new(avs_config.clone()).await?;
+    let operator_builder2 = IncredibleSquareOperator::new(avs_config.clone()).await?;
 
-    let registry_coordinator = avs_config.registry_coordinator_addr()?;
-    let operator_state_retriever = avs_config.operator_state_retriever_addr()?;
+    println!("@@@ operator_builder 1 key {:?}", operator_builder.key_pair);
+    println!(
+        "@@@ operator_builder 2 key {:?}",
+        operator_builder2.key_pair
+    );
+
+    let mut challenge = Challenger::build(avs_config.clone()).await?;
+    let registry_coordinator = operator_builder.registry_coordinator;
+    let operator_state_retriever = operator_builder.operator_state_retriever;
     let http_rpc_url = avs_config.http_rpc_url().clone();
     let avs_registry_reader = AvsRegistryChainReader::new(
         get_logger(),
@@ -30,42 +39,41 @@ pub async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
     )
     .await?;
 
-    // start operators
-    let mut joinset = JoinSet::new();
-
-    for (i, config) in avs_config.get_operator_configs().into_iter().enumerate() {
-        let operator_builder =
-            IncredibleSquareOperator::new(avs_config.clone(), config.clone()).await?;
-
-        // println!(
-        //     "@@@ operator_builder 1 key {:?}",
-        //     operator_builders[0].key_pair
-        // );
-        let avs_registry_reader = avs_registry_reader.clone();
-
-        joinset.spawn(async move {
-            let key_pair = &operator_builder.key_pair;
-            let operator_id = &operator_builder.operator_id;
-            let operator_address = operator_builder.operator_addr;
-            let operator_name = format!("operator{i}");
-            let client_aggregator = &operator_builder.client;
-            let ws_rpc_url = &operator_builder.ws_rpc_url;
-            let operator_service = IncredibleSquareOperator::start_operator(
-                &avs_registry_reader,
-                key_pair,
-                operator_id,
-                operator_address,
-                &operator_name,
-                client_aggregator,
-                ws_rpc_url,
-            )
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
-            operator_service.await
-        });
-    }
-    let mut challenge = Challenger::build(avs_config.clone()).await?;
-
     // Start Operator 1
+    let key_pair = &operator_builder.key_pair;
+    let operator_id = &operator_builder.operator_id;
+    let operator_address = operator_builder.operator_addr;
+    let operator_name = "operator1";
+    let client_aggregator = &operator_builder.client;
+    let ws_rpc_url = &operator_builder.ws_rpc_url;
+    let operator_service = IncredibleSquareOperator::start_operator(
+        &avs_registry_reader,
+        key_pair,
+        operator_id,
+        operator_address,
+        operator_name,
+        client_aggregator,
+        ws_rpc_url,
+    )
+    .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
+
+    // Start operator 2
+    let key_pair = &operator_builder2.key_pair;
+    let operator_id = &operator_builder2.operator_id;
+    let operator_address = operator_builder2.operator_addr;
+    let operator_name = "operator2";
+    let client_aggregator = operator_builder.client.clone();
+    let ws_rpc_url = &operator_builder2.ws_rpc_url;
+    let operator2_service = IncredibleSquareOperator::start_operator(
+        &avs_registry_reader,
+        key_pair,
+        operator_id,
+        operator_address,
+        operator_name,
+        &client_aggregator,
+        ws_rpc_url,
+    )
+    .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
 
     let challenger_service = challenge
         .start_challenger()
@@ -114,8 +122,9 @@ pub async fn launch_avs(avs_config: IncredibleConfig) -> eyre::Result<()> {
         });
     });
 
-    let _ = futures::future::try_join4(
-        async move { Ok(joinset.join_all().await) },
+    let _ = futures::future::try_join5(
+        operator_service,
+        operator2_service,
         challenger_service,
         aggregator_service_with_rpc_client,
         task_spam_service,

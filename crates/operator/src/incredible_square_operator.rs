@@ -7,7 +7,7 @@ use eigen_types::operator::OperatorId;
 use eyre::Result;
 use incredible_aggregator::ISTaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
-use incredible_config::{IncredibleConfig, OperatorConfig};
+use incredible_config::IncredibleConfig;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 
 /// Main Operator
@@ -56,39 +56,34 @@ impl Operator for IncredibleSquareOperator {
 
 impl IncredibleSquareOperator {
     /// Build the Operator Builder
-    pub async fn new(
-        incredible_config: IncredibleConfig,
-        config: OperatorConfig,
-    ) -> Result<Self, OperatorError> {
-        let _instrumented_client = InstrumentedClient::new(&incredible_config.http_rpc_url()).await;
+    pub async fn new(config: IncredibleConfig) -> Result<Self, OperatorError> {
+        let _instrumented_client = InstrumentedClient::new(&config.http_rpc_url()).await;
         // Read BlsKey from path
-        let keystore = Keystore::from_file(&config.bls_config.keystore_path)
+        let keystore = Keystore::from_file(&config.bls_keystore_path())
             .map_err(|_| OperatorError::RegistrationError)? // TODO: change error type
-            .decrypt(&config.bls_config.keystore_password)
+            .decrypt(&config.bls_keystore_password())
             .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
 
         // TODO(supernova): Add this method in sdk in bls crate
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let key_pair = BlsKeyPair::new(fr_key)?;
         let operator_id = config
-            .operator_id
-            .parse()
-            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type;
-        let registry_coordinator_addr = incredible_config
+            .get_operator_id()
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
+        let registry_coordinator_addr = config
             .registry_coordinator_addr()
-            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type;
-        let operator_statr_retriever_addr = incredible_config
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
+        let operator_statr_retriever_addr = config
             .operator_state_retriever_addr()
             .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type
         let operator_address = config
-            .operator_address
-            .parse()
-            .map_err(|_| OperatorError::RegistrationError)?; // TODO: change error type;
-        let mut client = ClientAggregator::new(incredible_config.aggregator_ip_addr());
+            .operator_address()
+            .map_err(|_| OperatorError::RegistrationError)?; // TODO change error type
+        let mut client = ClientAggregator::new(config.aggregator_ip_addr());
         let _ = client.dial_aggregator_rpc_client();
         Ok(Self {
-            http_rpc_url: incredible_config.http_rpc_url(),
-            ws_rpc_url: incredible_config.ws_rpc_url(),
+            http_rpc_url: config.http_rpc_url(),
+            ws_rpc_url: config.ws_rpc_url(),
             operator_addr: operator_address,
             key_pair,
             operator_id,
@@ -139,8 +134,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let op_cfg = incredible_config.get_operator_configs()[0].clone();
-        let operator_builder = IncredibleSquareOperator::new(incredible_config, op_cfg)
+        let operator_builder = IncredibleSquareOperator::new(incredible_config)
             .await
             .unwrap();
 
@@ -205,8 +199,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let op_cfg = incredible_config.get_operator_configs()[0].clone();
-        let _ = IncredibleSquareOperator::new(incredible_config, op_cfg)
+        let _ = IncredibleSquareOperator::new(incredible_config)
             .await
             .unwrap();
     }
@@ -226,8 +219,7 @@ mod tests {
                 .await
                 .to_string(),
         );
-        let op_cfg = incredible_config.get_operator_configs()[0].clone();
-        let operator_builder = IncredibleSquareOperator::new(incredible_config, op_cfg)
+        let operator_builder = IncredibleSquareOperator::new(incredible_config)
             .await
             .unwrap();
         let signed_task_response = IncredibleSquareOperator::sign_task_response(
