@@ -8,6 +8,11 @@ import {console2} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
+import {ISocketRegistry,SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
+import {ISlashingRegistryCoordinator,ISlashingRegistryCoordinatorTypes} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
+import {SlashingRegistryCoordinator} from "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
+import {RegistryCoordinator} from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
+import {IPermissionController} from "@eigenlayer/contracts/interfaces/IPermissionController.sol";
 import {
     IncredibleSquaringServiceManager,
     IServiceManager,
@@ -15,7 +20,7 @@ import {
 } from "../../src/IncredibleSquaringServiceManager.sol";
 import {IncredibleSquaringTaskManager} from "../../src/IncredibleSquaringTaskManager.sol";
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
-import {Quorum} from "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistryEventsAndErrors.sol";
+// import {Quorum} from "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistryEventsAndErrors.sol";
 import {UpgradeableProxyLib} from "./UpgradeableProxyLib.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -30,11 +35,11 @@ import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 
 import {
-    RegistryCoordinator, IBLSApkRegistry, IIndexRegistry
+    RegistryCoordinator, IBLSApkRegistry, IIndexRegistry,IStakeRegistry
 } from
 // ISocketRegistry
 "@eigenlayer-middleware/src/RegistryCoordinator.sol";
-import {IStakeRegistry, StakeType} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
+import {IStakeRegistryTypes} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
 
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
@@ -100,16 +105,16 @@ library IncredibleSquaringDeploymentLib {
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
-                IRegistryCoordinator(result.registryCoordinator),
+                ISlashingRegistryCoordinator(result.registryCoordinator),
                 IDelegationManager(core.delegationManager),
                 IAVSDirectory(core.avsDirectory),
-                IServiceManager(result.incredibleSquaringServiceManager)
+                IAllocationManager(core.allocationManager)
             )
         );
 
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
-        address instantSlasherImpl = address(new InstantSlasher());
+        address instantSlasherImpl = address(new InstantSlasher(IAllocationManager(core.allocationManager),ISlashingRegistryCoordinator(result.registryCoordinator),result.incredibleSquaringTaskManager));
         console2.log("pauser_registry");
         console2.log(coredata.pauserRegistry);
         console2.log("service_manager");
@@ -126,11 +131,12 @@ library IncredibleSquaringDeploymentLib {
         console2.log(coredata.pauserRegistry);
 
         address registryCoordinatorImpl = address(
-            new RegistryCoordinator(
-                IServiceManager(result.incredibleSquaringServiceManager),
+            new SlashingRegistryCoordinator(
                 IStakeRegistry(result.stakeRegistry),
                 IBLSApkRegistry(result.blsapkRegistry),
                 IIndexRegistry(result.indexRegistry),
+                ISocketRegistry(result.socketRegistry),
+                IAllocationManager(core.allocationManager),
                 IPauserRegistry(coredata.pauserRegistry)
             )
         );
@@ -150,7 +156,7 @@ library IncredibleSquaringDeploymentLib {
         uint256[] memory operator_params = isConfig.operatorParams;
 
         for (uint256 i = 0; i < numQuorums; i++) {
-            quorumsOperatorSetParams[i] = IRegistryCoordinator.OperatorSetParam({
+            quorumsOperatorSetParams[i] = ISlashingRegistryCoordinatorTypes.OperatorSetParam({
                 maxOperatorCount: uint32(operator_params[i]),
                 kickBIPsOfOperatorStake: uint16(operator_params[i + 1]),
                 kickBIPsOfTotalStake: uint16(operator_params[i + 2])
@@ -158,12 +164,12 @@ library IncredibleSquaringDeploymentLib {
         }
         // // set to 0 for every quorum
         uint96[] memory quorumsMinimumStake = new uint96[](numQuorums);
-        IStakeRegistry.StrategyParams[][] memory quorumsStrategyParams =
-            new IStakeRegistry.StrategyParams[][](numQuorums);
+        IStakeRegistryTypes.StrategyParams[][] memory quorumsStrategyParams =
+            new IStakeRegistryTypes.StrategyParams[][](numQuorums);
         for (uint256 i = 0; i < numQuorums; i++) {
-            quorumsStrategyParams[i] = new IStakeRegistry.StrategyParams[](numStrategies);
+            quorumsStrategyParams[i] = new IStakeRegistryTypes.StrategyParams[](numStrategies);
             for (uint256 j = 0; j < numStrategies; j++) {
-                quorumsStrategyParams[i][j] = IStakeRegistry.StrategyParams({
+                quorumsStrategyParams[i][j] = IStakeRegistryTypes.StrategyParams({
                     strategy: deployedStrategyArray[j],
                     // setting this to 1 ether since the divisor is also 1 ether
                     // therefore this allows an operator to register with even just 1 token
@@ -174,22 +180,18 @@ library IncredibleSquaringDeploymentLib {
             }
         }
 
-        StakeType[] memory stake_type = new StakeType[](1);
-        stake_type[0] = StakeType.TOTAL_SLASHABLE;
+        IStakeRegistryTypes.StakeType[] memory stake_type = new IStakeRegistryTypes.StakeType[](1);
+        stake_type[0] = IStakeRegistryTypes.StakeType.TOTAL_SLASHABLE;
         uint32[] memory look_ahead_period = new uint32[](1);
         look_ahead_period[0] = 0;
         bytes memory upgradeCall = abi.encodeCall(
-            RegistryCoordinator.initialize,
+            SlashingRegistryCoordinator.initialize,
             (
                 admin,
                 admin,
                 admin,
                 0,
-                quorumsOperatorSetParams,
-                quorumsMinimumStake,
-                quorumsStrategyParams,
-                stake_type,
-                look_ahead_period
+                result.incredibleSquaringServiceManager
             )
         );
 
@@ -205,6 +207,7 @@ library IncredibleSquaringDeploymentLib {
             IStakeRegistry(result.stakeRegistry),
             core.rewardsCoordinator,
             IAllocationManager(core.allocationManager),
+            IPermissionController(core.permissionController),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
         console2.log("allocation_manager");
@@ -216,7 +219,7 @@ library IncredibleSquaringDeploymentLib {
             result.incredibleSquaringServiceManager
         );
         bytes memory servicemanagerupgradecall =
-            abi.encodeCall(IncredibleSquaringServiceManager.initialize, (admin, admin, result.slasher));
+            abi.encodeCall(IncredibleSquaringServiceManager.initialize, (admin, admin));
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringServiceManager,
             address(incredibleSquaringServiceManagerImpl),
@@ -233,7 +236,7 @@ library IncredibleSquaringDeploymentLib {
 
         bytes memory slasherupgradecall = abi.encodeCall(
             InstantSlasher.initialize,
-            (address(result.incredibleSquaringServiceManager), address(result.incredibleSquaringTaskManager))
+            (address(result.incredibleSquaringTaskManager))
         );
         UpgradeableProxyLib.upgradeAndCall(result.slasher, instantSlasherImpl, slasherupgradecall);
 
