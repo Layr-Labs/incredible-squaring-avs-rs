@@ -7,6 +7,7 @@ import "@eigenlayer-middleware/src/ServiceManagerBase.sol";
 import {IAllocationManager, IAllocationManagerTypes} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 // import {IAVSRegistrar} from "@eigenlayer/contracts/interfaces/IAVSRegistrar.sol";
 import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
+import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
 
 /**
  * @title Primary entrypoint for procuring services from IncredibleSquaring.
@@ -32,6 +33,7 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
         IStakeRegistry _stakeRegistry,
         address rewards_coordinator,
         IAllocationManager allocationManager,
+        IPermissionController _permissionController,
         IIncredibleSquaringTaskManager _incredibleSquaringTaskManager
     )
         ServiceManagerBase(
@@ -39,13 +41,14 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
             IRewardsCoordinator(rewards_coordinator),
             _registryCoordinator,
             _stakeRegistry,
+            _permissionController,
             allocationManager
         )
     {
         incredibleSquaringTaskManager = _incredibleSquaringTaskManager;
     }
 
-    function initialize(address initialOwner, address rewardsInitiator, address slasher) external initializer {
-        __ServiceManagerBase_init(initialOwner, rewardsInitiator, slasher);
+    function initialize(address initialOwner, address rewardsInitiator) external initializer {
+        __ServiceManagerBase_init(initialOwner, rewardsInitiator);
     }
 }
