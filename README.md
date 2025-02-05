@@ -82,6 +82,10 @@ make pr
 make integration-tests
 ```
 
+## Branches
+- master - Tracks latest middleware mainnet contracts
+- dev - Tracks middleware's dev branch(a.k.a slashing!) 
+
 ## Architecture
 
 The architecture of the AVS contains:
