@@ -752,6 +752,7 @@ mod tests {
         strategy_manager_addr ="0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6"
         rewards_coordinator_addr = "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"
         permission_controller_addr = "0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6"
+        allocation_manager_addr = "0x8a791620dd6260079bf849dc5567adc3f2fdc318"
         "#;
 
         let _config: ELConfig = toml::from_str(config_file).unwrap();
@@ -783,6 +784,11 @@ mod tests {
         assert_eq!(
             _config.permission_controller_addr,
             "0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6"
+        );
+
+        assert_eq!(
+            _config.allocation_manager_addr,
+            "0x8a791620dd6260079bf849dc5567adc3f2fdc318"
         );
 
         let incredible_config_file = r#"
