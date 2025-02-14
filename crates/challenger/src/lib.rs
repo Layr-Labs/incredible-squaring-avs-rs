@@ -278,7 +278,8 @@ mod tests {
     use incredible_task_generator::TaskManager;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
-        get_incredible_squaring_registry_coordinator, get_incredible_squaring_task_manager,
+        get_incredible_squaring_registry_coordinator, get_incredible_squaring_service_manager,
+        get_incredible_squaring_task_manager,
     };
     use std::str::FromStr;
     const INCREDIBLE_CONFIG_FILE: &str = r#"
@@ -318,10 +319,8 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
     /// Build challenger
     pub(crate) async fn build_challenger() -> Result<Challenger, ChallengerError> {
         let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE)?;
-        config.set_registry_coordinator_addr(
-            get_incredible_squaring_registry_coordinator()
-                .await
-                .to_string(),
+        config.set_service_manager_address(
+            get_incredible_squaring_service_manager().await.to_string(),
         );
         config.set_operator_state_retriever(
             get_incredible_squaring_operator_state_retriever()
