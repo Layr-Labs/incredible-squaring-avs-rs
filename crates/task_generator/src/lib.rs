@@ -6,7 +6,7 @@ use alloy::{
     rpc::types::TransactionReceipt,
     signers::local::PrivateKeySigner,
 };
-use eigen_utils::get_signer;
+use eigen_common::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
@@ -59,7 +59,7 @@ impl TaskManager {
         loop {
             let number_to_be_squared = task_num;
             let quorum_threshold_percentage = 40;
-            let quorum_numbers = Bytes::from_str("0x01")?;
+            let quorum_numbers = Bytes::from_str("0x00")?;
 
             let _ = task_manager_contract
                 .createNewTask(

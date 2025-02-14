@@ -140,6 +140,8 @@ pub struct ELConfig {
     pub rewards_coordinator_addr: String,
 
     pub permission_controller_addr: String,
+
+    pub allocation_manager_addr: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -352,6 +354,10 @@ impl IncredibleConfig {
         self.el_config.rewards_coordinator_addr = address;
     }
 
+    pub fn set_allocation_manager_address(&mut self, address: String) {
+        self.el_config.allocation_manager_addr = address;
+    }
+
     pub fn set_permission_controller_address(&mut self, address: String) {
         self.el_config.permission_controller_addr = address;
     }
@@ -370,6 +376,11 @@ impl IncredibleConfig {
 
     pub fn allocation_delay(&mut self) -> Result<u32, ConfigError> {
         u32::from_str(&self.operator_config.allocation_delay).map_err(ConfigError::ParseIntError)
+    }
+
+    pub fn allocation_manager_addr(&mut self) -> Result<Address, ConfigError> {
+        Address::from_hex(self.el_config.allocation_manager_addr.as_bytes())
+            .map_err(ConfigError::HexParse)
     }
 
     pub fn service_manager_addr(&self) -> Result<Address, ConfigError> {

@@ -1,6 +1,6 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
-use eigen_utils::{get_provider, get_ws_provider};
+use eigen_common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
 };
@@ -48,9 +48,9 @@ pub struct Challenger {
 impl Challenger {
     /// New instance of Challenger
     pub async fn build(config: IncredibleConfig) -> Result<Self, ChallengerError> {
-        let registry_coordinator_address = config.registry_coordinator_addr()?;
+        let service_manager_address = config.service_manager_addr()?;
         let avs_writer = AvsWriter::new(
-            registry_coordinator_address,
+            service_manager_address,
             config.http_rpc_url(),
             config.get_signer(),
         )

@@ -1,12 +1,14 @@
 use alloy::hex;
 use alloy::primitives::aliases::U96;
-use alloy::primitives::{Address, FixedBytes, U256};
+use alloy::primitives::{address, Address, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
+use alloy::sol_types::SolCall;
 use clap::value_parser;
 use clap::{Args, Parser};
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
+use eigen_common::{get_provider, get_signer};
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
@@ -16,10 +18,12 @@ use eigen_testing_utils::anvil_constants::{
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::allocationmanager::AllocationManager::{self, OperatorSet};
-use eigen_utils::allocationmanager::IAllocationManagerTypes::AllocateParams;
-use eigen_utils::registrycoordinator::RegistryCoordinator;
-use eigen_utils::{get_provider, get_signer};
+use eigen_utils::rewardsv2::middleware::operatorstateretriever::OperatorStateRetriever;
+use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
+use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
+use eigen_utils::slashing::core::permissioncontroller::PermissionController;
+use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
+use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -137,7 +141,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     bls_keystore_2_password: String,
 
     /// operator set id
-    #[arg(long, value_name = "OPERATOR_SET_ID", default_value = "1")]
+    #[arg(long, value_name = "OPERATOR_SET_ID", default_value = "0")]
     operator_set_id: String,
 
     /// Operator Id
@@ -157,7 +161,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     operator_2_id: String,
 
     /// Allocation Delay , default 1
-    #[arg(long, value_name = "ALLOCATION_DELAY", default_value = "1")]
+    #[arg(long, value_name = "ALLOCATION_DELAY", default_value = "0")]
     allocation_delay: String,
 
     /// Operator State retreiver
@@ -187,6 +191,10 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
         default_value = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
     )]
     operator_2_address: String,
+
+    /// Allocation Manager address
+    #[arg(long, value_name = "ALLOCATION_MANAGER_ADDRESS")]
+    allocation_manager_address: Option<String>,
 
     #[arg(long, value_name = "REGISTER_OPERATOR", default_value = "true")]
     register_operator: bool,
@@ -409,6 +417,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             allocation_delay,
             metadata_uri,
             slash_simulate,
+            allocation_manager_address,
             ..
         } = *self;
         if let Some(config_path) = config_path {
@@ -433,7 +442,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_allocation_delay(allocation_delay);
             config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
             config.set_socket(socket);
-
+            config.set_allocation_manager_address(allocation_manager_address_anvil.to_string());
             config.set_quorum_number(quorum_number.clone());
             config.set_operator_id(operator_id);
             config.set_operator_address(operator_address);
@@ -505,18 +514,21 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         // enable operator sets
         // this can only be called by registry coordinator's owner.
         // in our case the deployer key in scripts was anvil's 0 index key which is same as operator1
-        let enable_operator_sets_tx_hash = enable_operator_sets(
-            config.registry_coordinator_addr()?,
-            config.operator_pvt_key(),
-            config.ecdsa_keystore_path(),
-            config.ecdsa_keystore_password(),
-            &rpc_url,
-        )
-        .await?;
-        info!(tx_hash = %enable_operator_sets_tx_hash,"enable operator sets tx_hash");
+        // let enable_operator_sets_tx_hash = enable_operator_sets(
+        //     config.registry_coordinator_addr()?,
+        //     config.operator_pvt_key(),
+        //     config.ecdsa_keystore_path(),
+        //     config.ecdsa_keystore_password(),
+        //     &rpc_url,
+        // )
+        // .await?;
+        // info!(tx_hash = %enable_operator_sets_tx_hash,"enable operator sets tx_hash");
 
         let total_delegated_quorum_create_tx_hash = create_total_delegated_stake_quorum(
             config.erc20_mock_strategy_addr()?,
+            config.service_manager_addr()?,
+            config.allocation_manager_addr()?,
+            config.permission_controller_address()?,
             config.registry_coordinator_addr()?,
             config.operator_pvt_key(),
             config.ecdsa_keystore_path(),
@@ -615,6 +627,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             let register_for_operator_sets_by_operator1_txhash = register_for_operator_sets(
                 config.operator_set_id()?,
                 key_pair,
+                config.permission_controller_address()?,
                 config.registry_coordinator_addr()?,
                 allocation_manager_address_anvil,
                 config.operator_pvt_key(),
@@ -635,8 +648,9 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             let register_for_operator_sets_by_operator2_txhash = register_for_operator_sets(
                 config.operator_set_id()?,
                 key_pair_2,
+                config.permission_controller_address()?,
                 config.registry_coordinator_addr()?,
-                allocation_manager_address_anvil,
+                config.allocation_manager_addr()?,
                 config.operator_2_pvt_key(),
                 ecdsa_keystore_2_path.clone(),
                 ecdsa_keystore_2_password.clone(),
@@ -664,6 +678,22 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             }
             mine_anvil_block(&rpc_url, current_block_number);
         }
+        let current_block_number = get_provider(&rpc_url).get_block_number().await?;
+
+        let operator_state_retriever = OperatorStateRetriever::new(
+            address!("dbc43ba45381e02825b14322cddd15ec4b3164e6"),
+            get_provider(&config.http_rpc_url()),
+        );
+        let s = operator_state_retriever
+            .getOperatorState_0(
+                config.registry_coordinator_addr()?,
+                [0].into(),
+                current_block_number.try_into().unwrap(),
+            )
+            .call()
+            .await
+            .unwrap()
+            ._0;
 
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
@@ -701,19 +731,18 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     let s = signer.to_field_bytes();
     let el_chain_reader = ELChainReader::new(
         get_logger(),
-        allocation_manager,
+        Some(allocation_manager),
         delegation_manager_address,
         rewards_coordinator,
         avs_directory_address,
-        permission_controller_address,
+        Some(permission_controller_address),
         rpc_url.clone(),
     );
     let el_chain_writer = ELChainWriter::new(
-        delegation_manager_address,
         strategy_manager_address,
         rewards_coordinator,
-        permission_controller_address,
-        allocation_manager,
+        Some(permission_controller_address),
+        Some(allocation_manager),
         registry_coordinator_address,
         el_chain_reader.clone(),
         rpc_url.clone(),
@@ -770,6 +799,9 @@ pub async fn set_allocation_delay(
 /// Creates Total Delegated stake
 pub async fn create_total_delegated_stake_quorum(
     strategy_address: Address,
+    service_manager_address: Address,
+    allocation_manager_address: Address,
+    permission_controller_address: Address,
     registry_coordinator_address: Address,
     operator_pvt_key: Option<String>,
     ecdsa_keystore_path: String,
@@ -789,18 +821,58 @@ pub async fn create_total_delegated_stake_quorum(
         RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
 
     let operator_set_param =
-        eigen_utils::registrycoordinator::IRegistryCoordinator::OperatorSetParam {
+        eigen_utils::slashing::middleware::registrycoordinator::ISlashingRegistryCoordinatorTypes::OperatorSetParam {
             maxOperatorCount: 3,
             kickBIPsOfOperatorStake: 100,
             kickBIPsOfTotalStake: 1000,
         };
     let minimum_stake: U96 = U96::from(0);
     let strategy_params = vec![
-        eigen_utils::registrycoordinator::IStakeRegistry::StrategyParams {
+        eigen_utils::slashing::middleware::registrycoordinator::IStakeRegistryTypes::StrategyParams {
             strategy: strategy_address,
             multiplier: U96::from(1),
         },
     ];
+
+    // let permission_controller = PermissionController::new(permission_controller_address, get_provider(rpc_url));
+    let contract_service_manager =
+        MockAvsServiceManager::new(service_manager_address, get_signer(&pvt_key, rpc_url));
+
+    contract_service_manager
+        .setAppointee(
+            signer.address(),
+            allocation_manager_address,
+            alloy::primitives::FixedBytes(AllocationManager::setAVSRegistrarCall::SELECTOR),
+        )
+        .send()
+        .await
+        .unwrap()
+        .get_receipt()
+        .await
+        .unwrap();
+
+    let contract_allocation_manager =
+        AllocationManager::new(allocation_manager_address, get_signer(&pvt_key, rpc_url));
+
+    contract_allocation_manager
+        .setAVSRegistrar(service_manager_address, registry_coordinator_address)
+        .send()
+        .await
+        .unwrap()
+        .get_receipt()
+        .await
+        .unwrap();
+    let ss = contract_service_manager
+        .setAppointee(
+            registry_coordinator_address,
+            allocation_manager_address,
+            FixedBytes(AllocationManager::createOperatorSetsCall::SELECTOR),
+        )
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash;
 
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
@@ -887,6 +959,7 @@ pub async fn modify_allocation_for_operator(
 pub async fn register_for_operator_sets(
     operator_set_id: u32,
     bls_key_pair: BlsKeyPair,
+    permission_controller_address: Address,
     registry_coordinator_address: Address,
     allocation_manager: Address,
     operator_pvt_key: Option<String>,
@@ -906,19 +979,18 @@ pub async fn register_for_operator_sets(
     let pvt_key = hex::encode(s).to_string();
     let el_chain_reader = ELChainReader::new(
         get_logger(),
-        allocation_manager,
+        Some(allocation_manager),
         Address::ZERO,
         Address::ZERO,
         Address::ZERO,
-        Address::ZERO,
+        None,
         rpc_url.to_string(),
     ); // zero address means we don't require that address for registering to operator sets
     let el_chain_writer = ELChainWriter::new(
         Address::ZERO,
         Address::ZERO,
-        Address::ZERO,
-        Address::ZERO,
-        allocation_manager,
+        Some(permission_controller_address),
+        Some(allocation_manager),
         registry_coordinator_address,
         el_chain_reader,
         rpc_url.to_string(),

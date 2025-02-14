@@ -15,18 +15,19 @@ use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
 use ark_ec::AffineRepr;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_common::{get_provider, get_ws_provider};
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigen_logging::get_logger;
 use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
+use eigen_services_blsaggregation::bls_agg::{TaskMetadata, TaskSignature};
 use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigen_services_blsaggregation::{
     bls_agg::BlsAggregatorService, bls_aggregation_service_response::BlsAggregationServiceResponse,
 };
 use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
-use eigen_utils::operatorstateretriever::OperatorStateRetriever;
-use eigen_utils::registrycoordinator::RegistryCoordinator;
-use eigen_utils::{get_provider, get_ws_provider};
+use eigen_utils::slashing::middleware::operatorstateretriever::OperatorStateRetriever;
+use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 pub use error::AggregatorError;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
@@ -87,7 +88,7 @@ impl Aggregator {
         .await?;
 
         let avs_writer = AvsWriter::new(
-            config.registry_coordinator_addr()?,
+            config.service_manager_addr()?,
             config.http_rpc_url(),
             config.get_signer(),
         )
@@ -266,17 +267,19 @@ impl Aggregator {
             let time_to_expiry = tokio::time::Duration::from_secs(
                 (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
             );
+            // let task_signature = TaskSignature::new(taskIndex, task_response_digest, signed_task_response.signature(), signed_task_response.operator_id());
+            let task_metadata = TaskMetadata::new(
+                taskIndex,
+                task.taskCreatedBlock.into(),
+                quorum_nums.clone(),
+                quorum_threshold_percentages.clone(),
+                time_to_expiry,
+            );
             let _ = aggregator
                 .lock()
                 .await
                 .bls_aggregation_service
-                .initialize_new_task(
-                    taskIndex,
-                    task.taskCreatedBlock,
-                    quorum_nums.clone(),
-                    quorum_threshold_percentages.clone(),
-                    time_to_expiry,
-                )
+                .initialize_new_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
         }
@@ -352,13 +355,15 @@ impl Aggregator {
                 }
             }
             if old_entry < U96::from(4800) {
+                let task_signature = TaskSignature::new(
+                    task_index,
+                    task_response_digest,
+                    signed_task_response.signature(),
+                    signed_task_response.operator_id(),
+                );
+
                 self.bls_aggregation_service
-                    .process_new_signature(
-                        task_index,
-                        task_response_digest,
-                        signed_task_response.signature(),
-                        signed_task_response.operator_id(),
-                    )
+                    .process_new_signature(task_signature)
                     .await?;
             }
 
