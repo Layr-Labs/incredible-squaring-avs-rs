@@ -1,6 +1,6 @@
 use alloy::hex;
 use alloy::primitives::aliases::U96;
-use alloy::primitives::{address, Address, FixedBytes, U256};
+use alloy::primitives::{Address, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use alloy::sol_types::SolCall;
@@ -18,10 +18,8 @@ use eigen_testing_utils::anvil_constants::{
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::rewardsv2::middleware::operatorstateretriever::OperatorStateRetriever;
 use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
-use eigen_utils::slashing::core::permissioncontroller::PermissionController;
 use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
@@ -442,13 +440,15 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_allocation_delay(allocation_delay);
             config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
             config.set_socket(socket);
-            config.set_allocation_manager_address(allocation_manager_address_anvil.to_string());
             config.set_quorum_number(quorum_number.clone());
             config.set_operator_id(operator_id);
             config.set_operator_address(operator_address);
             config.set_operator_2_address(operator_2_address);
             config.set_operator_2_id(operator_2_id);
         }
+        config.set_allocation_manager_address(
+            allocation_manager_address.unwrap_or(allocation_manager_address_anvil.to_string()),
+        );
         config.set_erc20_mock_strategy_address(
             erc20_mock_strategy_address.unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
         );
@@ -528,7 +528,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.erc20_mock_strategy_addr()?,
             config.service_manager_addr()?,
             config.allocation_manager_addr()?,
-            config.permission_controller_address()?,
             config.registry_coordinator_addr()?,
             config.operator_pvt_key(),
             config.ecdsa_keystore_path(),
@@ -678,22 +677,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             }
             mine_anvil_block(&rpc_url, current_block_number);
         }
-        let current_block_number = get_provider(&rpc_url).get_block_number().await?;
-
-        let operator_state_retriever = OperatorStateRetriever::new(
-            address!("dbc43ba45381e02825b14322cddd15ec4b3164e6"),
-            get_provider(&config.http_rpc_url()),
-        );
-        let s = operator_state_retriever
-            .getOperatorState_0(
-                config.registry_coordinator_addr()?,
-                [0].into(),
-                current_block_number.try_into().unwrap(),
-            )
-            .call()
-            .await
-            .unwrap()
-            ._0;
 
         let avs_launcher = DefaultAvsLauncher::new();
         let avs_builder = AvsBuilder::new(config);
@@ -801,7 +784,6 @@ pub async fn create_total_delegated_stake_quorum(
     strategy_address: Address,
     service_manager_address: Address,
     allocation_manager_address: Address,
-    permission_controller_address: Address,
     registry_coordinator_address: Address,
     operator_pvt_key: Option<String>,
     ecdsa_keystore_path: String,
@@ -862,7 +844,7 @@ pub async fn create_total_delegated_stake_quorum(
         .get_receipt()
         .await
         .unwrap();
-    let ss = contract_service_manager
+    contract_service_manager
         .setAppointee(
             registry_coordinator_address,
             allocation_manager_address,
