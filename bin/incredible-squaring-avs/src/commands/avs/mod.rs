@@ -686,8 +686,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 /// Register operator in eigenlayer and avs
+#[allow(clippy::too_many_arguments)]
 pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     metadata_uri: String,
     allocation_delay: u32,
@@ -780,6 +780,7 @@ pub async fn set_allocation_delay(
 }
 
 /// Creates Total Delegated stake
+#[allow(clippy::too_many_arguments)]
 pub async fn create_total_delegated_stake_quorum(
     strategy_address: Address,
     service_manager_address: Address,
@@ -853,8 +854,7 @@ pub async fn create_total_delegated_stake_quorum(
         .send()
         .await?
         .get_receipt()
-        .await?
-        .transaction_hash;
+        .await?;
 
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
