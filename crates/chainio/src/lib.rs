@@ -9,10 +9,10 @@ use alloy::{
     primitives::{Address, U256},
     rpc::types::TransactionReceipt,
 };
+use eigen_common::{get_provider, get_signer};
 use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
-use eigen_utils::{
-    get_provider, get_signer,
-    registrycoordinator::RegistryCoordinator::{self, serviceManagerReturn},
+use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator::{
+    self, serviceManagerReturn,
 };
 use error::ChainIoError;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
