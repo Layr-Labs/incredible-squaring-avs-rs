@@ -8,9 +8,10 @@ use alloy::{
 };
 use eigen_aggregator::{
     rpc_server::SignedTaskResponse as SignedTaskResponseImpl,
-    traits::{box_error, TaskMetadata, TaskProcessor, TaskProcessorError, TaskResponse},
+    traits::{box_error, TaskProcessor, TaskProcessorError, TaskResponse},
 };
 use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
+use eigen_services_blsaggregation::bls_agg::TaskMetadata;
 use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigen_types::avs::TaskIndex;
 use incredible_bindings::incrediblesquaringtaskmanager::{
@@ -93,7 +94,7 @@ impl TaskProcessor for ISTaskProcessor {
         } = event;
         self.tasks.lock().await.insert(task_index, task.clone());
 
-        let mut quorum_nums: Vec<u8> = vec![];
+        let mut quorum_numbers: Vec<u8> = vec![];
         let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
         for _ in &task.quorumNumbers {
             quorum_threshold_percentages.push(
@@ -104,19 +105,20 @@ impl TaskProcessor for ISTaskProcessor {
         }
 
         for val in task.quorumNumbers.iter() {
-            quorum_nums.push(*val);
+            quorum_numbers.push(*val);
         }
 
         let time_to_expiry = tokio::time::Duration::from_secs(
             (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
         );
-        Ok(TaskMetadata {
+
+        Ok(TaskMetadata::new(
             task_index,
-            task_created_block: task.taskCreatedBlock,
-            quorum_nums,
+            u64::from(task.taskCreatedBlock),
+            quorum_numbers,
             quorum_threshold_percentages,
             time_to_expiry,
-        })
+        ))
     }
 
     async fn process_task_response(

@@ -11,7 +11,7 @@ use alloy::{
 };
 use eigen_common::{get_provider, get_signer};
 use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
-use eigen_utils::middleware::registrycoordinator::RegistryCoordinator::{
+use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator::{
     self, serviceManagerReturn,
 };
 use error::ChainIoError;

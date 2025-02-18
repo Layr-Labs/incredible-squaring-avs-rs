@@ -17,11 +17,11 @@ use eigen_testing_utils::anvil_constants::{
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::core::allocationmanager::AllocationManager::{self, OperatorSet};
-use eigen_utils::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
-use eigen_utils::middleware::registrycoordinator::{
+use eigen_utils::rewardsv2::middleware::registrycoordinator::{
     IRegistryCoordinator, IStakeRegistry, RegistryCoordinator,
 };
+use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
+use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
@@ -700,20 +700,20 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     let s = signer.to_field_bytes();
     let el_chain_reader = ELChainReader::new(
         get_logger(),
-        allocation_manager,
+        Some(allocation_manager),
         delegation_manager_address,
         rewards_coordinator,
         avs_directory_address,
-        permission_controller_address,
+        Some(permission_controller_address),
         rpc_url.clone(),
     );
     let el_chain_writer = ELChainWriter::new(
         delegation_manager_address,
         strategy_manager_address,
-        rewards_coordinator,
-        permission_controller_address,
+        Some(rewards_coordinator),
+        Some(permission_controller_address),
         allocation_manager,
-        registry_coordinator_address,
+        Some(registry_coordinator_address),
         el_chain_reader.clone(),
         rpc_url.clone(),
         hex::encode(s).to_string(),
