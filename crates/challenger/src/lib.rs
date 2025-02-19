@@ -396,6 +396,7 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
             get_incredible_squaring_task_manager().await,
             config.http_rpc_url(),
             config.task_manager_signer(),
+            config.quorum_number().unwrap().to_string(),
         );
 
         let receipt = task_manager.create_new_task(U256::from(2)).await.unwrap();

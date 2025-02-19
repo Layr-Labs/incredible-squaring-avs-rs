@@ -84,6 +84,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             avs.config.task_manager_addr()?,
             avs.config.http_rpc_url(),
             avs.config.task_manager_signer(),
+            avs.config.quorum_number()?.to_string(),
         );
 
         let task_spam_service = task_manager

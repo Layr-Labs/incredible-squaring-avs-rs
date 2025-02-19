@@ -30,15 +30,23 @@ pub struct TaskManager {
     rpc_url: String,
 
     signer: String,
+
+    quorum_numbers: String,
 }
 
 impl TaskManager {
     /// New [`TaskManager`] instance
-    pub fn new(task_manager_address: Address, rpc_url: String, signer: String) -> Self {
+    pub fn new(
+        task_manager_address: Address,
+        rpc_url: String,
+        signer: String,
+        quorum_numbers: String,
+    ) -> Self {
         Self {
             task_manager_address,
             rpc_url,
             signer,
+            quorum_numbers,
         }
     }
 
@@ -59,7 +67,7 @@ impl TaskManager {
         loop {
             let number_to_be_squared = task_num;
             let quorum_threshold_percentage = 40;
-            let quorum_numbers = Bytes::from_str("0x00")?;
+            let quorum_numbers = Bytes::from_str(&self.quorum_numbers)?;
 
             let _ = task_manager_contract
                 .createNewTask(
