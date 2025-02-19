@@ -12,7 +12,6 @@ workspace = true
 
 [dependencies]
 alloy.workspace = true
-alloy-provider.workspace = true
 incredible-config.workspace = true
 thiserror.workspace = true
 incredible-bindings.workspace = true

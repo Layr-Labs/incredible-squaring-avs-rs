@@ -1,6 +1,6 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
-use eigen_utils::{get_provider, get_ws_provider};
+use eigen_common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
 };
@@ -48,9 +48,9 @@ pub struct Challenger {
 impl Challenger {
     /// New instance of Challenger
     pub async fn build(config: IncredibleConfig) -> Result<Self, ChallengerError> {
-        let registry_coordinator_address = config.registry_coordinator_addr()?;
+        let service_manager_address = config.service_manager_addr()?;
         let avs_writer = AvsWriter::new(
-            registry_coordinator_address,
+            service_manager_address,
             config.http_rpc_url(),
             config.get_signer(),
         )
@@ -278,7 +278,8 @@ mod tests {
     use incredible_task_generator::TaskManager;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
-        get_incredible_squaring_registry_coordinator, get_incredible_squaring_task_manager,
+        get_incredible_squaring_registry_coordinator, get_incredible_squaring_service_manager,
+        get_incredible_squaring_task_manager,
     };
     use std::str::FromStr;
     const INCREDIBLE_CONFIG_FILE: &str = r#"
@@ -318,10 +319,8 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
     /// Build challenger
     pub(crate) async fn build_challenger() -> Result<Challenger, ChallengerError> {
         let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE)?;
-        config.set_registry_coordinator_addr(
-            get_incredible_squaring_registry_coordinator()
-                .await
-                .to_string(),
+        config.set_service_manager_address(
+            get_incredible_squaring_service_manager().await.to_string(),
         );
         config.set_operator_state_retriever(
             get_incredible_squaring_operator_state_retriever()
@@ -397,6 +396,7 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
             get_incredible_squaring_task_manager().await,
             config.http_rpc_url(),
             config.task_manager_signer(),
+            config.quorum_number().unwrap().to_string(),
         );
 
         let receipt = task_manager.create_new_task(U256::from(2)).await.unwrap();

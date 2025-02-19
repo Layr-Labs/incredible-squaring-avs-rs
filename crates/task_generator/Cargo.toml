@@ -17,7 +17,6 @@ rustdoc.all = "warn"
 
 [dependencies]
 alloy.workspace = true
-alloy-provider.workspace = true
 incredible-config.workspace = true
 thiserror.workspace = true
 incredible-bindings.workspace = true
@@ -27,6 +26,7 @@ lazy_static = "1.5.0"
 tokio.workspace = true
 tracing.workspace = true
 reqwest.workspace = true
+eigen-common.workspace = true
 
 # eigen-rs
 eigen-utils.workspace = true

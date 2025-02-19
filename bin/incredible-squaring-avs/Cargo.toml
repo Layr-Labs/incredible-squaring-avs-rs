@@ -36,7 +36,7 @@ eigen-client-avsregistry.workspace = true
 eigen-client-elcontracts.workspace = true
 eigen-types.workspace = true
 eigen-metrics.workspace = true
-
+eigen-common.workspace = true
 [dev-dependencies]
 tokio.workspace = true
 

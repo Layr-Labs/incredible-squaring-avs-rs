@@ -7,6 +7,8 @@ signer = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6"
 [ecdsa_config]
 keystore_path = "crates/testing-utils/src/ecdsakeystore.json"
 keystore_password = "test"
+keystore_2_path = "crates/testing-utils/src/ecdsa_keystore_2.json"
+keystore_2_password = "test"
 
 [bls_config]
 keystore_path = "crates/testing-utils/src/blskeystore.json"
@@ -19,6 +21,11 @@ operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
 operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
 operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
+operator_set_id = "0"
+operator_1_token_amount = "5000000000000000000000"
+operator_2_token_amount = "7000000000000000000000"
+allocation_delay = "0"
+slash_simulate = true
 
 [aggregator_config]
 ip_address = "127.0.0.1:8080"
@@ -31,6 +38,15 @@ quorum_number = "00"
 sig_expiry = "10"
 socket = "incredible"
 
+[operator_2_registration_config]
+register_operator = true
+operator_pvt_key = "0x9385907a38014b53604fd848bf907453f3b4f774db8ffa72b9960f06b238eb15"
+operator_to_avs_registration_sig_salt = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+quorum_number = "00"
+sig_expiry = "10"
+socket = "incredible-operator-2"
+
+
 [metrics_config]
 port_address = "127.0.0.1:9001"
 
@@ -40,6 +56,17 @@ node_port_address = "127.0.0.1:8085"
 [task_manager_config]
 signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 
+[incredible_contracts_config]
+task_manager_addr = "0x7969c5ed335650692bc04293b07f5bf2e7a673c0"
+service_manager_addr = "0xb7278a61aa25c888815afc32ad3cc52ff24fe575"
+erc20_mock_strategy_addr = "0x5e3d0fde6f793b3115a9e7f5ebc195bbeed35d6c"
 
-
-  
+[el_config]
+registry_coordinator_addr = "0xc351628eb244ec633d5f21fbd6621e1a683b1181"
+operator_state_retriever_addr = "0xdbc43ba45381e02825b14322cddd15ec4b3164e6"
+delegation_manager_addr = "0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9"
+avs_directory_addr = "0xb7f8bc63bbcad18155201308c8f3540b07f84f5e"
+strategy_manager_addr = "0xa513e6e4b8f2a923d98304ec87f64353c4d5c853"  
+rewards_coordinator_addr = "0x0dcd1bf9a1b36ce34237eeafef220932846bcd82"
+permission_controller_addr = "0x4ed7c70f96b99c776995fb64377f0d4ab3b0e1c1"
+allocation_manager_addr = "0x8a791620dd6260079bf849dc5567adc3f2fdc318"

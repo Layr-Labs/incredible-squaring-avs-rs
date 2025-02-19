@@ -10,7 +10,7 @@ use alloy::{
 };
 
 use alloy::primitives::U256;
-use alloy_provider::{Provider, ProviderBuilder};
+use alloy::providers::{Provider, ProviderBuilder};
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_eth::instrumented_client::InstrumentedClient;
 use eigen_crypto_bls::BlsKeyPair;

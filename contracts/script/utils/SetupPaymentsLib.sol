@@ -65,39 +65,39 @@ library SetupPaymentsLib {
         rewardsCoordinator.createAVSRewardsSubmission(rewardsSubmissions);
     }
 
-    // function createOperatorDirectedAVSRewardsSubmissions(
-    //     address strategy,
-    //     address avs,
-    //     IRewardsCoordinator.OperatorReward[] memory operatorRewards,
-    //     uint256 numPayments,
-    //     uint32 duration,
-    //     uint32 startTimestamp
-    // ) internal {
-    //     IStrategy(strategy).underlyingToken();
-    //     IRewardsCoordinator.OperatorDirectedRewardsSubmission[] memory operatorDirectedRewardsSubmissions =
-    //         new IRewardsCoordinator.OperatorDirectedRewardsSubmission[](numPayments);
-    //     for (uint256 i = 0; i < numPayments; i++) {
-    //         IRewardsCoordinator.StrategyAndMultiplier[] memory strategiesAndMultipliers =
-    //             new IRewardsCoordinator.StrategyAndMultiplier[](1);
-    //         strategiesAndMultipliers[0] =
-    //             IRewardsCoordinator.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
+    function createOperatorDirectedAVSRewardsSubmissions(
+        address strategy,
+        address avs,
+        IRewardsCoordinator.OperatorReward[] memory operatorRewards,
+        uint256 numPayments,
+        uint32 duration,
+        uint32 startTimestamp
+    ) internal {
+        IStrategy(strategy).underlyingToken();
+        IRewardsCoordinator.OperatorDirectedRewardsSubmission[] memory operatorDirectedRewardsSubmissions =
+            new IRewardsCoordinator.OperatorDirectedRewardsSubmission[](numPayments);
+        for (uint256 i = 0; i < numPayments; i++) {
+            IRewardsCoordinatorTypes.StrategyAndMultiplier[] memory strategiesAndMultipliers =
+                new IRewardsCoordinatorTypes.StrategyAndMultiplier[](1);
+            strategiesAndMultipliers[0] =
+                IRewardsCoordinatorTypes.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
 
-    //         IRewardsCoordinator.OperatorDirectedRewardsSubmission memory rewardSubmission = IRewardsCoordinator
-    //             .OperatorDirectedRewardsSubmission({
-    //             strategiesAndMultipliers: strategiesAndMultipliers,
-    //             token: IStrategy(strategy).underlyingToken(),
-    //             operatorRewards: operatorRewards,
-    //             startTimestamp: startTimestamp,
-    //             duration: duration,
-    //             description: ""
-    //         });
+            IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission memory rewardSubmission = IRewardsCoordinatorTypes
+                .OperatorDirectedRewardsSubmission({
+                strategiesAndMultipliers: strategiesAndMultipliers,
+                token: IStrategy(strategy).underlyingToken(),
+                operatorRewards: operatorRewards,
+                startTimestamp: startTimestamp,
+                duration: duration,
+                description: ""
+            });
 
-    //         operatorDirectedRewardsSubmissions[i] = rewardSubmission;
-    //     }
-    //     IncredibleSquaringServiceManager(avs).createOperatorDirectedAVSRewardsSubmission(
-    //         avs, operatorDirectedRewardsSubmissions
-    //     );
-    // }
+            operatorDirectedRewardsSubmissions[i] = rewardSubmission;
+        }
+        IncredibleSquaringServiceManager(avs).createOperatorDirectedAVSRewardsSubmission(
+            operatorDirectedRewardsSubmissions
+        );
+    }
 
     function processClaim(
         IRewardsCoordinator rewardsCoordinator,

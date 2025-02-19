@@ -160,12 +160,7 @@ mod tests {
             .await
             .to_string(),
         );
-        dbg!(incredible_config.operator_set_id().unwrap());
-        dbg!(get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await);
-        dbg!(incredible_config.operator_pvt_key());
-        dbg!(incredible_config.ecdsa_keystore_path());
-        dbg!(incredible_config.service_manager_addr().unwrap());
-        dbg!(get_incredible_squaring_strategy_address().await);
+    
         let a = enable_operator_sets(incredible_config.registry_coordinator_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();
         // dbg!(a);
         let w = create_total_delegated_stake_quorum(get_incredible_squaring_strategy_address().await,incredible_config.registry_coordinator_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();

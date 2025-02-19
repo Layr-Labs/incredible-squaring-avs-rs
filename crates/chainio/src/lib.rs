@@ -9,11 +9,8 @@ use alloy::{
     primitives::{Address, U256},
     rpc::types::TransactionReceipt,
 };
+use eigen_common::{get_provider, get_signer};
 use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
-use eigen_utils::{
-    get_provider, get_signer,
-    registrycoordinator::RegistryCoordinator::{self, serviceManagerReturn},
-};
 use error::ChainIoError;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
@@ -42,20 +39,11 @@ pub struct AvsWriter {
 impl AvsWriter {
     /// new instance
     pub async fn new(
-        registry_coordinator_addr: Address,
+        service_manager_addr: Address,
         rpc_url: String,
         signer: String,
     ) -> Result<Self, error::ChainIoError> {
         let provider = get_provider(&rpc_url);
-        let contract_registry_coordinator =
-            RegistryCoordinator::new(registry_coordinator_addr, &provider);
-        let service_manager_addr_return = contract_registry_coordinator
-            .serviceManager()
-            .call()
-            .await?;
-        let serviceManagerReturn {
-            _0: service_manager_addr,
-        } = service_manager_addr_return;
 
         let contract_service_manager =
             IncredibleSquaringServiceManager::new(service_manager_addr, &provider);
