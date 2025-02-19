@@ -511,19 +511,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
 
-        // enable operator sets
-        // this can only be called by registry coordinator's owner.
-        // in our case the deployer key in scripts was anvil's 0 index key which is same as operator1
-        // let enable_operator_sets_tx_hash = enable_operator_sets(
-        //     config.registry_coordinator_addr()?,
-        //     config.operator_pvt_key(),
-        //     config.ecdsa_keystore_path(),
-        //     config.ecdsa_keystore_password(),
-        //     &rpc_url,
-        // )
-        // .await?;
-        // info!(tx_hash = %enable_operator_sets_tx_hash,"enable operator sets tx_hash");
-
         let total_delegated_quorum_create_tx_hash = create_total_delegated_stake_quorum(
             config.erc20_mock_strategy_addr()?,
             config.service_manager_addr()?,
