@@ -158,7 +158,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_2_id: String,
 
-    /// Allocation Delay , default 1
+    /// Allocation Delay , default 0
     #[arg(long, value_name = "ALLOCATION_DELAY", default_value = "0")]
     allocation_delay: String,
 
@@ -445,69 +445,74 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_operator_address(operator_address);
             config.set_operator_2_address(operator_2_address);
             config.set_operator_2_id(operator_2_id);
-        }
-        config.set_allocation_manager_address(
-            allocation_manager_address.unwrap_or(allocation_manager_address_anvil.to_string()),
-        );
-        config.set_erc20_mock_strategy_address(
-            erc20_mock_strategy_address.unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
-        );
-        config.set_delegation_manager_addr(
-            delegation_manager_address
-                .clone()
-                .unwrap_or(delegation_manager_address_anvil.to_string()),
-        );
-        config.set_operator_2_quorum_number(quorum_number);
-        config.set_avs_directory_address(
-            avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
-        );
-        config.set_operator_signing_key(operator_pvt_key);
-        config.set_operator_2_signing_key(operator_2_pvt_key);
-        // use value from config , if None , then use anvil
-        config.set_registry_coordinator_addr(
-            registry_coordinator_address
-                .unwrap_or(default_anvil.registry_coordinator_address.to_string()),
-        );
-        config.set_operator_state_retriever(
-            operator_state_retriever_addr
-                .unwrap_or(default_anvil.operator_state_retriever_address.to_string()),
-        );
-        config.set_delegation_manager_addr(
-            delegation_manager_address.unwrap_or(delegation_manager_address_anvil.to_string()),
-        );
-        config.set_strategy_manager_addr(
-            strategy_manager_addr.unwrap_or(strategy_manager_address_anvil.to_string()),
-        );
-        config.set_task_manager_address(
-            task_manager_addr.unwrap_or(incredible_squaring_task_manager_address_anvil.to_string()),
-        );
-        config.set_rewards_coordinator_address(rewards_coordinator_address_anvil.to_string());
-        config.set_permission_controller_address(permission_controller_address_anvil.to_string());
-        config.set_ecdsa_keystore_2_path(ecdsa_keystore_2_path.clone());
-        config.set_ecdsa_keystore_2_pasword(ecdsa_keystore_2_password.clone());
-        config
-            .set_operator_2_registration_sig_salt(operator_2_to_avs_registration_sig_salt.clone());
-        let now = SystemTime::now();
-        let mut expiry: U256 = U256::from(0);
-        if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
-            let seconds = duration_since_epoch.as_secs(); // Returns a u64
+            config.set_allocation_manager_address(
+                allocation_manager_address.unwrap_or(allocation_manager_address_anvil.to_string()),
+            );
+            config.set_erc20_mock_strategy_address(
+                erc20_mock_strategy_address
+                    .unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
+            );
+            config.set_delegation_manager_addr(
+                delegation_manager_address
+                    .clone()
+                    .unwrap_or(delegation_manager_address_anvil.to_string()),
+            );
+            config.set_operator_2_quorum_number(quorum_number);
+            config.set_avs_directory_address(
+                avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
+            );
+            config.set_operator_signing_key(operator_pvt_key);
+            config.set_operator_2_signing_key(operator_2_pvt_key);
+            // use value from config , if None , then use anvil
+            config.set_registry_coordinator_addr(
+                registry_coordinator_address
+                    .unwrap_or(default_anvil.registry_coordinator_address.to_string()),
+            );
+            config.set_operator_state_retriever(
+                operator_state_retriever_addr
+                    .unwrap_or(default_anvil.operator_state_retriever_address.to_string()),
+            );
+            config.set_delegation_manager_addr(
+                delegation_manager_address.unwrap_or(delegation_manager_address_anvil.to_string()),
+            );
+            config.set_strategy_manager_addr(
+                strategy_manager_addr.unwrap_or(strategy_manager_address_anvil.to_string()),
+            );
+            config.set_task_manager_address(
+                task_manager_addr
+                    .unwrap_or(incredible_squaring_task_manager_address_anvil.to_string()),
+            );
+            config.set_rewards_coordinator_address(rewards_coordinator_address_anvil.to_string());
+            config
+                .set_permission_controller_address(permission_controller_address_anvil.to_string());
+            config.set_ecdsa_keystore_2_path(ecdsa_keystore_2_path.clone());
+            config.set_ecdsa_keystore_2_pasword(ecdsa_keystore_2_password.clone());
+            config.set_operator_2_registration_sig_salt(
+                operator_2_to_avs_registration_sig_salt.clone(),
+            );
+            let now = SystemTime::now();
+            let mut expiry: U256 = U256::from(0);
+            if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
+                let seconds = duration_since_epoch.as_secs(); // Returns a u64
 
-            // Signature expiry is at 10000 seconds
-            expiry = U256::from(seconds) + U256::from(10000);
-        } else {
-            debug!("System time seems to be before the UNIX epoch.");
+                // Signature expiry is at 10000 seconds
+                expiry = U256::from(seconds) + U256::from(10000);
+            } else {
+                debug!("System time seems to be before the UNIX epoch.");
+            }
+            // provided expiry , if not , use default expiry : 10000 seconds
+            config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
+            config.set_bls_keystore_2_path(bls_keystore_2_path.clone());
+            config.set_bls_keystore_2_password(bls_keystore_2_password.clone());
+            config.set_operator_2_sig_expiry(
+                operator_2_sig_expiry
+                    .unwrap_or(expiry.to_string())
+                    .to_string(),
+            );
+            config.set_operator_1_token_amount(operator_1_token_amount);
+            config.set_operator_2_token_amount(operator_2_token_amount);
         }
-        // provided expiry , if not , use default expiry : 10000 seconds
-        config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
-        config.set_bls_keystore_2_path(bls_keystore_2_path.clone());
-        config.set_bls_keystore_2_password(bls_keystore_2_password.clone());
-        config.set_operator_2_sig_expiry(
-            operator_2_sig_expiry
-                .unwrap_or(expiry.to_string())
-                .to_string(),
-        );
-        config.set_operator_1_token_amount(operator_1_token_amount);
-        config.set_operator_2_token_amount(operator_2_token_amount);
+
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
 

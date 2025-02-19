@@ -90,7 +90,7 @@ impl TaskManager {
         &self,
         task_num: U256,
     ) -> eyre::Result<TransactionReceipt, eyre::Error> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let url = Url::parse(&self.rpc_url)?;
         let signer = PrivateKeySigner::from_str(&self.signer)?;
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new()
@@ -102,7 +102,7 @@ impl TaskManager {
 
         let number_to_be_squared = task_num;
         let quorum_threshold_percentage = 40;
-        let quorum_numbers = Bytes::from_str("0x01")?;
+        let quorum_numbers = Bytes::from_str("0x00")?;
         let s = task_manager_contract
             .createNewTask(
                 number_to_be_squared,
