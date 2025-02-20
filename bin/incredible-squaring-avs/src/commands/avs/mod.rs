@@ -214,7 +214,7 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     #[arg(long, value_name = "SOCKET", default_value = "incredible-socket")]
     socket: String,
 
-    #[arg(long, value_name = "QUORUM_NUMBER", default_value = "1")]
+    #[arg(long, value_name = "QUORUM_NUMBER", default_value = "00")]
     quorum_number: String,
 
     #[arg(long, value_name = "SIG_EXPIRY")]
