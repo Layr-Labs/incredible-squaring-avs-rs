@@ -621,7 +621,7 @@ pub async fn register_operator_with_el_and_avs(
     };
 
     let _ = el_chain_writer
-        .register_as_operator_m2(operator_details)
+        .register_as_operator_preslashing(operator_details)
         .await?;
     deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
     let tx_hash = avs_registry_writer
