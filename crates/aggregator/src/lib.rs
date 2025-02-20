@@ -267,7 +267,6 @@ impl Aggregator {
             let time_to_expiry = tokio::time::Duration::from_secs(
                 (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
             );
-            // let task_signature = TaskSignature::new(taskIndex, task_response_digest, signed_task_response.signature(), signed_task_response.operator_id());
             let task_metadata = TaskMetadata::new(
                 taskIndex,
                 task.taskCreatedBlock.into(),
