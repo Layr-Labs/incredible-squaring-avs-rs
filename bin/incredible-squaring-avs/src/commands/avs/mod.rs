@@ -11,8 +11,8 @@ use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
 use eigen_metrics::prometheus::init_registry;
 use eigen_testing_utils::anvil_constants::{
-    get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,
-    ANVIL_HTTP_URL,
+    get_avs_directory_address, get_delegation_manager_address, get_rewards_coordinator_address,
+    get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
@@ -220,14 +220,36 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     task_manager_signer: String,
 
-    #[arg(long, value_name = "OPERATOR_PVT_KEY")]
-    operator_pvt_key: Option<String>,
+    #[arg(
+        long,
+        value_name = "OPERATOR_PVT_KEY",
+        default_value = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    )]
+    operator_pvt_key: String,
 
-    #[arg(long, value_name = "OPERATOR_2_PVT_KEY")]
-    operator_2_pvt_key: Option<String>,
+    #[arg(
+        long,
+        value_name = "OPERATOR_2_PVT_KEY",
+        default_value = "0x9385907a38014b53604fd848bf907453f3b4f774db8ffa72b9960f06b238eb15"
+    )]
+    operator_2_pvt_key: String,
 
     #[arg(long, value_name = "OPERATOR_2_SIG_EXPIRY")]
     operator_2_sig_expiry: Option<String>,
+
+    #[arg(
+        long,
+        value_name = "OPERATOR_1_TOKEN_AMOUNT",
+        default_value = "5000000000000000000000"
+    )]
+    operator_1_token_amount: String,
+
+    #[arg(
+        long,
+        value_name = "OPERATOR_2_TOKEN_AMOUNT",
+        default_value = "7000000000000000000000"
+    )]
+    operator_2_token_amount: String,
 
     #[arg(
         long,
@@ -322,6 +344,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_2_sig_expiry,
             operator_2_address,
             operator_2_id,
+            operator_1_token_amount,
+            operator_2_token_amount,
             ..
         } = *self;
         if let Some(config_path) = config_path {
@@ -350,7 +374,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_aggregator_ip_address(aggregator_ip_address);
             config.set_bls_keystore_path(bls_keystore_path.clone());
             config.set_bls_keystore_password(bls_keystore_password.clone());
-
+            config.set_operator_1_token_amount(operator_1_token_amount);
+            config.set_operator_2_token_amount(operator_2_token_amount);
             config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
             config.set_socket(socket);
             config.set_quorum_number(quorum_number);
@@ -377,7 +402,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                     get_incredible_squaring_strategy_address().await;
                 let incredible_squaring_task_manager_address_anvil =
                     get_incredible_squaring_task_manager().await;
-
+                let rewards_coordinator_address_anvil =
+                    get_rewards_coordinator_address(ANVIL_HTTP_URL.to_string()).await;
                 let default_anvil = AnvilValues::new(
                     registry_coordinator_address_anvil,
                     operator_state_retriever_address_anvil,
@@ -403,6 +429,9 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                     operator_state_retriever_addr
                         .unwrap_or(default_anvil.operator_state_retriever_address.to_string()),
                 );
+                config
+                    .set_rewards_coordinator_address(rewards_coordinator_address_anvil.to_string());
+
                 config.set_delegation_manager_addr(
                     delegation_manager_address
                         .unwrap_or(delegation_manager_address_anvil.to_string()),
@@ -454,6 +483,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 ecdsa_keystore_path.clone(),
                 ecdsa_keystore_password.clone(),
                 config.registry_coordinator_addr()?,
+                config.rewards_coordinator_addr()?,
                 config.operator_state_retriever_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
@@ -465,7 +495,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.sig_expiry()?,
                 config.quorum_number()?,
                 config.socket().to_string(),
-                U256::from(5000),
+                U256::from(config.operator_1_token_amount()?),
             )
             .await;
 
@@ -475,6 +505,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 ecdsa_keystore_2_path.clone(),
                 ecdsa_keystore_2_password.clone(),
                 config.registry_coordinator_addr()?,
+                config.rewards_coordinator_addr()?,
                 config.operator_state_retriever_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
@@ -486,7 +517,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.operator_2_sig_expiry()?,
                 config.operator_2_quorum_number()?,
                 config.operator_2_socket().to_string(),
-                U256::from(7000),
+                U256::from(config.operator_2_token_amount()?),
             )
             .await;
             if config.chain_id().eq(&31337) {
@@ -508,7 +539,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             }
         }
         let avs_launcher = DefaultAvsLauncher::new();
-        let avs_builder = AvsBuilder::new(config);
+        let avs_builder = AvsBuilder::new(config.clone());
+
         let _ = avs_launcher.launch_avs(avs_builder).await;
 
         Ok(())
@@ -523,6 +555,7 @@ pub async fn register_operator_with_el_and_avs(
     ecdsa_keystore_path: String,
     ecdsa_keystore_password: String,
     registry_coordinator_address: Address,
+    rewards_coordinator_address: Address,
     operator_state_retriever_address: Address,
     delegation_manager_address: Address,
     avs_directory_address: Address,
@@ -543,7 +576,7 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
-
+    info!("op_2_address{:?}", hex::encode(s).to_string());
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
         rpc_url.clone(),
@@ -563,6 +596,7 @@ pub async fn register_operator_with_el_and_avs(
         get_logger(),
         Address::ZERO,
         delegation_manager_address,
+        rewards_coordinator_address,
         avs_directory_address,
         rpc_url.clone(),
     );

@@ -35,7 +35,8 @@ use tracing::info;
 pub struct AvsWriter {
     task_manager_addr: Address,
     signer: String,
-    rpc_url: String,
+    /// rpc url
+    pub rpc_url: String,
 }
 
 impl AvsWriter {
@@ -168,6 +169,7 @@ impl AvsWriter {
     ) -> Result<(), ChainIoError> {
         let pr = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract = IncredibleSquaringTaskManager::new(self.task_manager_addr, pr);
+
         let receipt = task_manager_contract
             .respondToTask(task, task_response, non_signer_stakes_and_signature)
             .send()
