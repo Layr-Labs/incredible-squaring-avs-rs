@@ -47,7 +47,7 @@ pub struct FakeAggregator {
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
 
     service_handle: ServiceHandle,
-
+    #[allow(dead_code)]
     aggregator_response: AggregateReceiver,
 }
 
@@ -101,7 +101,7 @@ impl FakeAggregator {
 
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_test_logger());
-        let (handle, mut aggregator_response) = bls_aggregation_service.start();
+        let (handle, aggregator_response) = bls_aggregation_service.start();
 
         Self {
             port_address: config.aggregator_ip_addr(),
