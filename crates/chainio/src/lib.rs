@@ -35,6 +35,7 @@ use tracing::info;
 pub struct AvsWriter {
     task_manager_addr: Address,
     signer: String,
+    /// rpc url
     pub rpc_url: String,
 }
 
