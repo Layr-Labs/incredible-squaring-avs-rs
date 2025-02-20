@@ -71,7 +71,6 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
         let aggregator = Aggregator::new(avs.config.clone()).await?;
-
         let aggregator_service_with_rpc_client = aggregator
             .start(
                 avs.config.ws_rpc_url().clone(),
@@ -86,11 +85,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             avs.config.task_manager_signer(),
             avs.config.quorum_number()?.to_string(),
         );
-
         let task_spam_service = task_manager
             .start()
             .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
-
         let node_api = NodeApi::new("incredible-squaring", "v0.0.1");
         let node_api_address = avs.config.node_api_port_address();
         info!("node_api_address{:?}", node_api_address);
