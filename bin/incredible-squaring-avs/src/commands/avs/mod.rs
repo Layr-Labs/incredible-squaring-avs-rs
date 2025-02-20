@@ -1,4 +1,4 @@
-use alloy::primitives::{address, Address, Bytes, FixedBytes, U256};
+use alloy::primitives::{Address, Bytes, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
@@ -15,9 +15,6 @@ use eigen_testing_utils::anvil_constants::{
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use eigen_types::operator::Operator;
-use eigen_utils::middleware::indexregistry::IndexRegistry;
-use eigen_utils::middleware::operatorstateretriever::OperatorStateRetriever;
-use eigen_utils::middleware::registrycoordinator::RegistryCoordinator;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
