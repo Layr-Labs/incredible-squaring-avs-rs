@@ -1,3 +1,4 @@
+use alloy::contract::Error as ContractError;
 use alloy::transports::{RpcError, TransportErrorKind};
 use eigen_client_avsregistry::error::AvsRegistryError;
 use eigen_crypto_bls::error::BlsError;
@@ -7,6 +8,7 @@ use incredible_chainio::error::ChainIoError;
 use incredible_config::error::ConfigError;
 use jsonrpc_core::serde_json::Error;
 use thiserror::Error;
+
 /// Error returned by chainio
 #[derive(Debug, Error)]
 pub enum AggregatorError {
@@ -46,4 +48,8 @@ pub enum AggregatorError {
     /// Operator Info service error
     #[error("Operator Info Service error")]
     OperatorInfoServiceError(#[from] OperatorInfoServiceError),
+
+    /// Alloy Contract Error
+    #[error("Alloy Contract Error")]
+    ContractError(#[from] ContractError),
 }

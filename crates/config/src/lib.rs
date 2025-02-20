@@ -113,6 +113,10 @@ pub struct OperatorConfig {
     pub operator_2_address: String,
 
     pub operator_2_id: String,
+
+    pub operator_1_token_amount: String,
+
+    pub operator_2_token_amount: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -126,6 +130,8 @@ pub struct ElConfig {
     pub avs_directory_addr: String,
 
     pub strategy_manager_addr: String,
+
+    pub rewards_coordinator_addr: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -229,6 +235,14 @@ impl IncredibleConfig {
         self.bls_config.keystore_2_password = password;
     }
 
+    pub fn set_operator_1_token_amount(&mut self, amount: String) {
+        self.operator_config.operator_1_token_amount = amount;
+    }
+
+    pub fn set_operator_2_token_amount(&mut self, amount: String) {
+        self.operator_config.operator_2_token_amount = amount;
+    }
+
     pub fn set_registry_coordinator_addr(&mut self, address: String) {
         self.el_config.registry_coordinator_addr = address;
     }
@@ -269,8 +283,8 @@ impl IncredibleConfig {
         self.operator_registration_config.sig_expiry = expiry;
     }
 
-    pub fn set_operator_signing_key(&mut self, pvt_key: Option<String>) {
-        self.operator_registration_config.operator_pvt_key = pvt_key;
+    pub fn set_operator_signing_key(&mut self, pvt_key: String) {
+        self.operator_registration_config.operator_pvt_key = Some(pvt_key);
     }
 
     pub fn set_operator_2_registration_sig_salt(&mut self, salt: String) {
@@ -286,12 +300,16 @@ impl IncredibleConfig {
         self.operator_2_registration_config.socket = socket;
     }
 
+    pub fn set_rewards_coordinator_address(&mut self, address: String) {
+        self.el_config.rewards_coordinator_addr = address;
+    }
+
     pub fn set_operator_2_sig_expiry(&mut self, expiry: String) {
         self.operator_2_registration_config.sig_expiry = expiry;
     }
 
-    pub fn set_operator_2_signing_key(&mut self, pvt_key: Option<String>) {
-        self.operator_2_registration_config.operator_pvt_key = pvt_key;
+    pub fn set_operator_2_signing_key(&mut self, pvt_key: String) {
+        self.operator_2_registration_config.operator_pvt_key = Some(pvt_key);
     }
 
     pub fn set_avs_directory_address(&mut self, address: String) {
@@ -381,6 +399,16 @@ impl IncredibleConfig {
             .map_err(ConfigError::HexParse)
     }
 
+    pub fn operator_1_token_amount(&mut self) -> Result<U256, ConfigError> {
+        U256::from_str(&self.operator_config.operator_1_token_amount)
+            .map_err(ConfigError::ParseError)
+    }
+
+    pub fn operator_2_token_amount(&mut self) -> Result<U256, ConfigError> {
+        U256::from_str(&self.operator_config.operator_2_token_amount)
+            .map_err(ConfigError::ParseError)
+    }
+
     pub fn aggregator_ip_addr(&self) -> String {
         self.aggregator_config.ip_address.clone()
     }
@@ -392,6 +420,11 @@ impl IncredibleConfig {
 
     pub fn registry_coordinator_addr(&self) -> Result<Address, ConfigError> {
         Address::from_hex(self.el_config.registry_coordinator_addr.as_bytes())
+            .map_err(ConfigError::HexParse)
+    }
+
+    pub fn rewards_coordinator_addr(&self) -> Result<Address, ConfigError> {
+        Address::from_hex(self.el_config.rewards_coordinator_addr.as_bytes())
             .map_err(ConfigError::HexParse)
     }
 
