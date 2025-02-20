@@ -100,9 +100,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             });
         });
 
-        let _ = futures::future::try_join4(
+        let _ = futures::future::try_join5(
             operator_service,
-            // operator2_service,
+            operator2_service,
             challenger_service,
             aggregator_service_with_rpc_client,
             task_spam_service,
