@@ -68,15 +68,16 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "alloy"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02b0561294ccedc6181e5528b850b4579e3fbde696507baa00109bfd9054c5bb"
+checksum = "bbcc41e8a11a4975b18ec6afba2cc48d591fa63336a4c526dacb50479a8d6b35"
 dependencies = [
  "alloy-consensus",
  "alloy-contract",
  "alloy-core",
  "alloy-eips",
  "alloy-genesis",
+ "alloy-json-rpc",
  "alloy-network",
  "alloy-provider",
  "alloy-pubsub",
@@ -105,9 +106,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a101d4d016f47f13890a74290fdd17b05dd175191d9337bc600791fb96e4dea8"
+checksum = "f4138dc275554afa6f18c4217262ac9388790b2fc393c2dfe03c51d357abf013"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -123,9 +124,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-consensus-any"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa60357dda9a3d0f738f18844bd6d0f4a5924cc5cf00bfad2ff1369897966123"
+checksum = "0fa04e1882c31288ce1028fdf31b6ea94cfa9eafa2e497f903ded631c8c6a42c"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -137,9 +138,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-contract"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2869e4fb31331d3b8c58c7db567d1e4e4e94ef64640beda3b6dd9b7045690941"
+checksum = "5f21886c1fea0626f755a49b2ac653b396fb345233f6170db2da3d0ada31560c"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi",
@@ -199,9 +200,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-eip7702"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c986539255fb839d1533c128e190e557e52ff652c9ef62939e233a81dd93f7e"
+checksum = "cabf647eb4650c91a9d38cb6f972bb320009e7e9d61765fb688a86f1563b33e8"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",
@@ -212,9 +213,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-eips"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b6755b093afef5925f25079dd5a7c8d096398b804ba60cb5275397b06b31689"
+checksum = "52dd5869ed09e399003e0e0ec6903d981b2a92e74c5d37e6b40890bad2517526"
 dependencies = [
  "alloy-eip2930",
  "alloy-eip7702",
@@ -230,10 +231,11 @@ dependencies = [
 
 [[package]]
 name = "alloy-genesis"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aeec8e6eab6e52b7c9f918748c9b811e87dbef7312a2e3a2ca1729a92966a6af"
+checksum = "e7d2a7fe5c1a9bd6793829ea21a636f30fc2b3f5d2e7418ba86d96e41dd1f460"
 dependencies = [
+ "alloy-eips",
  "alloy-primitives",
  "alloy-serde",
  "alloy-trie",
@@ -254,9 +256,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-json-rpc"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fa077efe0b834bcd89ff4ba547f48fb081e4fdc3673dd7da1b295a2cf2bb7b7"
+checksum = "2008bedb8159a255b46b7c8614516eda06679ea82f620913679afbd8031fea72"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
@@ -268,9 +270,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "209a1882a08e21aca4aac6e2a674dc6fcf614058ef8cb02947d63782b1899552"
+checksum = "4556f01fe41d0677495df10a648ddcf7ce118b0e8aa9642a0e2b6dd1fb7259de"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -293,9 +295,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-network-primitives"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c20219d1ad261da7a6331c16367214ee7ded41d001fabbbd656fbf71898b2773"
+checksum = "f31c3c6b71340a1d076831823f09cb6e02de01de5c6630a9631bdb36f947ff80"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -334,9 +336,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-provider"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9eefa6f4c798ad01f9b4202d02cea75f5ec11fa180502f4701e2b47965a8c0bb"
+checksum = "5a22c4441b3ebe2d77fa9cf629ba68c3f713eb91779cff84275393db97eddd82"
 dependencies = [
  "alloy-chains",
  "alloy-consensus",
@@ -374,9 +376,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-pubsub"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aac9a7210e0812b1d814118f426f57eb7fc260a419224dd1c76d169879c06907"
+checksum = "2269fd635f7b505f27c63a3cb293148cd02301efce4c8bdd9ff54fbfc4a20e23"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -415,9 +417,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-client"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed30bf1041e84cabc5900f52978ca345dd9969f2194a945e6fdec25b0620705c"
+checksum = "d06a292b37e182e514903ede6e623b9de96420e8109ce300da288a96d88b7e4b"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",
@@ -441,9 +443,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ab686b0fa475d2a4f5916c5f07797734a691ec58e44f0f55d4746ea39cbcefb"
+checksum = "9383845dd924939e7ab0298bbfe231505e20928907d7905aa3bf112287305e06"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types-engine",
@@ -454,9 +456,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-any"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "200661999b6e235d9840be5d60a6e8ae2f0af9eb2a256dd378786744660e36ec"
+checksum = "ca445cef0eb6c2cf51cfb4e214fbf1ebd00893ae2e6f3b944c8101b07990f988"
 dependencies = [
  "alloy-consensus-any",
  "alloy-rpc-types-eth",
@@ -465,9 +467,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-engine"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d297268357e3eae834ddd6888b15f764cbc0f4b3be9265f5f6ec239013f3d68"
+checksum = "4a5f821f30344862a0b6eb9a1c2eb91dfb2ff44c7489f37152a526cdcab79264"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -481,9 +483,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-rpc-types-eth"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0600b8b5e2dc0cab12cbf91b5a885c35871789fb7b3a57b434bd4fced5b7a8b"
+checksum = "0938bc615c02421bd86c1733ca7205cc3d99a122d9f9bff05726bd604b76a5c2"
 dependencies = [
  "alloy-consensus",
  "alloy-consensus-any",
@@ -493,17 +495,17 @@ dependencies = [
  "alloy-rlp",
  "alloy-serde",
  "alloy-sol-types",
- "derive_more",
  "itertools 0.13.0",
  "serde",
  "serde_json",
+ "thiserror 2.0.7",
 ]
 
 [[package]]
 name = "alloy-serde"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9afa753a97002a33b2ccb707d9f15f31c81b8c1b786c95b73cc62bb1d1fd0c3f"
+checksum = "ae0465c71d4dced7525f408d84873aeebb71faf807d22d74c4a426430ccd9b55"
 dependencies = [
  "alloy-primitives",
  "serde",
@@ -512,9 +514,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b2cbff01a673936c2efd7e00d4c0e9a4dbbd6d600e2ce298078d33efbb19cd7"
+checksum = "9bfa395ad5cc952c82358d31e4c68b27bf4a89a5456d9b27e226e77dac50e4ff"
 dependencies = [
  "alloy-primitives",
  "async-trait",
@@ -526,9 +528,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer-aws"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71ce77227fdb9059fd7a3b38a8679c0dae95d81886ee8c13ef8ad99d74866bbd"
+checksum = "0eb06810c34427d499863817eb506acf57cb9ded9224b374116cae4e22dbd4e9"
 dependencies = [
  "alloy-consensus",
  "alloy-network",
@@ -544,9 +546,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-signer-local"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd6d988cb6cd7d2f428a74476515b1a6e901e08c796767f9f93311ab74005c8b"
+checksum = "fbdc63ce9eda1283fcbaca66ba4a414b841c0e3edbeef9c86a71242fc9e84ccc"
 dependencies = [
  "alloy-consensus",
  "alloy-network",
@@ -634,9 +636,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d69d36982b9e46075ae6b792b0f84208c6c2c15ad49f6c500304616ef67b70e0"
+checksum = "d17722a198f33bbd25337660787aea8b8f57814febb7c746bc30407bdfc39448"
 dependencies = [
  "alloy-json-rpc",
  "base64 0.22.1",
@@ -654,9 +656,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-http"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e02ffd5d93ffc51d72786e607c97de3b60736ca3e636ead0ec1f7dce68ea3fd"
+checksum = "6e1509599021330a31c4a6816b655e34bf67acb1cc03c564e09fd8754ff6c5de"
 dependencies = [
  "alloy-json-rpc",
  "alloy-transport",
@@ -669,9 +671,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-ipc"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b6f8b87cb84bae6d81ae6604b37741c8116f84f9784a0ecc6038c302e679d23"
+checksum = "fa4da44bc9a5155ab599666d26decafcf12204b72a80eeaba7c5e234ee8ac205"
 dependencies = [
  "alloy-json-rpc",
  "alloy-pubsub",
@@ -688,9 +690,9 @@ dependencies = [
 
 [[package]]
 name = "alloy-transport-ws"
-version = "0.7.3"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c085c4e1e7680b723ffc558f61a22c061ed3f70eb3436f93f3936779c59cec1"
+checksum = "58011745b2f17b334db40df9077d75b181f78360a5bc5c35519e15d4bfce15e2"
 dependencies = [
  "alloy-pubsub",
  "alloy-transport",
@@ -2376,21 +2378,17 @@ dependencies = [
 
 [[package]]
 name = "eigen-cli"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "alloy-json-rpc",
- "alloy-primitives",
- "alloy-provider",
- "alloy-transport",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
  "ark-serialize 0.5.0",
  "clap",
  "colored",
+ "eigen-common",
  "eigen-crypto-bls",
- "eigen-testing-utils",
  "eigen-types",
  "eigen-utils",
  "eth-keystore",
@@ -2409,16 +2407,14 @@ dependencies = [
 
 [[package]]
 name = "eigen-client-avsregistry"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "alloy-primitives",
- "alloy-signer",
- "alloy-signer-local",
  "ark-ff 0.5.0",
  "async-trait",
  "eigen-client-elcontracts",
+ "eigen-common",
  "eigen-crypto-bls",
  "eigen-logging",
  "eigen-types",
@@ -2430,12 +2426,11 @@ dependencies = [
 
 [[package]]
 name = "eigen-client-elcontracts"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "alloy-primitives",
- "alloy-sol-types",
+ "eigen-common",
  "eigen-crypto-bls",
  "eigen-logging",
  "eigen-types",
@@ -2446,13 +2441,10 @@ dependencies = [
 
 [[package]]
 name = "eigen-client-eth"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "alloy-json-rpc",
- "alloy-primitives",
- "alloy-rlp",
  "async-trait",
  "eigen-logging",
  "eigen-metrics-collectors-rpc-calls",
@@ -2462,11 +2454,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "eigen-crypto-bls"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+name = "eigen-common"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
- "alloy-primitives",
+ "alloy",
+ "url",
+]
+
+[[package]]
+name = "eigen-crypto-bls"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
+dependencies = [
+ "alloy",
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
@@ -2480,8 +2481,8 @@ dependencies = [
 
 [[package]]
 name = "eigen-crypto-bn254"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
@@ -2491,8 +2492,8 @@ dependencies = [
 
 [[package]]
 name = "eigen-logging"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "ctor",
  "once_cell",
@@ -2502,8 +2503,8 @@ dependencies = [
 
 [[package]]
 name = "eigen-metrics"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2513,8 +2514,8 @@ dependencies = [
 
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2522,8 +2523,8 @@ dependencies = [
 
 [[package]]
 name = "eigen-nodeapi"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "ntex",
  "serde",
@@ -2534,10 +2535,10 @@ dependencies = [
 
 [[package]]
 name = "eigen-services-avsregistry"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
- "alloy-primitives",
+ "alloy",
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
  "async-trait",
@@ -2550,14 +2551,14 @@ dependencies = [
 
 [[package]]
 name = "eigen-services-blsaggregation"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "alloy-primitives",
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
  "eigen-client-avsregistry",
+ "eigen-common",
  "eigen-crypto-bls",
  "eigen-crypto-bn254",
  "eigen-logging",
@@ -2572,13 +2573,13 @@ dependencies = [
 
 [[package]]
 name = "eigen-services-operatorsinfo"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "alloy-primitives",
  "async-trait",
  "eigen-client-avsregistry",
+ "eigen-common",
  "eigen-crypto-bls",
  "eigen-logging",
  "eigen-types",
@@ -2593,14 +2594,11 @@ dependencies = [
 
 [[package]]
 name = "eigen-testing-utils"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "alloy-primitives",
- "alloy-provider",
- "alloy-rpc-types",
- "alloy-transport",
+ "eigen-common",
  "eigen-utils",
  "serde",
  "serde_json",
@@ -2610,10 +2608,10 @@ dependencies = [
 
 [[package]]
 name = "eigen-types"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
- "alloy-primitives",
+ "alloy",
  "eigen-crypto-bls",
  "ethers",
  "num-bigint",
@@ -2623,8 +2621,8 @@ dependencies = [
 
 [[package]]
 name = "eigen-utils"
-version = "0.1.1"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=046d497#046d497e5128507c9db6d894a5dfbf399fdc6471"
+version = "0.3.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
  "reqwest 0.12.9",
@@ -3989,6 +3987,7 @@ dependencies = [
  "ark-serialize 0.4.2",
  "ark-std 0.4.0",
  "eigen-client-avsregistry",
+ "eigen-common",
  "eigen-crypto-bls",
  "eigen-logging",
  "eigen-services-avsregistry",
@@ -4055,6 +4054,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
+ "eigen-common",
  "eigen-logging",
  "eigen-types",
  "eigen-utils",
@@ -4073,7 +4073,7 @@ name = "incredible-challenger"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "alloy-provider",
+ "eigen-common",
  "eigen-utils",
  "eyre",
  "futures-util",
@@ -4120,7 +4120,6 @@ name = "incredible-metrics"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "alloy-provider",
  "eigen-metrics",
  "eyre",
  "futures-util",
@@ -4138,7 +4137,6 @@ name = "incredible-operator"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "alloy-provider",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
  "eigen-cli",
@@ -4174,7 +4172,6 @@ name = "incredible-operator-2"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "alloy-provider",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
  "eigen-cli",
@@ -4218,6 +4215,7 @@ dependencies = [
  "clap",
  "eigen-client-avsregistry",
  "eigen-client-elcontracts",
+ "eigen-common",
  "eigen-crypto-bls",
  "eigen-logging",
  "eigen-metrics",
@@ -4246,7 +4244,7 @@ name = "incredible-task-generator"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "alloy-provider",
+ "eigen-common",
  "eigen-utils",
  "eyre",
  "futures-util",
@@ -4264,6 +4262,7 @@ name = "incredible-testing-utils"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
+ "eigen-common",
  "eigen-testing-utils",
  "eigen-utils",
  "tracing",

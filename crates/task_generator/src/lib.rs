@@ -6,7 +6,7 @@ use alloy::{
     rpc::types::TransactionReceipt,
     signers::local::PrivateKeySigner,
 };
-use eigen_utils::get_signer;
+use eigen_common::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
@@ -30,15 +30,23 @@ pub struct TaskManager {
     rpc_url: String,
 
     signer: String,
+
+    quorum_numbers: String,
 }
 
 impl TaskManager {
     /// New [`TaskManager`] instance
-    pub fn new(task_manager_address: Address, rpc_url: String, signer: String) -> Self {
+    pub fn new(
+        task_manager_address: Address,
+        rpc_url: String,
+        signer: String,
+        quorum_numbers: String,
+    ) -> Self {
         Self {
             task_manager_address,
             rpc_url,
             signer,
+            quorum_numbers,
         }
     }
 
@@ -59,7 +67,7 @@ impl TaskManager {
         loop {
             let number_to_be_squared = task_num;
             let quorum_threshold_percentage = 40;
-            let quorum_numbers = Bytes::from_str("0x01")?;
+            let quorum_numbers = Bytes::from_str(&self.quorum_numbers)?;
 
             let _ = task_manager_contract
                 .createNewTask(
@@ -90,7 +98,7 @@ impl TaskManager {
         &self,
         task_num: U256,
     ) -> eyre::Result<TransactionReceipt, eyre::Error> {
-        let url = Url::parse(&self.rpc_url).expect("Wrong rpc url");
+        let url = Url::parse(&self.rpc_url)?;
         let signer = PrivateKeySigner::from_str(&self.signer)?;
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new()
@@ -102,7 +110,7 @@ impl TaskManager {
 
         let number_to_be_squared = task_num;
         let quorum_threshold_percentage = 40;
-        let quorum_numbers = Bytes::from_str("0x01")?;
+        let quorum_numbers = Bytes::from_str("0x00")?;
         let s = task_manager_contract
             .createNewTask(
                 number_to_be_squared,
