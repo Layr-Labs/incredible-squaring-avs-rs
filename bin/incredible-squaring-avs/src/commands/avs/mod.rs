@@ -576,7 +576,6 @@ pub async fn register_operator_with_el_and_avs(
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
-    info!("op_2_address{:?}", hex::encode(s).to_string());
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         get_logger(),
         rpc_url.clone(),
@@ -594,15 +593,19 @@ pub async fn register_operator_with_el_and_avs(
     let key_pair = BlsKeyPair::new(fr_key)?;
     let el_chain_reader = ELChainReader::new(
         get_logger(),
-        Address::ZERO,
+        None,
         delegation_manager_address,
         rewards_coordinator_address,
         avs_directory_address,
+        None,
         rpc_url.clone(),
     );
     let el_chain_writer = ELChainWriter::new(
         strategy_manager_address,
         Address::ZERO,
+        None,
+        None,
+        registry_coordinator_address,
         el_chain_reader.clone(),
         rpc_url.clone(),
         hex::encode(s).to_string(),
@@ -610,14 +613,15 @@ pub async fn register_operator_with_el_and_avs(
 
     let operator_details = Operator {
         address: signer.address(),
-        earnings_receiver_address: signer.address(),
+        _deprecated_earnings_receiver_address: Some(signer.address()),
         delegation_approver_address: Address::ZERO,
-        staker_opt_out_window_blocks: 200,
-        metadata_url: Some("url".to_string()),
+        staker_opt_out_window_blocks: Some(200),
+        metadata_url: "url".to_string(),
+        allocation_delay: None,
     };
 
     let _ = el_chain_writer
-        .register_as_operator(operator_details)
+        .register_as_operator_preslashing(operator_details)
         .await?;
     deposit_into_strategy(erc20_strategy_address, deposit_tokens, el_chain_writer).await?;
     let tx_hash = avs_registry_writer
