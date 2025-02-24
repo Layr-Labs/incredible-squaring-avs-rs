@@ -10,8 +10,7 @@ members = ["crates/aggregator",
 "crates/chainio",
 "crates/testing-utils",
 "crates/task_generator",
-"crates/operator_2",
-"crates/slasher"
+"crates/operator_2"
 ]
 
 resolver = "2"
@@ -69,7 +68,6 @@ incredible-chainio = {path = "crates/chainio/"}
 incredible-testing-utils = {path = "crates/testing-utils/"}
 incredible-task-generator = {path = "crates/task_generator/"}
 incredible-operator-2 = {path = "crates/operator_2/" , features = ["default"]}
-incredible-slasher = {path = "crates/slasher/"}
 # eigensdk-rs 
 
 eigen-client-avsregistry   = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "223402f"}

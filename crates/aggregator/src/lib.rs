@@ -73,7 +73,7 @@ impl Aggregator {
     ///
     /// # Arguments
     ///
-    /// * `config` - The configuration for the aggregator
+    /// * [`IncredibleConfig`] - The configuration for the aggregator
     ///
     /// # Returns
     ///
@@ -321,55 +321,62 @@ impl Aggregator {
 
         let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
         let old_entry = *entry;
-        let quorum_reached = {
-            let registry_coordinator_instance = RegistryCoordinator::new(
-                registry_coordinator,
-                get_provider(&self.avs_writer.rpc_url),
-            );
-            let op_state = OperatorStateRetriever::new(
-                operator_state_retriever,
-                get_provider(&self.avs_writer.rpc_url),
-            );
-            if let Some(task) = self.tasks.get(&task_index) {
-                let state = op_state
-                    .getOperatorState_0(
-                        registry_coordinator,
-                        task.quorumNumbers.clone(),
-                        task.taskCreatedBlock,
-                    )
-                    .call()
-                    .await?
-                    ._0;
-                let operator_address = registry_coordinator_instance
-                    .getOperatorFromId(signed_task_response.operator_id())
-                    .call()
-                    .await?
-                    ._0;
-                for operators in state.iter() {
-                    for operator in operators {
-                        if operator.operator == operator_address {
-                            *entry += operator.stake;
-                        }
+        let mut total_stake = U96::from(0);
+        let mut quorum_threshold_percentage = 0;
+        let registry_coordinator_instance =
+            RegistryCoordinator::new(registry_coordinator, get_provider(&self.avs_writer.rpc_url));
+        let op_state = OperatorStateRetriever::new(
+            operator_state_retriever,
+            get_provider(&self.avs_writer.rpc_url),
+        );
+        if let Some(task) = self.tasks.get(&task_index) {
+            quorum_threshold_percentage = task.quorumThresholdPercentage;
+            let state = op_state
+                .getOperatorState_0(
+                    registry_coordinator,
+                    task.quorumNumbers.clone(),
+                    task.taskCreatedBlock,
+                )
+                .call()
+                .await?
+                ._0;
+            let operator_address = registry_coordinator_instance
+                .getOperatorFromId(signed_task_response.operator_id())
+                .call()
+                .await?
+                ._0;
+            for operators in state.iter() {
+                for operator in operators {
+                    total_stake += operator.stake;
+                    if operator.operator == operator_address {
+                        *entry += operator.stake;
                     }
                 }
             }
-            if old_entry < U96::from(4800) {
-                let task_signature = TaskSignature::new(
-                    task_index,
-                    task_response_digest,
-                    signed_task_response.signature(),
-                    signed_task_response.operator_id(),
-                );
+        }
+        let quorum_threshold_amount =
+            U96::from((total_stake * (U96::from(quorum_threshold_percentage))) / U96::from(100));
+        info!(
+            "quorum_threshold_amount for task index {:?} : {:?}",
+            task_index, quorum_threshold_amount
+        );
+        if old_entry < quorum_threshold_amount {
+            let task_signature = TaskSignature::new(
+                task_index,
+                task_response_digest,
+                signed_task_response.signature(),
+                signed_task_response.operator_id(),
+            );
 
-                self.bls_aggregation_service
-                    .process_new_signature(task_signature)
-                    .await?;
-            }
-
-            *entry >= U96::from(4800) // total stake is 12000. quorum threshold percentag in new task is 40% . hence 4800.
+            self.bls_aggregation_service
+                .process_new_signature(task_signature)
+                .await?;
+        }
+        let quorum_reached = {
+            *entry >= quorum_threshold_amount // total stake is 12000. quorum threshold percentag in new task is 40% . hence 4800.
         };
 
-        if quorum_reached && (old_entry < U96::from(4800)) {
+        if quorum_reached && (old_entry < quorum_threshold_amount) {
             info!("quorum reached for task index: {:?}", task_index);
             if let Some(aggregated_response) = self
                 .bls_aggregation_service
@@ -384,7 +391,7 @@ impl Aggregator {
                 self.send_aggregated_response_to_contract(response, signed_task_response)
                     .await?;
             }
-        } else if old_entry >= U96::from(4800) {
+        } else if old_entry >= quorum_threshold_amount {
             info!(
                 "quorum already reached for index{:?}, ignoring more signatures",
                 task_index

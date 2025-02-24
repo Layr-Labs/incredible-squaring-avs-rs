@@ -678,7 +678,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     }
 }
 
-/// Register operator in eigenlayer and avs
+/// Registers operator on eigenlayer and avs
 #[allow(clippy::too_many_arguments)]
 pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     metadata_uri: String,
@@ -979,51 +979,6 @@ pub async fn register_for_operator_sets(
             &socket,
         )
         .await?)
-    // ALTERNATIVE WAY OF ENCODING DATA MANUALLY USINg ALLOY IF YOU DON"T WANT TO USE ELChainWriter
-    // let g1_hashed_msg_to_sign = contract_registry_coordinator
-    //     .pubkeyRegistrationMessageHash(signer.address())
-    //     .call()
-    //     .await
-    //     .map_err(|_| AvsRegistryError::PubKeyRegistrationMessageHash)?
-    //     ._0;
-
-    // let sig = bls_key_pair
-    //     .sign_hashed_to_curve_message(alloy_g1_point_to_g1_affine(g1_hashed_msg_to_sign))
-    //     .g1_point();
-    // let alloy_g1_point_signed_msg = convert_to_g1_point(sig.g1())?;
-    // let g1_pub_key_bn254 = convert_to_g1_point(bls_key_pair.public_key().g1())?;
-    // let g2_pub_key_bn254 = convert_to_g2_point(bls_key_pair.public_key_g2().g2())?;
-
-    // let g2_point_x: Vec<DynSolValue> = vec![
-    //     DynSolValue::Uint(g2_pub_key_bn254.X[0], 256),
-    //     DynSolValue::Uint(g2_pub_key_bn254.X[1], 256),
-    // ];
-    // let g2_point_y: Vec<DynSolValue> = vec![
-    //     DynSolValue::Uint(g2_pub_key_bn254.Y[0], 256),
-    //     DynSolValue::Uint(g2_pub_key_bn254.Y[1], 256),
-    // ];
-    // let encoded_params_with_socket = DynSolValue::Tuple(vec![
-    //     DynSolValue::String(socket),
-    //     DynSolValue::Uint(alloy_g1_point_signed_msg.X, 256),
-    //     DynSolValue::Uint(alloy_g1_point_signed_msg.Y, 256),
-    //     DynSolValue::Uint(g1_pub_key_bn254.X, 256),
-    //     DynSolValue::Uint(g1_pub_key_bn254.Y, 256),
-    //     DynSolValue::FixedArray(g2_point_x),
-    //     DynSolValue::FixedArray(g2_point_y),
-    // ])
-    // .abi_encode_params();
-    // let register_params = RegisterParams {
-    //     avs,
-    //     operatorSetIds: vec![operator_set_id],
-    //     data: encoded_params_with_socket.into(),
-    // };
-    // Ok(allocation_manager_instance
-    //     .registerForOperatorSets(signer.address(), register_params)
-    //     .send()
-    //     .await?
-    //     .get_receipt()
-    //     .await?
-    //     .transaction_hash)
 }
 
 /// Deposit into strategy

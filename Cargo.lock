@@ -4204,10 +4204,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "incredible-slasher"
-version = "0.0.1-alpha"
-
-[[package]]
 name = "incredible-squaring-avs"
 version = "0.0.1-alpha"
 dependencies = [
