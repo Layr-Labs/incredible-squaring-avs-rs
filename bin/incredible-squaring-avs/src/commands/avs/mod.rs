@@ -901,7 +901,7 @@ pub async fn create_total_delegated_stake_quorum(
     Ok(s)
 }
 
-/// Enable operator sets for the avs' registry coordinator
+/// Sets appointee to the slasher contract to call slashOperator.
 pub async fn set_appointee_for_avs(
     service_manager_address: Address,
     task_manager_address: Address,
