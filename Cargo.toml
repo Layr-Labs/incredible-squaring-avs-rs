@@ -68,23 +68,9 @@ incredible-chainio = {path = "crates/chainio/"}
 incredible-testing-utils = {path = "crates/testing-utils/"}
 incredible-task-generator = {path = "crates/task_generator/"}
 incredible-operator-2 = {path = "crates/operator_2/" , features = ["default"]}
-# eigensdk-rs 
 
-eigen-client-avsregistry   = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "223402f"}
-eigen-testing-utils ={ git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-common ={ git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-crypto-bls =  { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-types =  { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-metrics = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-contract-bindings = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-cli ={ git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-logging ={ git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-crypto-bn254  = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-client-elcontracts = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-services-operatorsinfo = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-services-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-services-blsaggregation = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-client-eth = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-nodeapi = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
+# eigensdk-rs 
+eigensdk = {git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "565a48a", features = ["full"]}
+eigen-types =  { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "565a48a"}
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "565a48a"}
+eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "565a48a"}

@@ -24,8 +24,8 @@ toml.workspace = true
 incredible-testing-utils.workspace = true
 incredible-chainio.workspace = true
 
-#eigen-rs
+#eigensdk-rs
+eigensdk.workspace = true
 eigen-utils.workspace = true
-eigen-common.workspace = true
 [dev-dependencies]
 incredible-task-generator.workspace = true

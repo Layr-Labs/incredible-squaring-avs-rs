@@ -6,22 +6,22 @@ use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use alloy::sol_types::SolCall;
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_client_elcontracts::reader::ELChainReader;
-use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
-use eigen_common::{get_provider, get_signer};
-use eigen_crypto_bls::BlsKeyPair;
-use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
-use eigen_metrics::prometheus::init_registry;
-use eigen_testing_utils::anvil_constants::{
-    get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
-    get_permission_controller_address, get_rewards_coordinator_address,
-    get_strategy_manager_address, ANVIL_HTTP_URL,
-};
 use eigen_types::operator::Operator;
 use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
 use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
+use eigensdk::client_elcontracts::reader::ELChainReader;
+use eigensdk::client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
+use eigensdk::common::{get_provider, get_signer};
+use eigensdk::crypto_bls::BlsKeyPair;
+use eigensdk::logging::{get_logger, init_logger, log_level::LogLevel};
+use eigensdk::metrics::prometheus::init_registry;
+use eigensdk::testing_utils::anvil_constants::{
+    get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
+    get_permission_controller_address, get_rewards_coordinator_address,
+    get_strategy_manager_address, ANVIL_HTTP_URL,
+};
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -33,6 +33,7 @@ use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
 use std::net::SocketAddr;
+use std::ops::Add;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -726,9 +727,10 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     let operator_details = Operator {
         address: signer.address(),
         delegation_approver_address: signer.address(),
-        staker_opt_out_window_blocks: 0,
-        metadata_url: Some(metadata_uri),
-        allocation_delay,
+        staker_opt_out_window_blocks: Some(0),
+        metadata_url: metadata_uri,
+        _deprecated_earnings_receiver_address: None,
+        allocation_delay: Some(allocation_delay),
     };
     let is_already_registered = el_chain_reader
         .is_operator_registered(signer.address())

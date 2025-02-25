@@ -26,8 +26,8 @@ lazy_static = "1.5.0"
 tokio.workspace = true
 tracing.workspace = true
 reqwest.workspace = true
-eigen-common.workspace = true
 
-# eigen-rs
+# eigensdk-rs
+eigensdk.workspace = true
 eigen-utils.workspace = true
 

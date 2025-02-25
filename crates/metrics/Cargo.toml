@@ -19,10 +19,10 @@ eyre.workspace = true
 futures-util.workspace = true
 
 # eigen-rs
+eigensdk.workspace = true
 metrics.workspace = true
 metrics-util.workspace = true
 
 [dev-dependencies]
-eigen-metrics.workspace = true
 tokio.workspace = true
 reqwest.workspace = true

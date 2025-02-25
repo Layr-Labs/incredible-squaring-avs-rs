@@ -30,10 +30,8 @@ hex = "0.4.3"
 ruint = "1.12.3"
 
 
-#eigen
+#eigensdk-rs
 eigen-types.workspace = true
-eigen-logging.workspace = true
-
 
 [dev-dependencies]
 tempfile = "3.10.1"
