@@ -173,7 +173,10 @@ impl Challenger {
             .await;
         match raise_challenge_result {
             Ok(raise_challenge) => Ok(raise_challenge),
-            Err(e) => Err(error::ChallengerError::ChainIo(e)),
+            Err(e) => {
+                info!("error_in_raise_challenge");
+                Err(error::ChallengerError::ChainIo(e))
+            }
         }
     }
 

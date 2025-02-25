@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
-    use eigen_logging::{init_logger, log_level::LogLevel};
+    use eigensdk::logging::{init_logger, log_level::LogLevel};
     use incredible_config::IncredibleConfig;
     use std::{
         process::Stdio,
@@ -11,20 +11,21 @@ mod tests {
         time::{SystemTime, UNIX_EPOCH},
     };
     use rust_bls_bn254::keystores::base_keystore::Keystore;
-    use eigen_crypto_bls::BlsKeyPair;
+    use eigensdk::crypto_bls::BlsKeyPair;
     use super::*;
     use alloy::primitives::{FixedBytes, U256,address};
-    use eigen_testing_utils::anvil_constants::{
+    use eigensdk::testing_utils::anvil_constants::{
         get_avs_directory_address, get_delegation_manager_address, get_strategy_manager_address,get_allocation_manager_address,get_permission_controller_address,
         get_rewards_coordinator_address
     };
-    use eigen_utils::{erc20::ERC20,get_provider};
+    use eigen_utils::slashing::sdk::mockerc20::MockERC20;
+    use eigensdk::common::get_provider;
     use incredible_aggregator::Aggregator;
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
     use incredible_challenger::Challenger;
     use incredible_operator::builder::OperatorBuilder;
     use incredible_operator_2::builder::OperatorBuilder as Operator2Builder;
-    use incredible_squaring_avs::commands::avs::{register_operator_with_el_and_deposit_tokens_in_strategy,modify_allocation_for_operator,enable_operator_sets,create_total_delegated_stake_quorum,register_for_operator_sets};
+    use incredible_squaring_avs::commands::avs::{register_operator_with_el_and_deposit_tokens_in_strategy,modify_allocation_for_operator,set_appointee_for_avs,create_total_delegated_stake_quorum,register_for_operator_sets};
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator, get_incredible_squaring_strategy_address,
@@ -57,11 +58,11 @@ mod tests {
     operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
     operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
     operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
-    operator_set_id = "1"
+    operator_set_id = "0"
     operator_1_token_amount = "5000000000000000000000"
     operator_2_token_amount = "7000000000000000000000"
-    allocation_delay = "1"
-    slash_simulate = false
+    allocation_delay = "0"
+    slash_simulate = true
 
     [aggregator_config]
     ip_address = "127.0.0.1:8080"
@@ -71,7 +72,7 @@ mod tests {
     operator_pvt_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     operator_to_avs_registration_sig_salt = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
     socket = "incredible"
-    quorum_number = "01"
+    quorum_number = "00"
     sig_expiry = "10"
 
     [operator_2_registration_config]
@@ -79,11 +80,11 @@ mod tests {
     register_operator = true
     operator_to_avs_registration_sig_salt = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
     socket = "incredible"
-    quorum_number = "01"
+    quorum_number = "00"
     sig_expiry = "10"
     "#;
 
-    async fn register_operator_with_el(operator_pvt_key:Option<String>,ecdsa_keystore_path:String,ecdsa_keystore_password:String,operator_token_amount:U256) {
+    async fn register_operator_with_el_and_avs(operator_pvt_key:Option<String>,ecdsa_keystore_path:String,ecdsa_keystore_password:String,operator_token_amount:U256) {
         let mut incredible_config: IncredibleConfig =
             toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
 
@@ -92,6 +93,7 @@ mod tests {
                 .await
                 .to_string(),
         );
+        incredible_config.set_allocation_manager_address(get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await.to_string());
         incredible_config.set_operator_state_retriever(
             get_incredible_squaring_operator_state_retriever()
                 .await
@@ -123,7 +125,7 @@ mod tests {
         incredible_config.set_sig_expiry(expiry.to_string());
         let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
             "metadata".to_string(),
-            2,// allocation delay
+            0,// allocation delay
             operator_pvt_key,
             incredible_config.http_rpc_url(),
             ecdsa_keystore_path,
@@ -154,6 +156,8 @@ mod tests {
             .await
             .to_string(),
         );
+        incredible_config.set_permission_controller_address(get_permission_controller_address(ANVIL_HTTP_URL.to_string()).await.to_string());
+        incredible_config.set_allocation_manager_address(get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await.to_string());
         incredible_config.set_service_manager_address(get_incredible_squaring_service_manager().await.to_string());
         incredible_config.set_operator_state_retriever(
             get_incredible_squaring_operator_state_retriever()
@@ -161,21 +165,15 @@ mod tests {
             .to_string(),
         );
     
-        let a = enable_operator_sets(incredible_config.registry_coordinator_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();
-        // dbg!(a);
-        let w = create_total_delegated_stake_quorum(get_incredible_squaring_strategy_address().await,incredible_config.registry_coordinator_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();
-        dbg!(w);
-        register_operator_with_el(incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),incredible_config.operator_1_token_amount().unwrap()).await;
-        let s = modify_allocation_for_operator(incredible_config.operator_set_id().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),[get_incredible_squaring_strategy_address().await].to_vec(),[100].to_vec()).await;
-        dbg!(s);
+        create_total_delegated_stake_quorum(get_incredible_squaring_strategy_address().await,get_incredible_squaring_service_manager().await,incredible_config.permission_controller_address().unwrap(),incredible_config.allocation_manager_addr().unwrap(),incredible_config.registry_coordinator_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();
+        register_operator_with_el_and_avs(incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),incredible_config.operator_1_token_amount().unwrap()).await;
+        modify_allocation_for_operator(incredible_config.operator_set_id().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),[get_incredible_squaring_strategy_address().await].to_vec(),[100].to_vec()).await;
         let keystore = Keystore::from_file(&incredible_config.bls_keystore_path()).unwrap()
                 .decrypt(&incredible_config.bls_keystore_password())
                 .unwrap();
             let fr_key: String = keystore.iter().map(|&value| value as char).collect();
             let key_pair = BlsKeyPair::new(fr_key).unwrap();
-        dbg!(incredible_config.operator_set_id().unwrap());
-        let  e = register_for_operator_sets(incredible_config.operator_set_id().unwrap(),key_pair,incredible_config.registry_coordinator_addr().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),incredible_config.socket().to_string()).await.unwrap();
-        dbg!(e);
+        register_for_operator_sets(incredible_config.operator_set_id().unwrap(),key_pair,incredible_config.permission_controller_address().unwrap(),incredible_config.registry_coordinator_addr().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),incredible_config.socket().to_string()).await.unwrap();
         
         let mut operator_builder = OperatorBuilder::build(incredible_config.clone())
             .await
@@ -216,6 +214,7 @@ mod tests {
             get_incredible_squaring_task_manager().await,
             "http://localhost:8545".to_string(),
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
+            incredible_config.quorum_number().unwrap().to_string()
         );
         let _ = task_generator.create_new_task("2".parse().unwrap()).await;
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
@@ -271,37 +270,29 @@ mod tests {
             .await
             .to_string(),
         );
+        incredible_config.set_slash_simulate(true);
+        incredible_config.set_permission_controller_address(get_permission_controller_address(ANVIL_HTTP_URL.to_string()).await.to_string());
+        incredible_config.set_allocation_manager_address(get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await.to_string());
         incredible_config.set_service_manager_address(get_incredible_squaring_service_manager().await.to_string());
         incredible_config.set_operator_state_retriever(
             get_incredible_squaring_operator_state_retriever()
             .await
             .to_string(),
         );
-        dbg!(incredible_config.operator_set_id().unwrap());
-        dbg!(get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await);
-        dbg!(incredible_config.operator_pvt_key());
-        dbg!(incredible_config.ecdsa_keystore_path());
-        dbg!(incredible_config.service_manager_addr().unwrap());
-        dbg!(get_incredible_squaring_strategy_address().await);
-        let w = create_total_delegated_stake_quorum(get_incredible_squaring_strategy_address().await,incredible_config.registry_coordinator_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();
-        dbg!(w);
-        dbg!(incredible_config.operator_2_token_amount().unwrap());
+      
+        create_total_delegated_stake_quorum(get_incredible_squaring_strategy_address().await,get_incredible_squaring_service_manager().await,incredible_config.permission_controller_address().unwrap(),incredible_config.allocation_manager_addr().unwrap(),incredible_config.registry_coordinator_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();
+        set_appointee_for_avs(get_incredible_squaring_service_manager().await,get_incredible_squaring_task_manager().await,incredible_config.allocation_manager_addr().unwrap(),incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),ANVIL_HTTP_URL).await.unwrap();
 
-        let erc30 = ERC20::new(address!("9d4454B023096f34B160D6B654540c56A1F81688"),get_provider(ANVIL_HTTP_URL));
-        let bal =  erc30.balanceOf(address!("0b065a0423f076a340f37e16e1ce22e23d66caf2")).call().await.unwrap()._0;
-        dbg!(bal);
-        dbg!(incredible_config.operator_2_pvt_key());
-        register_operator_with_el(incredible_config.operator_2_pvt_key(),incredible_config.ecdsa_keystore_2_path(),incredible_config.ecdsa_keystore_2_password(),incredible_config.operator_2_token_amount().unwrap()).await;
-        let s = modify_allocation_for_operator(incredible_config.operator_set_id().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_2_pvt_key(),incredible_config.ecdsa_keystore_2_path(),incredible_config.ecdsa_keystore_2_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),[get_incredible_squaring_strategy_address().await].to_vec(),[100].to_vec()).await;
-        dbg!(s);
+        register_operator_with_el_and_avs(incredible_config.operator_2_pvt_key(),incredible_config.ecdsa_keystore_2_path(),incredible_config.ecdsa_keystore_2_password(),incredible_config.operator_2_token_amount().unwrap()).await;
+
+        modify_allocation_for_operator(incredible_config.operator_set_id().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_2_pvt_key(),incredible_config.ecdsa_keystore_2_path(),incredible_config.ecdsa_keystore_2_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),[get_incredible_squaring_strategy_address().await].to_vec(),[100].to_vec()).await;
         let keystore = Keystore::from_file(&incredible_config.bls_keystore_2_path()).unwrap()
                 .decrypt(&incredible_config.bls_keystore_2_password())
                 .unwrap();
             let fr_key: String = keystore.iter().map(|&value| value as char).collect();
             let key_pair = BlsKeyPair::new(fr_key).unwrap();
-            dbg!(incredible_config.operator_set_id().unwrap());
-        let  e = register_for_operator_sets(incredible_config.operator_set_id().unwrap(),key_pair,incredible_config.registry_coordinator_addr().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_2_pvt_key(),incredible_config.ecdsa_keystore_2_path(),incredible_config.ecdsa_keystore_2_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),incredible_config.socket().to_string()).await.unwrap();
-        dbg!(e);
+            let  e = register_for_operator_sets(incredible_config.operator_set_id().unwrap(),key_pair,incredible_config.permission_controller_address().unwrap(),incredible_config.registry_coordinator_addr().unwrap(),get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,incredible_config.operator_2_pvt_key(),incredible_config.ecdsa_keystore_2_path(),incredible_config.ecdsa_keystore_2_password(),ANVIL_HTTP_URL,incredible_config.service_manager_addr().unwrap(),incredible_config.socket().to_string()).await.unwrap();
+
         let op_builder = OperatorBuilder::build(incredible_config.clone()).await.unwrap();
         let client = Some(Arc::new(op_builder.client.clone()));
         let mut operator_builder = Operator2Builder::build(incredible_config.clone(),client)
@@ -339,7 +330,7 @@ mod tests {
         });
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
-        let mut challenger = Challenger::build(incredible_config).await.unwrap();
+        let mut challenger = Challenger::build(incredible_config.clone()).await.unwrap();
         let c_handle = tokio::spawn(async move {
             let _ = challenger.start_challenger().await;
         });
@@ -348,6 +339,7 @@ mod tests {
             get_incredible_squaring_task_manager().await,
             "http://localhost:8545".to_string(),
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
+            incredible_config.quorum_number().unwrap().to_string()
         );
         let _ = task_generator.create_new_task("2".parse().unwrap()).await;
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;

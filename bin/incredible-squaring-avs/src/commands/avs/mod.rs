@@ -9,6 +9,7 @@ use clap::{Args, Parser};
 use eigen_types::operator::Operator;
 use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
+use eigen_utils::slashing::core::permissioncontroller::PermissionController;
 use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
 use eigensdk::client_elcontracts::reader::ELChainReader;
@@ -23,6 +24,7 @@ use eigensdk::testing_utils::anvil_constants::{
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
@@ -33,7 +35,6 @@ use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
 use std::net::SocketAddr;
-use std::ops::Add;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -520,6 +521,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let total_delegated_quorum_create_tx_hash = create_total_delegated_stake_quorum(
             config.erc20_mock_strategy_addr()?,
             config.service_manager_addr()?,
+            config.permission_controller_address()?,
             config.allocation_manager_addr()?,
             config.registry_coordinator_addr()?,
             config.operator_pvt_key(),
@@ -529,7 +531,17 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         )
         .await?;
         info!(tx_hash = %total_delegated_quorum_create_tx_hash,"total delegated stake quorum create tx_hash");
-
+        let tx_hash = set_appointee_for_avs(
+            config.service_manager_addr()?,
+            config.task_manager_addr()?,
+            config.allocation_manager_addr()?,
+            config.operator_pvt_key(),
+            config.ecdsa_keystore_path(),
+            config.ecdsa_keystore_password(),
+            &rpc_url,
+        )
+        .await?;
+        dbg!(tx_hash);
         if register_operator {
             let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
                 metadata_uri.clone(),
@@ -778,6 +790,7 @@ pub async fn set_allocation_delay(
 pub async fn create_total_delegated_stake_quorum(
     strategy_address: Address,
     service_manager_address: Address,
+    permission_controller_address: Address,
     allocation_manager_address: Address,
     registry_coordinator_address: Address,
     operator_pvt_key: Option<String>,
@@ -811,22 +824,35 @@ pub async fn create_total_delegated_stake_quorum(
         },
     ];
 
-    // let permission_controller = PermissionController::new(permission_controller_address, get_provider(rpc_url));
+    let permission_controller =
+        PermissionController::new(permission_controller_address, get_provider(rpc_url));
     let contract_service_manager =
         MockAvsServiceManager::new(service_manager_address, get_signer(&pvt_key, rpc_url));
-
-    contract_service_manager
-        .setAppointee(
+    if !permission_controller
+        .canCall(
+            service_manager_address,
             signer.address(),
             allocation_manager_address,
             alloy::primitives::FixedBytes(AllocationManager::setAVSRegistrarCall::SELECTOR),
         )
-        .send()
+        .call()
         .await
         .unwrap()
-        .get_receipt()
-        .await
-        .unwrap();
+        ._0
+    {
+        contract_service_manager
+            .setAppointee(
+                signer.address(),
+                allocation_manager_address,
+                alloy::primitives::FixedBytes(AllocationManager::setAVSRegistrarCall::SELECTOR),
+            )
+            .send()
+            .await
+            .unwrap()
+            .get_receipt()
+            .await
+            .unwrap();
+    }
 
     let contract_allocation_manager =
         AllocationManager::new(allocation_manager_address, get_signer(&pvt_key, rpc_url));
@@ -839,16 +865,29 @@ pub async fn create_total_delegated_stake_quorum(
         .get_receipt()
         .await
         .unwrap();
-    contract_service_manager
-        .setAppointee(
+    if !permission_controller
+        .canCall(
+            service_manager_address,
             registry_coordinator_address,
             allocation_manager_address,
             FixedBytes(AllocationManager::createOperatorSetsCall::SELECTOR),
         )
-        .send()
-        .await?
-        .get_receipt()
-        .await?;
+        .call()
+        .await
+        .unwrap()
+        ._0
+    {
+        contract_service_manager
+            .setAppointee(
+                registry_coordinator_address,
+                allocation_manager_address,
+                FixedBytes(AllocationManager::createOperatorSetsCall::SELECTOR),
+            )
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+    }
 
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
@@ -863,31 +902,42 @@ pub async fn create_total_delegated_stake_quorum(
 }
 
 /// Enable operator sets for the avs' registry coordinator
-pub async fn enable_operator_sets(
-    registry_coordinator_address: Address,
-    operator_pvt_key: Option<String>,
+pub async fn set_appointee_for_avs(
+    service_manager_address: Address,
+    task_manager_address: Address,
+    allocation_manager_address: Address,
+    admin_pvt_key: Option<String>,
     ecdsa_keystore_path: String,
     ecdsa_keystore_password: String,
     rpc_url: &str,
 ) -> eyre::Result<FixedBytes<32>> {
     let signer;
-    if let Some(operator_key) = operator_pvt_key {
-        signer = PrivateKeySigner::from_str(&operator_key)?;
+    if let Some(key) = admin_pvt_key {
+        signer = PrivateKeySigner::from_str(&key)?;
     } else {
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
     let pvt_key = hex::encode(s).to_string();
+    let contract_task_manager =
+        IncredibleSquaringTaskManager::new(task_manager_address, get_provider(rpc_url));
+    let instant_slasher_address = contract_task_manager.instantSlasher().call().await?._0;
 
-    let reg_coor =
-        RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
-    Ok(reg_coor
-        .enableOperatorSets()
+    let contract_service_manager =
+        MockAvsServiceManager::new(service_manager_address, get_signer(&pvt_key, rpc_url));
+
+    let tx_hash = contract_service_manager
+        .setAppointee(
+            instant_slasher_address,
+            allocation_manager_address,
+            FixedBytes(AllocationManager::slashOperatorCall::SELECTOR),
+        )
         .send()
         .await?
         .get_receipt()
         .await?
-        .transaction_hash)
+        .transaction_hash;
+    Ok(tx_hash)
 }
 
 /// modify allocation for the operator for the particular operator set id

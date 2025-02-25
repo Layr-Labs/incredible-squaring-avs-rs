@@ -92,12 +92,6 @@ impl OperatorBuilder {
         #[allow(unused_assignments)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
-        #[cfg(feature = "integration_tests")]
-        {
-            number_to_be_squared = U256::from(9);
-            info!("Challenger test: setting number to be squared to 9");
-        }
-
         let num_squared = if self.slash_simulate {
             U256::from(28) // not a perfect square, so it can't be correct in any input
         } else {

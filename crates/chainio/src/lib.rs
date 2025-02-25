@@ -144,7 +144,10 @@ impl AvsWriter {
                 }
             }
 
-            Err(e) => Err(ChainIoError::ContractError(e)),
+            Err(e) => {
+                info!("raise_e{:?}", e);
+                Err(ChainIoError::ContractError(e))
+            }
         }
     }
 
