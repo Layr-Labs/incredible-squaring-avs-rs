@@ -87,4 +87,4 @@ jobs:
         run: make pr
 
       - name: Run Integration tests
-        run: make integration-tests
+        run: make integration_tests
