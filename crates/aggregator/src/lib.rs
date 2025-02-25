@@ -22,9 +22,7 @@ use eigensdk::common::{get_provider, get_ws_provider};
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigensdk::logging::get_logger;
 use eigensdk::services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigensdk::services_blsaggregation::bls_agg::{
-    AggregateReceiver, ServiceHandle, TaskMetadata, TaskSignature,
-};
+use eigensdk::services_blsaggregation::bls_agg::{TaskMetadata, TaskSignature};
 use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigensdk::services_blsaggregation::{
     bls_agg::BlsAggregatorService, bls_aggregation_service_response::BlsAggregationServiceResponse,
@@ -60,16 +58,14 @@ pub struct Aggregator {
     port_address: String,
     /// avs writer
     pub avs_writer: AvsWriter,
-
+    bls_aggregation_service: BlsAggregatorService<
+        AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
+    >,
     task_quorum: HashMap<u32, U96>,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
-
-    service_handle: ServiceHandle,
-
-    aggregate_receiver: AggregateReceiver,
 }
 
 impl Aggregator {
@@ -121,15 +117,13 @@ impl Aggregator {
 
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
-        let (service_handle, aggregate_receiver) = bls_aggregation_service.start();
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
             avs_writer,
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
             task_quorum: HashMap::new(),
-            service_handle,
-            aggregate_receiver,
+            bls_aggregation_service,
         })
     }
 
@@ -282,8 +276,8 @@ impl Aggregator {
             let _ = aggregator
                 .lock()
                 .await
-                .service_handle
-                .initialize_task(task_metadata)
+                .bls_aggregation_service
+                .initialize_new_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
         }
@@ -373,8 +367,8 @@ impl Aggregator {
                 signed_task_response.operator_id(),
             );
 
-            self.service_handle
-                .process_signature(task_signature)
+            self.bls_aggregation_service
+                .process_new_signature(task_signature)
                 .await?;
         }
         let quorum_reached = {
@@ -383,10 +377,19 @@ impl Aggregator {
 
         if quorum_reached && (old_entry < quorum_threshold_amount) {
             info!("quorum reached for task index: {:?}", task_index);
-            let res = self.aggregate_receiver.receive_aggregated_response().await;
-            let response = res.map_err(AggregatorError::BlsAggregationServiceError)?;
-            self.send_aggregated_response_to_contract(response, signed_task_response)
-                .await?;
+            if let Some(aggregated_response) = self
+                .bls_aggregation_service
+                .aggregated_response_receiver
+                .lock()
+                .await
+                .recv()
+                .await
+            {
+                let response =
+                    aggregated_response.map_err(AggregatorError::BlsAggregationServiceError)?;
+                self.send_aggregated_response_to_contract(response, signed_task_response)
+                    .await?;
+            }
         } else if old_entry >= quorum_threshold_amount {
             info!(
                 "quorum already reached for index{:?}, ignoring more signatures",

@@ -739,10 +739,9 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     let operator_details = Operator {
         address: signer.address(),
         delegation_approver_address: signer.address(),
-        staker_opt_out_window_blocks: Some(0),
-        metadata_url: metadata_uri,
-        _deprecated_earnings_receiver_address: None,
-        allocation_delay: Some(allocation_delay),
+        staker_opt_out_window_blocks: 0,
+        metadata_url: Some(metadata_uri),
+        allocation_delay: allocation_delay,
     };
     let is_already_registered = el_chain_reader
         .is_operator_registered(signer.address())

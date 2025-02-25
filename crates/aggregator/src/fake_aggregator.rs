@@ -9,9 +9,7 @@ use eigensdk::common::get_ws_provider;
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigensdk::logging::{get_logger, get_test_logger};
 use eigensdk::services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigensdk::services_blsaggregation::bls_agg::{
-    AggregateReceiver, BlsAggregatorService, ServiceHandle, TaskMetadata,
-};
+use eigensdk::services_blsaggregation::bls_agg::{BlsAggregatorService, TaskMetadata};
 use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
@@ -44,10 +42,9 @@ pub struct FakeAggregator {
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
-
-    service_handle: ServiceHandle,
-    #[allow(unused)]
-    aggregate_receiver: AggregateReceiver,
+    bls_aggregation_service: BlsAggregatorService<
+        AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
+    >,
 }
 
 impl FakeAggregator {
@@ -100,13 +97,12 @@ impl FakeAggregator {
 
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
-        let (service_handle, aggregate_receiver) = bls_aggregation_service.start();
+
         Self {
             port_address: config.aggregator_ip_addr(),
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
-            service_handle,
-            aggregate_receiver,
+            bls_aggregation_service,
         }
     }
 
@@ -249,8 +245,8 @@ impl FakeAggregator {
             let _ = aggregator
                 .lock()
                 .await
-                .service_handle
-                .initialize_task(task_metadata)
+                .bls_aggregation_service
+                .initialize_new_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
 
@@ -443,8 +439,8 @@ mod tests {
             Duration::from_secs(1200),
         );
         fake_aggregator
-            .service_handle
-            .initialize_task(task_metadata)
+            .bls_aggregation_service
+            .initialize_new_task(task_metadata)
             .await
             .unwrap();
     }
