@@ -531,7 +531,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         )
         .await?;
         info!(tx_hash = %total_delegated_quorum_create_tx_hash,"total delegated stake quorum create tx_hash");
-        let tx_hash = set_appointee_for_avs(
+        set_appointee_for_avs(
             config.service_manager_addr()?,
             config.task_manager_addr()?,
             config.allocation_manager_addr()?,
