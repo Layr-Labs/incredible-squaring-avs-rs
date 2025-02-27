@@ -541,7 +541,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             &rpc_url,
         )
         .await?;
-        dbg!(tx_hash);
         if register_operator {
             let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
                 metadata_uri.clone(),
