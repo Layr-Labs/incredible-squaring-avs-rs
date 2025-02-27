@@ -6,23 +6,25 @@ use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use alloy::sol_types::SolCall;
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_client_elcontracts::reader::ELChainReader;
-use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
-use eigen_common::{get_provider, get_signer};
-use eigen_crypto_bls::BlsKeyPair;
-use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
-use eigen_metrics::prometheus::init_registry;
-use eigen_testing_utils::anvil_constants::{
+use eigen_types::operator::Operator;
+use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
+use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
+use eigen_utils::slashing::core::permissioncontroller::PermissionController;
+use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
+use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
+use eigensdk::client_elcontracts::reader::ELChainReader;
+use eigensdk::client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
+use eigensdk::common::{get_provider, get_signer};
+use eigensdk::crypto_bls::BlsKeyPair;
+use eigensdk::logging::{get_logger, init_logger, log_level::LogLevel};
+use eigensdk::metrics::prometheus::init_registry;
+use eigensdk::testing_utils::anvil_constants::{
     get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
     get_permission_controller_address, get_rewards_coordinator_address,
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
-use eigen_types::operator::Operator;
-use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
-use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
-use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
-use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
@@ -519,6 +521,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         let total_delegated_quorum_create_tx_hash = create_total_delegated_stake_quorum(
             config.erc20_mock_strategy_addr()?,
             config.service_manager_addr()?,
+            config.permission_controller_address()?,
             config.allocation_manager_addr()?,
             config.registry_coordinator_addr()?,
             config.operator_pvt_key(),
@@ -528,7 +531,16 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         )
         .await?;
         info!(tx_hash = %total_delegated_quorum_create_tx_hash,"total delegated stake quorum create tx_hash");
-
+        let tx_hash = set_appointee_for_avs(
+            config.service_manager_addr()?,
+            config.task_manager_addr()?,
+            config.allocation_manager_addr()?,
+            config.operator_pvt_key(),
+            config.ecdsa_keystore_path(),
+            config.ecdsa_keystore_password(),
+            &rpc_url,
+        )
+        .await?;
         if register_operator {
             let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
                 metadata_uri.clone(),
@@ -678,7 +690,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     }
 }
 
-/// Register operator in eigenlayer and avs
+/// Registers operator on eigenlayer and avs
 #[allow(clippy::too_many_arguments)]
 pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     metadata_uri: String,
@@ -776,6 +788,7 @@ pub async fn set_allocation_delay(
 pub async fn create_total_delegated_stake_quorum(
     strategy_address: Address,
     service_manager_address: Address,
+    permission_controller_address: Address,
     allocation_manager_address: Address,
     registry_coordinator_address: Address,
     operator_pvt_key: Option<String>,
@@ -809,22 +822,35 @@ pub async fn create_total_delegated_stake_quorum(
         },
     ];
 
-    // let permission_controller = PermissionController::new(permission_controller_address, get_provider(rpc_url));
+    let permission_controller =
+        PermissionController::new(permission_controller_address, get_provider(rpc_url));
     let contract_service_manager =
         MockAvsServiceManager::new(service_manager_address, get_signer(&pvt_key, rpc_url));
-
-    contract_service_manager
-        .setAppointee(
+    if !permission_controller
+        .canCall(
+            service_manager_address,
             signer.address(),
             allocation_manager_address,
             alloy::primitives::FixedBytes(AllocationManager::setAVSRegistrarCall::SELECTOR),
         )
-        .send()
+        .call()
         .await
         .unwrap()
-        .get_receipt()
-        .await
-        .unwrap();
+        ._0
+    {
+        contract_service_manager
+            .setAppointee(
+                signer.address(),
+                allocation_manager_address,
+                alloy::primitives::FixedBytes(AllocationManager::setAVSRegistrarCall::SELECTOR),
+            )
+            .send()
+            .await
+            .unwrap()
+            .get_receipt()
+            .await
+            .unwrap();
+    }
 
     let contract_allocation_manager =
         AllocationManager::new(allocation_manager_address, get_signer(&pvt_key, rpc_url));
@@ -837,16 +863,29 @@ pub async fn create_total_delegated_stake_quorum(
         .get_receipt()
         .await
         .unwrap();
-    contract_service_manager
-        .setAppointee(
+    if !permission_controller
+        .canCall(
+            service_manager_address,
             registry_coordinator_address,
             allocation_manager_address,
             FixedBytes(AllocationManager::createOperatorSetsCall::SELECTOR),
         )
-        .send()
-        .await?
-        .get_receipt()
-        .await?;
+        .call()
+        .await
+        .unwrap()
+        ._0
+    {
+        contract_service_manager
+            .setAppointee(
+                registry_coordinator_address,
+                allocation_manager_address,
+                FixedBytes(AllocationManager::createOperatorSetsCall::SELECTOR),
+            )
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+    }
 
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
@@ -860,32 +899,43 @@ pub async fn create_total_delegated_stake_quorum(
     Ok(s)
 }
 
-/// Enable operator sets for the avs' registry coordinator
-pub async fn enable_operator_sets(
-    registry_coordinator_address: Address,
-    operator_pvt_key: Option<String>,
+/// Sets appointee to the slasher contract to call slashOperator.
+pub async fn set_appointee_for_avs(
+    service_manager_address: Address,
+    task_manager_address: Address,
+    allocation_manager_address: Address,
+    admin_pvt_key: Option<String>,
     ecdsa_keystore_path: String,
     ecdsa_keystore_password: String,
     rpc_url: &str,
 ) -> eyre::Result<FixedBytes<32>> {
     let signer;
-    if let Some(operator_key) = operator_pvt_key {
-        signer = PrivateKeySigner::from_str(&operator_key)?;
+    if let Some(key) = admin_pvt_key {
+        signer = PrivateKeySigner::from_str(&key)?;
     } else {
         signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
     }
     let s = signer.to_field_bytes();
     let pvt_key = hex::encode(s).to_string();
+    let contract_task_manager =
+        IncredibleSquaringTaskManager::new(task_manager_address, get_provider(rpc_url));
+    let instant_slasher_address = contract_task_manager.instantSlasher().call().await?._0;
 
-    let reg_coor =
-        RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
-    Ok(reg_coor
-        .enableOperatorSets()
+    let contract_service_manager =
+        MockAvsServiceManager::new(service_manager_address, get_signer(&pvt_key, rpc_url));
+
+    let tx_hash = contract_service_manager
+        .setAppointee(
+            instant_slasher_address,
+            allocation_manager_address,
+            FixedBytes(AllocationManager::slashOperatorCall::SELECTOR),
+        )
         .send()
         .await?
         .get_receipt()
         .await?
-        .transaction_hash)
+        .transaction_hash;
+    Ok(tx_hash)
 }
 
 /// modify allocation for the operator for the particular operator set id
@@ -979,51 +1029,6 @@ pub async fn register_for_operator_sets(
             &socket,
         )
         .await?)
-    // ALTERNATIVE WAY OF ENCODING DATA MANUALLY USINg ALLOY IF YOU DON"T WANT TO USE ELChainWriter
-    // let g1_hashed_msg_to_sign = contract_registry_coordinator
-    //     .pubkeyRegistrationMessageHash(signer.address())
-    //     .call()
-    //     .await
-    //     .map_err(|_| AvsRegistryError::PubKeyRegistrationMessageHash)?
-    //     ._0;
-
-    // let sig = bls_key_pair
-    //     .sign_hashed_to_curve_message(alloy_g1_point_to_g1_affine(g1_hashed_msg_to_sign))
-    //     .g1_point();
-    // let alloy_g1_point_signed_msg = convert_to_g1_point(sig.g1())?;
-    // let g1_pub_key_bn254 = convert_to_g1_point(bls_key_pair.public_key().g1())?;
-    // let g2_pub_key_bn254 = convert_to_g2_point(bls_key_pair.public_key_g2().g2())?;
-
-    // let g2_point_x: Vec<DynSolValue> = vec![
-    //     DynSolValue::Uint(g2_pub_key_bn254.X[0], 256),
-    //     DynSolValue::Uint(g2_pub_key_bn254.X[1], 256),
-    // ];
-    // let g2_point_y: Vec<DynSolValue> = vec![
-    //     DynSolValue::Uint(g2_pub_key_bn254.Y[0], 256),
-    //     DynSolValue::Uint(g2_pub_key_bn254.Y[1], 256),
-    // ];
-    // let encoded_params_with_socket = DynSolValue::Tuple(vec![
-    //     DynSolValue::String(socket),
-    //     DynSolValue::Uint(alloy_g1_point_signed_msg.X, 256),
-    //     DynSolValue::Uint(alloy_g1_point_signed_msg.Y, 256),
-    //     DynSolValue::Uint(g1_pub_key_bn254.X, 256),
-    //     DynSolValue::Uint(g1_pub_key_bn254.Y, 256),
-    //     DynSolValue::FixedArray(g2_point_x),
-    //     DynSolValue::FixedArray(g2_point_y),
-    // ])
-    // .abi_encode_params();
-    // let register_params = RegisterParams {
-    //     avs,
-    //     operatorSetIds: vec![operator_set_id],
-    //     data: encoded_params_with_socket.into(),
-    // };
-    // Ok(allocation_manager_instance
-    //     .registerForOperatorSets(signer.address(), register_params)
-    //     .send()
-    //     .await?
-    //     .get_receipt()
-    //     .await?
-    //     .transaction_hash)
 }
 
 /// Deposit into strategy

@@ -12,11 +12,7 @@ import {UpgradeableProxyLib} from "../script/utils/UpgradeableProxyLib.sol";
 import {MockERC20} from "../src/MockERC20.sol";
 import {IERC20, StrategyFactory} from "@eigenlayer/contracts/strategies/StrategyFactory.sol";
 
-import {
-    Quorum,
-    StrategyParams,
-    IStrategy
-} from "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistryEventsAndErrors.sol";
+import  "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistry.sol";
 import {IStrategyManager} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
 import {ISignatureUtils} from "@eigenlayer/contracts/interfaces/ISignatureUtils.sol";
@@ -26,7 +22,7 @@ import {Test, console2 as console} from "forge-std/Test.sol";
 import {IncredibleSquaringServiceManager} from "../src/IncredibleSquaringServiceManager.sol";
 
 contract IncredibleSquaringServiceManagerSetup is Test {
-    Quorum internal quorum;
+    IECDSAStakeRegistryTypes.Quorum internal quorum;
 
     struct Operator {
         Vm.Wallet key;
@@ -64,7 +60,7 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         mockToken = new MockERC20();
 
         IStrategy strategy = addStrategy(address(mockToken));
-        quorum.strategies.push(StrategyParams({strategy: strategy, multiplier: 10_000}));
+        quorum.strategies.push(IECDSAStakeRegistryTypes.StrategyParams({strategy: strategy, multiplier: 10_000}));
 
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, coreDeployment, address(strategy), iSquaringConfig, ADMIN.addr

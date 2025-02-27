@@ -27,7 +27,7 @@ pub fn inc_num_tasks_accepted_by_aggregator() {
 mod tests {
 
     use super::*;
-    use eigen_metrics::prometheus::init_registry;
+    use eigensdk::metrics::prometheus::init_registry;
     use std::{net::SocketAddr, time::Duration};
 
     #[tokio::test]

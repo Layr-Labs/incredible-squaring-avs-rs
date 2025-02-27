@@ -6,7 +6,7 @@ use alloy::{
     rpc::types::TransactionReceipt,
     signers::local::PrivateKeySigner,
 };
-use eigen_common::get_signer;
+use eigensdk::common::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
@@ -18,6 +18,7 @@ use lazy_static::lazy_static;
 use reqwest::Url;
 use std::str::FromStr;
 use tokio::time::{sleep, Duration};
+use tracing::info;
 lazy_static! {
     /// Task number increment value
     pub static ref TASK_NUMBER_INCREMENT_VALUE: U256 = U256::from(1);
@@ -80,6 +81,9 @@ impl TaskManager {
 
             // // Increment the task number for the next iteration
             task_num += *TASK_NUMBER_INCREMENT_VALUE;
+
+            // log
+            info!("New task created : number_to_be_squared {:?} ,quorum_threshold_percentage {:?}% ,quorum_numbers {:?} ",number_to_be_squared,quorum_threshold_percentage,quorum_numbers);
             // // Wait for 10 seconds before the next iteration
             sleep(Duration::from_secs(10)).await;
         }
@@ -89,7 +93,7 @@ impl TaskManager {
     ///
     /// # Arguments
     ///
-    /// * `task_num` - The task number to be squared
+    /// * [`U256`] - The task number to be squared
     ///
     /// # Returns
     ///
@@ -128,9 +132,9 @@ impl TaskManager {
     ///
     /// # Arguments
     ///
-    /// * [`task`] - The task to respond to
-    /// * [`task_response`] - The response to the task
-    /// * [`non_signer_stakes_and_signature`] - The non-signer stakes and signature
+    /// * [`Task`] - The task to respond to
+    /// * [`TaskResponse`] - The response to the task
+    /// * [`NonSignerStakesAndSignature`] - The non-signer stakes and signature
     ///
     /// # Returns
     ///

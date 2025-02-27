@@ -1,5 +1,5 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
-use eigen_nodeapi::{create_server, NodeApi};
+use eigensdk::nodeapi::{create_server, NodeApi};
 use futures::TryFutureExt;
 use incredible_aggregator::Aggregator;
 use incredible_challenger::Challenger;
