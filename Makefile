@@ -27,10 +27,15 @@ start_docker:
 		ghcr.io/foundry-rs/foundry:latest --host 0.0.0.0
 	sleep 2
 
-pr: 
+tests:
 	$(MAKE) start_docker
 	$(MAKE) deploy-el-and-avs-contracts
 	cargo test --workspace --exclude incredible-bindings
+
+pr:
+	$(MAKE) tests
+	$(MAKE) clippy
+	cargo fmt -- --check
 
 clippy:
 	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
