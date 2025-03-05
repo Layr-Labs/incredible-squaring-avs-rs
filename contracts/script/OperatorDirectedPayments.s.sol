@@ -35,11 +35,7 @@ contract OperatorDirectedPayments is Script {
 
         string memory json = vm.readFile(filePath);
         uint32 duration = uint32(json.readUint(".duration"));
-        uint32 index_to_prove = uint32(json.readUint(".indexToProve"));
         uint256 num_payments = json.readUint(".numPayments");
-        address recipient = json.readAddress(".recipient");
-        address[] memory earners = json.readAddressArray(".earners");
-        bytes32[] memory earner_token_roots = json.readBytes32Array(".earnerTokenRoots");
         uint32 start_time = uint32(previousDivisibleTimestamp(block.timestamp));
 
         IRewardsCoordinatorTypes.OperatorReward[] memory operator_reward =

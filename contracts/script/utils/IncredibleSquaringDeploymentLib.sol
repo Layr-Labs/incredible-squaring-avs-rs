@@ -175,7 +175,6 @@ library IncredibleSquaringDeploymentLib {
             });
         }
         // // set to 0 for every quorum
-        uint96[] memory quorumsMinimumStake = new uint96[](numQuorums);
         IStakeRegistryTypes.StrategyParams[][] memory quorumsStrategyParams =
             new IStakeRegistryTypes.StrategyParams[][](numQuorums);
         for (uint256 i = 0; i < numQuorums; i++) {

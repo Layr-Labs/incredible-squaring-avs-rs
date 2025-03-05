@@ -191,7 +191,6 @@ library CoreDeploymentLib {
 
         address eigenPodImpl =
             address(new EigenPod(IETHPOSDeposit(ethPOSDeposit), IEigenPodManager(result.eigenPodManager), GENESIS_TIME));
-        address eigenPodBeaconImpl = address(new UpgradeableBeacon(eigenPodImpl));
         address baseStrategyImpl =
             address(new StrategyBase(IStrategyManager(result.strategyManager), IPauserRegistry(result.pauserRegistry)));
         /// TODO: PauserRegistry isn't upgradeable

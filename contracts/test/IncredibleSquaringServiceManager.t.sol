@@ -49,8 +49,6 @@ contract IncredibleSquaringServiceManagerSetup is Test {
     function setUp() public virtual {
         deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.label(deployer, "Deployer");
-        Vm.Wallet memory AGGREGATOR_ADDR = vm.createWallet("AGGREGATOR_AGGR");
-        Vm.Wallet memory TASK_GENERATOR_ADDR = vm.createWallet("TASK_GENERATOR_ADDR");
         Vm.Wallet memory ADMIN = vm.createWallet("ADMIN");
         address proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
 
