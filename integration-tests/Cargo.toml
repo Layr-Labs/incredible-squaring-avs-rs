@@ -27,5 +27,3 @@ eyre = "0.6.12"
 incredible-squaring-avs = {path = "../bin/incredible-squaring-avs/"}
 serial_test = "3.1.1"
 rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
-
-[workspace]
