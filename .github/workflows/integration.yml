@@ -78,7 +78,7 @@ jobs:
       - name: docker
         uses: docker-practice/actions-setup-docker@master
       - name: Run unit tests
-        run: make pr
+        run: make tests
 
       - name: Run Integration tests
         run: make integration_tests
