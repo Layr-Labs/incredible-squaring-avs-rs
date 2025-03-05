@@ -82,8 +82,8 @@ library SetupPaymentsLib {
             strategiesAndMultipliers[0] =
                 IRewardsCoordinatorTypes.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
 
-            IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission memory rewardSubmission = IRewardsCoordinatorTypes
-                .OperatorDirectedRewardsSubmission({
+            IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission memory rewardSubmission =
+            IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission({
                 strategiesAndMultipliers: strategiesAndMultipliers,
                 token: IStrategy(strategy).underlyingToken(),
                 operatorRewards: operatorRewards,

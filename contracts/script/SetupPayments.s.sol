@@ -146,4 +146,3 @@ contract SetupPayments is Script {
         );
     }
 }
-

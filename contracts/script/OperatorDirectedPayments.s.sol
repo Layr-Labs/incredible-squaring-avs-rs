@@ -50,8 +50,8 @@ contract OperatorDirectedPayments is Script {
                 operator: operatorRewardConfig.operator_addr[i],
                 amount: operatorRewardConfig.amount[i]
             });
-        }   
-        
+        }
+
         SetupPaymentsLib.createOperatorDirectedAVSRewardsSubmissions(
             incredibleSquaringDeployment.strategy,
             incredibleSquaringDeployment.incredibleSquaringServiceManager,
