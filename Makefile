@@ -31,16 +31,14 @@ pr:
 	$(MAKE) start_docker
 	$(MAKE) deploy-el-and-avs-contracts
 	cargo test --workspace --exclude incredible-bindings
-	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
-	cargo fmt -- --check
 
 clippy:
-	   cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
+	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
 
 integration_tests:
-				  $(MAKE) start_docker
-				  $(MAKE) deploy-el-and-avs-contracts
-				  cargo test  --manifest-path ./integration-tests/Cargo.toml  -- --nocapture
+	$(MAKE) start_docker
+	$(MAKE) deploy-el-and-avs-contracts
+	cargo test  --manifest-path ./integration-tests/Cargo.toml  -- --nocapture
 
 fmt: 
 	cargo fmt
