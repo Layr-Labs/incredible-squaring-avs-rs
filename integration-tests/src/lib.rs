@@ -408,7 +408,9 @@ mod tests {
             [get_incredible_squaring_strategy_address().await].to_vec(),
             [100].to_vec(),
         )
-        .await;
+        .await
+        .unwrap();
+    
         let keystore = Keystore::from_file(&incredible_config.bls_keystore_2_path())
             .unwrap()
             .decrypt(&incredible_config.bls_keystore_2_password())
