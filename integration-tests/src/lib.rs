@@ -2,9 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use alloy::primitives::{address, FixedBytes, U256};
-    use eigen_utils::slashing::sdk::mockerc20::MockERC20;
+    use alloy::primitives::{FixedBytes, U256};
     use eigensdk::common::get_provider;
     use eigensdk::crypto_bls::BlsKeyPair;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
@@ -30,10 +28,7 @@ mod tests {
         get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
     };
     use rust_bls_bn254::keystores::base_keystore::Keystore;
-    use serial_test::serial;
-    use std::str::FromStr;
     use std::{
-        process::Stdio,
         sync::Arc,
         time::{SystemTime, UNIX_EPOCH},
     };
@@ -140,7 +135,7 @@ mod tests {
         }
 
         incredible_config.set_sig_expiry(expiry.to_string());
-        let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
+        register_operator_with_el_and_deposit_tokens_in_strategy(
             "metadata".to_string(),
             0, // allocation delay
             operator_pvt_key,
@@ -223,7 +218,9 @@ mod tests {
             [get_incredible_squaring_strategy_address().await].to_vec(),
             [100].to_vec(),
         )
-        .await;
+        .await
+        .unwrap();
+
         let keystore = Keystore::from_file(&incredible_config.bls_keystore_path())
             .unwrap()
             .decrypt(&incredible_config.bls_keystore_password())
@@ -250,8 +247,8 @@ mod tests {
             .await
             .unwrap();
 
-        let _ = tokio::spawn(async move {
-            let _ = operator_builder.start_operator().await;
+        tokio::spawn(async move {
+            operator_builder.start_operator().await.unwrap();
         });
 
         let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
@@ -260,7 +257,7 @@ mod tests {
         let arc_agg_clone = Arc::clone(&arc_agg);
 
         // Run process_tasks in a separate thread
-        let _ = std::thread::spawn(move || {
+        std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) =
                     Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
@@ -272,7 +269,7 @@ mod tests {
         });
 
         // Run the server in a separate thread
-        let _ = std::thread::spawn(move || {
+        std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) = Aggregator::start_server(
                     Arc::clone(&arc_agg),
@@ -293,7 +290,10 @@ mod tests {
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
             incredible_config.quorum_number().unwrap().to_string(),
         );
-        let _ = task_generator.create_new_task("2".parse().unwrap()).await;
+        task_generator
+            .create_new_task("2".parse().unwrap())
+            .await
+            .unwrap();
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
         let task_manager_contract = IncredibleSquaringTaskManager::new(
@@ -332,7 +332,7 @@ mod tests {
             .unwrap()
             ._0;
 
-        assert_eq!(is_challenge_success, false);
+        assert!(!is_challenge_success);
     }
 
     async fn test_incredible_squaring_with_challenger() {
@@ -411,14 +411,16 @@ mod tests {
             [get_incredible_squaring_strategy_address().await].to_vec(),
             [100].to_vec(),
         )
-        .await;
+        .await
+        .unwrap();
+
         let keystore = Keystore::from_file(&incredible_config.bls_keystore_2_path())
             .unwrap()
             .decrypt(&incredible_config.bls_keystore_2_password())
             .unwrap();
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let key_pair = BlsKeyPair::new(fr_key).unwrap();
-        let e = register_for_operator_sets(
+        register_for_operator_sets(
             incredible_config.operator_set_id().unwrap(),
             key_pair,
             incredible_config.permission_controller_address().unwrap(),
@@ -442,8 +444,8 @@ mod tests {
             .await
             .unwrap();
 
-        let _ = tokio::spawn(async move {
-            let _ = operator_builder.start_operator().await;
+        tokio::spawn(async move {
+            operator_builder.start_operator().await.unwrap();
         });
 
         let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
@@ -452,7 +454,7 @@ mod tests {
         let arc_agg_clone = Arc::clone(&arc_agg);
 
         // Run process_tasks in a separate thread
-        let _ = std::thread::spawn(move || {
+        std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) =
                     Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
@@ -464,7 +466,7 @@ mod tests {
         });
 
         // Run the server in a separate thread
-        let _ = std::thread::spawn(move || {
+        std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
                 if let Err(e) = Aggregator::start_server(
                     Arc::clone(&arc_agg),
@@ -480,8 +482,8 @@ mod tests {
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
         let mut challenger = Challenger::build(incredible_config.clone()).await.unwrap();
-        let c_handle = tokio::spawn(async move {
-            let _ = challenger.start_challenger().await;
+        tokio::spawn(async move {
+            challenger.start_challenger().await.unwrap();
         });
 
         let task_generator = incredible_task_generator::TaskManager::new(
@@ -490,7 +492,10 @@ mod tests {
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
             incredible_config.quorum_number().unwrap().to_string(),
         );
-        let _ = task_generator.create_new_task("2".parse().unwrap()).await;
+        task_generator
+            .create_new_task("2".parse().unwrap())
+            .await
+            .unwrap();
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
         let task_manager_contract = IncredibleSquaringTaskManager::new(
@@ -529,7 +534,7 @@ mod tests {
             .unwrap()
             ._0;
 
-        assert_eq!(is_challenge_success, true);
+        assert!(is_challenge_success);
     }
 
     #[tokio::test]
