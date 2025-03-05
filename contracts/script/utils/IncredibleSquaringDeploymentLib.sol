@@ -8,8 +8,11 @@ import {console2} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
-import {ISocketRegistry,SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
-import {ISlashingRegistryCoordinator,ISlashingRegistryCoordinatorTypes} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
+import {ISocketRegistry, SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
+import {
+    ISlashingRegistryCoordinator,
+    ISlashingRegistryCoordinatorTypes
+} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
 import {SlashingRegistryCoordinator} from "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
 import {RegistryCoordinator} from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
 import {IPermissionController} from "@eigenlayer/contracts/interfaces/IPermissionController.sol";
@@ -35,7 +38,10 @@ import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 
 import {
-    RegistryCoordinator, IBLSApkRegistry, IIndexRegistry,IStakeRegistry
+    RegistryCoordinator,
+    IBLSApkRegistry,
+    IIndexRegistry,
+    IStakeRegistry
 } from
 // ISocketRegistry
 "@eigenlayer-middleware/src/RegistryCoordinator.sol";
@@ -114,7 +120,13 @@ library IncredibleSquaringDeploymentLib {
 
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
-        address instantSlasherImpl = address(new InstantSlasher(IAllocationManager(core.allocationManager),ISlashingRegistryCoordinator(result.registryCoordinator),result.incredibleSquaringTaskManager));
+        address instantSlasherImpl = address(
+            new InstantSlasher(
+                IAllocationManager(core.allocationManager),
+                ISlashingRegistryCoordinator(result.registryCoordinator),
+                result.incredibleSquaringTaskManager
+            )
+        );
         console2.log("pauser_registry");
         console2.log(coredata.pauserRegistry);
         console2.log("service_manager");
@@ -185,14 +197,7 @@ library IncredibleSquaringDeploymentLib {
         uint32[] memory look_ahead_period = new uint32[](1);
         look_ahead_period[0] = 0;
         bytes memory upgradeCall = abi.encodeCall(
-            SlashingRegistryCoordinator.initialize,
-            (
-                admin,
-                admin,
-                admin,
-                0,
-                result.incredibleSquaringServiceManager
-            )
+            SlashingRegistryCoordinator.initialize, (admin, admin, admin, 0, result.incredibleSquaringServiceManager)
         );
 
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
@@ -234,10 +239,8 @@ library IncredibleSquaringDeploymentLib {
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
         );
 
-        bytes memory slasherupgradecall = abi.encodeCall(
-            InstantSlasher.initialize,
-            (address(result.incredibleSquaringTaskManager))
-        );
+        bytes memory slasherupgradecall =
+            abi.encodeCall(InstantSlasher.initialize, (address(result.incredibleSquaringTaskManager)));
         UpgradeableProxyLib.upgradeAndCall(result.slasher, instantSlasherImpl, slasherupgradecall);
 
         verify_deployment(result);
