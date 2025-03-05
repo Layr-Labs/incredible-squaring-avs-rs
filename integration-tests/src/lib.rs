@@ -2,9 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use alloy::primitives::{address, FixedBytes, U256};
-    use eigen_utils::slashing::sdk::mockerc20::MockERC20;
+    use alloy::primitives::{FixedBytes, U256};
     use eigensdk::common::get_provider;
     use eigensdk::crypto_bls::BlsKeyPair;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
@@ -30,10 +28,7 @@ mod tests {
         get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
     };
     use rust_bls_bn254::keystores::base_keystore::Keystore;
-    use serial_test::serial;
-    use std::str::FromStr;
     use std::{
-        process::Stdio,
         sync::Arc,
         time::{SystemTime, UNIX_EPOCH},
     };
@@ -223,7 +218,9 @@ mod tests {
             [get_incredible_squaring_strategy_address().await].to_vec(),
             [100].to_vec(),
         )
-        .await;
+        .await
+        .unwrap();
+    
         let keystore = Keystore::from_file(&incredible_config.bls_keystore_path())
             .unwrap()
             .decrypt(&incredible_config.bls_keystore_password())
@@ -418,7 +415,7 @@ mod tests {
             .unwrap();
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let key_pair = BlsKeyPair::new(fr_key).unwrap();
-        let e = register_for_operator_sets(
+        let _ = register_for_operator_sets(
             incredible_config.operator_set_id().unwrap(),
             key_pair,
             incredible_config.permission_controller_address().unwrap(),
@@ -480,7 +477,7 @@ mod tests {
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
         let mut challenger = Challenger::build(incredible_config.clone()).await.unwrap();
-        let c_handle = tokio::spawn(async move {
+        let _ = tokio::spawn(async move {
             let _ = challenger.start_challenger().await;
         });
 
