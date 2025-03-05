@@ -1,16 +1,18 @@
 [workspace]
-members = ["crates/aggregator",
-"crates/operator",
-"bin/incredible-squaring-avs",
-"crates/cli",
-"crates/config",
-"crates/bindings",
-"crates/avs",
-"crates/challenger",
-"crates/chainio",
-"crates/testing-utils",
-"crates/task_generator",
-"crates/operator_2"
+members = [
+  "crates/aggregator",
+  "crates/operator",
+  "bin/incredible-squaring-avs",
+  "crates/cli",
+  "crates/config",
+  "crates/bindings",
+  "crates/avs",
+  "crates/challenger",
+  "crates/chainio",
+  "crates/testing-utils",
+  "crates/task_generator",
+  "crates/operator_2",
+  "integration-tests"
 ]
 
 resolver = "2"
