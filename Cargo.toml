@@ -75,21 +75,20 @@ incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 
 # eigensdk-rs 
 
-eigen-common = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-types = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-metrics = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-cli = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-crypto-bn254 = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-client-elcontracts = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-services-operatorsinfo = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-services-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-services-blsaggregation = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-client-eth = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-eigen-nodeapi = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "f089113" }
-
+eigen-common = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-types = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-metrics = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-cli = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-crypto-bn254 = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-client-elcontracts = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-services-operatorsinfo = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-services-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-services-blsaggregation = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-client-eth = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
+eigen-nodeapi = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13438a3c5b0cd6543ced084d8991ff7c7fd" }
