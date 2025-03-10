@@ -238,9 +238,7 @@ library IncredibleSquaringDeploymentLib {
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
         );
 
-        bytes memory slasherupgradecall =
-            abi.encodeCall(InstantSlasher.initialize, (address(result.incredibleSquaringTaskManager)));
-        UpgradeableProxyLib.upgradeAndCall(result.slasher, instantSlasherImpl, slasherupgradecall);
+        UpgradeableProxyLib.upgrade(result.slasher, instantSlasherImpl);
 
         verify_deployment(result);
 
