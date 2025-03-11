@@ -321,6 +321,14 @@ impl Aggregator {
             self.tasks_responses.insert(task_index, inner_map);
         }
 
+        // TODO: send responde when both operators have signed
+        let response = self
+            .aggregator_response
+            .receive_aggregated_response()
+            .await
+            .map_err(AggregatorError::BlsAggregationServiceError)?;
+        self.send_aggregated_response_to_contract(response).await?;
+
         Ok(())
     }
 
