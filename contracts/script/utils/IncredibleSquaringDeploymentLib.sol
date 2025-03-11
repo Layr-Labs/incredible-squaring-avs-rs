@@ -104,7 +104,6 @@ library IncredibleSquaringDeploymentLib {
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
-        result.slasher = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         OperatorStateRetriever operatorStateRetriever = new OperatorStateRetriever();
         result.strategy = strategy;
         result.operatorStateRetriever = address(operatorStateRetriever);
@@ -120,27 +119,13 @@ library IncredibleSquaringDeploymentLib {
 
         address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
         address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
-        address instantSlasherImpl = address(
+        result.slasher = address(
             new InstantSlasher(
                 IAllocationManager(core.allocationManager),
                 ISlashingRegistryCoordinator(result.registryCoordinator),
                 result.incredibleSquaringTaskManager
             )
         );
-        console2.log("pauser_registry");
-        console2.log(coredata.pauserRegistry);
-        console2.log("service_manager");
-        console2.log(result.incredibleSquaringServiceManager);
-        console2.log("stake_registry");
-        console2.log(result.stakeRegistry);
-        console2.log("bls_apk_registry");
-        console2.log(result.blsapkRegistry);
-        console2.log("index_registry");
-        console2.log(result.indexRegistry);
-        console2.log("avs_directory");
-        console2.log(core.avsDirectory);
-        console2.log("pauser_registry");
-        console2.log(coredata.pauserRegistry);
 
         address registryCoordinatorImpl = address(
             new SlashingRegistryCoordinator(
@@ -237,10 +222,6 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
         );
-
-        bytes memory slasherupgradecall =
-            abi.encodeCall(InstantSlasher.initialize, (address(result.incredibleSquaringTaskManager)));
-        UpgradeableProxyLib.upgradeAndCall(result.slasher, instantSlasherImpl, slasherupgradecall);
 
         verify_deployment(result);
 
