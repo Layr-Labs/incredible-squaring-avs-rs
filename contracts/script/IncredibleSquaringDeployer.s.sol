@@ -113,6 +113,7 @@ contract IncredibleSquaringDeployer is Script {
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
+        incrediblSquaringDeployment.token = address(erc20Mock);
         console.log("instantSlasher", incrediblSquaringDeployment.slasher);
 
         FundOperator.fund_operator(

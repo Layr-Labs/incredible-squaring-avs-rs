@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 import {Script} from "forge-std/Script.sol";
 import {IncredibleSquaringDeploymentLib} from "./utils/IncredibleSquaringDeploymentLib.sol";
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
-import {SetupPaymentsLib} from "./utils/SetupPaymentsLib.sol";
+import {SetupDistributionsLib} from "./utils/SetupDistributionsLib.sol";
 import {IRewardsCoordinatorTypes} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 import {console2} from "forge-std/console2.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
@@ -17,7 +17,7 @@ contract OperatorDirectedPayments is Script {
     address private deployer;
     CoreDeploymentLib.DeploymentData coreDeployment;
     IncredibleSquaringDeploymentLib.DeploymentData incredibleSquaringDeployment;
-    SetupPaymentsLib.OperatorConfig operatorRewardConfig;
+    SetupDistributionsLib.OperatorConfig operatorRewardConfig;
     string internal constant filePath = "test/mockData/scratch/payment_info.json";
 
     function setUp() public {
@@ -27,7 +27,7 @@ contract OperatorDirectedPayments is Script {
         coreDeployment = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
         incredibleSquaringDeployment =
             IncredibleSquaringDeploymentLib.readDeploymentJson("script/deployments/incredible-squaring/", block.chainid);
-        operatorRewardConfig = SetupPaymentsLib.readOperatorConfig("operator_reward_config");
+        operatorRewardConfig = SetupDistributionsLib.readOperatorConfig("operator_reward_config");
     }
 
     function run() external {
@@ -48,7 +48,7 @@ contract OperatorDirectedPayments is Script {
             });
         }
 
-        SetupPaymentsLib.createOperatorDirectedAVSRewardsSubmissions(
+        SetupDistributionsLib.createOperatorDirectedAVSRewardsSubmissions(
             incredibleSquaringDeployment.strategy,
             incredibleSquaringDeployment.incredibleSquaringServiceManager,
             operator_reward,
