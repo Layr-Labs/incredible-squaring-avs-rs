@@ -48,7 +48,7 @@ This command launches 5 services(crates) together:
 - Operator2: Same task as operator 1. Stake in strategy: 7000 tokens
 - Aggregator:
   - Sets up an Rpc client to receive signed task responses from operators, aggregates the signatures.
-  - Then calls the respondToTask function in the TaskManager contract.
+  - If both operator have signed, calls the respondToTask function in the TaskManager contract.
 - Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
 - Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
 
