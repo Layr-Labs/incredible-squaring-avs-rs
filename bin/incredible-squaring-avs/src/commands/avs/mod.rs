@@ -1,8 +1,11 @@
 use alloy::hex;
+use alloy::network::{EthereumWallet, NetworkWallet};
 use alloy::primitives::aliases::U96;
 use alloy::primitives::{Address, FixedBytes, U256};
 use alloy::providers::Provider;
+use alloy::signers::k256::ecdsa::SigningKey;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
+use alloy::signers::{Signer, SignerSync};
 use alloy::sol_types::SolCall;
 use clap::value_parser;
 use clap::{Args, Parser};
@@ -23,6 +26,7 @@ use eigensdk::testing_utils::anvil_constants::{
     get_permission_controller_address, get_rewards_coordinator_address,
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
+use ::hex::FromHex;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_config::IncredibleConfig;
@@ -517,6 +521,17 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
+        let update_metadata_uri_tx_hash = update_metadata_uri(
+            config.operator_pvt_key(),
+            config.ecdsa_keystore_path(),
+            config.ecdsa_keystore_password(),
+            config.allocation_manager_addr()?,
+            config.service_manager_addr()?,
+            config.http_rpc_url(),
+            metadata_uri.clone(),
+        )
+        .await?;
+        info!(tx_hash = %update_metadata_uri_tx_hash,metadata_uri = %metadata_uri,"updated metadata uri ");
 
         let total_delegated_quorum_create_tx_hash = create_total_delegated_stake_quorum(
             config.erc20_mock_strategy_addr()?,
@@ -627,12 +642,13 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 .unwrap();
             let fr_key: String = keystore.iter().map(|&value| value as char).collect();
             let key_pair = BlsKeyPair::new(fr_key)?;
+            info!("alll{:?}",config.allocation_manager_addr()?);
             let register_for_operator_sets_by_operator1_txhash = register_for_operator_sets(
                 config.operator_set_id()?,
                 key_pair,
                 config.permission_controller_address()?,
                 config.registry_coordinator_addr()?,
-                allocation_manager_address_anvil,
+                config.allocation_manager_addr()?,
                 config.operator_pvt_key(),
                 ecdsa_keystore_path.clone(),
                 ecdsa_keystore_password.clone(),
@@ -738,9 +754,10 @@ pub async fn register_operator_with_el_and_deposit_tokens_in_strategy(
     let operator_details = Operator {
         address: signer.address(),
         delegation_approver_address: signer.address(),
-        staker_opt_out_window_blocks: 0,
-        metadata_url: Some(metadata_uri),
-        allocation_delay,
+        staker_opt_out_window_blocks: Some(0),
+        metadata_url: metadata_uri,
+        _deprecated_earnings_receiver_address:None,
+        allocation_delay:Some(allocation_delay),
     };
     let is_already_registered = el_chain_reader
         .is_operator_registered(signer.address())
@@ -781,6 +798,52 @@ pub async fn set_allocation_delay(
         .get_receipt()
         .await?
         .transaction_hash)
+}
+
+/// Update metadata uri
+pub async fn update_metadata_uri(
+    operator_pvt_key: Option<String>,
+    ecdsa_keystore_path: String,
+    ecdsa_keystore_password: String,
+    allocation_manager_address: Address,
+    service_manager_address: Address,
+    rpc_url: String,
+    metadata_uri: String,
+) -> eyre::Result<FixedBytes<32>> {
+    let signer;
+    if let Some(operator_key) = operator_pvt_key {
+        signer = PrivateKeySigner::from_str(&operator_key)?;
+    } else {
+        signer = LocalSigner::decrypt_keystore(ecdsa_keystore_path, ecdsa_keystore_password)?;
+    }
+    let s = signer.to_field_bytes();
+    let pvt_key = hex::encode(s).to_string();
+
+    let contract_service_manager =
+    MockAvsServiceManager::new(service_manager_address, get_signer(&pvt_key, &rpc_url));
+
+let tx_hash = contract_service_manager
+    .setAppointee(
+        EthereumWallet::new(signer).default_signer().address(),
+        allocation_manager_address,
+        FixedBytes(AllocationManager::updateAVSMetadataURICall::SELECTOR),
+    )
+    .send()
+    .await?
+    .get_receipt()
+    .await?
+    .transaction_hash;
+info!("set appointee for updateAVSMetadataURICall{:?} ",tx_hash);
+    let allocation_manager =
+        AllocationManager::new(allocation_manager_address, get_signer(&pvt_key, &rpc_url));
+    let tx_hash = allocation_manager
+        .updateAVSMetadataURI(service_manager_address,metadata_uri)
+        .send()
+        .await?
+        .get_receipt()
+        .await?
+        .transaction_hash;
+    Ok(tx_hash)
 }
 
 /// Creates Total Delegated stake
@@ -887,6 +950,8 @@ pub async fn create_total_delegated_stake_quorum(
             .await?;
     }
 
+    let s =  registry_coordinator_instance.avs().call().await?._0;
+    info!("avsss{:?}",s);
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
         .send()

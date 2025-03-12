@@ -72,7 +72,7 @@ incredible-task-generator = {path = "crates/task_generator/"}
 incredible-operator-2 = {path = "crates/operator_2/" , features = ["default"]}
 
 # eigensdk-rs 
-eigensdk = {git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "223402f", features = ["full"]}
-eigen-types =  { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
+eigensdk = {git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "5de5d4a", features = ["full"]}
+eigen-types =  { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "5de5d4a"}
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "5de5d4a"}
+eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "5de5d4a"}

@@ -2423,12 +2423,31 @@ dependencies = [
  "alloy",
  "ark-ff 0.5.0",
  "async-trait",
- "eigen-client-elcontracts",
- "eigen-common",
- "eigen-crypto-bls",
- "eigen-logging",
- "eigen-types",
- "eigen-utils",
+ "eigen-client-elcontracts 0.3.0",
+ "eigen-common 0.3.0",
+ "eigen-crypto-bls 0.3.0",
+ "eigen-logging 0.3.0",
+ "eigen-types 0.3.0",
+ "eigen-utils 0.3.0",
+ "num-bigint 0.4.6",
+ "thiserror 1.0.69",
+ "tracing",
+]
+
+[[package]]
+name = "eigen-client-avsregistry"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "ark-ff 0.5.0",
+ "async-trait",
+ "eigen-client-elcontracts 0.4.0",
+ "eigen-common 0.4.0",
+ "eigen-crypto-bls 0.4.0",
+ "eigen-logging 0.4.0",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
  "num-bigint 0.4.6",
  "thiserror 1.0.69",
  "tracing",
@@ -2440,11 +2459,26 @@ version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "eigen-common",
- "eigen-crypto-bls",
- "eigen-logging",
- "eigen-types",
- "eigen-utils",
+ "eigen-common 0.3.0",
+ "eigen-crypto-bls 0.3.0",
+ "eigen-logging 0.3.0",
+ "eigen-types 0.3.0",
+ "eigen-utils 0.3.0",
+ "thiserror 1.0.69",
+ "tracing",
+]
+
+[[package]]
+name = "eigen-client-elcontracts"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "eigen-common 0.4.0",
+ "eigen-crypto-bls 0.4.0",
+ "eigen-logging 0.4.0",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
  "thiserror 1.0.69",
  "tracing",
 ]
@@ -2456,8 +2490,22 @@ source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa
 dependencies = [
  "alloy",
  "async-trait",
- "eigen-logging",
- "eigen-metrics-collectors-rpc-calls",
+ "eigen-logging 0.3.0",
+ "eigen-metrics-collectors-rpc-calls 0.3.0",
+ "hex",
+ "thiserror 1.0.69",
+ "url",
+]
+
+[[package]]
+name = "eigen-client-eth"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "async-trait",
+ "eigen-logging 0.4.0",
+ "eigen-metrics-collectors-rpc-calls 0.4.0",
  "hex",
  "thiserror 1.0.69",
  "url",
@@ -2470,7 +2518,27 @@ source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa
 dependencies = [
  "alloy",
  "chrono",
- "eigen-common",
+ "eigen-common 0.3.0",
+ "hex",
+ "jsonwebtoken 7.2.0",
+ "mime",
+ "once_cell",
+ "reqwest 0.11.27",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 1.0.69",
+ "uuid 1.11.0",
+]
+
+[[package]]
+name = "eigen-client-fireblocks"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "chrono",
+ "eigen-common 0.4.0",
  "hex",
  "jsonwebtoken 7.2.0",
  "mime",
@@ -2493,6 +2561,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-common"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "url",
+]
+
+[[package]]
 name = "eigen-crypto-bls"
 version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
@@ -2503,8 +2580,25 @@ dependencies = [
  "ark-ff 0.5.0",
  "ark-serialize 0.5.0",
  "ark-std 0.4.0",
- "eigen-crypto-bn254",
- "eigen-utils",
+ "eigen-crypto-bn254 0.3.0",
+ "eigen-utils 0.3.0",
+ "serde",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "eigen-crypto-bls"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "ark-bn254 0.5.0",
+ "ark-ec 0.5.0",
+ "ark-ff 0.5.0",
+ "ark-serialize 0.5.0",
+ "ark-std 0.4.0",
+ "eigen-crypto-bn254 0.4.0",
+ "eigen-utils 0.4.0",
  "serde",
  "thiserror 1.0.69",
 ]
@@ -2513,6 +2607,17 @@ dependencies = [
 name = "eigen-crypto-bn254"
 version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
+dependencies = [
+ "ark-bn254 0.5.0",
+ "ark-ec 0.5.0",
+ "ark-ff 0.5.0",
+ "rust-bls-bn254 0.2.1",
+]
+
+[[package]]
+name = "eigen-crypto-bn254"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
 dependencies = [
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
@@ -2532,14 +2637,51 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-logging"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "ctor",
+ "once_cell",
+ "tracing",
+ "tracing-subscriber 0.3.19",
+]
+
+[[package]]
 name = "eigen-metrics"
 version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
- "eigen-logging",
+ "eigen-logging 0.3.0",
  "metrics",
  "metrics-exporter-prometheus",
  "metrics-util",
+]
+
+[[package]]
+name = "eigen-metrics"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "eigen-logging 0.4.0",
+ "metrics",
+ "metrics-exporter-prometheus",
+ "metrics-util",
+]
+
+[[package]]
+name = "eigen-metrics-collectors-economic"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "eigen-client-avsregistry 0.4.0",
+ "eigen-client-elcontracts 0.4.0",
+ "eigen-logging 0.4.0",
+ "eigen-types 0.4.0",
+ "metrics",
+ "num-bigint 0.4.6",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -2547,7 +2689,16 @@ name = "eigen-metrics-collectors-rpc-calls"
 version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
- "eigen-logging",
+ "eigen-logging 0.3.0",
+ "metrics",
+]
+
+[[package]]
+name = "eigen-metrics-collectors-rpc-calls"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "eigen-logging 0.4.0",
  "metrics",
 ]
 
@@ -2555,6 +2706,18 @@ dependencies = [
 name = "eigen-nodeapi"
 version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
+dependencies = [
+ "ntex",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tracing",
+]
+
+[[package]]
+name = "eigen-nodeapi"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
 dependencies = [
  "ntex",
  "serde",
@@ -2572,11 +2735,27 @@ dependencies = [
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
  "async-trait",
- "eigen-client-avsregistry",
- "eigen-crypto-bls",
- "eigen-services-operatorsinfo",
- "eigen-types",
- "eigen-utils",
+ "eigen-client-avsregistry 0.3.0",
+ "eigen-crypto-bls 0.3.0",
+ "eigen-services-operatorsinfo 0.3.0",
+ "eigen-types 0.3.0",
+ "eigen-utils 0.3.0",
+]
+
+[[package]]
+name = "eigen-services-avsregistry"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "ark-bn254 0.5.0",
+ "ark-ec 0.5.0",
+ "async-trait",
+ "eigen-client-avsregistry 0.4.0",
+ "eigen-crypto-bls 0.4.0",
+ "eigen-services-operatorsinfo 0.4.0",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
 ]
 
 [[package]]
@@ -2587,13 +2766,35 @@ dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
- "eigen-client-avsregistry",
- "eigen-common",
- "eigen-crypto-bls",
- "eigen-crypto-bn254",
- "eigen-logging",
- "eigen-services-avsregistry",
- "eigen-types",
+ "eigen-client-avsregistry 0.3.0",
+ "eigen-common 0.3.0",
+ "eigen-crypto-bls 0.3.0",
+ "eigen-crypto-bn254 0.3.0",
+ "eigen-logging 0.3.0",
+ "eigen-services-avsregistry 0.3.0",
+ "eigen-types 0.3.0",
+ "parking_lot 0.12.3",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+]
+
+[[package]]
+name = "eigen-services-blsaggregation"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "ark-bn254 0.5.0",
+ "ark-ec 0.5.0",
+ "eigen-client-avsregistry 0.4.0",
+ "eigen-common 0.4.0",
+ "eigen-crypto-bls 0.4.0",
+ "eigen-crypto-bn254 0.4.0",
+ "eigen-logging 0.4.0",
+ "eigen-services-avsregistry 0.4.0",
+ "eigen-types 0.4.0",
  "parking_lot 0.12.3",
  "serde",
  "serde_json",
@@ -2608,12 +2809,33 @@ source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa
 dependencies = [
  "alloy",
  "async-trait",
- "eigen-client-avsregistry",
- "eigen-common",
- "eigen-crypto-bls",
- "eigen-logging",
- "eigen-types",
- "eigen-utils",
+ "eigen-client-avsregistry 0.3.0",
+ "eigen-common 0.3.0",
+ "eigen-crypto-bls 0.3.0",
+ "eigen-logging 0.3.0",
+ "eigen-types 0.3.0",
+ "eigen-utils 0.3.0",
+ "eyre",
+ "futures",
+ "futures-util",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-util 0.7.13",
+]
+
+[[package]]
+name = "eigen-services-operatorsinfo"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "async-trait",
+ "eigen-client-avsregistry 0.4.0",
+ "eigen-common 0.4.0",
+ "eigen-crypto-bls 0.4.0",
+ "eigen-logging 0.4.0",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
  "eyre",
  "futures",
  "futures-util",
@@ -2637,13 +2859,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-signer"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "async-trait",
+ "aws-sdk-kms",
+ "eth-keystore",
+ "serde",
+ "thiserror 1.0.69",
+ "url",
+]
+
+[[package]]
 name = "eigen-testing-utils"
 version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "eigen-common",
- "eigen-utils",
+ "eigen-common 0.3.0",
+ "eigen-utils 0.3.0",
+ "serde",
+ "serde_json",
+ "testcontainers",
+ "url",
+]
+
+[[package]]
+name = "eigen-testing-utils"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "eigen-common 0.4.0",
+ "eigen-utils 0.4.0",
  "serde",
  "serde_json",
  "testcontainers",
@@ -2656,11 +2906,31 @@ version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
  "alloy",
- "eigen-crypto-bls",
+ "eigen-crypto-bls 0.3.0",
  "ethers",
  "num-bigint 0.4.6",
  "thiserror 1.0.69",
  "tokio",
+]
+
+[[package]]
+name = "eigen-types"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "ark-ff 0.5.0",
+ "eigen-crypto-bls 0.4.0",
+ "eigen-utils 0.4.0",
+ "ethers",
+ "mime-sniffer",
+ "num-bigint 0.4.6",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "url",
 ]
 
 [[package]]
@@ -2673,25 +2943,61 @@ dependencies = [
 ]
 
 [[package]]
+name = "eigen-utils"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "alloy",
+ "regex",
+ "reqwest 0.12.9",
+]
+
+[[package]]
 name = "eigensdk"
 version = "0.3.0"
 source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=223402f#223402fe293fa8f8d31e5345618004cf9822d221"
 dependencies = [
- "eigen-client-avsregistry",
- "eigen-client-elcontracts",
- "eigen-client-eth",
- "eigen-client-fireblocks",
- "eigen-common",
- "eigen-crypto-bls",
- "eigen-crypto-bn254",
- "eigen-logging",
- "eigen-metrics",
- "eigen-nodeapi",
- "eigen-services-avsregistry",
- "eigen-services-blsaggregation",
- "eigen-services-operatorsinfo",
- "eigen-signer",
- "eigen-testing-utils",
+ "eigen-client-avsregistry 0.3.0",
+ "eigen-client-elcontracts 0.3.0",
+ "eigen-client-eth 0.3.0",
+ "eigen-client-fireblocks 0.3.0",
+ "eigen-common 0.3.0",
+ "eigen-crypto-bls 0.3.0",
+ "eigen-crypto-bn254 0.3.0",
+ "eigen-logging 0.3.0",
+ "eigen-metrics 0.3.0",
+ "eigen-nodeapi 0.3.0",
+ "eigen-services-avsregistry 0.3.0",
+ "eigen-services-blsaggregation 0.3.0",
+ "eigen-services-operatorsinfo 0.3.0",
+ "eigen-signer 0.3.0",
+ "eigen-testing-utils 0.3.0",
+]
+
+[[package]]
+name = "eigensdk"
+version = "0.4.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?rev=5de5d4a#5de5d4a1d0c9c03db354205f4780bc6c5b3f77e4"
+dependencies = [
+ "eigen-client-avsregistry 0.4.0",
+ "eigen-client-elcontracts 0.4.0",
+ "eigen-client-eth 0.4.0",
+ "eigen-client-fireblocks 0.4.0",
+ "eigen-common 0.4.0",
+ "eigen-crypto-bls 0.4.0",
+ "eigen-crypto-bn254 0.4.0",
+ "eigen-logging 0.4.0",
+ "eigen-metrics 0.4.0",
+ "eigen-metrics-collectors-economic",
+ "eigen-metrics-collectors-rpc-calls 0.4.0",
+ "eigen-nodeapi 0.4.0",
+ "eigen-services-avsregistry 0.4.0",
+ "eigen-services-blsaggregation 0.4.0",
+ "eigen-services-operatorsinfo 0.4.0",
+ "eigen-signer 0.4.0",
+ "eigen-testing-utils 0.4.0",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
 ]
 
 [[package]]
@@ -4067,9 +4373,9 @@ dependencies = [
  "ark-ec 0.5.0",
  "ark-serialize 0.4.2",
  "ark-std 0.4.0",
- "eigen-types",
- "eigen-utils",
- "eigensdk",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "eyre",
  "futures-util",
  "hex",
@@ -4096,7 +4402,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "clap",
- "eigensdk",
+ "eigensdk 0.4.0",
  "eyre",
  "futures",
  "incredible-aggregator",
@@ -4128,9 +4434,9 @@ name = "incredible-chainio"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "eigen-types",
- "eigen-utils",
- "eigensdk",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "eyre",
  "futures-util",
  "incredible-bindings",
@@ -4146,8 +4452,8 @@ name = "incredible-challenger"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "eigen-utils",
- "eigensdk",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "eyre",
  "futures-util",
  "incredible-bindings",
@@ -4175,7 +4481,7 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "confy",
- "eigen-types",
+ "eigen-types 0.4.0",
  "hex",
  "incredible-testing-utils",
  "ruint",
@@ -4192,7 +4498,7 @@ name = "incredible-metrics"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "eigensdk",
+ "eigensdk 0.4.0",
  "eyre",
  "futures-util",
  "incredible-bindings",
@@ -4211,10 +4517,10 @@ dependencies = [
  "alloy",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
- "eigen-metrics-collectors-rpc-calls",
- "eigen-types",
- "eigen-utils",
- "eigensdk",
+ "eigen-metrics-collectors-rpc-calls 0.4.0",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "eyre",
  "futures-util",
  "hex",
@@ -4241,10 +4547,10 @@ dependencies = [
  "alloy",
  "ark-ec 0.5.0",
  "ark-ff 0.5.0",
- "eigen-metrics-collectors-rpc-calls",
- "eigen-types",
- "eigen-utils",
- "eigensdk",
+ "eigen-metrics-collectors-rpc-calls 0.4.0",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "eyre",
  "futures-util",
  "hex",
@@ -4271,9 +4577,9 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "clap",
- "eigen-types",
- "eigen-utils",
- "eigensdk",
+ "eigen-types 0.4.0",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "eyre",
  "hex",
  "incredible-aggregator",
@@ -4296,8 +4602,8 @@ name = "incredible-task-generator"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "eigen-utils",
- "eigensdk",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "eyre",
  "futures-util",
  "incredible-bindings",
@@ -4314,8 +4620,8 @@ name = "incredible-testing-utils"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "eigen-utils",
- "eigensdk",
+ "eigen-utils 0.4.0",
+ "eigensdk 0.4.0",
  "tracing",
 ]
 
@@ -4370,8 +4676,8 @@ name = "integration-tests"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "eigen-utils",
- "eigensdk",
+ "eigen-utils 0.3.0",
+ "eigensdk 0.3.0",
  "eyre",
  "incredible-aggregator",
  "incredible-bindings",
@@ -4770,6 +5076,16 @@ name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
+
+[[package]]
+name = "mime-sniffer"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b8b2a64cd735f1d5f17ff6701ced3cc3c54851f9448caf454cd9c923d812408"
+dependencies = [
+ "mime",
+ "url",
+]
 
 [[package]]
 name = "minimal-lexical"

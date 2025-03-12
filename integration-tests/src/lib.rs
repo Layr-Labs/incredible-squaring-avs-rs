@@ -20,7 +20,7 @@ mod tests {
     use incredible_squaring_avs::commands::avs::{
         create_total_delegated_stake_quorum, modify_allocation_for_operator,
         register_for_operator_sets, register_operator_with_el_and_deposit_tokens_in_strategy,
-        set_appointee_for_avs,
+        set_appointee_for_avs,update_metadata_uri
     };
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -178,6 +178,7 @@ mod tests {
                 .await
                 .to_string(),
         );
+        incredible_config.set_metadata_uri("metadata".to_string());
         incredible_config.set_service_manager_address(
             get_incredible_squaring_service_manager().await.to_string(),
         );
@@ -187,6 +188,7 @@ mod tests {
                 .to_string(),
         );
 
+        update_metadata_uri(incredible_config.operator_pvt_key(),incredible_config.ecdsa_keystore_path(),incredible_config.ecdsa_keystore_password(),incredible_config.service_manager_addr().unwrap(),incredible_config.http_rpc_url(),incredible_config.metadata_uri()).await.unwrap();
         create_total_delegated_stake_quorum(
             get_incredible_squaring_strategy_address().await,
             get_incredible_squaring_service_manager().await,

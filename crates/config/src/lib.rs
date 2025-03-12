@@ -142,6 +142,8 @@ pub struct ELConfig {
     pub permission_controller_addr: String,
 
     pub allocation_manager_addr: String,
+
+    pub metadata_uri: String
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -338,6 +340,10 @@ impl IncredibleConfig {
         self.incredible_contracts_config.erc20_mock_strategy_addr = address;
     }
 
+    pub fn set_metadata_uri(&mut self,uri:String){
+        self.el_config.metadata_uri = uri;
+    }
+
     pub fn set_task_manager_signer(&mut self, signer: String) {
         self.task_manager_config.signer = signer;
     }
@@ -438,6 +444,10 @@ impl IncredibleConfig {
 
     pub fn http_rpc_url(&self) -> String {
         self.rpc_config.http_rpc_url.clone()
+    }
+
+    pub fn metadata_uri(&self) -> String{
+        self.el_config.metadata_uri.clone()
     }
 
     pub fn ws_rpc_url(&self) -> String {
