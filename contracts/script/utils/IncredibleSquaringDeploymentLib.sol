@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.27;
 
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
@@ -70,6 +70,13 @@ library IncredibleSquaringDeploymentLib {
         address pauserRegistry;
         address token;
         address slasher;
+    }
+
+    struct DeploymentConfigData {
+        address rewardsOwner;
+        address rewardsInitiator;
+        uint256 rewardsOwnerKey;
+        uint256 rewardsInitiatorKey;
     }
 
     struct IncredibleSquaringSetupConfig {
@@ -291,6 +298,33 @@ library IncredibleSquaringDeploymentLib {
         data.slasher = json.readAddress(".addresses.instantSlasher");
 
         return data;
+    }
+
+    function readDeploymentConfigValues(string memory directoryPath, string memory fileName)
+        internal
+        view
+        returns (DeploymentConfigData memory)
+    {
+        string memory pathToFile = string.concat(directoryPath, fileName);
+
+        require(vm.exists(pathToFile), "IncredibleSquaringDeployment: Deployment Config file does not exist");
+
+        string memory json = vm.readFile(pathToFile);
+
+        DeploymentConfigData memory data;
+        data.rewardsOwner = json.readAddress(".addresses.rewardsOwner");
+        data.rewardsInitiator = json.readAddress(".addresses.rewardsInitiator");
+        data.rewardsOwnerKey = json.readUint(".keys.rewardsOwner");
+        data.rewardsInitiatorKey = json.readUint(".keys.rewardsInitiator");
+        return data;
+    }
+
+    function readDeploymentConfigValues(string memory directoryPath, uint256 chainId)
+        internal
+        view
+        returns (DeploymentConfigData memory)
+    {
+        return readDeploymentConfigValues(directoryPath, string.concat(vm.toString(chainId), ".json"));
     }
 
     /// write to default output path
