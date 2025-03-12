@@ -74,6 +74,10 @@ library IncredibleSquaringDeploymentLib {
         address contracts_registry_addr;
         address task_generator_addr;
         address aggregator_addr;
+        address rewardsOwner;
+        address rewardsInitiator;
+        uint256 rewardsOwnerKey;
+        uint256 rewardsInitiatorKey;
     }
 
     function deployContracts(
