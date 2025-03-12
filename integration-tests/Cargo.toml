@@ -9,9 +9,9 @@ license = "Business Source License 1.1"
 description = "integration tests for incredible avs"
 
 [dependencies]
-alloy = { version = "0.7", features = ["full","signer-keystore","node-bindings"] }
-eigen-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
-eigen-logging = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
+alloy = { version = "0.9", features = ["full","signer-keystore","node-bindings"] }
+eigensdk = {git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "223402f", features = ["full"]}
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
 incredible-config = {path = "../crates/config/"}
 incredible-challenger = {path = "../crates/challenger/"}
 incredible-bindings = {path = "../crates/bindings/"}
@@ -25,10 +25,5 @@ toml = "0.8"
 tokio = { version = "1.21", default-features = false }
 eyre = "0.6.12"
 incredible-squaring-avs = {path = "../bin/incredible-squaring-avs/"}
-eigen-testing-utils = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
 serial_test = "3.1.1"
 rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
-eigen-crypto-bls = {git = "https://github.com/layr-labs/eigensdk-rs" , rev = "046d497"}
-
-
-[workspace]

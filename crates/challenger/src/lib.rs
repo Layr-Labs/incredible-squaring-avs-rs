@@ -1,6 +1,6 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
-use eigen_common::{get_provider, get_ws_provider};
+use eigensdk::common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
 };
@@ -133,17 +133,17 @@ impl Challenger {
 
     /// Call challenge
     pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
-        if let Some(number_to_be_squared) = self.tasks.get(&task_index) {
-            let num_to_square = number_to_be_squared.numberToBeSquared;
+        if let Some(task) = self.tasks.get(&task_index) {
+            let num_to_square = task.numberToBeSquared;
 
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
                 if answer != (num_to_square * num_to_square) {
-                    info!("calling raise challenge");
+                    info!("raising challenge for task index {:?} to slash the signatories for this task." ,task_index);
                     let _ = self.raise_challenge(task_index).await;
                     return Ok(());
                 }
-                info!("challenger:correct answer, no challenge raised");
+                info!("challenger:correct answer, no slashing occurred");
                 Ok(())
             } else {
                 Err(ChallengerError::TaskResponseNotFound)
@@ -173,7 +173,10 @@ impl Challenger {
             .await;
         match raise_challenge_result {
             Ok(raise_challenge) => Ok(raise_challenge),
-            Err(e) => Err(error::ChallengerError::ChainIo(e)),
+            Err(e) => {
+                info!("error_in_raise_challenge");
+                Err(error::ChallengerError::ChainIo(e))
+            }
         }
     }
 

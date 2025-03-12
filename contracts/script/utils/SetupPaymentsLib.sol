@@ -82,8 +82,8 @@ library SetupPaymentsLib {
             strategiesAndMultipliers[0] =
                 IRewardsCoordinatorTypes.StrategyAndMultiplier({strategy: IStrategy(strategy), multiplier: 10000});
 
-            IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission memory rewardSubmission = IRewardsCoordinatorTypes
-                .OperatorDirectedRewardsSubmission({
+            IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission memory rewardSubmission =
+            IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission({
                 strategiesAndMultipliers: strategiesAndMultipliers,
                 token: IStrategy(strategy).underlyingToken(),
                 operatorRewards: operatorRewards,
@@ -137,16 +137,14 @@ library SetupPaymentsLib {
         IRewardsCoordinator rewardsCoordinator,
         bytes32[] memory tokenLeaves,
         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory earnerLeaves,
-        address strategy,
         uint32 rewardsCalculationEndTimestamp,
         uint256 NUM_PAYMENTS,
         uint256 NUM_TOKEN_EARNINGS,
         string memory filePath
     ) internal {
         console.logBytes32(tokenLeaves[0]);
-        bytes32 paymentRoot = createPaymentRoot(
-            rewardsCoordinator, tokenLeaves, earnerLeaves, NUM_PAYMENTS, NUM_TOKEN_EARNINGS, strategy, filePath
-        );
+        bytes32 paymentRoot =
+            createPaymentRoot(rewardsCoordinator, tokenLeaves, earnerLeaves, NUM_PAYMENTS, NUM_TOKEN_EARNINGS, filePath);
         rewardsCoordinator.submitRoot(paymentRoot, rewardsCalculationEndTimestamp);
     }
 
@@ -156,7 +154,6 @@ library SetupPaymentsLib {
         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory earnerLeaves,
         uint256 NUM_PAYMENTS,
         uint256 NUM_TOKEN_EARNINGS,
-        address strategy,
         string memory filePath
     ) internal returns (bytes32) {
         require(earnerLeaves.length == NUM_PAYMENTS, "Number of earners must match number of payments");
@@ -173,6 +170,7 @@ library SetupPaymentsLib {
 
     function createEarnerLeaves(address[] calldata earners, bytes32[] memory tokenLeaves)
         public
+        pure
         returns (IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory)
     {
         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory leaves =
@@ -195,7 +193,7 @@ library SetupPaymentsLib {
         uint256 NUM_TOKEN_EARNINGS,
         uint256 TOKEN_EARNINGS,
         address strategy
-    ) internal returns (bytes32[] memory) {
+    ) internal view returns (bytes32[] memory) {
         bytes32[] memory leaves = new bytes32[](NUM_TOKEN_EARNINGS);
         for (uint256 i = 0; i < NUM_TOKEN_EARNINGS; i++) {
             IRewardsCoordinator.TokenTreeMerkleLeaf memory leaf = defaultTokenLeaf(TOKEN_EARNINGS, strategy);
@@ -225,7 +223,7 @@ library SetupPaymentsLib {
         vm.writeJson(finalJson, filePath);
     }
 
-    function parseLeavesFromJson(string memory filePath) internal returns (PaymentLeaves memory) {
+    function parseLeavesFromJson(string memory filePath) internal view returns (PaymentLeaves memory) {
         string memory json = vm.readFile(filePath);
         bytes memory data = vm.parseJson(json);
         return abi.decode(data, (PaymentLeaves));

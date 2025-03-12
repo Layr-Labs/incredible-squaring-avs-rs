@@ -1,8 +1,8 @@
 //! testing utils for incredible squaring rs
 use alloy::primitives::{address, Address};
 use alloy::sol;
-use eigen_common::get_provider;
-use eigen_testing_utils::anvil_constants::ANVIL_HTTP_URL;
+use eigensdk::common::get_provider;
+use eigensdk::testing_utils::anvil_constants::ANVIL_HTTP_URL;
 use ContractsRegistry::contractsReturn;
 
 sol! {

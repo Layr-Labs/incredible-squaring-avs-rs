@@ -138,7 +138,6 @@ contract SetupPayments is Script {
             IRewardsCoordinator(coreDeployment.rewardsCoordinator),
             tokenLeaves,
             earnerLeaves,
-            incredibleSquaringDeployment.strategy,
             endTimestamp,
             numPayments,
             NUM_TOKEN_EARNINGS,
@@ -146,4 +145,3 @@ contract SetupPayments is Script {
         );
     }
 }
-

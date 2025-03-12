@@ -11,11 +11,11 @@ use alloy::{
 
 use alloy::primitives::U256;
 use alloy::providers::{Provider, ProviderBuilder};
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_client_eth::instrumented_client::InstrumentedClient;
-use eigen_crypto_bls::BlsKeyPair;
-use eigen_logging::get_logger;
 use eigen_types::operator::OperatorId;
+use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
+use eigensdk::client_eth::instrumented_client::InstrumentedClient;
+use eigensdk::crypto_bls::BlsKeyPair;
+use eigensdk::logging::get_logger;
 use eyre::Result;
 use futures_util::StreamExt;
 use incredible_aggregator::rpc_server::SignedTaskResponse;
@@ -91,12 +91,6 @@ impl OperatorBuilder {
         #[allow(unused_mut)]
         #[allow(unused_assignments)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
-
-        #[cfg(feature = "integration_tests")]
-        {
-            number_to_be_squared = U256::from(9);
-            info!("Challenger test: setting number to be squared to 9");
-        }
 
         let num_squared = if self.slash_simulate {
             U256::from(28) // not a perfect square, so it can't be correct in any input
@@ -184,7 +178,7 @@ mod tests {
     use alloy::primitives::U256;
     use ark_ec::AffineRepr;
     use ark_ff::fields::PrimeField;
-    use eigen_crypto_bn254::utils::verify_message;
+    use eigensdk::crypto_bn254::utils::verify_message;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,

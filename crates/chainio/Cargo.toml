@@ -22,8 +22,6 @@ tracing.workspace = true
 reqwest.workspace = true
 
 #eigensdk-rs
-eigen-client-avsregistry.workspace = true
+eigensdk.workspace = true
 eigen-types.workspace = true
 eigen-utils.workspace = true
-eigen-logging.workspace = true
-eigen-common.workspace = true

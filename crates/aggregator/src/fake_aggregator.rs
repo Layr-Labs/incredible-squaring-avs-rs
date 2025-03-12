@@ -3,16 +3,16 @@ use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_common::get_ws_provider;
-use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_logging::{get_logger, get_test_logger};
-use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_blsaggregation::bls_agg::{BlsAggregatorService, TaskMetadata};
-use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
-use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
-use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
+use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
+use eigensdk::common::get_ws_provider;
+use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
+use eigensdk::logging::{get_logger, get_test_logger};
+use eigensdk::services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
+use eigensdk::services_blsaggregation::bls_agg::{BlsAggregatorService, TaskMetadata};
+use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
+use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -38,13 +38,13 @@ pub const BLOCK_TIME_SECONDS: u32 = 12;
 #[derive(Debug)]
 pub struct FakeAggregator {
     port_address: String,
-    bls_aggregation_service: BlsAggregatorService<
-        AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
-    >,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+    bls_aggregation_service: BlsAggregatorService<
+        AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
+    >,
 }
 
 impl FakeAggregator {
@@ -370,10 +370,7 @@ impl FakeAggregator {
 #[cfg(test)]
 mod tests {
 
-    use alloy::primitives::{FixedBytes, U256};
-    use eigen_crypto_bls::BlsKeyPair;
-    use eigen_logging::init_logger;
-    use eigen_types::test::TestOperator;
+    use eigensdk::logging::init_logger;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator,
@@ -414,21 +411,6 @@ mod tests {
 
     "#;
 
-    const PRIVATE_KEY_DECIMAL: &str =
-        "12248929636257230549931416853095037629726205319386239410403476017439825112537";
-    const OPERATOR_ID: &str = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3";
-    #[allow(unused)]
-    fn build_test_operator() -> TestOperator {
-        let bls_keypair = BlsKeyPair::new(PRIVATE_KEY_DECIMAL.into()).unwrap();
-        let operator_id =
-            FixedBytes::<32>::from_slice(hex::decode(OPERATOR_ID).unwrap().as_slice());
-        TestOperator {
-            operator_id,
-            bls_keypair: bls_keypair.clone(),
-            stake_per_quorum: HashMap::from([(1u8, U256::from(123))]),
-        }
-    }
-
     async fn build_aggregator() -> FakeAggregator {
         let mut incredible_config: IncredibleConfig =
             toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
@@ -447,7 +429,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_build() {
-        init_logger(eigen_logging::log_level::LogLevel::Info);
+        init_logger(eigensdk::logging::log_level::LogLevel::Info);
         let fake_aggregator = build_aggregator().await;
         let task_metadata = TaskMetadata::new(
             0,
