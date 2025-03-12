@@ -79,6 +79,10 @@ impl Aggregator {
     /// # Returns
     ///
     /// * `Self` - The aggregator
+    ///
+    /// # Errors
+    ///
+    /// * `AggregatorError` - The error that occurred
     pub async fn new(config: IncredibleConfig) -> Result<Self, AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
@@ -140,6 +144,7 @@ impl Aggregator {
     ) -> eyre::Result<()> {
         info!("Starting aggregator");
 
+        let service_handle = self.service_handle.clone();
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
 
         // Spawn two tasks: one for the server and one for processing tasks
@@ -151,6 +156,7 @@ impl Aggregator {
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
             Arc::clone(&aggregator),
+            service_handle,
         ));
 
         // Wait for both tasks to complete and handle potential errors
@@ -204,6 +210,8 @@ impl Aggregator {
                             registry_coordinator,
                         )
                         .await;
+
+                    // Check quorum
                     match result {
                         Ok(_) => Ok(Value::Bool(true)),
                         Err(_) => Err(Error::invalid_params("invalid")),
@@ -240,6 +248,7 @@ impl Aggregator {
     pub async fn process_tasks(
         ws_rpc_url: String,
         aggregator: Arc<tokio::sync::Mutex<Self>>,
+        service_handle: ServiceHandle,
     ) -> eyre::Result<()> {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;
@@ -276,10 +285,7 @@ impl Aggregator {
                 quorum_threshold_percentages,
                 time_to_expiry,
             );
-            let _ = aggregator
-                .lock()
-                .await
-                .service_handle
+            let _ = service_handle
                 .initialize_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
@@ -309,25 +315,22 @@ impl Aggregator {
             &signed_task_response.task_response,
         ));
 
-        let response =
+        let _response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
 
-        if response.is_none() {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
-                task_response_digest,
-                signed_task_response.clone().task_response,
-            );
-            self.tasks_responses.insert(task_index, inner_map);
-        }
+        let signature = signed_task_response.signature();
+        let operator_id = signed_task_response.operator_id();
 
-        // TODO: send responde when both operators have signed
-        let response = self
-            .aggregator_response
-            .receive_aggregated_response()
+        let handle = &self.service_handle;
+        handle
+            .process_signature(TaskSignature::new(
+                task_index,
+                task_response_digest,
+                signature,
+                operator_id,
+            ))
             .await
-            .map_err(AggregatorError::BlsAggregationServiceError)?;
-        self.send_aggregated_response_to_contract(response).await?;
+            .unwrap();
 
         Ok(())
     }
