@@ -11,7 +11,6 @@ use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, Op
 use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
 use eigen_utils::slashing::core::permissioncontroller::PermissionController;
 use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
-use eigen_utils::slashing::middleware::slashingregistrycoordinator::SlashingRegistryCoordinator;
 use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
 use eigensdk::client_elcontracts::reader::ELChainReader;
 use eigensdk::client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
@@ -808,20 +807,18 @@ pub async fn create_total_delegated_stake_quorum(
     let s = signer.to_field_bytes();
     let pvt_key = hex::encode(s).to_string();
 
-    let registry_coordinator_instance = SlashingRegistryCoordinator::new(
-        registry_coordinator_address,
-        get_signer(&pvt_key, rpc_url),
-    );
+    let registry_coordinator_instance =
+        RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
 
     let operator_set_param =
-        eigen_utils::slashing::middleware::slashingregistrycoordinator::ISlashingRegistryCoordinatorTypes::OperatorSetParam {
+        eigen_utils::slashing::middleware::registrycoordinator::ISlashingRegistryCoordinatorTypes::OperatorSetParam {
             maxOperatorCount: 3,
             kickBIPsOfOperatorStake: 100,
             kickBIPsOfTotalStake: 1000,
         };
     let minimum_stake: U96 = U96::from(0);
     let strategy_params = vec![
-        eigen_utils::slashing::middleware::slashingregistrycoordinator::IStakeRegistryTypes::StrategyParams {
+        eigen_utils::slashing::middleware::registrycoordinator::IStakeRegistryTypes::StrategyParams {
             strategy: strategy_address,
             multiplier: U96::from(1),
         },
