@@ -22,11 +22,11 @@ use eigensdk::common::{get_provider, get_ws_provider};
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigensdk::logging::get_logger;
 use eigensdk::services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigensdk::services_blsaggregation::bls_agg::{TaskMetadata, TaskSignature};
-use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
-use eigensdk::services_blsaggregation::{
-    bls_agg::BlsAggregatorService, bls_aggregation_service_response::BlsAggregationServiceResponse,
+use eigensdk::services_blsaggregation::bls_agg::{
+    AggregateReceiver, BlsAggregatorService, ServiceHandle, TaskMetadata, TaskSignature,
 };
+use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 pub use error::AggregatorError;
 use futures_util::StreamExt;
@@ -58,14 +58,18 @@ pub struct Aggregator {
     port_address: String,
     /// avs writer
     pub avs_writer: AvsWriter,
-    bls_aggregation_service: BlsAggregatorService<
-        AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
-    >,
+    //bls_aggregation_service: BlsAggregatorService<
+    //    AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
+    //>,
     task_quorum: HashMap<u32, U96>,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+
+    service_handle: ServiceHandle,
+
+    aggregator_response: AggregateReceiver,
 }
 
 impl Aggregator {
@@ -78,6 +82,10 @@ impl Aggregator {
     /// # Returns
     ///
     /// * `Self` - The aggregator
+    ///
+    /// # Errors
+    ///
+    /// * `AggregatorError` - The error that occurred
     pub async fn new(config: IncredibleConfig) -> Result<Self, AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
@@ -117,13 +125,16 @@ impl Aggregator {
 
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
+
+        let (handle, aggregator_response) = bls_aggregation_service.start();
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
             avs_writer,
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
             task_quorum: HashMap::new(),
-            bls_aggregation_service,
+            service_handle: handle,
+            aggregator_response,
         })
     }
 
@@ -136,6 +147,7 @@ impl Aggregator {
     ) -> eyre::Result<()> {
         info!("Starting aggregator");
 
+        let service_handle = self.service_handle.clone();
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
 
         // Spawn two tasks: one for the server and one for processing tasks
@@ -147,6 +159,7 @@ impl Aggregator {
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
             Arc::clone(&aggregator),
+            service_handle,
         ));
 
         // Wait for both tasks to complete and handle potential errors
@@ -200,6 +213,8 @@ impl Aggregator {
                             registry_coordinator,
                         )
                         .await;
+
+                    // Check quorum
                     match result {
                         Ok(_) => Ok(Value::Bool(true)),
                         Err(_) => Err(Error::invalid_params("invalid")),
@@ -236,6 +251,7 @@ impl Aggregator {
     pub async fn process_tasks(
         ws_rpc_url: String,
         aggregator: Arc<tokio::sync::Mutex<Self>>,
+        service_handle: ServiceHandle,
     ) -> eyre::Result<()> {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;
@@ -273,13 +289,14 @@ impl Aggregator {
                 quorum_threshold_percentages.clone(),
                 time_to_expiry,
             );
-            let _ = aggregator
-                .lock()
-                .await
-                .bls_aggregation_service
-                .initialize_new_task(task_metadata)
-                .await
-                .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
+            //TODO
+            //let _ = service_handle
+            //    .lock()
+            //    .await
+            //    .bls_aggregation_service
+            //    .initialize_new_task(task_metadata)
+            //    .await
+            //    .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
         }
 
         Ok(())
@@ -306,102 +323,22 @@ impl Aggregator {
             &signed_task_response.task_response,
         ));
 
-        let response =
+        let _response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
 
-        if response.is_none() {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
-                task_response_digest,
-                signed_task_response.clone().task_response,
-            );
-            self.tasks_responses.insert(task_index, inner_map);
-        }
+        let signature = signed_task_response.signature();
+        let operator_id = signed_task_response.operator_id();
 
-        let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
-        let old_entry = *entry;
-        let mut total_stake = U96::from(0);
-        let mut quorum_threshold_percentage = 0;
-        let registry_coordinator_instance =
-            RegistryCoordinator::new(registry_coordinator, get_provider(&self.avs_writer.rpc_url));
-        let op_state = OperatorStateRetriever::new(
-            operator_state_retriever,
-            get_provider(&self.avs_writer.rpc_url),
-        );
-        if let Some(task) = self.tasks.get(&task_index) {
-            quorum_threshold_percentage = task.quorumThresholdPercentage;
-            let state = op_state
-                .getOperatorState_0(
-                    registry_coordinator,
-                    task.quorumNumbers.clone(),
-                    task.taskCreatedBlock,
-                )
-                .call()
-                .await?
-                ._0;
-            let operator_address = registry_coordinator_instance
-                .getOperatorFromId(signed_task_response.operator_id())
-                .call()
-                .await?
-                ._0;
-            for operators in state.iter() {
-                for operator in operators {
-                    total_stake += operator.stake;
-                    if operator.operator == operator_address {
-                        *entry += operator.stake;
-                    }
-                }
-            }
-        }
-        let quorum_threshold_amount =
-            U96::from((total_stake * (U96::from(quorum_threshold_percentage))) / U96::from(100));
-        info!(
-            "quorum_threshold_amount for task index {:?} : {:?}",
-            task_index, quorum_threshold_amount
-        );
-        if old_entry < quorum_threshold_amount {
-            let task_signature = TaskSignature::new(
+        let handle = &self.service_handle;
+        handle
+            .process_signature(TaskSignature::new(
                 task_index,
                 task_response_digest,
-                signed_task_response.signature(),
-                signed_task_response.operator_id(),
-            );
-
-            self.bls_aggregation_service
-                .process_new_signature(task_signature)
-                .await?;
-        }
-        let quorum_reached = {
-            *entry >= quorum_threshold_amount // total stake is 12000. quorum threshold percentag in new task is 40% . hence 4800.
-        };
-
-        if quorum_reached && (old_entry < quorum_threshold_amount) {
-            info!("quorum reached for task index: {:?}", task_index);
-            if let Some(aggregated_response) = self
-                .bls_aggregation_service
-                .aggregated_response_receiver
-                .lock()
-                .await
-                .recv()
-                .await
-            {
-                let response =
-                    aggregated_response.map_err(AggregatorError::BlsAggregationServiceError)?;
-                self.send_aggregated_response_to_contract(response, signed_task_response)
-                    .await?;
-            }
-        } else if old_entry >= quorum_threshold_amount {
-            info!(
-                "quorum already reached for index{:?}, ignoring more signatures",
-                task_index
-            );
-        } else {
-            info!(
-                "quorum not reached yet for index:{:?}. waiting to receive more signatures ",
-                task_index
-            );
-        }
-
+                signature,
+                operator_id,
+            ))
+            .await
+            .unwrap();
         Ok(())
     }
 
