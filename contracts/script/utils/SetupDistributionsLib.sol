@@ -56,8 +56,8 @@ library SetupDistributionsLib {
         uint256 operatorRewardAmount = amountPerPayment / operators.length;
 
         IRewardsCoordinatorTypes.OperatorReward[] memory operatorRewards =
-            new IRewardsCoordinatorTypes.OperatorReward[](2);
-        for (uint256 i = 0; i < 2; i++) {
+            new IRewardsCoordinatorTypes.OperatorReward[](operators.length);
+        for (uint256 i = 0; i < operators.length; i++) {
             operatorRewards[i] =
                 IRewardsCoordinatorTypes.OperatorReward({operator: operators[i], amount: operatorRewardAmount});
         }
