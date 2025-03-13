@@ -52,8 +52,18 @@ fmt:
 
 __REWARDS__: ##
 
-create-and-claim-distribution:
-	./contracts/anvil/create-and-claim-distribution.sh
+SENDER_ADDR=0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
 
-create-operator-directed-distribution-and-claim:
-	./contracts/anvil/create-operator-directed-and-claim-distribution.sh
+create-avs-distributions-root:
+	cd contracts && \
+	forge script script/SetupDistributions.s.sol:SetupDistributions --rpc-url http://localhost:8545 --broadcast -v --sender "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+
+create-operator-directed-distributions-root:
+	cd contracts && \
+	forge script script/SetupDistributions.s.sol:SetupDistributions --rpc-url http://localhost:8545 \
+		--broadcast --sig "runOperatorDirected()" -v --sender "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+
+claim-distributions:
+	cd contracts && \
+	forge script script/SetupDistributions.s.sol:SetupDistributions --rpc-url http://localhost:8545 \
+	--broadcast --sig "executeProcessClaim()" -v --sender "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
