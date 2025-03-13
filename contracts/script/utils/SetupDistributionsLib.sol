@@ -47,14 +47,13 @@ library SetupDistributionsLib {
     function createOperatorDirectedAVSRewardsSubmissions(
         address incSquaringServiceManager,
         address[] memory operators,
-        uint256 numOperators,
         address strategy,
         uint256 numPayments,
         uint256 amountPerPayment,
         uint32 duration,
         uint32 startTimestamp
     ) internal {
-        uint256 operatorRewardAmount = amountPerPayment / numOperators;
+        uint256 operatorRewardAmount = amountPerPayment / operators.length;
 
         IRewardsCoordinatorTypes.OperatorReward[] memory operatorRewards =
             new IRewardsCoordinatorTypes.OperatorReward[](2);

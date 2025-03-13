@@ -157,12 +157,9 @@ contract SetupDistributions is Script, Test {
         operators[0] = operator1;
         operators[1] = operator2;
 
-        uint256 numOperators = operators.length;
-
         SetupDistributionsLib.createOperatorDirectedAVSRewardsSubmissions(
             incredibleSquaringDeployment.incredibleSquaringServiceManager,
             operators,
-            numOperators,
             incredibleSquaringDeployment.strategy,
             numPayments,
             amountPerPayment,
