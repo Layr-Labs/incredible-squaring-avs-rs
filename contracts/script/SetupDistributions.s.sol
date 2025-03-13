@@ -98,7 +98,8 @@ contract SetupDistributions is Script, Test {
     }
 
     function runOperatorDirected() external {
-        vm.startBroadcast(incredibleSquaringConfig.rewardsInitiatorKey);
+        vm.startBroadcast(deployer);
+        
         if (rewardsCoordinator.currRewardsCalculationEndTimestamp() == 0) {
             startTimestamp =
                 uint32(block.timestamp) - (uint32(block.timestamp) % CALCULATION_INTERVAL_SECONDS);
