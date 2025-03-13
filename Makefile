@@ -49,3 +49,8 @@ fmt:
 	cargo fmt
 	cd contracts && forge fmt
 	cd ..
+
+__REWARDS__: ##
+
+create-and-claim:
+	./contracts/anvil/create-and-claim-distribution.sh
