@@ -31,7 +31,7 @@ library WriteToContractsRegistryLib {
         );
         contractsRegistry.registerContract("erc20MockStrategy", address(deploymentdata.strategy));
         contractsRegistry.registerContract(
-            "incredible_squaring_registry_coordinator", address(deploymentdata.registryCoordinator)
+            "incredible_squaring_registry_coordinator", address(deploymentdata.slashingRegistryCoordinator)
         );
         contractsRegistry.registerContract(
             "incredible_squaring_operator_state_retriever", address(deploymentdata.operatorStateRetriever)
