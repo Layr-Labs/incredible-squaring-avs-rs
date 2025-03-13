@@ -113,7 +113,7 @@ contract SetupDistributions is Script, Test {
         endTimestamp = startTimestamp + 1;
 
         if (endTimestamp > block.timestamp) {
-            revert("End timestamp must be in the future.  Please wait to generate new payments.");
+            revert("End timestamp is in the future.  Please wait to generate new payments.");
         }
     }
     function executeProcessClaim() public {
