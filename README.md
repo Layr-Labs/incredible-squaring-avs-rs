@@ -51,6 +51,23 @@ This command launches 5 services(crates) together:
 - Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
 - Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
 
+## Creating and Claiming Distributions
+
+In a terminal, start a new instance of anvil and deploy the core and avs contracts. After that, you have 3 scripts related to rewards:
+
+```sh
+# Creates a distribution root, this means creating an AVS rewards submission and submitting a payment root
+make create-avs-distributions-root
+
+# Creates an operator directed distribution root, similar to precious one but with rewards to the hardcoded operators in script
+make create-operator-directed-distributions-root
+
+# Claims the created distributions, with rewards to the ardcoded receiver in script (address 0x01)
+make claim-distributions
+```
+
+In order to create and claim multiple distributions (run the above two commands more than once), you must wait up to 5 minutes.
+
 
 ## Testing 
 
