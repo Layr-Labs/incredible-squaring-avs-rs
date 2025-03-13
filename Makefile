@@ -49,3 +49,15 @@ fmt:
 	cargo fmt
 	cd contracts && forge fmt
 	cd ..
+
+
+# RUST_BINDINGS_PATH:=cr/rust/crates/utils/src/bindings
+RUST_BINDINGS_PATH:=crates/bindings
+
+generate-bindings:
+	cd contracts && forge build --force --skip test --skip script
+	rm -rf ${RUST_BINDINGS_PATH}
+	forge bind --alloy --skip-build --overwrite --module \
+		--root contracts/  \
+		--bindings-path ${RUST_BINDINGS_PATH} \
+		--select '^incrediblesquaringtaskmanager$$' --select '^incrediblesquaringservicemanager$$'
