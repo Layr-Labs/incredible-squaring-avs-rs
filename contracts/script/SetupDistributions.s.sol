@@ -144,7 +144,7 @@ contract SetupDistributions is Script, Test {
         uint32 startTimestamp
     ) public {
         ERC20Mock(incredibleSquaringDeployment.token).mint(
-            deployer, amountPerPayment * numPayments // rewardsInitiator
+            deployer, amountPerPayment * numPayments
         );
         ERC20Mock(incredibleSquaringDeployment.token).increaseAllowance(
             incredibleSquaringDeployment.incredibleSquaringServiceManager, amountPerPayment * numPayments
@@ -167,7 +167,7 @@ contract SetupDistributions is Script, Test {
         uint32 startTimestamp
     ) public {
         ERC20Mock(incredibleSquaringDeployment.token).mint(
-            incredibleSquaringConfig.rewardsInitiator, amountPerPayment * numPayments
+            deployer, amountPerPayment * numPayments
         );
         ERC20Mock(incredibleSquaringDeployment.token).increaseAllowance(
             incredibleSquaringDeployment.incredibleSquaringServiceManager, amountPerPayment * numPayments
