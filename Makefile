@@ -52,7 +52,7 @@ fmt:
 
 
 # RUST_BINDINGS_PATH:=cr/rust/crates/utils/src/bindings
-RUST_BINDINGS_PATH:=crates/bindings
+RUST_BINDINGS_PATH:=crates/bindings/src
 
 generate-bindings:
 	cd contracts && forge build --force --skip test --skip script
@@ -60,4 +60,5 @@ generate-bindings:
 	forge bind --alloy --skip-build --overwrite --module \
 		--root contracts/  \
 		--bindings-path ${RUST_BINDINGS_PATH} \
-		--select '^incrediblesquaringtaskmanager$$' --select '^incrediblesquaringservicemanager$$'
+		--select '^IncredibleSquaringTaskManager$$' \
+		--select '^IncredibleSquaringServiceManager$$'
