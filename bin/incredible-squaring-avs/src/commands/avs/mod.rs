@@ -826,6 +826,30 @@ pub async fn create_total_delegated_stake_quorum(
         PermissionController::new(permission_controller_address, get_provider(rpc_url));
     let contract_service_manager =
         MockAvsServiceManager::new(service_manager_address, get_signer(&pvt_key, rpc_url));
+    let contract_allocation_manager =
+        AllocationManager::new(allocation_manager_address, get_signer(&pvt_key, rpc_url));
+
+    contract_service_manager
+        .setAppointee(
+            signer.address(),
+            allocation_manager_address,
+            FixedBytes(AllocationManager::updateAVSMetadataURICall::SELECTOR),
+        )
+        .send()
+        .await
+        .unwrap()
+        .get_receipt()
+        .await
+        .unwrap();
+
+    contract_allocation_manager
+        .updateAVSMetadataURI(service_manager_address, "metadataURI".to_string())
+        .send()
+        .await
+        .unwrap()
+        .get_receipt()
+        .await
+        .unwrap();
     if !permission_controller
         .canCall(
             service_manager_address,
@@ -851,9 +875,6 @@ pub async fn create_total_delegated_stake_quorum(
             .await
             .unwrap();
     }
-
-    let contract_allocation_manager =
-        AllocationManager::new(allocation_manager_address, get_signer(&pvt_key, rpc_url));
 
     contract_allocation_manager
         .setAVSRegistrar(service_manager_address, registry_coordinator_address)
