@@ -19,7 +19,7 @@ library SetupDistributionsLib {
     }
 
     function createAVSRewardsSubmissions(
-        address helloWorldServiceManager,
+        address incSquaringServiceManager,
         address strategy,
         uint256 numPayments,
         uint256 amountPerPayment,
@@ -47,13 +47,13 @@ library SetupDistributionsLib {
 
             rewardsSubmissions[i] = rewardsSubmission;
         }
-        ECDSAServiceManagerBase(helloWorldServiceManager).createAVSRewardsSubmission(
+        ECDSAServiceManagerBase(incSquaringServiceManager).createAVSRewardsSubmission(
             rewardsSubmissions
         );
     }
 
     function createOperatorDirectedAVSRewardsSubmissions(
-        address helloWorldServiceManager,
+        address incSquaringServiceManager,
         address[] memory operators,
         uint256 numOperators,
         address strategy,
@@ -95,7 +95,7 @@ library SetupDistributionsLib {
 
             rewardsSubmissions[i] = rewardsSubmission;
         }
-        ECDSAServiceManagerBase(helloWorldServiceManager).createOperatorDirectedAVSRewardsSubmission(
+        ECDSAServiceManagerBase(incSquaringServiceManager).createOperatorDirectedAVSRewardsSubmission(
             rewardsSubmissions
         );
     }

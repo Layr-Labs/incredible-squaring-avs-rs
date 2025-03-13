@@ -56,4 +56,4 @@ create-and-claim-distribution:
 	./contracts/anvil/create-and-claim-distribution.sh
 
 create-operator-directed-distribution-and-claim:
-	contracts/anvil/create-operator-directed-and-claim-distribution.sh
+	./contracts/anvil/create-operator-directed-and-claim-distribution.sh
