@@ -13,7 +13,7 @@ cd "$parent_path"
 
 cd ../
 forge script script/SetupDistributions.s.sol:SetupDistributions --rpc-url http://localhost:8545 \
-    --broadcast --sig \"runOperatorDirected()\" -v --sender $SENDER_ADDR
+    --broadcast --sig "runOperatorDirected()" -v --sender $SENDER_ADDR
 
 forge script script/SetupDistributions.s.sol:SetupDistributions --rpc-url http://localhost:8545 \
    --broadcast --sig "executeProcessClaim()" -v --sender $SENDER_ADDR
