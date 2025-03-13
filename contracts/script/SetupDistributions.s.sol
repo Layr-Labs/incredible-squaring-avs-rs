@@ -116,6 +116,7 @@ contract SetupDistributions is Script, Test {
             revert("End timestamp is in the future.  Please wait to generate new payments.");
         }
     }
+
     function executeProcessClaim() public {
         uint256 nonce = rewardsCoordinator.getDistributionRootsLength();
         amountPerPayment = uint32(amountPerPayment * nonce);
