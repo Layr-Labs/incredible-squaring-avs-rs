@@ -67,7 +67,7 @@ contract SetupDistributions is Script, Test {
         // TODO: Get the filePath from config
     }
 
-    function run() external {
+    function runAVSRewards() external {
         vm.startBroadcast(deployer);
 
         _checkStartTimestamp();
