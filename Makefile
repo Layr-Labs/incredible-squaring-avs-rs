@@ -54,3 +54,6 @@ __REWARDS__: ##
 
 create-and-claim:
 	./contracts/anvil/create-and-claim-distribution.sh
+
+create-operator-directed-and-claim:
+	./contracts/anvil/create-and-claim-distribution.sh
