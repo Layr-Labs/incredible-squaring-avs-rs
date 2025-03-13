@@ -70,18 +70,7 @@ contract SetupDistributions is Script, Test {
     function run() external {
         vm.startBroadcast(deployer);
 
-        if (rewardsCoordinator.currRewardsCalculationEndTimestamp() == 0) {
-            startTimestamp = uint32(block.timestamp) - (uint32(block.timestamp) % CALCULATION_INTERVAL_SECONDS);
-        } else {
-            startTimestamp =
-                rewardsCoordinator.currRewardsCalculationEndTimestamp() - DURATION + CALCULATION_INTERVAL_SECONDS;
-        }
-
-        endTimestamp = startTimestamp + 1;
-
-        if (endTimestamp > block.timestamp) {
-            revert("End timestamp must be in the future.  Please wait to generate new payments.");
-        }
+        _checkStartTimestamp();
 
         // sets a multiplier based on block number such that cumulativeEarnings increase accordingly for multiple runs of this script in the same session
         uint256 nonce = rewardsCoordinator.getDistributionRootsLength();
@@ -99,18 +88,7 @@ contract SetupDistributions is Script, Test {
     function runOperatorDirected() external {
         vm.startBroadcast(deployer);
 
-        if (rewardsCoordinator.currRewardsCalculationEndTimestamp() == 0) {
-            startTimestamp = uint32(block.timestamp) - (uint32(block.timestamp) % CALCULATION_INTERVAL_SECONDS);
-        } else {
-            startTimestamp =
-                rewardsCoordinator.currRewardsCalculationEndTimestamp() - DURATION + CALCULATION_INTERVAL_SECONDS;
-        }
-
-        endTimestamp = startTimestamp + 1;
-
-        if (endTimestamp > block.timestamp) {
-            revert("End timestamp must be in the future.  Please wait to generate new payments.");
-        }
+        _checkStartTimestamp();
 
         // sets a multiplier based on block number such that cumulativeEarnings increase accordingly for multiple runs of this script in the same session
         uint256 nonce = rewardsCoordinator.getDistributionRootsLength();
@@ -124,6 +102,20 @@ contract SetupDistributions is Script, Test {
         vm.stopBroadcast();
     }
 
+    function _checkStartTimestamp() internal {
+        if (rewardsCoordinator.currRewardsCalculationEndTimestamp() == 0) {
+            startTimestamp = uint32(block.timestamp) - (uint32(block.timestamp) % CALCULATION_INTERVAL_SECONDS);
+        } else {
+            startTimestamp =
+                rewardsCoordinator.currRewardsCalculationEndTimestamp() - DURATION + CALCULATION_INTERVAL_SECONDS;
+        }
+
+        endTimestamp = startTimestamp + 1;
+
+        if (endTimestamp > block.timestamp) {
+            revert("End timestamp must be in the future.  Please wait to generate new payments.");
+        }
+    }
     function executeProcessClaim() public {
         uint256 nonce = rewardsCoordinator.getDistributionRootsLength();
         amountPerPayment = uint32(amountPerPayment * nonce);
