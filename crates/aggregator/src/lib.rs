@@ -289,14 +289,11 @@ impl Aggregator {
                 quorum_threshold_percentages.clone(),
                 time_to_expiry,
             );
-            //TODO
-            //let _ = service_handle
-            //    .lock()
-            //    .await
-            //    .bls_aggregation_service
-            //    .initialize_new_task(task_metadata)
-            //    .await
-            //    .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
+
+            let _ = service_handle
+                .initialize_task(task_metadata)
+                .await
+                .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
         }
 
         Ok(())
