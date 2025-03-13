@@ -2,7 +2,7 @@ use crate::error::ChainIoError;
 use alloy::primitives::{Address, TxHash};
 use eigensdk::common::get_signer;
 use incredible_bindings::incrediblesquaringtaskmanager::{
-    IBLSSignatureChecker::NonSignerStakesAndSignature,
+    IBLSSignatureCheckerTypes::NonSignerStakesAndSignature,
     IIncredibleSquaringTaskManager::{Task, TaskResponse, TaskResponseMetadata},
     IncredibleSquaringTaskManager,
     BN254::G1Point,
