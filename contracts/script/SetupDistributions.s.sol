@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 import {Script} from "forge-std/Script.sol";
+import {MockERC20} from "src/MockERC20.sol";
 import {IncredibleSquaringDeploymentLib} from "./utils/IncredibleSquaringDeploymentLib.sol";
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
 import {SetupDistributionsLib} from "./utils/SetupDistributionsLib.sol";
 import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 import {RewardsCoordinator} from "@eigenlayer/contracts/core/RewardsCoordinator.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
-import {ERC20Mock} from "../test/ERC20Mock.sol";
 
 import "forge-std/Test.sol";
 
@@ -135,8 +135,8 @@ contract SetupDistributions is Script, Test {
     }
 
     function createAVSRewardsSubmissions(uint256 numPayments, uint256 amountPerPayment, uint32 startTimestamp) public {
-        ERC20Mock(incredibleSquaringDeployment.token).mint(deployer, amountPerPayment * numPayments);
-        ERC20Mock(incredibleSquaringDeployment.token).increaseAllowance(
+        MockERC20(incredibleSquaringDeployment.token).mint(deployer, amountPerPayment * numPayments);
+        MockERC20(incredibleSquaringDeployment.token).increaseAllowance(
             incredibleSquaringDeployment.incredibleSquaringServiceManager, amountPerPayment * numPayments
         );
         uint32 duration = rewardsCoordinator.MAX_REWARDS_DURATION();
@@ -156,8 +156,8 @@ contract SetupDistributions is Script, Test {
         uint256 amountPerPayment,
         uint32 startTimestamp
     ) public {
-        ERC20Mock(incredibleSquaringDeployment.token).mint(deployer, amountPerPayment * numPayments);
-        ERC20Mock(incredibleSquaringDeployment.token).increaseAllowance(
+        MockERC20(incredibleSquaringDeployment.token).mint(deployer, amountPerPayment * numPayments);
+        MockERC20(incredibleSquaringDeployment.token).increaseAllowance(
             incredibleSquaringDeployment.incredibleSquaringServiceManager, amountPerPayment * numPayments
         );
         uint32 duration = 0;
