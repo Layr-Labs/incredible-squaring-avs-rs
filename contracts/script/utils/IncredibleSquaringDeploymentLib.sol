@@ -80,6 +80,10 @@ library IncredibleSquaringDeploymentLib {
         address contracts_registry_addr;
         address task_generator_addr;
         address aggregator_addr;
+        address rewardsOwner;
+        address rewardsInitiator;
+        uint256 rewardsOwnerKey;
+        uint256 rewardsInitiatorKey;
     }
 
     function deployContracts(
@@ -267,6 +271,10 @@ library IncredibleSquaringDeploymentLib {
         data.operator_addr = json.readAddress(".operator_addr");
         data.task_generator_addr = json.readAddress(".task_generator_addr");
         data.operator_2_addr = json.readAddress(".operator_2_addr");
+        data.rewardsInitiator = json.readAddress(".rewards_initiator_addr");
+        data.rewardsOwner = json.readAddress(".rewards_owner_addr");
+        data.rewardsInitiatorKey = json.readUint(".rewards_initiator_key");
+        data.rewardsOwnerKey = json.readUint(".rewards_owner_key");
         return data;
     }
 

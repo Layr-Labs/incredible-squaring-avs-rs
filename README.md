@@ -51,6 +51,51 @@ This command launches 5 services(crates) together:
 - Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
 - Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
 
+## Creating and Claiming Distributions
+
+The example exposes 3 scripts in the Makefile interface:
+- Creating a distribution root, that implies creating an AVS rewards submission and submitting a payment root.
+- Creating an operator directed distribution root, similar to previous one but with rewards to operators involved in the claim generation. Note: operators in this case are hardcoded in the script file.
+- Claiming the created distribution, giving the rewards to an specific receiver account. Note: The receiver in this case is harcoded in the script file (address 0x01).
+
+> [!WARNING]
+> Note: In order to create and claim multiple distributions (run the above two commands more than once), you must wait up to 5 minutes.
+
+This leads to 2 possible workflows, distributing equally across all operators and using custom distribution for each operator.
+
+### Distributing equally across all operators
+
+Running the command:
+
+``` bash
+make create-avs-distributions-root
+```
+
+This creates a claimable root, a root of the merkle tree that stores cumulative earnings per ERC20 reward token for each earner.
+
+To claim against the root, use:
+``` bash
+make claim-distributions
+```
+
+### Using custom distribution for each operator
+
+Running the command:
+
+``` bash
+make create-operator-directed-distributions-root
+```
+
+This creates a claimable root, that differs from the previous one in the fact that also distributes the claim to the directed operators established in the script (currently hardcoded).
+
+The payment leaves are available in `contracts/payments.json`. The payment leaves are the keccak256 hash of each earner leaf. An earner leaf is composed by the earner and the token root of the token leaves, and each token leaf is the result of hashing the token address with the token earnings.
+
+To claim against the root, use:
+
+``` bash
+make claim-distributions
+```
+
 
 ## Testing 
 
