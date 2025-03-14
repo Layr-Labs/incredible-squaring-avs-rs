@@ -53,20 +53,45 @@ This command launches 5 services(crates) together:
 
 ## Creating and Claiming Distributions
 
-In a terminal, start a new instance of anvil and deploy the core and avs contracts. After that, you have 3 scripts related to rewards:
+The example exposes 3 scripts in the Makefile interface:
+- Creating a distribution root, that implies creating an AVS rewards submission and submitting a payment root.
+- Creating an operator directed distribution root, similar to previous one but with rewards to operators involved in the claim generation. Note: operators in this case are hardcoded in the script file.
+- Claiming the created distribution, giving the rewards to an specific receiver account. Note: The receiver in this case is harcoded in the script file (address 0x01).
 
-```sh
-# Creates a distribution root, this means creating an AVS rewards submission and submitting a payment root
+> Note: In order to create and claim multiple distributions (run the above two commands more than once), you must wait up to 5 minutes.
+
+This leads to 2 possible workflows, distributing equally across all operators and using custom distribution for each operator.
+
+### Distributing equally across all operators
+
+Running the command:
+
+``` bash
 make create-avs-distributions-root
+```
 
-# Creates an operator directed distribution root, similar to precious one but with rewards to the hardcoded operators in script
-make create-operator-directed-distributions-root
+This creates a claimable root, a root of the merkle tree that stores cumulative earnings per ERC20 reward token for each earner.
 
-# Claims the created distributions, with rewards to the ardcoded receiver in script (address 0x01)
+To claim against the root, use:
+``` bash
 make claim-distributions
 ```
 
-In order to create and claim multiple distributions (run the above two commands more than once), you must wait up to 5 minutes.
+### Using custom distribution for each operator
+
+Running the command:
+
+``` bash
+make create-operator-directed-distributions-root
+```
+
+This creates a claimable root, that differs from the previous one in the fact that also distributes the claim to the directed operators stablished in the script (currently hardcoded).
+
+To claim against the root, use:
+
+``` bash
+make claim-distributions
+```
 
 
 ## Testing 
