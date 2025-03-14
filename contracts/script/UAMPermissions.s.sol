@@ -47,7 +47,6 @@ contract UAMPermissions is Script {
             deploymentData.slasher, coreData.allocationManager, AllocationManager.slashOperator.selector
         );
 
-        // This should be in another contract
         serviceManager.setAppointee(
             deployer, coreData.allocationManager, AllocationManager.updateAVSMetadataURI.selector
         );
