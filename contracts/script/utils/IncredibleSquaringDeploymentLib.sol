@@ -237,6 +237,9 @@ library IncredibleSquaringDeploymentLib {
 
         UpgradeableProxyLib.upgrade(result.slasher, instantSlasherImpl);
 
+        address socketRegistryImpl = address(new SocketRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
+        UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
+
         verify_deployment(result);
 
         return result;
