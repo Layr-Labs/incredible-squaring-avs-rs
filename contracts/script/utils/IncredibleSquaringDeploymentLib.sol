@@ -36,9 +36,7 @@ import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 
 import {
-    IBLSApkRegistry,
-    IIndexRegistry,
-    IStakeRegistry
+    IBLSApkRegistry, IIndexRegistry, IStakeRegistry
 } from
 // ISocketRegistry
 "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
@@ -115,8 +113,10 @@ library IncredibleSquaringDeploymentLib {
             )
         );
 
-        address blsApkRegistryImpl = address(new BLSApkRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
-        address indexRegistryimpl = address(new IndexRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
+        address blsApkRegistryImpl =
+            address(new BLSApkRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
+        address indexRegistryimpl =
+            address(new IndexRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
         address instantSlasherImpl = address(
             new InstantSlasher(
                 IAllocationManager(core.allocationManager),
@@ -199,7 +199,9 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
         UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
         UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
-        UpgradeableProxyLib.upgradeAndCall(result.slashingRegistryCoordinator, slashingRegistryCoordinatorImpl, upgradeCall);
+        UpgradeableProxyLib.upgradeAndCall(
+            result.slashingRegistryCoordinator, slashingRegistryCoordinatorImpl, upgradeCall
+        );
         console2.log("allocation_manager");
         console2.log(core.allocationManager);
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
@@ -237,7 +239,8 @@ library IncredibleSquaringDeploymentLib {
 
         UpgradeableProxyLib.upgrade(result.slasher, instantSlasherImpl);
 
-        address socketRegistryImpl = address(new SocketRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
+        address socketRegistryImpl =
+            address(new SocketRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
         UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
 
         verify_deployment(result);
@@ -391,7 +394,8 @@ library IncredibleSquaringDeploymentLib {
     }
 
     function verify_deployment(DeploymentData memory result) internal view {
-        IBLSApkRegistry blsapkregistry = ISlashingRegistryCoordinator(result.slashingRegistryCoordinator).blsApkRegistry();
+        IBLSApkRegistry blsapkregistry =
+            ISlashingRegistryCoordinator(result.slashingRegistryCoordinator).blsApkRegistry();
         require(address(blsapkregistry) != address(0));
         IStakeRegistry stakeregistry = ISlashingRegistryCoordinator(result.slashingRegistryCoordinator).stakeRegistry();
         require(address(stakeregistry) != address(0));
