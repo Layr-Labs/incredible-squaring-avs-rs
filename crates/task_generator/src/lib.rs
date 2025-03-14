@@ -11,7 +11,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskM
     Task, TaskResponse,
 };
 use incredible_bindings::incrediblesquaringtaskmanager::{
-    IBLSSignatureChecker::NonSignerStakesAndSignature,
+    IBLSSignatureCheckerTypes::NonSignerStakesAndSignature,
     IncredibleSquaringTaskManager::{self},
 };
 use lazy_static::lazy_static;

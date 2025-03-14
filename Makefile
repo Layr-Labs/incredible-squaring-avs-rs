@@ -9,10 +9,10 @@ deploy-avs:
 deploy-eigenlayer:
 	./contracts/anvil/deploy-eigenlayer.sh
 
-deploy-el-and-avs-contracts:
-	$(MAKE) deploy-eigenlayer
-	$(MAKE) deploy-avs
+deploy-uam-permissions:
+	./contracts/anvil/uam-permissions.sh
 
+deploy-el-and-avs-contracts: deploy-eigenlayer deploy-avs deploy-uam-permissions
 
 __TESTING__: ##
 
@@ -49,6 +49,20 @@ fmt:
 	cargo fmt
 	cd contracts && forge fmt
 	cd ..
+
+
+__BINDINGS__: ##
+
+RUST_BINDINGS_PATH:=crates/bindings/src
+
+generate-bindings:
+	cd contracts && forge build --force --skip test --skip script
+	rm -rf ${RUST_BINDINGS_PATH}
+	forge bind --alloy --skip-build --overwrite --module \
+		--root contracts/  \
+		--bindings-path ${RUST_BINDINGS_PATH} \
+		--select '^IncredibleSquaringTaskManager$$' \
+		--select '^IncredibleSquaringServiceManager$$'
 
 __REWARDS__: ##
 

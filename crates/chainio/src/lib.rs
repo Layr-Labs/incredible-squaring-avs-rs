@@ -20,7 +20,7 @@ use incredible_bindings::{
         self, incredibleSquaringTaskManagerReturn,
     },
     incrediblesquaringtaskmanager::{
-        IBLSSignatureChecker::NonSignerStakesAndSignature, IncredibleSquaringTaskManager,
+        IBLSSignatureCheckerTypes::NonSignerStakesAndSignature, IncredibleSquaringTaskManager,
         BN254::G1Point,
     },
 };
