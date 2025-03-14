@@ -26,7 +26,6 @@ incredible-challenger.workspace = true
 incredible-aggregator.workspace = true
 incredible-task-generator.workspace = true
 incredible-metrics.workspace = true
-eigen-nodeapi.workspace = true
 #tokio
 tokio.workspace = true
 
@@ -38,3 +37,5 @@ thiserror.workspace = true
 
 clap.workspace = true
 ntex = { version = "2.0", features = ["tokio"] }
+
+eigensdk.workspace = true

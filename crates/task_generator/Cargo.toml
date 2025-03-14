@@ -28,6 +28,5 @@ tokio.workspace = true
 tracing.workspace = true
 reqwest.workspace = true
 
-# eigen-rs
-eigen-utils.workspace = true
-eigen-common.workspace = true
+# eigensdk-rs
+eigensdk.workspace = true

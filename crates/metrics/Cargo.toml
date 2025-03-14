@@ -18,12 +18,10 @@ thiserror.workspace = true
 incredible-bindings.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
-
-# eigen-rs
 metrics.workspace = true
 metrics-util = "0.17.0"
 
 [dev-dependencies]
-eigen-metrics.workspace = true
+eigensdk.workspace = true
 tokio.workspace = true
 reqwest.workspace = true

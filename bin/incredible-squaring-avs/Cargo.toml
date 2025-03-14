@@ -25,17 +25,10 @@ tracing.workspace = true
 hex = "0.4.3"
 metrics-exporter-prometheus = "0.15.3"
 rust-bls-bn254.workspace = true
-eigen-crypto-bls.workspace = true
 metrics-util = "0.17.0"
-# eigen-rs
-eigen-common.workspace = true
-eigen-testing-utils.workspace = true
-eigen-logging.workspace = true
-eigen-utils.workspace = true
-eigen-client-avsregistry.workspace = true
-eigen-client-elcontracts.workspace = true
-eigen-types.workspace = true
-eigen-metrics.workspace = true
+
+# eigensdk-rs
+eigensdk.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
