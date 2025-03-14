@@ -66,11 +66,7 @@ This leads to 2 possible workflows, distributing equally across all operators an
 
 ### Distributing equally across all operators
 
-First, start anvil in a separate terminal:
-
-``` bash
-anvil
-```
+First, start anvil in a separate terminal and deploy the contracts. To do that follow the instructions in [To run section](#to-run)
 
 Then, run the command:
 
@@ -93,11 +89,7 @@ Note that the claimer address is not passed by parameter, because in the script 
 
 ### Using custom distribution for each operator
 
-First, start anvil in a separate terminal:
-
-``` bash
-anvil
-```
+First, start anvil in a separate terminal and deploy the contracts. To do that follow the instructions in [To run section](#to-run)
 
 Then, run the command:
 
