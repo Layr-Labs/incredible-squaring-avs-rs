@@ -81,6 +81,12 @@ To claim against the root, use:
 make claim-distributions
 ```
 
+If you want to check the balance of the claimer, you can run the following command:
+``` bash
+make claimer-account-token-balance
+```
+Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
+
 ### Using custom distribution for each operator
 
 First, start anvil in a separate terminal:
@@ -105,6 +111,11 @@ To claim against the root, use:
 make claim-distributions
 ```
 
+If you want to check the balance of the claimer, you can run the following command:
+``` bash
+make claimer-account-token-balance
+```
+Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
 ## Testing 
 
