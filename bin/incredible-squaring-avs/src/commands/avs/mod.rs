@@ -515,8 +515,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_operator_2_token_amount(operator_2_token_amount);
         }
 
-        dbg!(config.clone());
-
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
 
@@ -643,7 +641,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.socket().to_string(),
             )
             .await?;
-
             info!(tx_hash = %register_for_operator_sets_by_operator1_txhash,"register for operator sets by operator1");
             let keystore = Keystore::from_file(&config.bls_keystore_2_path())?
                 .decrypt(&config.bls_keystore_2_password())
@@ -831,18 +828,31 @@ pub async fn create_total_delegated_stake_quorum(
     let contract_allocation_manager =
         AllocationManager::new(allocation_manager_address, get_signer(&pvt_key, rpc_url));
 
-    contract_service_manager
-        .setAppointee(
+    if !permission_controller
+        .canCall(
+            service_manager_address,
             signer.address(),
             allocation_manager_address,
             FixedBytes(AllocationManager::updateAVSMetadataURICall::SELECTOR),
         )
-        .send()
+        .call()
         .await
         .unwrap()
-        .get_receipt()
-        .await
-        .unwrap();
+        ._0
+    {
+        contract_service_manager
+            .setAppointee(
+                signer.address(),
+                allocation_manager_address,
+                FixedBytes(AllocationManager::updateAVSMetadataURICall::SELECTOR),
+            )
+            .send()
+            .await
+            .unwrap()
+            .get_receipt()
+            .await
+            .unwrap();
+    }
 
     contract_allocation_manager
         .updateAVSMetadataURI(service_manager_address, "metadataURI".to_string())
@@ -883,8 +893,6 @@ pub async fn create_total_delegated_stake_quorum(
         .call()
         .await?
         ._0;
-    dbg!(registry_coordinator_address);
-    dbg!(avs_registrar);
 
     contract_allocation_manager
         .setAVSRegistrar(service_manager_address, registry_coordinator_address)
@@ -923,8 +931,6 @@ pub async fn create_total_delegated_stake_quorum(
         .call()
         .await?
         ._0;
-    dbg!(registry_coordinator_address);
-    dbg!(avs_registrar);
 
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
@@ -1059,8 +1065,6 @@ pub async fn register_for_operator_sets(
         rpc_url.to_string(),
         pvt_key,
     );
-
-    dbg!(el_chain_writer.clone());
 
     Ok(el_chain_writer
         .register_for_operator_sets(
