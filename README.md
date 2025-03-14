@@ -7,6 +7,10 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 - [Foundry](https://github.com/foundry-rs/foundry)
 - [Docker](https://www.docker.com/) 
 
+## Required tools
+
+- [jq]: required to parse token address.
+  * To install, follow the instructions [here](https://jqlang.org/download/)
 
 ## To run 
 
@@ -58,14 +62,13 @@ The example exposes 3 scripts in the Makefile interface:
 - Creating an operator directed distribution root, similar to previous one but with rewards to operators involved in the claim generation. Note: operators in this case are hardcoded in the script file.
 - Claiming the created distribution, giving the rewards to an specific receiver account. Note: The receiver in this case is harcoded in the script file (address 0x01).
 
-> [!WARNING]
-> Note: In order to create and claim multiple distributions (run the above two commands more than once), you must wait up to 5 minutes.
-
 This leads to 2 possible workflows, distributing equally across all operators and using custom distribution for each operator.
 
 ### Distributing equally across all operators
 
-Running the command:
+First, start anvil in a separate terminal and deploy the contracts. To do that follow the instructions in [To run section](#to-run)
+
+Then, run the command:
 
 ``` bash
 make create-avs-distributions-root
@@ -78,9 +81,17 @@ To claim against the root, use:
 make claim-distributions
 ```
 
+If you want to check the balance of the claimer, you can run the following command:
+``` bash
+make claimer-account-token-balance
+```
+Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
+
 ### Using custom distribution for each operator
 
-Running the command:
+First, start anvil in a separate terminal and deploy the contracts. To do that follow the instructions in [To run section](#to-run)
+
+Then, run the command:
 
 ``` bash
 make create-operator-directed-distributions-root
@@ -96,6 +107,11 @@ To claim against the root, use:
 make claim-distributions
 ```
 
+If you want to check the balance of the claimer, you can run the following command:
+``` bash
+make claimer-account-token-balance
+```
+Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
 ## Testing 
 
