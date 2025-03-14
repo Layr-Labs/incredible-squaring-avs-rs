@@ -68,6 +68,8 @@ __REWARDS__: ##
 
 SENDER_ADDR=0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
 
+TOKEN_ADDRESS := $(shell jq -r '.addresses.token' contracts/script/deployments/incredible-squaring/31337.json)
+
 create-avs-distributions-root:
 	cd contracts && \
 		forge script script/SetupDistributions.s.sol --rpc-url http://localhost:8545 \
@@ -82,3 +84,6 @@ claim-distributions:
 	cd contracts && \
 		forge script script/SetupDistributions.s.sol --rpc-url http://localhost:8545 \
 			--broadcast --sig "executeProcessClaim()" -v --sender ${SENDER_ADDR}
+
+get-deployed-token-address:
+	@echo "Deployed token Address: $(TOKEN_ADDRESS)"
