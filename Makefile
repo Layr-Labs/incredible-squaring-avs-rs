@@ -9,10 +9,10 @@ deploy-avs:
 deploy-eigenlayer:
 	./contracts/anvil/deploy-eigenlayer.sh
 
-deploy-el-and-avs-contracts:
-	$(MAKE) deploy-eigenlayer
-	$(MAKE) deploy-avs
+deploy-uam-permissions:
+	./contracts/anvil/uam-permissions.sh
 
+deploy-el-and-avs-contracts: deploy-eigenlayer deploy-avs deploy-uam-permissions
 
 __TESTING__: ##
 
