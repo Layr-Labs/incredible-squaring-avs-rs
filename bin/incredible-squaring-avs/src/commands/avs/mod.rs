@@ -3,15 +3,12 @@ use alloy::primitives::aliases::U96;
 use alloy::primitives::{Address, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
-use alloy::sol_types::SolCall;
 use clap::value_parser;
 use clap::{Args, Parser};
 use eigen_types::operator::Operator;
 use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
-use eigen_utils::slashing::core::permissioncontroller::PermissionController;
 use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
-use eigen_utils::slashing::sdk::mockavsservicemanager::MockAvsServiceManager;
 use eigensdk::client_elcontracts::reader::ELChainReader;
 use eigensdk::client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
 use eigensdk::common::{get_provider, get_signer};
@@ -24,7 +21,6 @@ use eigensdk::testing_utils::anvil_constants::{
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
-use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
     get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
