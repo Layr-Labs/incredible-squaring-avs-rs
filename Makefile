@@ -87,3 +87,6 @@ claim-distributions:
 
 get-deployed-token-address:
 	@echo "Deployed token Address: $(TOKEN_ADDRESS)"
+
+claimer-account-token-balance:
+	cast balance --erc20 $(TOKEN_ADDRESS) 0x0000000000000000000000000000000000000001
