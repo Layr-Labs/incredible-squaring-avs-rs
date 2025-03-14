@@ -292,7 +292,7 @@ library IncredibleSquaringDeploymentLib {
         DeploymentData memory data;
         data.incredibleSquaringServiceManager = json.readAddress(".addresses.IncredibleSquaringServiceManager");
         data.incredibleSquaringTaskManager = json.readAddress(".addresses.IncredibleSquaringTaskManager");
-        data.slashingRegistryCoordinator = json.readAddress(".addresses.slashingRegistryCoordinator");
+        data.slashingRegistryCoordinator = json.readAddress(".addresses.registryCoordinator");
         data.operatorStateRetriever = json.readAddress(".addresses.operatorStateRetriever");
         data.stakeRegistry = json.readAddress(".addresses.stakeRegistry");
         data.strategy = json.readAddress(".addresses.strategy");
@@ -351,7 +351,7 @@ library IncredibleSquaringDeploymentLib {
             data.incredibleSquaringServiceManager.getImplementation().toHexString(),
             '","IncredibleSquaringTaskManager":"',
             data.incredibleSquaringTaskManager.toHexString(),
-            '","slashingRegistryCoordinator":"',
+            '","registryCoordinator":"',
             data.slashingRegistryCoordinator.toHexString(),
             '","blsapkRegistry":"',
             data.blsapkRegistry.toHexString(),
