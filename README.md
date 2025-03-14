@@ -7,9 +7,9 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 - [Foundry](https://github.com/foundry-rs/foundry)
 - [Docker](https://www.docker.com/) 
 
-## Tools
+## Required tools
 
-- [jq]
+- [jq]: required to parse token address.
   * To install, follow the instructions [here](https://jqlang.org/download/)
 
 ## To run 
