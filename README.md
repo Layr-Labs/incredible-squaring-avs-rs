@@ -88,6 +88,8 @@ make create-operator-directed-distributions-root
 
 This creates a claimable root, that differs from the previous one in the fact that also distributes the claim to the directed operators stablished in the script (currently hardcoded).
 
+The payments leaves are available in `contracts/payments.json`. The payment leaves are the keccak256 hash of each earner leaf. An earner leaf is composed by the earner and the token root of the tokenLeaves, and each tokenLeaf is result of the hashing of the token address and the token earnings.
+
 To claim against the root, use:
 
 ``` bash
