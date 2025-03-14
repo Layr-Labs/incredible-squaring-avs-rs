@@ -888,12 +888,6 @@ pub async fn create_total_delegated_stake_quorum(
             .unwrap();
     }
 
-    let avs_registrar = contract_allocation_manager
-        .getAVSRegistrar(service_manager_address)
-        .call()
-        .await?
-        ._0;
-
     contract_allocation_manager
         .setAVSRegistrar(service_manager_address, registry_coordinator_address)
         .send()
@@ -925,12 +919,6 @@ pub async fn create_total_delegated_stake_quorum(
             .get_receipt()
             .await?;
     }
-
-    let avs_registrar = contract_allocation_manager
-        .getAVSRegistrar(service_manager_address)
-        .call()
-        .await?
-        ._0;
 
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
