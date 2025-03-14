@@ -62,7 +62,13 @@ This leads to 2 possible workflows, distributing equally across all operators an
 
 ### Distributing equally across all operators
 
-Running the command:
+First, start anvil in a separate terminal:
+
+``` bash
+anvil
+```
+
+Then, run the command:
 
 ``` bash
 make create-avs-distributions-root
@@ -77,7 +83,13 @@ make claim-distributions
 
 ### Using custom distribution for each operator
 
-Running the command:
+First, start anvil in a separate terminal:
+
+``` bash
+anvil
+```
+
+Then, run the command:
 
 ``` bash
 make create-operator-directed-distributions-root
