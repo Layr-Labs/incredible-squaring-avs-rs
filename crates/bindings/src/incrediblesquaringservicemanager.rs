@@ -2,230 +2,43 @@
 /**
 
 ```solidity
-library IAllocationManagerTypes {
-    struct CreateSetParams { uint32 operatorSetId; address[] strategies; }
-    struct SlashingParams { address operator; uint32 operatorSetId; address[] strategies; uint256[] wadsToSlash; string description; }
+library IRewardsCoordinatorTypes {
+    struct OperatorDirectedRewardsSubmission { StrategyAndMultiplier[] strategiesAndMultipliers; address token; OperatorReward[] operatorRewards; uint32 startTimestamp; uint32 duration; string description; }
+    struct OperatorReward { address operator; uint256 amount; }
+    struct RewardsSubmission { StrategyAndMultiplier[] strategiesAndMultipliers; address token; uint256 amount; uint32 startTimestamp; uint32 duration; }
+    struct StrategyAndMultiplier { address strategy; uint96 multiplier; }
 }
 ```*/
 #[allow(
     non_camel_case_types,
     non_snake_case,
     clippy::pub_underscore_fields,
-    clippy::style
+    clippy::style,
+    clippy::empty_structs_with_brackets
 )]
-pub mod IAllocationManagerTypes {
+pub mod IRewardsCoordinatorTypes {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
     /**```solidity
-    struct CreateSetParams { uint32 operatorSetId; address[] strategies; }
+    struct OperatorDirectedRewardsSubmission { StrategyAndMultiplier[] strategiesAndMultipliers; address token; OperatorReward[] operatorRewards; uint32 startTimestamp; uint32 duration; string description; }
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct CreateSetParams {
-        pub operatorSetId: u32,
-        pub strategies: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-    }
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        #[doc(hidden)]
-        type UnderlyingSolTuple<'a> = (
-            alloy::sol_types::sol_data::Uint<32>,
-            alloy::sol_types::sol_data::Array<alloy::sol_types::sol_data::Address>,
-        );
-        #[doc(hidden)]
-        type UnderlyingRustTuple<'a> = (
-            u32,
-            alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-        );
-        #[cfg(test)]
-        #[allow(dead_code, unreachable_patterns)]
-        fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-            match _t {
-                alloy_sol_types::private::AssertTypeEq::<
-                    <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                >(_) => {}
-            }
-        }
-        #[automatically_derived]
-        #[doc(hidden)]
-        impl ::core::convert::From<CreateSetParams> for UnderlyingRustTuple<'_> {
-            fn from(value: CreateSetParams) -> Self {
-                (value.operatorSetId, value.strategies)
-            }
-        }
-        #[automatically_derived]
-        #[doc(hidden)]
-        impl ::core::convert::From<UnderlyingRustTuple<'_>> for CreateSetParams {
-            fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                Self {
-                    operatorSetId: tuple.0,
-                    strategies: tuple.1,
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolValue for CreateSetParams {
-            type SolType = Self;
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::private::SolTypeValue<Self> for CreateSetParams {
-            #[inline]
-            fn stv_to_tokens(&self) -> <Self as alloy_sol_types::SolType>::Token<'_> {
-                (
-                    <alloy::sol_types::sol_data::Uint<
-                        32,
-                    > as alloy_sol_types::SolType>::tokenize(&self.operatorSetId),
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::SolType>::tokenize(&self.strategies),
-                )
-            }
-            #[inline]
-            fn stv_abi_encoded_size(&self) -> usize {
-                if let Some(size) = <Self as alloy_sol_types::SolType>::ENCODED_SIZE {
-                    return size;
-                }
-                let tuple =
-                    <UnderlyingRustTuple<'_> as ::core::convert::From<Self>>::from(self.clone());
-                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::abi_encoded_size(&tuple)
-            }
-            #[inline]
-            fn stv_eip712_data_word(&self) -> alloy_sol_types::Word {
-                <Self as alloy_sol_types::SolStruct>::eip712_hash_struct(self)
-            }
-            #[inline]
-            fn stv_abi_encode_packed_to(&self, out: &mut alloy_sol_types::private::Vec<u8>) {
-                let tuple =
-                    <UnderlyingRustTuple<'_> as ::core::convert::From<Self>>::from(self.clone());
-                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::abi_encode_packed_to(
-                    &tuple, out,
-                )
-            }
-            #[inline]
-            fn stv_abi_packed_encoded_size(&self) -> usize {
-                if let Some(size) = <Self as alloy_sol_types::SolType>::PACKED_ENCODED_SIZE {
-                    return size;
-                }
-                let tuple =
-                    <UnderlyingRustTuple<'_> as ::core::convert::From<Self>>::from(self.clone());
-                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::abi_packed_encoded_size(
-                    &tuple,
-                )
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolType for CreateSetParams {
-            type RustType = Self;
-            type Token<'a> = <UnderlyingSolTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SOL_NAME: &'static str = <Self as alloy_sol_types::SolStruct>::NAME;
-            const ENCODED_SIZE: Option<usize> =
-                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::ENCODED_SIZE;
-            const PACKED_ENCODED_SIZE: Option<usize> =
-                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::PACKED_ENCODED_SIZE;
-            #[inline]
-            fn valid_token(token: &Self::Token<'_>) -> bool {
-                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::valid_token(token)
-            }
-            #[inline]
-            fn detokenize(token: Self::Token<'_>) -> Self::RustType {
-                let tuple = <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::detokenize(token);
-                <Self as ::core::convert::From<UnderlyingRustTuple<'_>>>::from(tuple)
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolStruct for CreateSetParams {
-            const NAME: &'static str = "CreateSetParams";
-            #[inline]
-            fn eip712_root_type() -> alloy_sol_types::private::Cow<'static, str> {
-                alloy_sol_types::private::Cow::Borrowed(
-                    "CreateSetParams(uint32 operatorSetId,address[] strategies)",
-                )
-            }
-            #[inline]
-            fn eip712_components(
-            ) -> alloy_sol_types::private::Vec<alloy_sol_types::private::Cow<'static, str>>
-            {
-                alloy_sol_types::private::Vec::new()
-            }
-            #[inline]
-            fn eip712_encode_type() -> alloy_sol_types::private::Cow<'static, str> {
-                <Self as alloy_sol_types::SolStruct>::eip712_root_type()
-            }
-            #[inline]
-            fn eip712_encode_data(&self) -> alloy_sol_types::private::Vec<u8> {
-                [
-                    <alloy::sol_types::sol_data::Uint<
-                        32,
-                    > as alloy_sol_types::SolType>::eip712_data_word(&self.operatorSetId)
-                        .0,
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::SolType>::eip712_data_word(&self.strategies)
-                        .0,
-                ]
-                    .concat()
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::EventTopic for CreateSetParams {
-            #[inline]
-            fn topic_preimage_length(rust: &Self::RustType) -> usize {
-                0usize
-                    + <alloy::sol_types::sol_data::Uint<
-                        32,
-                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
-                        &rust.operatorSetId,
-                    )
-                    + <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
-                        &rust.strategies,
-                    )
-            }
-            #[inline]
-            fn encode_topic_preimage(
-                rust: &Self::RustType,
-                out: &mut alloy_sol_types::private::Vec<u8>,
-            ) {
-                out.reserve(<Self as alloy_sol_types::EventTopic>::topic_preimage_length(rust));
-                <alloy::sol_types::sol_data::Uint<
-                    32,
-                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
-                    &rust.operatorSetId,
-                    out,
-                );
-                <alloy::sol_types::sol_data::Array<
-                    alloy::sol_types::sol_data::Address,
-                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
-                    &rust.strategies,
-                    out,
-                );
-            }
-            #[inline]
-            fn encode_topic(rust: &Self::RustType) -> alloy_sol_types::abi::token::WordToken {
-                let mut out = alloy_sol_types::private::Vec::new();
-                <Self as alloy_sol_types::EventTopic>::encode_topic_preimage(rust, &mut out);
-                alloy_sol_types::abi::token::WordToken(alloy_sol_types::private::keccak256(out))
-            }
-        }
-    };
-    /**```solidity
-    struct SlashingParams { address operator; uint32 operatorSetId; address[] strategies; uint256[] wadsToSlash; string description; }
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct SlashingParams {
-        pub operator: alloy::sol_types::private::Address,
-        pub operatorSetId: u32,
-        pub strategies: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-        pub wadsToSlash:
-            alloy::sol_types::private::Vec<alloy::sol_types::private::primitives::aliases::U256>,
+    pub struct OperatorDirectedRewardsSubmission {
+        #[allow(missing_docs)]
+        pub strategiesAndMultipliers: alloy::sol_types::private::Vec<
+            <StrategyAndMultiplier as alloy::sol_types::SolType>::RustType,
+        >,
+        #[allow(missing_docs)]
+        pub token: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub operatorRewards:
+            alloy::sol_types::private::Vec<<OperatorReward as alloy::sol_types::SolType>::RustType>,
+        #[allow(missing_docs)]
+        pub startTimestamp: u32,
+        #[allow(missing_docs)]
+        pub duration: u32,
+        #[allow(missing_docs)]
         pub description: alloy::sol_types::private::String,
     }
     #[allow(
@@ -238,18 +51,22 @@ pub mod IAllocationManagerTypes {
         use alloy::sol_types as alloy_sol_types;
         #[doc(hidden)]
         type UnderlyingSolTuple<'a> = (
+            alloy::sol_types::sol_data::Array<StrategyAndMultiplier>,
             alloy::sol_types::sol_data::Address,
+            alloy::sol_types::sol_data::Array<OperatorReward>,
             alloy::sol_types::sol_data::Uint<32>,
-            alloy::sol_types::sol_data::Array<alloy::sol_types::sol_data::Address>,
-            alloy::sol_types::sol_data::Array<alloy::sol_types::sol_data::Uint<256>>,
+            alloy::sol_types::sol_data::Uint<32>,
             alloy::sol_types::sol_data::String,
         );
         #[doc(hidden)]
         type UnderlyingRustTuple<'a> = (
+            alloy::sol_types::private::Vec<
+                <StrategyAndMultiplier as alloy::sol_types::SolType>::RustType,
+            >,
             alloy::sol_types::private::Address,
+            alloy::sol_types::private::Vec<<OperatorReward as alloy::sol_types::SolType>::RustType>,
             u32,
-            alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-            alloy::sol_types::private::Vec<alloy::sol_types::private::primitives::aliases::U256>,
+            u32,
             alloy::sol_types::private::String,
         );
         #[cfg(test)]
@@ -263,51 +80,58 @@ pub mod IAllocationManagerTypes {
         }
         #[automatically_derived]
         #[doc(hidden)]
-        impl ::core::convert::From<SlashingParams> for UnderlyingRustTuple<'_> {
-            fn from(value: SlashingParams) -> Self {
+        impl ::core::convert::From<OperatorDirectedRewardsSubmission> for UnderlyingRustTuple<'_> {
+            fn from(value: OperatorDirectedRewardsSubmission) -> Self {
                 (
-                    value.operator,
-                    value.operatorSetId,
-                    value.strategies,
-                    value.wadsToSlash,
+                    value.strategiesAndMultipliers,
+                    value.token,
+                    value.operatorRewards,
+                    value.startTimestamp,
+                    value.duration,
                     value.description,
                 )
             }
         }
         #[automatically_derived]
         #[doc(hidden)]
-        impl ::core::convert::From<UnderlyingRustTuple<'_>> for SlashingParams {
+        impl ::core::convert::From<UnderlyingRustTuple<'_>> for OperatorDirectedRewardsSubmission {
             fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
                 Self {
-                    operator: tuple.0,
-                    operatorSetId: tuple.1,
-                    strategies: tuple.2,
-                    wadsToSlash: tuple.3,
-                    description: tuple.4,
+                    strategiesAndMultipliers: tuple.0,
+                    token: tuple.1,
+                    operatorRewards: tuple.2,
+                    startTimestamp: tuple.3,
+                    duration: tuple.4,
+                    description: tuple.5,
                 }
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::SolValue for SlashingParams {
+        impl alloy_sol_types::SolValue for OperatorDirectedRewardsSubmission {
             type SolType = Self;
         }
         #[automatically_derived]
-        impl alloy_sol_types::private::SolTypeValue<Self> for SlashingParams {
+        impl alloy_sol_types::private::SolTypeValue<Self> for OperatorDirectedRewardsSubmission {
             #[inline]
             fn stv_to_tokens(&self) -> <Self as alloy_sol_types::SolType>::Token<'_> {
                 (
-                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self.operator,
+                    <alloy::sol_types::sol_data::Array<
+                        StrategyAndMultiplier,
+                    > as alloy_sol_types::SolType>::tokenize(
+                        &self.strategiesAndMultipliers,
                     ),
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.token,
+                    ),
+                    <alloy::sol_types::sol_data::Array<
+                        OperatorReward,
+                    > as alloy_sol_types::SolType>::tokenize(&self.operatorRewards),
                     <alloy::sol_types::sol_data::Uint<
                         32,
-                    > as alloy_sol_types::SolType>::tokenize(&self.operatorSetId),
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::SolType>::tokenize(&self.strategies),
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Uint<256>,
-                    > as alloy_sol_types::SolType>::tokenize(&self.wadsToSlash),
+                    > as alloy_sol_types::SolType>::tokenize(&self.startTimestamp),
+                    <alloy::sol_types::sol_data::Uint<
+                        32,
+                    > as alloy_sol_types::SolType>::tokenize(&self.duration),
                     <alloy::sol_types::sol_data::String as alloy_sol_types::SolType>::tokenize(
                         &self.description,
                     ),
@@ -347,7 +171,7 @@ pub mod IAllocationManagerTypes {
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::SolType for SlashingParams {
+        impl alloy_sol_types::SolType for OperatorDirectedRewardsSubmission {
             type RustType = Self;
             type Token<'a> = <UnderlyingSolTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
             const SOL_NAME: &'static str = <Self as alloy_sol_types::SolStruct>::NAME;
@@ -366,12 +190,277 @@ pub mod IAllocationManagerTypes {
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::SolStruct for SlashingParams {
-            const NAME: &'static str = "SlashingParams";
+        impl alloy_sol_types::SolStruct for OperatorDirectedRewardsSubmission {
+            const NAME: &'static str = "OperatorDirectedRewardsSubmission";
             #[inline]
             fn eip712_root_type() -> alloy_sol_types::private::Cow<'static, str> {
                 alloy_sol_types::private::Cow::Borrowed(
-                    "SlashingParams(address operator,uint32 operatorSetId,address[] strategies,uint256[] wadsToSlash,string description)",
+                    "OperatorDirectedRewardsSubmission(StrategyAndMultiplier[] strategiesAndMultipliers,address token,OperatorReward[] operatorRewards,uint32 startTimestamp,uint32 duration,string description)",
+                )
+            }
+            #[inline]
+            fn eip712_components(
+            ) -> alloy_sol_types::private::Vec<alloy_sol_types::private::Cow<'static, str>>
+            {
+                let mut components = alloy_sol_types::private::Vec::with_capacity(2);
+                components.push(
+                    <StrategyAndMultiplier as alloy_sol_types::SolStruct>::eip712_root_type(),
+                );
+                components.extend(
+                    <StrategyAndMultiplier as alloy_sol_types::SolStruct>::eip712_components(),
+                );
+                components.push(<OperatorReward as alloy_sol_types::SolStruct>::eip712_root_type());
+                components
+                    .extend(<OperatorReward as alloy_sol_types::SolStruct>::eip712_components());
+                components
+            }
+            #[inline]
+            fn eip712_encode_data(&self) -> alloy_sol_types::private::Vec<u8> {
+                [
+                    <alloy::sol_types::sol_data::Array<
+                        StrategyAndMultiplier,
+                    > as alloy_sol_types::SolType>::eip712_data_word(
+                            &self.strategiesAndMultipliers,
+                        )
+                        .0,
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::eip712_data_word(
+                            &self.token,
+                        )
+                        .0,
+                    <alloy::sol_types::sol_data::Array<
+                        OperatorReward,
+                    > as alloy_sol_types::SolType>::eip712_data_word(
+                            &self.operatorRewards,
+                        )
+                        .0,
+                    <alloy::sol_types::sol_data::Uint<
+                        32,
+                    > as alloy_sol_types::SolType>::eip712_data_word(
+                            &self.startTimestamp,
+                        )
+                        .0,
+                    <alloy::sol_types::sol_data::Uint<
+                        32,
+                    > as alloy_sol_types::SolType>::eip712_data_word(&self.duration)
+                        .0,
+                    <alloy::sol_types::sol_data::String as alloy_sol_types::SolType>::eip712_data_word(
+                            &self.description,
+                        )
+                        .0,
+                ]
+                    .concat()
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::EventTopic for OperatorDirectedRewardsSubmission {
+            #[inline]
+            fn topic_preimage_length(rust: &Self::RustType) -> usize {
+                0usize
+                    + <alloy::sol_types::sol_data::Array<
+                        StrategyAndMultiplier,
+                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
+                        &rust.strategiesAndMultipliers,
+                    )
+                    + <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::topic_preimage_length(
+                        &rust.token,
+                    )
+                    + <alloy::sol_types::sol_data::Array<
+                        OperatorReward,
+                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
+                        &rust.operatorRewards,
+                    )
+                    + <alloy::sol_types::sol_data::Uint<
+                        32,
+                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
+                        &rust.startTimestamp,
+                    )
+                    + <alloy::sol_types::sol_data::Uint<
+                        32,
+                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
+                        &rust.duration,
+                    )
+                    + <alloy::sol_types::sol_data::String as alloy_sol_types::EventTopic>::topic_preimage_length(
+                        &rust.description,
+                    )
+            }
+            #[inline]
+            fn encode_topic_preimage(
+                rust: &Self::RustType,
+                out: &mut alloy_sol_types::private::Vec<u8>,
+            ) {
+                out.reserve(<Self as alloy_sol_types::EventTopic>::topic_preimage_length(rust));
+                <alloy::sol_types::sol_data::Array<
+                    StrategyAndMultiplier,
+                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
+                    &rust.strategiesAndMultipliers,
+                    out,
+                );
+                <alloy::sol_types::sol_data::Address as alloy_sol_types::EventTopic>::encode_topic_preimage(
+                    &rust.token,
+                    out,
+                );
+                <alloy::sol_types::sol_data::Array<
+                    OperatorReward,
+                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
+                    &rust.operatorRewards,
+                    out,
+                );
+                <alloy::sol_types::sol_data::Uint<
+                    32,
+                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
+                    &rust.startTimestamp,
+                    out,
+                );
+                <alloy::sol_types::sol_data::Uint<
+                    32,
+                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
+                    &rust.duration,
+                    out,
+                );
+                <alloy::sol_types::sol_data::String as alloy_sol_types::EventTopic>::encode_topic_preimage(
+                    &rust.description,
+                    out,
+                );
+            }
+            #[inline]
+            fn encode_topic(rust: &Self::RustType) -> alloy_sol_types::abi::token::WordToken {
+                let mut out = alloy_sol_types::private::Vec::new();
+                <Self as alloy_sol_types::EventTopic>::encode_topic_preimage(rust, &mut out);
+                alloy_sol_types::abi::token::WordToken(alloy_sol_types::private::keccak256(out))
+            }
+        }
+    };
+    /**```solidity
+    struct OperatorReward { address operator; uint256 amount; }
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct OperatorReward {
+        #[allow(missing_docs)]
+        pub operator: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub amount: alloy::sol_types::private::primitives::aliases::U256,
+    }
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        #[doc(hidden)]
+        type UnderlyingSolTuple<'a> = (
+            alloy::sol_types::sol_data::Address,
+            alloy::sol_types::sol_data::Uint<256>,
+        );
+        #[doc(hidden)]
+        type UnderlyingRustTuple<'a> = (
+            alloy::sol_types::private::Address,
+            alloy::sol_types::private::primitives::aliases::U256,
+        );
+        #[cfg(test)]
+        #[allow(dead_code, unreachable_patterns)]
+        fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+            match _t {
+                alloy_sol_types::private::AssertTypeEq::<
+                    <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                >(_) => {}
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<OperatorReward> for UnderlyingRustTuple<'_> {
+            fn from(value: OperatorReward) -> Self {
+                (value.operator, value.amount)
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<UnderlyingRustTuple<'_>> for OperatorReward {
+            fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                Self {
+                    operator: tuple.0,
+                    amount: tuple.1,
+                }
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolValue for OperatorReward {
+            type SolType = Self;
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::private::SolTypeValue<Self> for OperatorReward {
+            #[inline]
+            fn stv_to_tokens(&self) -> <Self as alloy_sol_types::SolType>::Token<'_> {
+                (
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.operator,
+                    ),
+                    <alloy::sol_types::sol_data::Uint<256> as alloy_sol_types::SolType>::tokenize(
+                        &self.amount,
+                    ),
+                )
+            }
+            #[inline]
+            fn stv_abi_encoded_size(&self) -> usize {
+                if let Some(size) = <Self as alloy_sol_types::SolType>::ENCODED_SIZE {
+                    return size;
+                }
+                let tuple =
+                    <UnderlyingRustTuple<'_> as ::core::convert::From<Self>>::from(self.clone());
+                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::abi_encoded_size(&tuple)
+            }
+            #[inline]
+            fn stv_eip712_data_word(&self) -> alloy_sol_types::Word {
+                <Self as alloy_sol_types::SolStruct>::eip712_hash_struct(self)
+            }
+            #[inline]
+            fn stv_abi_encode_packed_to(&self, out: &mut alloy_sol_types::private::Vec<u8>) {
+                let tuple =
+                    <UnderlyingRustTuple<'_> as ::core::convert::From<Self>>::from(self.clone());
+                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::abi_encode_packed_to(
+                    &tuple, out,
+                )
+            }
+            #[inline]
+            fn stv_abi_packed_encoded_size(&self) -> usize {
+                if let Some(size) = <Self as alloy_sol_types::SolType>::PACKED_ENCODED_SIZE {
+                    return size;
+                }
+                let tuple =
+                    <UnderlyingRustTuple<'_> as ::core::convert::From<Self>>::from(self.clone());
+                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::abi_packed_encoded_size(
+                    &tuple,
+                )
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolType for OperatorReward {
+            type RustType = Self;
+            type Token<'a> = <UnderlyingSolTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SOL_NAME: &'static str = <Self as alloy_sol_types::SolStruct>::NAME;
+            const ENCODED_SIZE: Option<usize> =
+                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::ENCODED_SIZE;
+            const PACKED_ENCODED_SIZE: Option<usize> =
+                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::PACKED_ENCODED_SIZE;
+            #[inline]
+            fn valid_token(token: &Self::Token<'_>) -> bool {
+                <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::valid_token(token)
+            }
+            #[inline]
+            fn detokenize(token: Self::Token<'_>) -> Self::RustType {
+                let tuple = <UnderlyingSolTuple<'_> as alloy_sol_types::SolType>::detokenize(token);
+                <Self as ::core::convert::From<UnderlyingRustTuple<'_>>>::from(tuple)
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolStruct for OperatorReward {
+            const NAME: &'static str = "OperatorReward";
+            #[inline]
+            fn eip712_root_type() -> alloy_sol_types::private::Cow<'static, str> {
+                alloy_sol_types::private::Cow::Borrowed(
+                    "OperatorReward(address operator,uint256 amount)",
                 )
             }
             #[inline]
@@ -392,27 +481,15 @@ pub mod IAllocationManagerTypes {
                         )
                         .0,
                     <alloy::sol_types::sol_data::Uint<
-                        32,
-                    > as alloy_sol_types::SolType>::eip712_data_word(&self.operatorSetId)
-                        .0,
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::SolType>::eip712_data_word(&self.strategies)
-                        .0,
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Uint<256>,
-                    > as alloy_sol_types::SolType>::eip712_data_word(&self.wadsToSlash)
-                        .0,
-                    <alloy::sol_types::sol_data::String as alloy_sol_types::SolType>::eip712_data_word(
-                            &self.description,
-                        )
+                        256,
+                    > as alloy_sol_types::SolType>::eip712_data_word(&self.amount)
                         .0,
                 ]
                     .concat()
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::EventTopic for SlashingParams {
+        impl alloy_sol_types::EventTopic for OperatorReward {
             #[inline]
             fn topic_preimage_length(rust: &Self::RustType) -> usize {
                 0usize
@@ -420,22 +497,9 @@ pub mod IAllocationManagerTypes {
                         &rust.operator,
                     )
                     + <alloy::sol_types::sol_data::Uint<
-                        32,
+                        256,
                     > as alloy_sol_types::EventTopic>::topic_preimage_length(
-                        &rust.operatorSetId,
-                    )
-                    + <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
-                        &rust.strategies,
-                    )
-                    + <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Uint<256>,
-                    > as alloy_sol_types::EventTopic>::topic_preimage_length(
-                        &rust.wadsToSlash,
-                    )
-                    + <alloy::sol_types::sol_data::String as alloy_sol_types::EventTopic>::topic_preimage_length(
-                        &rust.description,
+                        &rust.amount,
                     )
             }
             #[inline]
@@ -449,25 +513,9 @@ pub mod IAllocationManagerTypes {
                     out,
                 );
                 <alloy::sol_types::sol_data::Uint<
-                    32,
+                    256,
                 > as alloy_sol_types::EventTopic>::encode_topic_preimage(
-                    &rust.operatorSetId,
-                    out,
-                );
-                <alloy::sol_types::sol_data::Array<
-                    alloy::sol_types::sol_data::Address,
-                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
-                    &rust.strategies,
-                    out,
-                );
-                <alloy::sol_types::sol_data::Array<
-                    alloy::sol_types::sol_data::Uint<256>,
-                > as alloy_sol_types::EventTopic>::encode_topic_preimage(
-                    &rust.wadsToSlash,
-                    out,
-                );
-                <alloy::sol_types::sol_data::String as alloy_sol_types::EventTopic>::encode_topic_preimage(
-                    &rust.description,
+                    &rust.amount,
                     out,
                 );
             }
@@ -479,166 +527,23 @@ pub mod IAllocationManagerTypes {
             }
         }
     };
-    use alloy::contract as alloy_contract;
-    /**Creates a new wrapper around an on-chain [`IAllocationManagerTypes`](self) contract instance.
-
-    See the [wrapper's documentation](`IAllocationManagerTypesInstance`) for more details.*/
-    #[inline]
-    pub const fn new<
-        T: alloy_contract::private::Transport + ::core::clone::Clone,
-        P: alloy_contract::private::Provider<T, N>,
-        N: alloy_contract::private::Network,
-    >(
-        address: alloy_sol_types::private::Address,
-        provider: P,
-    ) -> IAllocationManagerTypesInstance<T, P, N> {
-        IAllocationManagerTypesInstance::<T, P, N>::new(address, provider)
-    }
-    /**A [`IAllocationManagerTypes`](self) instance.
-
-    Contains type-safe methods for interacting with an on-chain instance of the
-    [`IAllocationManagerTypes`](self) contract located at a given `address`, using a given
-    provider `P`.
-
-    If the contract bytecode is available (see the [`sol!`](alloy_sol_types::sol!)
-    documentation on how to provide it), the `deploy` and `deploy_builder` methods can
-    be used to deploy a new instance of the contract.
-
-    See the [module-level documentation](self) for all the available methods.*/
-    #[derive(Clone)]
-    pub struct IAllocationManagerTypesInstance<T, P, N = alloy_contract::private::Ethereum> {
-        address: alloy_sol_types::private::Address,
-        provider: P,
-        _network_transport: ::core::marker::PhantomData<(N, T)>,
-    }
-    #[automatically_derived]
-    impl<T, P, N> ::core::fmt::Debug for IAllocationManagerTypesInstance<T, P, N> {
-        #[inline]
-        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple("IAllocationManagerTypesInstance")
-                .field(&self.address)
-                .finish()
-        }
-    }
-    /// Instantiation and getters/setters.
-    #[automatically_derived]
-    impl<
-            T: alloy_contract::private::Transport + ::core::clone::Clone,
-            P: alloy_contract::private::Provider<T, N>,
-            N: alloy_contract::private::Network,
-        > IAllocationManagerTypesInstance<T, P, N>
-    {
-        /**Creates a new wrapper around an on-chain [`IAllocationManagerTypes`](self) contract instance.
-
-        See the [wrapper's documentation](`IAllocationManagerTypesInstance`) for more details.*/
-        #[inline]
-        pub const fn new(address: alloy_sol_types::private::Address, provider: P) -> Self {
-            Self {
-                address,
-                provider,
-                _network_transport: ::core::marker::PhantomData,
-            }
-        }
-        /// Returns a reference to the address.
-        #[inline]
-        pub const fn address(&self) -> &alloy_sol_types::private::Address {
-            &self.address
-        }
-        /// Sets the address.
-        #[inline]
-        pub fn set_address(&mut self, address: alloy_sol_types::private::Address) {
-            self.address = address;
-        }
-        /// Sets the address and returns `self`.
-        pub fn at(mut self, address: alloy_sol_types::private::Address) -> Self {
-            self.set_address(address);
-            self
-        }
-        /// Returns a reference to the provider.
-        #[inline]
-        pub const fn provider(&self) -> &P {
-            &self.provider
-        }
-    }
-    impl<T, P: ::core::clone::Clone, N> IAllocationManagerTypesInstance<T, &P, N> {
-        /// Clones the provider and returns a new instance with the cloned provider.
-        #[inline]
-        pub fn with_cloned_provider(self) -> IAllocationManagerTypesInstance<T, P, N> {
-            IAllocationManagerTypesInstance {
-                address: self.address,
-                provider: ::core::clone::Clone::clone(&self.provider),
-                _network_transport: ::core::marker::PhantomData,
-            }
-        }
-    }
-    /// Function calls.
-    #[automatically_derived]
-    impl<
-            T: alloy_contract::private::Transport + ::core::clone::Clone,
-            P: alloy_contract::private::Provider<T, N>,
-            N: alloy_contract::private::Network,
-        > IAllocationManagerTypesInstance<T, P, N>
-    {
-        /// Creates a new call builder using this contract instance's provider and address.
-        ///
-        /// Note that the call can be any function call, not just those defined in this
-        /// contract. Prefer using the other methods for building type-safe contract calls.
-        pub fn call_builder<C: alloy_sol_types::SolCall>(
-            &self,
-            call: &C,
-        ) -> alloy_contract::SolCallBuilder<T, &P, C, N> {
-            alloy_contract::SolCallBuilder::new_sol(&self.provider, &self.address, call)
-        }
-    }
-    /// Event filters.
-    #[automatically_derived]
-    impl<
-            T: alloy_contract::private::Transport + ::core::clone::Clone,
-            P: alloy_contract::private::Provider<T, N>,
-            N: alloy_contract::private::Network,
-        > IAllocationManagerTypesInstance<T, P, N>
-    {
-        /// Creates a new event filter using this contract instance's provider and address.
-        ///
-        /// Note that the type can be any event, not just those defined in this contract.
-        /// Prefer using the other methods for building type-safe event filters.
-        pub fn event_filter<E: alloy_sol_types::SolEvent>(
-            &self,
-        ) -> alloy_contract::Event<T, &P, E, N> {
-            alloy_contract::Event::new_sol(&self.provider, &self.address)
-        }
-    }
-}
-///Module containing a contract's types and functions.
-/**
-
-```solidity
-library IRewardsCoordinatorTypes {
-    struct RewardsSubmission { StrategyAndMultiplier[] strategiesAndMultipliers; address token; uint256 amount; uint32 startTimestamp; uint32 duration; }
-    struct StrategyAndMultiplier { address strategy; uint96 multiplier; }
-}
-```*/
-#[allow(
-    non_camel_case_types,
-    non_snake_case,
-    clippy::pub_underscore_fields,
-    clippy::style
-)]
-pub mod IRewardsCoordinatorTypes {
-    use super::*;
-    use alloy::sol_types as alloy_sol_types;
     /**```solidity
     struct RewardsSubmission { StrategyAndMultiplier[] strategiesAndMultipliers; address token; uint256 amount; uint32 startTimestamp; uint32 duration; }
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct RewardsSubmission {
+        #[allow(missing_docs)]
         pub strategiesAndMultipliers: alloy::sol_types::private::Vec<
             <StrategyAndMultiplier as alloy::sol_types::SolType>::RustType,
         >,
+        #[allow(missing_docs)]
         pub token: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub amount: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub startTimestamp: u32,
+        #[allow(missing_docs)]
         pub duration: u32,
     }
     #[allow(
@@ -913,7 +818,9 @@ pub mod IRewardsCoordinatorTypes {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct StrategyAndMultiplier {
+        #[allow(missing_docs)]
         pub strategy: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub multiplier: alloy::sol_types::private::primitives::aliases::U96,
     }
     #[allow(
@@ -1244,7 +1151,8 @@ library ISignatureUtils {
     non_camel_case_types,
     non_snake_case,
     clippy::pub_underscore_fields,
-    clippy::style
+    clippy::style,
+    clippy::empty_structs_with_brackets
 )]
 pub mod ISignatureUtils {
     use super::*;
@@ -1255,8 +1163,11 @@ pub mod ISignatureUtils {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct SignatureWithSaltAndExpiry {
+        #[allow(missing_docs)]
         pub signature: alloy::sol_types::private::Bytes,
+        #[allow(missing_docs)]
         pub salt: alloy::sol_types::private::FixedBytes<32>,
+        #[allow(missing_docs)]
         pub expiry: alloy::sol_types::private::primitives::aliases::U256,
     }
     #[allow(
@@ -1598,21 +1509,19 @@ pub mod ISignatureUtils {
 
 Generated by the following Solidity interface...
 ```solidity
-library IAllocationManagerTypes {
-    struct CreateSetParams {
-        uint32 operatorSetId;
-        address[] strategies;
-    }
-    struct SlashingParams {
-        address operator;
-        uint32 operatorSetId;
-        address[] strategies;
-        uint256[] wadsToSlash;
+library IRewardsCoordinatorTypes {
+    struct OperatorDirectedRewardsSubmission {
+        StrategyAndMultiplier[] strategiesAndMultipliers;
+        address token;
+        OperatorReward[] operatorRewards;
+        uint32 startTimestamp;
+        uint32 duration;
         string description;
     }
-}
-
-library IRewardsCoordinatorTypes {
+    struct OperatorReward {
+        address operator;
+        uint256 amount;
+    }
     struct RewardsSubmission {
         StrategyAndMultiplier[] strategiesAndMultipliers;
         address token;
@@ -1635,39 +1544,37 @@ library ISignatureUtils {
 }
 
 interface IncredibleSquaringServiceManager {
+    error DelayPeriodNotPassed();
+    error OnlyRegistryCoordinator();
+    error OnlyRewardsInitiator();
+    error OnlyStakeRegistry();
+
     event Initialized(uint8 version);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event RewardsInitiatorUpdated(address prevRewardsInitiator, address newRewardsInitiator);
-    event SlasherProposed(address newSlasher, uint256 slasherProposalTimestamp);
-    event SlasherUpdated(address prevSlasher, address newSlasher);
 
-    constructor(address _avsDirectory, address _registryCoordinator, address _stakeRegistry, address rewards_coordinator, address allocationManager, address _incredibleSquaringTaskManager);
+    constructor(address _avsDirectory, address _slashingRegistryCoordinator, address _stakeRegistry, address rewards_coordinator, address allocationManager, address _permissionController, address _incredibleSquaringTaskManager);
 
-    function SLASHER_PROPOSAL_DELAY() external view returns (uint256);
-    function acceptProposedSlasher() external;
-    function addStrategyToOperatorSet(uint32 operatorSetId, address[] memory strategies) external;
-    function allocationManager() external view returns (address);
+    function addPendingAdmin(address admin) external;
     function avsDirectory() external view returns (address);
     function createAVSRewardsSubmission(IRewardsCoordinatorTypes.RewardsSubmission[] memory rewardsSubmissions) external;
-    function createOperatorSets(IAllocationManagerTypes.CreateSetParams[] memory params) external;
+    function createOperatorDirectedAVSRewardsSubmission(IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission[] memory operatorDirectedRewardsSubmissions) external;
     function deregisterOperatorFromAVS(address operator) external;
     function deregisterOperatorFromOperatorSets(address operator, uint32[] memory operatorSetIds) external;
     function getOperatorRestakedStrategies(address operator) external view returns (address[] memory);
     function getRestakeableStrategies() external view returns (address[] memory);
     function incredibleSquaringTaskManager() external view returns (address);
-    function migrationFinalized() external view returns (bool);
+    function initialize(address initialOwner, address rewardsInitiator) external;
     function owner() external view returns (address);
-    function proposeNewSlasher(address newSlasher) external;
-    function proposedSlasher() external view returns (address);
     function registerOperatorToAVS(address operator, ISignatureUtils.SignatureWithSaltAndExpiry memory operatorSignature) external;
-    function removeStrategiesFromOperatorSet(uint32 operatorSetId, address[] memory strategies) external;
+    function removeAdmin(address admin) external;
+    function removeAppointee(address appointee, address target, bytes4 selector) external;
+    function removePendingAdmin(address pendingAdmin) external;
     function renounceOwnership() external;
     function rewardsInitiator() external view returns (address);
-    function setAVSRegistrar(address registrar) external;
+    function setAppointee(address appointee, address target, bytes4 selector) external;
+    function setClaimerFor(address claimer) external;
     function setRewardsInitiator(address newRewardsInitiator) external;
-    function slashOperator(IAllocationManagerTypes.SlashingParams memory params) external;
-    function slasher() external view returns (address);
-    function slasherProposalTimestamp() external view returns (uint256);
     function transferOwnership(address newOwner) external;
     function updateAVSMetadataURI(string memory _metadataURI) external;
 }
@@ -1685,9 +1592,9 @@ interface IncredibleSquaringServiceManager {
         "internalType": "contract IAVSDirectory"
       },
       {
-        "name": "_registryCoordinator",
+        "name": "_slashingRegistryCoordinator",
         "type": "address",
-        "internalType": "contract IRegistryCoordinator"
+        "internalType": "contract ISlashingRegistryCoordinator"
       },
       {
         "name": "_stakeRegistry",
@@ -1705,6 +1612,11 @@ interface IncredibleSquaringServiceManager {
         "internalType": "contract IAllocationManager"
       },
       {
+        "name": "_permissionController",
+        "type": "address",
+        "internalType": "contract IPermissionController"
+      },
+      {
         "name": "_incredibleSquaringTaskManager",
         "type": "address",
         "internalType": "contract IIncredibleSquaringTaskManager"
@@ -1714,54 +1626,16 @@ interface IncredibleSquaringServiceManager {
   },
   {
     "type": "function",
-    "name": "SLASHER_PROPOSAL_DELAY",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "acceptProposedSlasher",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "addStrategyToOperatorSet",
+    "name": "addPendingAdmin",
     "inputs": [
       {
-        "name": "operatorSetId",
-        "type": "uint32",
-        "internalType": "uint32"
-      },
-      {
-        "name": "strategies",
-        "type": "address[]",
-        "internalType": "contract IStrategy[]"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "allocationManager",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
+        "name": "admin",
         "type": "address",
         "internalType": "address"
       }
     ],
-    "stateMutability": "view"
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -1830,22 +1704,66 @@ interface IncredibleSquaringServiceManager {
   },
   {
     "type": "function",
-    "name": "createOperatorSets",
+    "name": "createOperatorDirectedAVSRewardsSubmission",
     "inputs": [
       {
-        "name": "params",
+        "name": "operatorDirectedRewardsSubmissions",
         "type": "tuple[]",
-        "internalType": "struct IAllocationManagerTypes.CreateSetParams[]",
+        "internalType": "struct IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission[]",
         "components": [
           {
-            "name": "operatorSetId",
+            "name": "strategiesAndMultipliers",
+            "type": "tuple[]",
+            "internalType": "struct IRewardsCoordinatorTypes.StrategyAndMultiplier[]",
+            "components": [
+              {
+                "name": "strategy",
+                "type": "address",
+                "internalType": "contract IStrategy"
+              },
+              {
+                "name": "multiplier",
+                "type": "uint96",
+                "internalType": "uint96"
+              }
+            ]
+          },
+          {
+            "name": "token",
+            "type": "address",
+            "internalType": "contract IERC20"
+          },
+          {
+            "name": "operatorRewards",
+            "type": "tuple[]",
+            "internalType": "struct IRewardsCoordinatorTypes.OperatorReward[]",
+            "components": [
+              {
+                "name": "operator",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "amount",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "startTimestamp",
             "type": "uint32",
             "internalType": "uint32"
           },
           {
-            "name": "strategies",
-            "type": "address[]",
-            "internalType": "contract IStrategy[]"
+            "name": "duration",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
           }
         ]
       }
@@ -1931,36 +1849,15 @@ interface IncredibleSquaringServiceManager {
   },
   {
     "type": "function",
-    "name": "migrationFinalized",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "owner",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "proposeNewSlasher",
+    "name": "initialize",
     "inputs": [
       {
-        "name": "newSlasher",
+        "name": "initialOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "rewardsInitiator",
         "type": "address",
         "internalType": "address"
       }
@@ -1970,7 +1867,7 @@ interface IncredibleSquaringServiceManager {
   },
   {
     "type": "function",
-    "name": "proposedSlasher",
+    "name": "owner",
     "inputs": [],
     "outputs": [
       {
@@ -2018,17 +1915,48 @@ interface IncredibleSquaringServiceManager {
   },
   {
     "type": "function",
-    "name": "removeStrategiesFromOperatorSet",
+    "name": "removeAdmin",
     "inputs": [
       {
-        "name": "operatorSetId",
-        "type": "uint32",
-        "internalType": "uint32"
+        "name": "admin",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeAppointee",
+    "inputs": [
+      {
+        "name": "appointee",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "strategies",
-        "type": "address[]",
-        "internalType": "contract IStrategy[]"
+        "name": "target",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "selector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removePendingAdmin",
+    "inputs": [
+      {
+        "name": "pendingAdmin",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "outputs": [],
@@ -2056,12 +1984,35 @@ interface IncredibleSquaringServiceManager {
   },
   {
     "type": "function",
-    "name": "setAVSRegistrar",
+    "name": "setAppointee",
     "inputs": [
       {
-        "name": "registrar",
+        "name": "appointee",
         "type": "address",
-        "internalType": "contract IAVSRegistrar"
+        "internalType": "address"
+      },
+      {
+        "name": "target",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "selector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setClaimerFor",
+    "inputs": [
+      {
+        "name": "claimer",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "outputs": [],
@@ -2079,72 +2030,6 @@ interface IncredibleSquaringServiceManager {
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "slashOperator",
-    "inputs": [
-      {
-        "name": "params",
-        "type": "tuple",
-        "internalType": "struct IAllocationManagerTypes.SlashingParams",
-        "components": [
-          {
-            "name": "operator",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "operatorSetId",
-            "type": "uint32",
-            "internalType": "uint32"
-          },
-          {
-            "name": "strategies",
-            "type": "address[]",
-            "internalType": "contract IStrategy[]"
-          },
-          {
-            "name": "wadsToSlash",
-            "type": "uint256[]",
-            "internalType": "uint256[]"
-          },
-          {
-            "name": "description",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "slasher",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "slasherProposalTimestamp",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -2224,42 +2109,24 @@ interface IncredibleSquaringServiceManager {
     "anonymous": false
   },
   {
-    "type": "event",
-    "name": "SlasherProposed",
-    "inputs": [
-      {
-        "name": "newSlasher",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
-      },
-      {
-        "name": "slasherProposalTimestamp",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
+    "type": "error",
+    "name": "DelayPeriodNotPassed",
+    "inputs": []
   },
   {
-    "type": "event",
-    "name": "SlasherUpdated",
-    "inputs": [
-      {
-        "name": "prevSlasher",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
-      },
-      {
-        "name": "newSlasher",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
-      }
-    ],
-    "anonymous": false
+    "type": "error",
+    "name": "OnlyRegistryCoordinator",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "OnlyRewardsInitiator",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "OnlyStakeRegistry",
+    "inputs": []
   }
 ]
 ```*/
@@ -2267,7 +2134,8 @@ interface IncredibleSquaringServiceManager {
     non_camel_case_types,
     non_snake_case,
     clippy::pub_underscore_fields,
-    clippy::style
+    clippy::style,
+    clippy::empty_structs_with_brackets
 )]
 pub mod IncredibleSquaringServiceManager {
     use super::*;
@@ -2275,23 +2143,263 @@ pub mod IncredibleSquaringServiceManager {
     /// The creation / init bytecode of the contract.
     ///
     /// ```text
-    ///0x6101403461023957601f6124aa38819003918201601f19168301916001600160401b0383118484101761023d5780849260c094604052833981010312610239578051906001600160a01b03821682036102395760208101516001600160a01b0381168103610239576040820151906001600160a01b03821682036102395760608301516001600160a01b03811690819003610239576080840151936001600160a01b03851685036102395760a00151946001600160a01b03861686036102395760805260a05260c05260e052610100525f5460ff8160081c166101e45760ff808216106101aa575b506101205260405161225890816102528239608051818181610acc01528181610b7901528181610cab0152611129015260a0518161018a015260c051818181610701015281816108f801528181610b4901528181610c8201528181610e9b015281816119320152611e7f015260e051818181611a4c01528181611ecb015261217801526101005181818161073101528181610808015281816108880152818161092b01528181610ec4015281816110bf01526112c0015261012051816110180152f35b60ff90811916175f557f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498602060405160ff8152a15f6100e7565b60405162461bcd60e51b815260206004820152602760248201527f496e697469616c697a61626c653a20636f6e747261637420697320696e697469604482015266616c697a696e6760c81b6064820152608490fd5b5f80fd5b634e487b7160e01b5f52604160045260245ffdfe60806040526004361015610011575f80fd5b5f5f3560e01c806326f017e2146114fd57806333cfb7b7146114d95780633bc28c8c1461145a5780633d0714221461117657806367940c89146111585780636b3aa72e146111135780636ecbccfe146110a4578063715018a61461104757806377ef731d14611002578063847d634f14610e175780638999817f14610d8e5780638d68349a14610d6b5780638da5cb5b14610d425780639926ee7d14610be1578063a364f4da14610b28578063a98fb35514610a90578063b134427114610a67578063c1a8e2c5146108b7578063ca8aa7c714610872578063ce7b5e4b146107ed578063e46f1816146107c4578063e481af9d14610798578063f25f1610146106d3578063f2fde38b1461060a578063fc299dee146105e1578063fcd1c375146105c35763fce36c7d14610143575f80fd5b3461022d57602036600319011261022d576004356001600160401b0381116105bf576101739036906004016117f4565b6065549192916001600160a01b0316330361053f577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031692825b82811061036e5750833b1561036a576040519163fce36c7d60e01b835280602484016020600486015252604483019060448160051b8501019280928691609e19813603015b84841061023b5788808981818e8183818f03925af180156102305761021c5750f35b816102269161169b565b61022d5780f35b80fd5b6040513d84823e3d90fd5b9091929394956043198882030184528635828112156103665783019060a08101918035601e1982360301811215610310578101602081359101936001600160401b038211610362578160061b3603851361036257819060a085525260c0830193908c905b8082106103145750505060208101356001600160a01b03811690819003610310579282608063ffffffff6102fc8260209796600199898099015260408101356040870152836102f0606083016116bc565b166060870152016116bc565b1691015298019401940192949391906101fa565b8b80fd5b91949091906001600160a01b0361032a8761160f565b16815260208601356bffffffffffffffffffffffff811680910361035e57602082015260409081019501916001019061029f565b8e80fd5b8c80fd5b8980fd5b8280fd5b8360206001600160a01b0361038e826103888689896120d0565b016120f2565b166064604061039e8689896120d0565b013560405194859384926323b872dd60e01b845233600485015230602485015260448401525af180156104de57610523575b506001600160a01b036103e960206103888487876120d0565b604051636eb1769f60e11b81523060048201526001600160a01b03881660248201529160209183916044918391165afa9081156104de5790859182916104e9575b50602090610495906104626001600160a01b0361044c85610388898c8c6120d0565b1691604061045b888b8b6120d0565b0135611824565b60405163095ea7b360e01b81526001600160a01b038b166004820152602481019190915293849283919082906044820190565b03925af180156104de5790600192916104b0575b50016101b5565b6104d09060203d81116104d7575b6104c8818361169b565b810190612106565b505f6104a9565b503d6104be565b6040513d87823e3d90fd5b9150506020813d821161051b575b816105046020938361169b565b810103126105175751849061049561042a565b5f80fd5b3d91506104f7565b61053a9060203d81116104d7576104c8818361169b565b6103d0565b60405162461bcd60e51b815260206004820152604c60248201527f536572766963654d616e61676572426173652e6f6e6c7952657761726473496e60448201527f69746961746f723a2063616c6c6572206973206e6f742074686520726577617260648201526b32399034b734ba34b0ba37b960a11b608482015260a490fd5b5080fd5b503461022d578060031936011261022d576020606854604051908152f35b503461022d578060031936011261022d576065546040516001600160a01b039091168152602090f35b503461022d57602036600319011261022d576106246115f9565b61062c61211e565b6001600160a01b0316801561067f57603380546001600160a01b0319811683179091556001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08380a380f35b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b503461022d57602036600319011261022d57806004356001600160a01b038116908190036107955761072f337f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031614611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b156107935782916044839260405194859384926334f65bfd60e21b845230600485015260248401525af180156102305761021c5750f35b505b50fd5b503461022d578060031936011261022d576107c06107b4611e70565b60405191829182611623565b0390f35b503461022d578060031936011261022d576067546040516001600160a01b039091168152602090f35b503461022d57806107fd366117b8565b90610806612176565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031691823b1561086d5761085c9284928360405180968195829463b66bd98960e01b84523060048501611db9565b03925af180156102305761021c5750f35b505050fd5b503461022d578060031936011261022d576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b503461022d57604036600319011261022d576108d16115f9565b906024356001600160401b0381116105bf576108f19036906004016117f4565b92610926337f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031614611de3565b6040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031694909161095f83611680565b6001600160a01b0316825230602083019081529261097c826116cd565b9161098a604051938461169b565b808352602083019060051b820191368311610a6357905b828210610a4b5750505060408201908152843b15610a4757604051636e3492b560e01b815260206004820181905292516001600160a01b03908116602483015293519093166044840152516060606484015280516084840181905260a48401929190910190845b818110610a2b57505050818394818581819503925af180156102305761021c5750f35b825163ffffffff16845260209384019390920191600101610a08565b8380fd5b60208091610a58846116bc565b8152019101906109a1565b8680fd5b503461022d578060031936011261022d576066546040516001600160a01b039091168152602090f35b503461022d57602036600319011261022d57806004356001600160401b03811161079557610ac290369060040161179a565b610aca61211e565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156107935760405163a98fb35560e01b815260206004820152918391839182908490829061085c906024830190611d95565b503461022d57602036600319011261022d5780610b436115f9565b610b77337f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031614611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b15610793576040516351b27a6d60e11b81526001600160a01b0390911660048201529082908290602490829084905af180156102305761021c5750f35b503461022d57604036600319011261022d5780610bfc6115f9565b602435906001600160401b03821161079357606060031983360301126107935760405190610c2982611680565b82600401356001600160401b038111610d3e57830136602382011215610d3e57610c5d903690602460048201359101611764565b82526020820191602484013583526044604082019401358452610ca960018060a01b037f0000000000000000000000000000000000000000000000000000000000000000163314611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b15610d3a5785610d1c93819560405197889687958694639926ee7d60e01b865260018060a01b0316600486015260406024860152516060604486015260a4850190611d95565b9151606484015251608483015203925af180156102305761021c5750f35b8580fd5b8480fd5b503461022d578060031936011261022d576033546040516001600160a01b039091168152602090f35b503461022d578060031936011261022d57602060ff606954166040519015158152f35b503461022d57602036600319011261022d577f2f8afc8a78fd958f3301c0233aa326b9c4b9a2884a7483227d6b0555aaa03adb610e11610dcc6115f9565b610dd461211e565b606780546001600160a01b0319166001600160a01b0392909216918217905542606881905560408051928352602083019190915290918291820190565b0390a180f35b503461022d57602036600319011261022d57600435906001600160401b03821161022d573660238301121561022d578160040135610e54816116cd565b92610e62604051948561169b565b81845260208401906024829360051b82010190368211610d3e5760248101925b828410610f8c5750610ec2925050506001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000163314611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b1561036a5760405191630130fc2760e51b835260448301943060048501526040602485015251809552606483019460648160051b8501019190855b818110610f4a57868087818180890381838c5af180156102305761021c5750f35b909192602080610f7d6001936063198a8203018c52604083895163ffffffff815116845201519181858201520190611d59565b95019801910196919096610f29565b83356001600160401b038111610a6357820160406023198236030112610a635760405190610fb982611665565b610fc5602482016116bc565b825260448101356001600160401b038111610ffe5791610fef6020949260248695369201016116e4565b83820152815201930192610e82565b8880fd5b503461022d578060031936011261022d576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b503461022d578060031936011261022d5761106061211e565b603380546001600160a01b0319811690915581906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b503461022d57806110b4366117b8565b906110bd612176565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031691823b1561086d5761085c92849283604051809681958294630287f75160e51b84523060048501611db9565b503461022d578060031936011261022d576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b503461022d578060031936011261022d57602060405162093a808152f35b5034610517576020366003190112610517576004356001600160401b0381116105175760a06003198236030112610517576040519060a082018281106001600160401b03821117611446576040526111d08160040161160f565b82526111de602482016116bc565b906020830191825260448101356001600160401b0381116105175761120990600436918401016116e4565b916040840192835260648201356001600160401b038111610517578201913660238401121561051757600483013592611241846116cd565b9361124f604051958661169b565b808552602060048187019260051b840101019136831161051757602401905b82821061143657505050606085019283526084810135906001600160401b0382116105175760046112a2923692010161179a565b608085019081526066549091906001600160a01b031633036113cb577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031693843b156105175760408051633635205760e01b8152306004820152602481019190915295516001600160a01b03166044870152905163ffffffff1660648601525160a06084860152849291906113439060e4850190611d59565b9151916043198482030160a4850152602080845192838152019301905f5b8181106113b2575050505f836113878296948294516043198483030160c4850152611d95565b03925af180156113a757611399575080f35b6113a591505f9061169b565b005b6040513d5f823e3d90fd5b8251855287955060209485019490920191600101611361565b60405162461bcd60e51b815260206004820152603960248201527f536572766963654d616e61676572426173652e6f6e6c79536c61736865723a2060448201527f63616c6c6572206973206e6f742074686520736c6173686572000000000000006064820152608490fd5b813581526020918201910161126e565b634e487b7160e01b5f52604160045260245ffd5b34610517576020366003190112610517576114736115f9565b61147b61211e565b606554604080516001600160a01b038084168252841660208201529192917fe11cddf1816a43318ca175bbc52cd0185436e9cbead7c83acc54a73e461717e39190a16001600160a01b03166001600160a01b03199190911617606555005b34610517576020366003190112610517576107c06107b46114f86115f9565b611912565b34610517575f3660031901126105175761151561211e565b60685462093a8081018091116115e557421061158957606754606654604080516001600160a01b03808416825284166020820181905292917fe0d49a54274423183dadecbdf239eaac6e06ba88320b26fe8cc5ec9d050a639591a16001600160a01b03199081169190911760665516606755005b60405162461bcd60e51b815260206004820152602e60248201527f536572766963654d616e616765723a20536c61736865722070726f706f73616c60448201526d0819195b185e481b9bdd081b595d60921b6064820152608490fd5b634e487b7160e01b5f52601160045260245ffd5b600435906001600160a01b038216820361051757565b35906001600160a01b038216820361051757565b60206040818301928281528451809452019201905f5b8181106116465750505090565b82516001600160a01b0316845260209384019390920191600101611639565b604081019081106001600160401b0382111761144657604052565b606081019081106001600160401b0382111761144657604052565b90601f801991011681019081106001600160401b0382111761144657604052565b359063ffffffff8216820361051757565b6001600160401b0381116114465760051b60200190565b9080601f830112156105175781356116fb816116cd565b92611709604051948561169b565b81845260208085019260051b82010192831161051757602001905b8282106117315750505090565b6020809161173e8461160f565b815201910190611724565b6001600160401b03811161144657601f01601f191660200190565b92919261177082611749565b9161177e604051938461169b565b829481845281830111610517578281602093845f960137010152565b9080601f83011215610517578160206117b593359101611764565b90565b9060406003198301126105175760043563ffffffff811681036105175791602435906001600160401b038211610517576117b5916004016116e4565b9181601f84011215610517578235916001600160401b038311610517576020808501948460051b01011161051757565b919082018092116115e557565b90816020910312610517575160ff811681036105175790565b90611854826116cd565b611861604051918261169b565b8281528092611872601f19916116cd565b0190602036910137565b90815181101561188d570160200190565b634e487b7160e01b5f52603260045260245ffd5b9081604091031261051757604051906118b982611665565b8051906001600160a01b038216820361051757602091835201516bffffffffffffffffffffffff8116810361051757602082015290565b805182101561188d5760209160051b010190565b5f1981146115e55760010190565b6040516309aa152760e11b81526001600160a01b039182166004820152907f000000000000000000000000000000000000000000000000000000000000000016602082602481845afa9182156113a7575f92611d25575b506040519163871ef04960e01b83526004830152602082602481845afa9182156113a7575f92611ce1575b506001600160c01b038216908115908115611c7e575b50611c6457805f915b611c3f575061ffff166119c581611749565b906119d3604051928361169b565b8082526119e2601f1991611749565b013660208301375f5f5b8251821080611c34575b15611a44576001811b84166001600160c01b0316611a1d575b611a1890611904565b6119ec565b906001611a189160ff60f81b8460f81b165f1a611a3a828761187c565b5301919050611a0f565b505f939250507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690835b8151851015611aff57611a8a858361187c565b5160f81c60405190633ca5a5f560e01b82526004820152602081602481875afa9081156113a7575f91611acd575b50611ac590600192611824565b940193611a77565b90506020813d8211611af7575b81611ae76020938361169b565b8101031261051757516001611ab8565b3d9150611ada565b611b0a91945061184a565b925f905f5b8151811015611c2e57611b22818361187c565b5160f81c60405190633ca5a5f560e01b8252806004830152602082602481895afa9182156113a7575f92611bfb575b50905f915b818310611b6857505050600101611b0f565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156113a757600192611bc4925f91611bcd575b50838060a01b03905116611bbe828d6118f0565b52611904565b95019190611b56565b611bee915060403d8111611bf4575b611be6818361169b565b8101906118a1565b5f611baa565b503d611bdc565b9091506020813d8211611c26575b81611c166020938361169b565b810103126105175751905f611b51565b3d9150611c09565b50505050565b5061010081106119f6565b5f1981018181116115e55761ffff9116911661ffff81146115e55760010190806119b3565b5050604051611c7460208261169b565b5f81525f36813790565b604051639aa1653d60e01b81529150602090829060049082905afa80156113a75760ff915f91611cb2575b5016155f6119aa565b611cd4915060203d602011611cda575b611ccc818361169b565b810190611831565b5f611ca9565b503d611cc2565b9091506020813d602011611d1d575b81611cfd6020938361169b565b8101031261051757516001600160c01b038116810361051757905f611994565b3d9150611cf0565b9091506020813d602011611d51575b81611d416020938361169b565b810103126105175751905f611969565b3d9150611d34565b90602080835192838152019201905f5b818110611d765750505090565b82516001600160a01b0316845260209384019390920191600101611d69565b805180835260209291819084018484015e5f828201840152601f01601f1916010190565b63ffffffff6117b5949360609360018060a01b031683521660208201528160408201520190611d59565b15611dea57565b60405162461bcd60e51b815260206004820152605260248201527f536572766963654d616e61676572426173652e6f6e6c7952656769737472794360448201527f6f6f7264696e61746f723a2063616c6c6572206973206e6f742074686520726560648201527133b4b9ba393c9031b7b7b93234b730ba37b960711b608482015260a490fd5b604051639aa1653d60e01b81527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690602081600481855afa80156113a75760ff915f916120b1575b50168015611c64577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316905f9081905b80831061203b5750611f0b915061184a565b925f905f5b604051639aa1653d60e01b8152602081600481895afa80156113a75760ff915f9161201d575b501681101561201657604051633ca5a5f560e01b815260ff821660048201819052602082602481895afa9182156113a7575f92611fe3575b50905f915b818310611f8557505050600101611f10565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156113a757600192611fda925f91611bcd5750838060a01b03905116611bbe828d6118f0565b95019190611f73565b9091506020813d821161200e575b81611ffe6020938361169b565b810103126105175751905f611f6e565b3d9150611ff1565b5092505050565b612035915060203d8111611cda57611ccc818361169b565b5f611f36565b90604051633ca5a5f560e01b815260ff84166004820152602081602481885afa9081156113a7575f9161207f575b5061207690600192611824565b92019190611ef9565b90506020813d82116120a9575b816120996020938361169b565b8101031261051757516001612069565b3d915061208c565b6120ca915060203d602011611cda57611ccc818361169b565b5f611ec1565b919081101561188d5760051b81013590609e1981360301821215610517570190565b356001600160a01b03811681036105175790565b90816020910312610517575180151581036105175790565b6033546001600160a01b0316330361213257565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fd5b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633036121a857565b60405162461bcd60e51b815260206004820152604660248201527f536572766963654d616e61676572426173652e6f6e6c795374616b655265676960448201527f737472793a2063616c6c6572206973206e6f7420746865207374616b6520726560648201526567697374727960d01b608482015260a490fdfea26469706673582212204d9a395fd2d7be3715f8c3b3d9264e68488d03ce1e0dbbabf108d7e6cb85e43064736f6c634300081b0033
+    ///0x6101603461024957601f6122df38819003918201601f19168301916001600160401b0383118484101761024d5780849260e094604052833981010312610249578051906001600160a01b0382168203610249576020810151906001600160a01b03821682036102495760408101516001600160a01b03811681036102495760608201516001600160a01b0381169390849003610249576080830151936001600160a01b03851685036102495760a0840151936001600160a01b03851685036102495760c00151956001600160a01b03871687036102495760805260c05260e052610100526101205260a0525f5460ff8160081c166101f45760ff808216106101ba575b506101405260405161207d908161026282396080518181816106940152818161074301528181610c600152610de3015260a051816104b9015260c051818181610149015281816107e80152610aa7015260e0518181816104600152818161071101528181610c33015281816114b00152611a0d0152610100518181816115ca0152611a590152610120518181816105c001528181610b3401528181611026015281816110a5015261114301526101405181610d410152f35b60ff90811916175f557f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498602060405160ff8152a15f610102565b60405162461bcd60e51b815260206004820152602760248201527f496e697469616c697a61626c653a20636f6e747261637420697320696e697469604482015266616c697a696e6760c81b6064820152608490fd5b5f80fd5b634e487b7160e01b5f52604160045260245ffdfe60806040526004361015610011575f80fd5b5f5f3560e01c80631785f53c1461111f5780631fdb0cfd14611088578063279432eb1461100157806333cfb7b714610fdc5780633bc28c8c14610fb7578063485cc95514610e125780636b3aa72e14610dcd578063715018a614610d7057806377ef731d14610d2b5780638da5cb5b14610d025780639926ee7d14610b965780639da16d8e14610b0f578063a0169ddd14610a82578063a20b99bf146107ab578063a364f4da146106f5578063a98fb35514610647578063ba550880146105a3578063c1a8e2c5146103e2578063e481af9d146103b6578063f2fde38b14610325578063fc299dee146102fc5763fce36c7d1461010c575f80fd5b346101e95760203660031901126101e9576004356001600160401b0381116102f85761013c903690600401611326565b610147929192611d7e565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690825b8181106102945750813b15610290576040519363fce36c7d60e01b8552816024860160206004880152526044850160448360051b87010192828690609e19813603015b8383106101f75788808b8181808c0381838f5af180156101ec576101d85750f35b816101e2916112b4565b6101e95780f35b80fd5b6040513d84823e3d90fd5b9091929394956043198a820301865286358281121561028c5760206001928582930190608063ffffffff61027a826102406102328780611966565b60a0885260a088019161199a565b95898060a01b036102528983016111e4565b1688870152604081013560408701528361026e6060830161136d565b1660608701520161136d565b169101529801960194930191906101b7565b8980fd5b8280fd5b806102c96102b060206102aa600195878b611c5e565b01611952565b60406102bd84878b611c5e565b01359030903390611da1565b6102f26102dc60206102aa84878b611c5e565b8560406102ea85888c611c5e565b013591611dec565b01610174565b5080fd5b50346101e957806003193601126101e9576065546040516001600160a01b039091168152602090f35b50346101e95760203660031901126101e95761033f6111ce565b610347611c80565b6001600160a01b038116156103625761035f90611d36565b80f35b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b50346101e957806003193601126101e9576103de6103d26119fe565b60405191829182611243565b0390f35b50346101e95760403660031901126101e9576103fc6111ce565b90602435916001600160401b0383116102f857366023840112156102f85782600401359261042984611356565b9361043760405195866112b4565b8085526024602086019160051b8301019136831161059f57602401905b828210610587575050507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163303610578576040519061049b82611285565b6001600160a01b0390811682523060208301908152604083019485527f000000000000000000000000000000000000000000000000000000000000000090911693909190843b1561057457604051636e3492b560e01b815260206004820181905292516001600160a01b03908116602483015293519093166044840152516060606484015280516084840181905260a48401929190910190845b81811061055857505050818394818581819503925af180156101ec576101d85750f35b825163ffffffff16845260209384019390920191600101610535565b8380fd5b634394dbdf60e11b8252600482fd5b602080916105948461136d565b815201910190610454565b8480fd5b50346101e957806105b3366111f8565b6105be929192611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b1561059f57604051630664120160e01b81523060048201526001600160a01b0393841660248201529390921660448401526001600160e01b031916606483015282908290818381608481015b03925af180156101ec576101d85750f35b50346101e95760203660031901126101e957806004356001600160401b0381116106f257366023820112156106f25761068a9036906024816004013591016112f0565b610692611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156106f05760405163a98fb35560e01b81526020600482015291839183918290849082906106369060248301906118d7565b505b50fd5b50346101e95760203660031901126101e95761070f6111ce565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633036105785781907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b156106f0576040516351b27a6d60e11b81526001600160a01b0390911660048201529082908290602490829084905af180156101ec576101d85750f35b50346101e95760203660031901126101e9576004356001600160401b0381116102f8576107dc903690600401611326565b91906107e6611d7e565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316825b8481106109cd5750803b156102905760409391935191634e5cd2fd60e11b8352806044840130600486015260406024860152526064830160648260051b850101918691869760be19813603015b838a10610880578880898181808b0381838e5af180156101ec576101d85750f35b909192939460631988820301845285358281121561028c578301906108b66108a88380611966565b60c0845260c084019161199a565b916001600160a01b036108cb602083016111e4565b16602083015260206108e06040830183611966565b848603604086015280865294909101938c905b80821061099d5750505063ffffffff61090e6060830161136d565b16606083015263ffffffff6109256080830161136d565b16608083015260a0810135601e1982360301811215610999570190602082359201906001600160401b03831161099957823603821361099957838360209485948460a0879660019a03910152818452848401378d838284010152601f8019910116010197019401990198919093929361085f565b8b80fd5b909194604080600192838060a01b036109b58a6111e4565b168152602089013560208201520196019201906108f3565b90929193829483955b6109ee6109e48585856118fb565b604081019061191d565b9050871015610a3e57610a056109e48585856118fb565b881015610a2a576001916020610a22928a60061b010135906113ee565b9601956109d6565b634e487b7160e01b86526032600452602486fd5b919550929391600191610a7c90610a66813033610a6160206102aa898f8e6118fb565b611da1565b84610a7760206102aa868c8b6118fb565b611dec565b01610812565b50346101e95760203660031901126101e95780610a9d6111ce565b610aa5611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b156106f05760405163a0169ddd60e01b81526001600160a01b0390911660048201529082908290602490829084905af180156101ec576101d85750f35b50346101e95760203660031901126101e95780610b2a6111ce565b610b32611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156106f057604051634f906cf960e01b81523060048201526001600160a01b0390921660248301528290829081838160448101610636565b50346101e95760403660031901126101e957610bb06111ce565b906024356001600160401b0381116102f857606060031982360301126102f85760405192610bdd84611285565b81600401356001600160401b0381116105745782013660238201121561057457610c119036906024600482013591016112f0565b8452602084019060248301358252604460408601930135835260018060a01b037f0000000000000000000000000000000000000000000000000000000000000000163303610cf35792938493907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b15610cef5785610cd193819560405197889687958694639926ee7d60e01b865260018060a01b0316600486015260406024860152516060604486015260a48501906118d7565b9151606484015251608483015203925af180156101ec576101d85750f35b8580fd5b634394dbdf60e11b8452600484fd5b50346101e957806003193601126101e9576033546040516001600160a01b039091168152602090f35b50346101e957806003193601126101e9576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346101e957806003193601126101e957610d89611c80565b603380546001600160a01b0319811690915581906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b50346101e957806003193601126101e9576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346101e95760403660031901126101e957610e2c6111ce565b602435906001600160a01b03821682036102905782549160ff8360081c161592838094610faa575b8015610f93575b15610f375760ff198116600117855583610f26575b5060ff845460081c1615610ecd57610e8a610e8f92611d36565b611cd8565b610e965780f35b61ff001981541681557f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498602060405160018152a180f35b60405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201526a6e697469616c697a696e6760a81b6064820152608490fd5b61ffff19166101011784555f610e70565b60405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b6064820152608490fd5b50303b158015610e5b5750600160ff821614610e5b565b50600160ff821610610e54565b50346101e95760203660031901126101e95761035f610fd46111ce565b610e8a611c80565b50346101e95760203660031901126101e9576103de6103d2610ffc6111ce565b611490565b50346101e95760203660031901126101e9578061101c6111ce565b611024611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156106f05760405163eb5a4e8760e01b81523060048201526001600160a01b0390921660248301528290829081838160448101610636565b50346101e95780611098366111f8565b6110a3929192611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b1561059f57604051634a86c03760e11b81523060048201526001600160a01b0393841660248201529390921660448401526001600160e01b03191660648301528290829081838160848101610636565b50346111ca5760203660031901126111ca576111396111ce565b611141611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156111ca5760405163268959e560e01b81523060048201526001600160a01b039290921660248301525f908290604490829084905af180156111bf576111b1575080f35b6111bd91505f906112b4565b005b6040513d5f823e3d90fd5b5f80fd5b600435906001600160a01b03821682036111ca57565b35906001600160a01b03821682036111ca57565b60609060031901126111ca576004356001600160a01b03811681036111ca57906024356001600160a01b03811681036111ca57906044356001600160e01b0319811681036111ca5790565b60206040818301928281528451809452019201905f5b8181106112665750505090565b82516001600160a01b0316845260209384019390920191600101611259565b606081019081106001600160401b038211176112a057604052565b634e487b7160e01b5f52604160045260245ffd5b90601f801991011681019081106001600160401b038211176112a057604052565b6001600160401b0381116112a057601f01601f191660200190565b9291926112fc826112d5565b9161130a60405193846112b4565b8294818452818301116111ca578281602093845f960137010152565b9181601f840112156111ca578235916001600160401b0383116111ca576020808501948460051b0101116111ca57565b6001600160401b0381116112a05760051b60200190565b359063ffffffff821682036111ca57565b908160209103126111ca575160ff811681036111ca5790565b906113a182611356565b6113ae60405191826112b4565b82815280926113bf601f1991611356565b0190602036910137565b9081518110156113da570160200190565b634e487b7160e01b5f52603260045260245ffd5b919082018092116113fb57565b634e487b7160e01b5f52601160045260245ffd5b908160409103126111ca5760405190604082018281106001600160401b038211176112a0576040528051906001600160a01b03821682036111ca57602091835201516bffffffffffffffffffffffff811681036111ca57602082015290565b80518210156113da5760209160051b010190565b5f1981146113fb5760010190565b6040516309aa152760e11b81526001600160a01b039182166004820152907f000000000000000000000000000000000000000000000000000000000000000016602082602481845afa9182156111bf575f926118a3575b506040519163871ef04960e01b83526004830152602082602481845afa9182156111bf575f9261185f575b506001600160c01b0382169081159081156117fc575b506117e257805f915b6117bd575061ffff16611543816112d5565b9061155160405192836112b4565b808252611560601f19916112d5565b013660208301375f5f5b82518210806117b2575b156115c2576001811b84166001600160c01b031661159b575b61159690611482565b61156a565b9060016115969160ff60f81b8460f81b165f1a6115b882876113c9565b530191905061158d565b505f939250507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690835b815185101561167d5761160885836113c9565b5160f81c60405190633ca5a5f560e01b82526004820152602081602481875afa9081156111bf575f9161164b575b50611643906001926113ee565b9401936115f5565b90506020813d8211611675575b81611665602093836112b4565b810103126111ca57516001611636565b3d9150611658565b611688919450611397565b925f905f5b81518110156117ac576116a081836113c9565b5160f81c60405190633ca5a5f560e01b8252806004830152602082602481895afa9182156111bf575f92611779575b50905f915b8183106116e65750505060010161168d565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156111bf57600192611742925f9161174b575b50838060a01b0390511661173c828d61146e565b52611482565b950191906116d4565b61176c915060403d8111611772575b61176481836112b4565b81019061140f565b5f611728565b503d61175a565b9091506020813d82116117a4575b81611794602093836112b4565b810103126111ca5751905f6116cf565b3d9150611787565b50505050565b506101008110611574565b5f1981018181116113fb5761ffff9116911661ffff81146113fb576001019080611531565b50506040516117f26020826112b4565b5f81525f36813790565b604051639aa1653d60e01b81529150602090829060049082905afa80156111bf5760ff915f91611830575b5016155f611528565b611852915060203d602011611858575b61184a81836112b4565b81019061137e565b5f611827565b503d611840565b9091506020813d60201161189b575b8161187b602093836112b4565b810103126111ca57516001600160c01b03811681036111ca57905f611512565b3d915061186e565b9091506020813d6020116118cf575b816118bf602093836112b4565b810103126111ca5751905f6114e7565b3d91506118b2565b805180835260209291819084018484015e5f828201840152601f01601f1916010190565b91908110156113da5760051b8101359060be19813603018212156111ca570190565b903590601e19813603018212156111ca57018035906001600160401b0382116111ca57602001918160061b360383136111ca57565b356001600160a01b03811681036111ca5790565b9035601e19823603018112156111ca5701602081359101916001600160401b0382116111ca578160061b360383136111ca57565b916020908281520191905f905b8082106119b45750505090565b909192833560018060a01b0381168091036111ca5781526020840135906bffffffffffffffffffffffff82168092036111ca576040816001936020839401520194019201906119a7565b604051639aa1653d60e01b81527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690602081600481855afa80156111bf5760ff915f91611c3f575b501680156117e2577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316905f9081905b808310611bc95750611a999150611397565b925f905f5b604051639aa1653d60e01b8152602081600481895afa80156111bf5760ff915f91611bab575b5016811015611ba457604051633ca5a5f560e01b815260ff821660048201819052602082602481895afa9182156111bf575f92611b71575b50905f915b818310611b1357505050600101611a9e565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156111bf57600192611b68925f9161174b5750838060a01b0390511661173c828d61146e565b95019190611b01565b9091506020813d8211611b9c575b81611b8c602093836112b4565b810103126111ca5751905f611afc565b3d9150611b7f565b5092505050565b611bc3915060203d81116118585761184a81836112b4565b5f611ac4565b90604051633ca5a5f560e01b815260ff84166004820152602081602481885afa9081156111bf575f91611c0d575b50611c04906001926113ee565b92019190611a87565b90506020813d8211611c37575b81611c27602093836112b4565b810103126111ca57516001611bf7565b3d9150611c1a565b611c58915060203d6020116118585761184a81836112b4565b5f611a4f565b91908110156113da5760051b81013590609e19813603018212156111ca570190565b6033546001600160a01b03163303611c9457565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fd5b606554604080516001600160a01b038084168252841660208201529192917fe11cddf1816a43318ca175bbc52cd0185436e9cbead7c83acc54a73e461717e39190a16001600160a01b03166001600160a01b03199190911617606555565b603380546001600160a01b039283166001600160a01b0319821681179092559091167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e05f80a3565b6065546001600160a01b03163303611d9257565b638e79fdb560e01b5f5260045ffd5b6040516323b872dd60e01b60208201526001600160a01b039283166024820152929091166044830152606480830193909352918152611dea91611de56084836112b4565b611eaa565b565b604051636eb1769f60e11b81523060048201526001600160a01b0383166024820152602081806044810103816001600160a01b0386165afa9081156111bf575f91611e76575b50611dea93611e40916113ee565b60405163095ea7b360e01b60208201526001600160a01b0390931660248401526044808401919091528252611de56064836112b4565b90506020813d602011611ea2575b81611e91602093836112b4565b810103126111ca5751611dea611e32565b3d9150611e84565b60408051909290916001600160a01b0316611ec584846112b4565b602083527f5361666545524332303a206c6f772d6c6576656c2063616c6c206661696c65646020840152803b15611fbf575f828192826020611f349796519301915af13d15611fb7573d90611f19826112d5565b91611f26865193846112b4565b82523d5f602084013e612003565b805180611f4057505050565b81602091810103126111ca57602001518015908115036111ca57611f615750565b5162461bcd60e51b815260206004820152602a60248201527f5361666545524332303a204552433230206f7065726174696f6e20646964206e6044820152691bdd081cdd58d8d9595960b21b6064820152608490fd5b606090612003565b835162461bcd60e51b815260206004820152601d60248201527f416464726573733a2063616c6c20746f206e6f6e2d636f6e74726163740000006044820152606490fd5b9091901561200f575090565b81511561201f5750805190602001fd5b60405162461bcd60e51b8152602060048201529081906120439060248301906118d7565b0390fdfea264697066735822122019a3a54fb4930a18dc3c9d8f4c3604482a5deda68c57fa78d69c3151feed904064736f6c634300081b0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"a\x01@4a\x029W`\x1Fa$\xAA8\x81\x90\x03\x91\x82\x01`\x1F\x19\x16\x83\x01\x91`\x01`\x01`@\x1B\x03\x83\x11\x84\x84\x10\x17a\x02=W\x80\x84\x92`\xC0\x94`@R\x839\x81\x01\x03\x12a\x029W\x80Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x029W` \x81\x01Q`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x029W`@\x82\x01Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x029W``\x83\x01Q`\x01`\x01`\xA0\x1B\x03\x81\x16\x90\x81\x90\x03a\x029W`\x80\x84\x01Q\x93`\x01`\x01`\xA0\x1B\x03\x85\x16\x85\x03a\x029W`\xA0\x01Q\x94`\x01`\x01`\xA0\x1B\x03\x86\x16\x86\x03a\x029W`\x80R`\xA0R`\xC0R`\xE0Ra\x01\0R_T`\xFF\x81`\x08\x1C\x16a\x01\xE4W`\xFF\x80\x82\x16\x10a\x01\xAAW[Pa\x01 R`@Qa\"X\x90\x81a\x02R\x829`\x80Q\x81\x81\x81a\n\xCC\x01R\x81\x81a\x0By\x01R\x81\x81a\x0C\xAB\x01Ra\x11)\x01R`\xA0Q\x81a\x01\x8A\x01R`\xC0Q\x81\x81\x81a\x07\x01\x01R\x81\x81a\x08\xF8\x01R\x81\x81a\x0BI\x01R\x81\x81a\x0C\x82\x01R\x81\x81a\x0E\x9B\x01R\x81\x81a\x192\x01Ra\x1E\x7F\x01R`\xE0Q\x81\x81\x81a\x1AL\x01R\x81\x81a\x1E\xCB\x01Ra!x\x01Ra\x01\0Q\x81\x81\x81a\x071\x01R\x81\x81a\x08\x08\x01R\x81\x81a\x08\x88\x01R\x81\x81a\t+\x01R\x81\x81a\x0E\xC4\x01R\x81\x81a\x10\xBF\x01Ra\x12\xC0\x01Ra\x01 Q\x81a\x10\x18\x01R\xF3[`\xFF\x90\x81\x19\x16\x17_U\x7F\x7F&\xB8?\xF9n\x1F+jh/\x138R\xF6y\x8A\t\xC4e\xDA\x95\x92\x14`\xCE\xFB8G@$\x98` `@Q`\xFF\x81R\xA1_a\0\xE7V[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`'`$\x82\x01R\x7FInitializable: contract is initi`D\x82\x01Rfalizing`\xC8\x1B`d\x82\x01R`\x84\x90\xFD[_\x80\xFD[cNH{q`\xE0\x1B_R`A`\x04R`$_\xFD\xFE`\x80`@R`\x046\x10\x15a\0\x11W_\x80\xFD[__5`\xE0\x1C\x80c&\xF0\x17\xE2\x14a\x14\xFDW\x80c3\xCF\xB7\xB7\x14a\x14\xD9W\x80c;\xC2\x8C\x8C\x14a\x14ZW\x80c=\x07\x14\"\x14a\x11vW\x80cg\x94\x0C\x89\x14a\x11XW\x80ck:\xA7.\x14a\x11\x13W\x80cn\xCB\xCC\xFE\x14a\x10\xA4W\x80cqP\x18\xA6\x14a\x10GW\x80cw\xEFs\x1D\x14a\x10\x02W\x80c\x84}cO\x14a\x0E\x17W\x80c\x89\x99\x81\x7F\x14a\r\x8EW\x80c\x8Dh4\x9A\x14a\rkW\x80c\x8D\xA5\xCB[\x14a\rBW\x80c\x99&\xEE}\x14a\x0B\xE1W\x80c\xA3d\xF4\xDA\x14a\x0B(W\x80c\xA9\x8F\xB3U\x14a\n\x90W\x80c\xB14Bq\x14a\ngW\x80c\xC1\xA8\xE2\xC5\x14a\x08\xB7W\x80c\xCA\x8A\xA7\xC7\x14a\x08rW\x80c\xCE{^K\x14a\x07\xEDW\x80c\xE4o\x18\x16\x14a\x07\xC4W\x80c\xE4\x81\xAF\x9D\x14a\x07\x98W\x80c\xF2_\x16\x10\x14a\x06\xD3W\x80c\xF2\xFD\xE3\x8B\x14a\x06\nW\x80c\xFC)\x9D\xEE\x14a\x05\xE1W\x80c\xFC\xD1\xC3u\x14a\x05\xC3Wc\xFC\xE3l}\x14a\x01CW_\x80\xFD[4a\x02-W` 6`\x03\x19\x01\x12a\x02-W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x05\xBFWa\x01s\x906\x90`\x04\x01a\x17\xF4V[`eT\x91\x92\x91`\x01`\x01`\xA0\x1B\x03\x163\x03a\x05?W\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x92\x82[\x82\x81\x10a\x03nWP\x83;\x15a\x03jW`@Q\x91c\xFC\xE3l}`\xE0\x1B\x83R\x80`$\x84\x01` `\x04\x86\x01RR`D\x83\x01\x90`D\x81`\x05\x1B\x85\x01\x01\x92\x80\x92\x86\x91`\x9E\x19\x816\x03\x01[\x84\x84\x10a\x02;W\x88\x80\x89\x81\x81\x8E\x81\x83\x81\x8F\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x81a\x02&\x91a\x16\x9BV[a\x02-W\x80\xF3[\x80\xFD[`@Q=\x84\x82>=\x90\xFD[\x90\x91\x92\x93\x94\x95`C\x19\x88\x82\x03\x01\x84R\x865\x82\x81\x12\x15a\x03fW\x83\x01\x90`\xA0\x81\x01\x91\x805`\x1E\x19\x826\x03\x01\x81\x12\x15a\x03\x10W\x81\x01` \x815\x91\x01\x93`\x01`\x01`@\x1B\x03\x82\x11a\x03bW\x81`\x06\x1B6\x03\x85\x13a\x03bW\x81\x90`\xA0\x85RR`\xC0\x83\x01\x93\x90\x8C\x90[\x80\x82\x10a\x03\x14WPPP` \x81\x015`\x01`\x01`\xA0\x1B\x03\x81\x16\x90\x81\x90\x03a\x03\x10W\x92\x82`\x80c\xFF\xFF\xFF\xFFa\x02\xFC\x82` \x97\x96`\x01\x99\x89\x80\x99\x01R`@\x81\x015`@\x87\x01R\x83a\x02\xF0``\x83\x01a\x16\xBCV[\x16``\x87\x01R\x01a\x16\xBCV[\x16\x91\x01R\x98\x01\x94\x01\x94\x01\x92\x94\x93\x91\x90a\x01\xFAV[\x8B\x80\xFD[\x91\x94\x90\x91\x90`\x01`\x01`\xA0\x1B\x03a\x03*\x87a\x16\x0FV[\x16\x81R` \x86\x015k\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x81\x16\x80\x91\x03a\x03^W` \x82\x01R`@\x90\x81\x01\x95\x01\x91`\x01\x01\x90a\x02\x9FV[\x8E\x80\xFD[\x8C\x80\xFD[\x89\x80\xFD[\x82\x80\xFD[\x83` `\x01`\x01`\xA0\x1B\x03a\x03\x8E\x82a\x03\x88\x86\x89\x89a \xD0V[\x01a \xF2V[\x16`d`@a\x03\x9E\x86\x89\x89a \xD0V[\x015`@Q\x94\x85\x93\x84\x92c#\xB8r\xDD`\xE0\x1B\x84R3`\x04\x85\x01R0`$\x85\x01R`D\x84\x01RZ\xF1\x80\x15a\x04\xDEWa\x05#W[P`\x01`\x01`\xA0\x1B\x03a\x03\xE9` a\x03\x88\x84\x87\x87a \xD0V[`@Qcn\xB1v\x9F`\xE1\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x88\x16`$\x82\x01R\x91` \x91\x83\x91`D\x91\x83\x91\x16Z\xFA\x90\x81\x15a\x04\xDEW\x90\x85\x91\x82\x91a\x04\xE9W[P` \x90a\x04\x95\x90a\x04b`\x01`\x01`\xA0\x1B\x03a\x04L\x85a\x03\x88\x89\x8C\x8Ca \xD0V[\x16\x91`@a\x04[\x88\x8B\x8Ba \xD0V[\x015a\x18$V[`@Qc\t^\xA7\xB3`\xE0\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x8B\x16`\x04\x82\x01R`$\x81\x01\x91\x90\x91R\x93\x84\x92\x83\x91\x90\x82\x90`D\x82\x01\x90V[\x03\x92Z\xF1\x80\x15a\x04\xDEW\x90`\x01\x92\x91a\x04\xB0W[P\x01a\x01\xB5V[a\x04\xD0\x90` =\x81\x11a\x04\xD7W[a\x04\xC8\x81\x83a\x16\x9BV[\x81\x01\x90a!\x06V[P_a\x04\xA9V[P=a\x04\xBEV[`@Q=\x87\x82>=\x90\xFD[\x91PP` \x81=\x82\x11a\x05\x1BW[\x81a\x05\x04` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x84\x90a\x04\x95a\x04*V[_\x80\xFD[=\x91Pa\x04\xF7V[a\x05:\x90` =\x81\x11a\x04\xD7Wa\x04\xC8\x81\x83a\x16\x9BV[a\x03\xD0V[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`L`$\x82\x01R\x7FServiceManagerBase.onlyRewardsIn`D\x82\x01R\x7Fitiator: caller is not the rewar`d\x82\x01Rk29\x904\xB74\xBA4\xB0\xBA7\xB9`\xA1\x1B`\x84\x82\x01R`\xA4\x90\xFD[P\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W` `hT`@Q\x90\x81R\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`eT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-Wa\x06$a\x15\xF9V[a\x06,a!\x1EV[`\x01`\x01`\xA0\x1B\x03\x16\x80\x15a\x06\x7FW`3\x80T`\x01`\x01`\xA0\x1B\x03\x19\x81\x16\x83\x17\x90\x91U`\x01`\x01`\xA0\x1B\x03\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0\x83\x80\xA3\x80\xF3[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`&`$\x82\x01R\x7FOwnable: new owner is the zero a`D\x82\x01Reddress`\xD0\x1B`d\x82\x01R`\x84\x90\xFD[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x80`\x045`\x01`\x01`\xA0\x1B\x03\x81\x16\x90\x81\x90\x03a\x07\x95Wa\x07/3\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x07\x93W\x82\x91`D\x83\x92`@Q\x94\x85\x93\x84\x92c4\xF6[\xFD`\xE2\x1B\x84R0`\x04\x85\x01R`$\x84\x01RZ\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[P[P\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-Wa\x07\xC0a\x07\xB4a\x1EpV[`@Q\x91\x82\x91\x82a\x16#V[\x03\x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`gT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W\x80a\x07\xFD6a\x17\xB8V[\x90a\x08\x06a!vV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x91\x82;\x15a\x08mWa\x08\\\x92\x84\x92\x83`@Q\x80\x96\x81\x95\x82\x94c\xB6k\xD9\x89`\xE0\x1B\x84R0`\x04\x85\x01a\x1D\xB9V[\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[PPP\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x02-W`@6`\x03\x19\x01\x12a\x02-Wa\x08\xD1a\x15\xF9V[\x90`$5`\x01`\x01`@\x1B\x03\x81\x11a\x05\xBFWa\x08\xF1\x906\x90`\x04\x01a\x17\xF4V[\x92a\t&3\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x14a\x1D\xE3V[`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x94\x90\x91a\t_\x83a\x16\x80V[`\x01`\x01`\xA0\x1B\x03\x16\x82R0` \x83\x01\x90\x81R\x92a\t|\x82a\x16\xCDV[\x91a\t\x8A`@Q\x93\x84a\x16\x9BV[\x80\x83R` \x83\x01\x90`\x05\x1B\x82\x01\x916\x83\x11a\ncW\x90[\x82\x82\x10a\nKWPPP`@\x82\x01\x90\x81R\x84;\x15a\nGW`@Qcn4\x92\xB5`\xE0\x1B\x81R` `\x04\x82\x01\x81\x90R\x92Q`\x01`\x01`\xA0\x1B\x03\x90\x81\x16`$\x83\x01R\x93Q\x90\x93\x16`D\x84\x01RQ```d\x84\x01R\x80Q`\x84\x84\x01\x81\x90R`\xA4\x84\x01\x92\x91\x90\x91\x01\x90\x84[\x81\x81\x10a\n+WPPP\x81\x83\x94\x81\x85\x81\x81\x95\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x82Qc\xFF\xFF\xFF\xFF\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\n\x08V[\x83\x80\xFD[` \x80\x91a\nX\x84a\x16\xBCV[\x81R\x01\x91\x01\x90a\t\xA1V[\x86\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`fT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x80`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x07\x95Wa\n\xC2\x906\x90`\x04\x01a\x17\x9AV[a\n\xCAa!\x1EV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x07\x93W`@Qc\xA9\x8F\xB3U`\xE0\x1B\x81R` `\x04\x82\x01R\x91\x83\x91\x83\x91\x82\x90\x84\x90\x82\x90a\x08\\\x90`$\x83\x01\x90a\x1D\x95V[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x80a\x0BCa\x15\xF9V[a\x0Bw3\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x07\x93W`@QcQ\xB2zm`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x90\x91\x16`\x04\x82\x01R\x90\x82\x90\x82\x90`$\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[P4a\x02-W`@6`\x03\x19\x01\x12a\x02-W\x80a\x0B\xFCa\x15\xF9V[`$5\x90`\x01`\x01`@\x1B\x03\x82\x11a\x07\x93W```\x03\x19\x836\x03\x01\x12a\x07\x93W`@Q\x90a\x0C)\x82a\x16\x80V[\x82`\x04\x015`\x01`\x01`@\x1B\x03\x81\x11a\r>W\x83\x016`#\x82\x01\x12\x15a\r>Wa\x0C]\x906\x90`$`\x04\x82\x015\x91\x01a\x17dV[\x82R` \x82\x01\x91`$\x84\x015\x83R`D`@\x82\x01\x94\x015\x84Ra\x0C\xA9`\x01\x80`\xA0\x1B\x03\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x163\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\r:W\x85a\r\x1C\x93\x81\x95`@Q\x97\x88\x96\x87\x95\x86\x94c\x99&\xEE}`\xE0\x1B\x86R`\x01\x80`\xA0\x1B\x03\x16`\x04\x86\x01R`@`$\x86\x01RQ```D\x86\x01R`\xA4\x85\x01\x90a\x1D\x95V[\x91Q`d\x84\x01RQ`\x84\x83\x01R\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x85\x80\xFD[\x84\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`3T`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W` `\xFF`iT\x16`@Q\x90\x15\x15\x81R\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x7F/\x8A\xFC\x8Ax\xFD\x95\x8F3\x01\xC0#:\xA3&\xB9\xC4\xB9\xA2\x88Jt\x83\"}k\x05U\xAA\xA0:\xDBa\x0E\x11a\r\xCCa\x15\xF9V[a\r\xD4a!\x1EV[`g\x80T`\x01`\x01`\xA0\x1B\x03\x19\x16`\x01`\x01`\xA0\x1B\x03\x92\x90\x92\x16\x91\x82\x17\x90UB`h\x81\x90U`@\x80Q\x92\x83R` \x83\x01\x91\x90\x91R\x90\x91\x82\x91\x82\x01\x90V[\x03\x90\xA1\x80\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W`\x045\x90`\x01`\x01`@\x1B\x03\x82\x11a\x02-W6`#\x83\x01\x12\x15a\x02-W\x81`\x04\x015a\x0ET\x81a\x16\xCDV[\x92a\x0Eb`@Q\x94\x85a\x16\x9BV[\x81\x84R` \x84\x01\x90`$\x82\x93`\x05\x1B\x82\x01\x01\x906\x82\x11a\r>W`$\x81\x01\x92[\x82\x84\x10a\x0F\x8CWPa\x0E\xC2\x92PPP`\x01`\x01`\xA0\x1B\x03\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x163\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x03jW`@Q\x91c\x010\xFC'`\xE5\x1B\x83R`D\x83\x01\x940`\x04\x85\x01R`@`$\x85\x01RQ\x80\x95R`d\x83\x01\x94`d\x81`\x05\x1B\x85\x01\x01\x91\x90\x85[\x81\x81\x10a\x0FJW\x86\x80\x87\x81\x81\x80\x89\x03\x81\x83\x8CZ\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x90\x91\x92` \x80a\x0F}`\x01\x93`c\x19\x8A\x82\x03\x01\x8CR`@\x83\x89Qc\xFF\xFF\xFF\xFF\x81Q\x16\x84R\x01Q\x91\x81\x85\x82\x01R\x01\x90a\x1DYV[\x95\x01\x98\x01\x91\x01\x96\x91\x90\x96a\x0F)V[\x835`\x01`\x01`@\x1B\x03\x81\x11a\ncW\x82\x01`@`#\x19\x826\x03\x01\x12a\ncW`@Q\x90a\x0F\xB9\x82a\x16eV[a\x0F\xC5`$\x82\x01a\x16\xBCV[\x82R`D\x81\x015`\x01`\x01`@\x1B\x03\x81\x11a\x0F\xFEW\x91a\x0F\xEF` \x94\x92`$\x86\x956\x92\x01\x01a\x16\xE4V[\x83\x82\x01R\x81R\x01\x93\x01\x92a\x0E\x82V[\x88\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-Wa\x10`a!\x1EV[`3\x80T`\x01`\x01`\xA0\x1B\x03\x19\x81\x16\x90\x91U\x81\x90`\x01`\x01`\xA0\x1B\x03\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0\x82\x80\xA3\x80\xF3[P4a\x02-W\x80a\x10\xB46a\x17\xB8V[\x90a\x10\xBDa!vV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x91\x82;\x15a\x08mWa\x08\\\x92\x84\x92\x83`@Q\x80\x96\x81\x95\x82\x94c\x02\x87\xF7Q`\xE5\x1B\x84R0`\x04\x85\x01a\x1D\xB9V[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W` `@Qb\t:\x80\x81R\xF3[P4a\x05\x17W` 6`\x03\x19\x01\x12a\x05\x17W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x05\x17W`\xA0`\x03\x19\x826\x03\x01\x12a\x05\x17W`@Q\x90`\xA0\x82\x01\x82\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@Ra\x11\xD0\x81`\x04\x01a\x16\x0FV[\x82Ra\x11\xDE`$\x82\x01a\x16\xBCV[\x90` \x83\x01\x91\x82R`D\x81\x015`\x01`\x01`@\x1B\x03\x81\x11a\x05\x17Wa\x12\t\x90`\x046\x91\x84\x01\x01a\x16\xE4V[\x91`@\x84\x01\x92\x83R`d\x82\x015`\x01`\x01`@\x1B\x03\x81\x11a\x05\x17W\x82\x01\x916`#\x84\x01\x12\x15a\x05\x17W`\x04\x83\x015\x92a\x12A\x84a\x16\xCDV[\x93a\x12O`@Q\x95\x86a\x16\x9BV[\x80\x85R` `\x04\x81\x87\x01\x92`\x05\x1B\x84\x01\x01\x01\x916\x83\x11a\x05\x17W`$\x01\x90[\x82\x82\x10a\x146WPPP``\x85\x01\x92\x83R`\x84\x81\x015\x90`\x01`\x01`@\x1B\x03\x82\x11a\x05\x17W`\x04a\x12\xA2\x926\x92\x01\x01a\x17\x9AV[`\x80\x85\x01\x90\x81R`fT\x90\x91\x90`\x01`\x01`\xA0\x1B\x03\x163\x03a\x13\xCBW\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x93\x84;\x15a\x05\x17W`@\x80Qc65 W`\xE0\x1B\x81R0`\x04\x82\x01R`$\x81\x01\x91\x90\x91R\x95Q`\x01`\x01`\xA0\x1B\x03\x16`D\x87\x01R\x90Qc\xFF\xFF\xFF\xFF\x16`d\x86\x01RQ`\xA0`\x84\x86\x01R\x84\x92\x91\x90a\x13C\x90`\xE4\x85\x01\x90a\x1DYV[\x91Q\x91`C\x19\x84\x82\x03\x01`\xA4\x85\x01R` \x80\x84Q\x92\x83\x81R\x01\x93\x01\x90_[\x81\x81\x10a\x13\xB2WPPP_\x83a\x13\x87\x82\x96\x94\x82\x94Q`C\x19\x84\x83\x03\x01`\xC4\x85\x01Ra\x1D\x95V[\x03\x92Z\xF1\x80\x15a\x13\xA7Wa\x13\x99WP\x80\xF3[a\x13\xA5\x91P_\x90a\x16\x9BV[\0[`@Q=_\x82>=\x90\xFD[\x82Q\x85R\x87\x95P` \x94\x85\x01\x94\x90\x92\x01\x91`\x01\x01a\x13aV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`9`$\x82\x01R\x7FServiceManagerBase.onlySlasher: `D\x82\x01R\x7Fcaller is not the slasher\0\0\0\0\0\0\0`d\x82\x01R`\x84\x90\xFD[\x815\x81R` \x91\x82\x01\x91\x01a\x12nV[cNH{q`\xE0\x1B_R`A`\x04R`$_\xFD[4a\x05\x17W` 6`\x03\x19\x01\x12a\x05\x17Wa\x14sa\x15\xF9V[a\x14{a!\x1EV[`eT`@\x80Q`\x01`\x01`\xA0\x1B\x03\x80\x84\x16\x82R\x84\x16` \x82\x01R\x91\x92\x91\x7F\xE1\x1C\xDD\xF1\x81jC1\x8C\xA1u\xBB\xC5,\xD0\x18T6\xE9\xCB\xEA\xD7\xC8:\xCCT\xA7>F\x17\x17\xE3\x91\x90\xA1`\x01`\x01`\xA0\x1B\x03\x16`\x01`\x01`\xA0\x1B\x03\x19\x91\x90\x91\x16\x17`eU\0[4a\x05\x17W` 6`\x03\x19\x01\x12a\x05\x17Wa\x07\xC0a\x07\xB4a\x14\xF8a\x15\xF9V[a\x19\x12V[4a\x05\x17W_6`\x03\x19\x01\x12a\x05\x17Wa\x15\x15a!\x1EV[`hTb\t:\x80\x81\x01\x80\x91\x11a\x15\xE5WB\x10a\x15\x89W`gT`fT`@\x80Q`\x01`\x01`\xA0\x1B\x03\x80\x84\x16\x82R\x84\x16` \x82\x01\x81\x90R\x92\x91\x7F\xE0\xD4\x9AT'D#\x18=\xAD\xEC\xBD\xF29\xEA\xACn\x06\xBA\x882\x0B&\xFE\x8C\xC5\xEC\x9D\x05\nc\x95\x91\xA1`\x01`\x01`\xA0\x1B\x03\x19\x90\x81\x16\x91\x90\x91\x17`fU\x16`gU\0[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`.`$\x82\x01R\x7FServiceManager: Slasher proposal`D\x82\x01Rm\x08\x19\x19[\x18^H\x1B\x9B\xDD\x08\x1BY]`\x92\x1B`d\x82\x01R`\x84\x90\xFD[cNH{q`\xE0\x1B_R`\x11`\x04R`$_\xFD[`\x045\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x05\x17WV[5\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x05\x17WV[` `@\x81\x83\x01\x92\x82\x81R\x84Q\x80\x94R\x01\x92\x01\x90_[\x81\x81\x10a\x16FWPPP\x90V[\x82Q`\x01`\x01`\xA0\x1B\x03\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x169V[`@\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@RV[``\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@RV[\x90`\x1F\x80\x19\x91\x01\x16\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@RV[5\x90c\xFF\xFF\xFF\xFF\x82\x16\x82\x03a\x05\x17WV[`\x01`\x01`@\x1B\x03\x81\x11a\x14FW`\x05\x1B` \x01\x90V[\x90\x80`\x1F\x83\x01\x12\x15a\x05\x17W\x815a\x16\xFB\x81a\x16\xCDV[\x92a\x17\t`@Q\x94\x85a\x16\x9BV[\x81\x84R` \x80\x85\x01\x92`\x05\x1B\x82\x01\x01\x92\x83\x11a\x05\x17W` \x01\x90[\x82\x82\x10a\x171WPPP\x90V[` \x80\x91a\x17>\x84a\x16\x0FV[\x81R\x01\x91\x01\x90a\x17$V[`\x01`\x01`@\x1B\x03\x81\x11a\x14FW`\x1F\x01`\x1F\x19\x16` \x01\x90V[\x92\x91\x92a\x17p\x82a\x17IV[\x91a\x17~`@Q\x93\x84a\x16\x9BV[\x82\x94\x81\x84R\x81\x83\x01\x11a\x05\x17W\x82\x81` \x93\x84_\x96\x017\x01\x01RV[\x90\x80`\x1F\x83\x01\x12\x15a\x05\x17W\x81` a\x17\xB5\x935\x91\x01a\x17dV[\x90V[\x90`@`\x03\x19\x83\x01\x12a\x05\x17W`\x045c\xFF\xFF\xFF\xFF\x81\x16\x81\x03a\x05\x17W\x91`$5\x90`\x01`\x01`@\x1B\x03\x82\x11a\x05\x17Wa\x17\xB5\x91`\x04\x01a\x16\xE4V[\x91\x81`\x1F\x84\x01\x12\x15a\x05\x17W\x825\x91`\x01`\x01`@\x1B\x03\x83\x11a\x05\x17W` \x80\x85\x01\x94\x84`\x05\x1B\x01\x01\x11a\x05\x17WV[\x91\x90\x82\x01\x80\x92\x11a\x15\xE5WV[\x90\x81` \x91\x03\x12a\x05\x17WQ`\xFF\x81\x16\x81\x03a\x05\x17W\x90V[\x90a\x18T\x82a\x16\xCDV[a\x18a`@Q\x91\x82a\x16\x9BV[\x82\x81R\x80\x92a\x18r`\x1F\x19\x91a\x16\xCDV[\x01\x90` 6\x91\x017V[\x90\x81Q\x81\x10\x15a\x18\x8DW\x01` \x01\x90V[cNH{q`\xE0\x1B_R`2`\x04R`$_\xFD[\x90\x81`@\x91\x03\x12a\x05\x17W`@Q\x90a\x18\xB9\x82a\x16eV[\x80Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x05\x17W` \x91\x83R\x01Qk\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x81\x16\x81\x03a\x05\x17W` \x82\x01R\x90V[\x80Q\x82\x10\x15a\x18\x8DW` \x91`\x05\x1B\x01\x01\x90V[_\x19\x81\x14a\x15\xE5W`\x01\x01\x90V[`@Qc\t\xAA\x15'`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x91\x82\x16`\x04\x82\x01R\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x16` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1D%W[P`@Q\x91c\x87\x1E\xF0I`\xE0\x1B\x83R`\x04\x83\x01R` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1C\xE1W[P`\x01`\x01`\xC0\x1B\x03\x82\x16\x90\x81\x15\x90\x81\x15a\x1C~W[Pa\x1CdW\x80_\x91[a\x1C?WPa\xFF\xFF\x16a\x19\xC5\x81a\x17IV[\x90a\x19\xD3`@Q\x92\x83a\x16\x9BV[\x80\x82Ra\x19\xE2`\x1F\x19\x91a\x17IV[\x016` \x83\x017__[\x82Q\x82\x10\x80a\x1C4W[\x15a\x1ADW`\x01\x81\x1B\x84\x16`\x01`\x01`\xC0\x1B\x03\x16a\x1A\x1DW[a\x1A\x18\x90a\x19\x04V[a\x19\xECV[\x90`\x01a\x1A\x18\x91`\xFF`\xF8\x1B\x84`\xF8\x1B\x16_\x1Aa\x1A:\x82\x87a\x18|V[S\x01\x91\x90Pa\x1A\x0FV[P_\x93\x92PP\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x83[\x81Q\x85\x10\x15a\x1A\xFFWa\x1A\x8A\x85\x83a\x18|V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R`\x04\x82\x01R` \x81`$\x81\x87Z\xFA\x90\x81\x15a\x13\xA7W_\x91a\x1A\xCDW[Pa\x1A\xC5\x90`\x01\x92a\x18$V[\x94\x01\x93a\x1AwV[\x90P` \x81=\x82\x11a\x1A\xF7W[\x81a\x1A\xE7` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ`\x01a\x1A\xB8V[=\x91Pa\x1A\xDAV[a\x1B\n\x91\x94Pa\x18JV[\x92_\x90_[\x81Q\x81\x10\x15a\x1C.Wa\x1B\"\x81\x83a\x18|V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R\x80`\x04\x83\x01R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1B\xFBW[P\x90_\x91[\x81\x83\x10a\x1BhWPPP`\x01\x01a\x1B\x0FV[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x13\xA7W`\x01\x92a\x1B\xC4\x92_\x91a\x1B\xCDW[P\x83\x80`\xA0\x1B\x03\x90Q\x16a\x1B\xBE\x82\x8Da\x18\xF0V[Ra\x19\x04V[\x95\x01\x91\x90a\x1BVV[a\x1B\xEE\x91P`@=\x81\x11a\x1B\xF4W[a\x1B\xE6\x81\x83a\x16\x9BV[\x81\x01\x90a\x18\xA1V[_a\x1B\xAAV[P=a\x1B\xDCV[\x90\x91P` \x81=\x82\x11a\x1C&W[\x81a\x1C\x16` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x90_a\x1BQV[=\x91Pa\x1C\tV[PPPPV[Pa\x01\0\x81\x10a\x19\xF6V[_\x19\x81\x01\x81\x81\x11a\x15\xE5Wa\xFF\xFF\x91\x16\x91\x16a\xFF\xFF\x81\x14a\x15\xE5W`\x01\x01\x90\x80a\x19\xB3V[PP`@Qa\x1Ct` \x82a\x16\x9BV[_\x81R_6\x817\x90V[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x91P` \x90\x82\x90`\x04\x90\x82\x90Z\xFA\x80\x15a\x13\xA7W`\xFF\x91_\x91a\x1C\xB2W[P\x16\x15_a\x19\xAAV[a\x1C\xD4\x91P` =` \x11a\x1C\xDAW[a\x1C\xCC\x81\x83a\x16\x9BV[\x81\x01\x90a\x181V[_a\x1C\xA9V[P=a\x1C\xC2V[\x90\x91P` \x81=` \x11a\x1D\x1DW[\x81a\x1C\xFD` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ`\x01`\x01`\xC0\x1B\x03\x81\x16\x81\x03a\x05\x17W\x90_a\x19\x94V[=\x91Pa\x1C\xF0V[\x90\x91P` \x81=` \x11a\x1DQW[\x81a\x1DA` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x90_a\x19iV[=\x91Pa\x1D4V[\x90` \x80\x83Q\x92\x83\x81R\x01\x92\x01\x90_[\x81\x81\x10a\x1DvWPPP\x90V[\x82Q`\x01`\x01`\xA0\x1B\x03\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x1DiV[\x80Q\x80\x83R` \x92\x91\x81\x90\x84\x01\x84\x84\x01^_\x82\x82\x01\x84\x01R`\x1F\x01`\x1F\x19\x16\x01\x01\x90V[c\xFF\xFF\xFF\xFFa\x17\xB5\x94\x93``\x93`\x01\x80`\xA0\x1B\x03\x16\x83R\x16` \x82\x01R\x81`@\x82\x01R\x01\x90a\x1DYV[\x15a\x1D\xEAWV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`R`$\x82\x01R\x7FServiceManagerBase.onlyRegistryC`D\x82\x01R\x7Foordinator: caller is not the re`d\x82\x01Rq3\xB4\xB9\xBA9<\x901\xB7\xB7\xB924\xB70\xBA7\xB9`q\x1B`\x84\x82\x01R`\xA4\x90\xFD[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90` \x81`\x04\x81\x85Z\xFA\x80\x15a\x13\xA7W`\xFF\x91_\x91a \xB1W[P\x16\x80\x15a\x1CdW\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90_\x90\x81\x90[\x80\x83\x10a ;WPa\x1F\x0B\x91Pa\x18JV[\x92_\x90_[`@Qc\x9A\xA1e=`\xE0\x1B\x81R` \x81`\x04\x81\x89Z\xFA\x80\x15a\x13\xA7W`\xFF\x91_\x91a \x1DW[P\x16\x81\x10\x15a \x16W`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x82\x16`\x04\x82\x01\x81\x90R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1F\xE3W[P\x90_\x91[\x81\x83\x10a\x1F\x85WPPP`\x01\x01a\x1F\x10V[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x13\xA7W`\x01\x92a\x1F\xDA\x92_\x91a\x1B\xCDWP\x83\x80`\xA0\x1B\x03\x90Q\x16a\x1B\xBE\x82\x8Da\x18\xF0V[\x95\x01\x91\x90a\x1FsV[\x90\x91P` \x81=\x82\x11a \x0EW[\x81a\x1F\xFE` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x90_a\x1FnV[=\x91Pa\x1F\xF1V[P\x92PPPV[a 5\x91P` =\x81\x11a\x1C\xDAWa\x1C\xCC\x81\x83a\x16\x9BV[_a\x1F6V[\x90`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x84\x16`\x04\x82\x01R` \x81`$\x81\x88Z\xFA\x90\x81\x15a\x13\xA7W_\x91a \x7FW[Pa v\x90`\x01\x92a\x18$V[\x92\x01\x91\x90a\x1E\xF9V[\x90P` \x81=\x82\x11a \xA9W[\x81a \x99` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ`\x01a iV[=\x91Pa \x8CV[a \xCA\x91P` =` \x11a\x1C\xDAWa\x1C\xCC\x81\x83a\x16\x9BV[_a\x1E\xC1V[\x91\x90\x81\x10\x15a\x18\x8DW`\x05\x1B\x81\x015\x90`\x9E\x19\x816\x03\x01\x82\x12\x15a\x05\x17W\x01\x90V[5`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x05\x17W\x90V[\x90\x81` \x91\x03\x12a\x05\x17WQ\x80\x15\x15\x81\x03a\x05\x17W\x90V[`3T`\x01`\x01`\xA0\x1B\x03\x163\x03a!2WV[`d`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R` `$\x82\x01R\x7FOwnable: caller is not the owner`D\x82\x01R\xFD[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x163\x03a!\xA8WV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`F`$\x82\x01R\x7FServiceManagerBase.onlyStakeRegi`D\x82\x01R\x7Fstry: caller is not the stake re`d\x82\x01Registry`\xD0\x1B`\x84\x82\x01R`\xA4\x90\xFD\xFE\xA2dipfsX\"\x12 M\x9A9_\xD2\xD7\xBE7\x15\xF8\xC3\xB3\xD9&NhH\x8D\x03\xCE\x1E\r\xBB\xAB\xF1\x08\xD7\xE6\xCB\x85\xE40dsolcC\0\x08\x1B\x003",
+        b"a\x01`4a\x02IW`\x1Fa\"\xDF8\x81\x90\x03\x91\x82\x01`\x1F\x19\x16\x83\x01\x91`\x01`\x01`@\x1B\x03\x83\x11\x84\x84\x10\x17a\x02MW\x80\x84\x92`\xE0\x94`@R\x839\x81\x01\x03\x12a\x02IW\x80Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x02IW` \x81\x01Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x02IW`@\x81\x01Q`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x02IW``\x82\x01Q`\x01`\x01`\xA0\x1B\x03\x81\x16\x93\x90\x84\x90\x03a\x02IW`\x80\x83\x01Q\x93`\x01`\x01`\xA0\x1B\x03\x85\x16\x85\x03a\x02IW`\xA0\x84\x01Q\x93`\x01`\x01`\xA0\x1B\x03\x85\x16\x85\x03a\x02IW`\xC0\x01Q\x95`\x01`\x01`\xA0\x1B\x03\x87\x16\x87\x03a\x02IW`\x80R`\xC0R`\xE0Ra\x01\0Ra\x01 R`\xA0R_T`\xFF\x81`\x08\x1C\x16a\x01\xF4W`\xFF\x80\x82\x16\x10a\x01\xBAW[Pa\x01@R`@Qa }\x90\x81a\x02b\x829`\x80Q\x81\x81\x81a\x06\x94\x01R\x81\x81a\x07C\x01R\x81\x81a\x0C`\x01Ra\r\xE3\x01R`\xA0Q\x81a\x04\xB9\x01R`\xC0Q\x81\x81\x81a\x01I\x01R\x81\x81a\x07\xE8\x01Ra\n\xA7\x01R`\xE0Q\x81\x81\x81a\x04`\x01R\x81\x81a\x07\x11\x01R\x81\x81a\x0C3\x01R\x81\x81a\x14\xB0\x01Ra\x1A\r\x01Ra\x01\0Q\x81\x81\x81a\x15\xCA\x01Ra\x1AY\x01Ra\x01 Q\x81\x81\x81a\x05\xC0\x01R\x81\x81a\x0B4\x01R\x81\x81a\x10&\x01R\x81\x81a\x10\xA5\x01Ra\x11C\x01Ra\x01@Q\x81a\rA\x01R\xF3[`\xFF\x90\x81\x19\x16\x17_U\x7F\x7F&\xB8?\xF9n\x1F+jh/\x138R\xF6y\x8A\t\xC4e\xDA\x95\x92\x14`\xCE\xFB8G@$\x98` `@Q`\xFF\x81R\xA1_a\x01\x02V[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`'`$\x82\x01R\x7FInitializable: contract is initi`D\x82\x01Rfalizing`\xC8\x1B`d\x82\x01R`\x84\x90\xFD[_\x80\xFD[cNH{q`\xE0\x1B_R`A`\x04R`$_\xFD\xFE`\x80`@R`\x046\x10\x15a\0\x11W_\x80\xFD[__5`\xE0\x1C\x80c\x17\x85\xF5<\x14a\x11\x1FW\x80c\x1F\xDB\x0C\xFD\x14a\x10\x88W\x80c'\x942\xEB\x14a\x10\x01W\x80c3\xCF\xB7\xB7\x14a\x0F\xDCW\x80c;\xC2\x8C\x8C\x14a\x0F\xB7W\x80cH\\\xC9U\x14a\x0E\x12W\x80ck:\xA7.\x14a\r\xCDW\x80cqP\x18\xA6\x14a\rpW\x80cw\xEFs\x1D\x14a\r+W\x80c\x8D\xA5\xCB[\x14a\r\x02W\x80c\x99&\xEE}\x14a\x0B\x96W\x80c\x9D\xA1m\x8E\x14a\x0B\x0FW\x80c\xA0\x16\x9D\xDD\x14a\n\x82W\x80c\xA2\x0B\x99\xBF\x14a\x07\xABW\x80c\xA3d\xF4\xDA\x14a\x06\xF5W\x80c\xA9\x8F\xB3U\x14a\x06GW\x80c\xBAU\x08\x80\x14a\x05\xA3W\x80c\xC1\xA8\xE2\xC5\x14a\x03\xE2W\x80c\xE4\x81\xAF\x9D\x14a\x03\xB6W\x80c\xF2\xFD\xE3\x8B\x14a\x03%W\x80c\xFC)\x9D\xEE\x14a\x02\xFCWc\xFC\xE3l}\x14a\x01\x0CW_\x80\xFD[4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x02\xF8Wa\x01<\x906\x90`\x04\x01a\x13&V[a\x01G\x92\x91\x92a\x1D~V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x82[\x81\x81\x10a\x02\x94WP\x81;\x15a\x02\x90W`@Q\x93c\xFC\xE3l}`\xE0\x1B\x85R\x81`$\x86\x01` `\x04\x88\x01RR`D\x85\x01`D\x83`\x05\x1B\x87\x01\x01\x92\x82\x86\x90`\x9E\x19\x816\x03\x01[\x83\x83\x10a\x01\xF7W\x88\x80\x8B\x81\x81\x80\x8C\x03\x81\x83\x8FZ\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x81a\x01\xE2\x91a\x12\xB4V[a\x01\xE9W\x80\xF3[\x80\xFD[`@Q=\x84\x82>=\x90\xFD[\x90\x91\x92\x93\x94\x95`C\x19\x8A\x82\x03\x01\x86R\x865\x82\x81\x12\x15a\x02\x8CW` `\x01\x92\x85\x82\x93\x01\x90`\x80c\xFF\xFF\xFF\xFFa\x02z\x82a\x02@a\x022\x87\x80a\x19fV[`\xA0\x88R`\xA0\x88\x01\x91a\x19\x9AV[\x95\x89\x80`\xA0\x1B\x03a\x02R\x89\x83\x01a\x11\xE4V[\x16\x88\x87\x01R`@\x81\x015`@\x87\x01R\x83a\x02n``\x83\x01a\x13mV[\x16``\x87\x01R\x01a\x13mV[\x16\x91\x01R\x98\x01\x96\x01\x94\x93\x01\x91\x90a\x01\xB7V[\x89\x80\xFD[\x82\x80\xFD[\x80a\x02\xC9a\x02\xB0` a\x02\xAA`\x01\x95\x87\x8Ba\x1C^V[\x01a\x19RV[`@a\x02\xBD\x84\x87\x8Ba\x1C^V[\x015\x900\x903\x90a\x1D\xA1V[a\x02\xF2a\x02\xDC` a\x02\xAA\x84\x87\x8Ba\x1C^V[\x85`@a\x02\xEA\x85\x88\x8Ca\x1C^V[\x015\x91a\x1D\xECV[\x01a\x01tV[P\x80\xFD[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`eT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x03?a\x11\xCEV[a\x03Ga\x1C\x80V[`\x01`\x01`\xA0\x1B\x03\x81\x16\x15a\x03bWa\x03_\x90a\x1D6V[\x80\xF3[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`&`$\x82\x01R\x7FOwnable: new owner is the zero a`D\x82\x01Reddress`\xD0\x1B`d\x82\x01R`\x84\x90\xFD[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9Wa\x03\xDEa\x03\xD2a\x19\xFEV[`@Q\x91\x82\x91\x82a\x12CV[\x03\x90\xF3[P4a\x01\xE9W`@6`\x03\x19\x01\x12a\x01\xE9Wa\x03\xFCa\x11\xCEV[\x90`$5\x91`\x01`\x01`@\x1B\x03\x83\x11a\x02\xF8W6`#\x84\x01\x12\x15a\x02\xF8W\x82`\x04\x015\x92a\x04)\x84a\x13VV[\x93a\x047`@Q\x95\x86a\x12\xB4V[\x80\x85R`$` \x86\x01\x91`\x05\x1B\x83\x01\x01\x916\x83\x11a\x05\x9FW`$\x01\x90[\x82\x82\x10a\x05\x87WPPP\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x163\x03a\x05xW`@Q\x90a\x04\x9B\x82a\x12\x85V[`\x01`\x01`\xA0\x1B\x03\x90\x81\x16\x82R0` \x83\x01\x90\x81R`@\x83\x01\x94\x85R\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x90\x91\x16\x93\x90\x91\x90\x84;\x15a\x05tW`@Qcn4\x92\xB5`\xE0\x1B\x81R` `\x04\x82\x01\x81\x90R\x92Q`\x01`\x01`\xA0\x1B\x03\x90\x81\x16`$\x83\x01R\x93Q\x90\x93\x16`D\x84\x01RQ```d\x84\x01R\x80Q`\x84\x84\x01\x81\x90R`\xA4\x84\x01\x92\x91\x90\x91\x01\x90\x84[\x81\x81\x10a\x05XWPPP\x81\x83\x94\x81\x85\x81\x81\x95\x03\x92Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x82Qc\xFF\xFF\xFF\xFF\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x055V[\x83\x80\xFD[cC\x94\xDB\xDF`\xE1\x1B\x82R`\x04\x82\xFD[` \x80\x91a\x05\x94\x84a\x13mV[\x81R\x01\x91\x01\x90a\x04TV[\x84\x80\xFD[P4a\x01\xE9W\x80a\x05\xB36a\x11\xF8V[a\x05\xBE\x92\x91\x92a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x05\x9FW`@Qc\x06d\x12\x01`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x93\x84\x16`$\x82\x01R\x93\x90\x92\x16`D\x84\x01R`\x01`\x01`\xE0\x1B\x03\x19\x16`d\x83\x01R\x82\x90\x82\x90\x81\x83\x81`\x84\x81\x01[\x03\x92Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x06\xF2W6`#\x82\x01\x12\x15a\x06\xF2Wa\x06\x8A\x906\x90`$\x81`\x04\x015\x91\x01a\x12\xF0V[a\x06\x92a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x06\xF0W`@Qc\xA9\x8F\xB3U`\xE0\x1B\x81R` `\x04\x82\x01R\x91\x83\x91\x83\x91\x82\x90\x84\x90\x82\x90a\x066\x90`$\x83\x01\x90a\x18\xD7V[P[P\xFD[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x07\x0Fa\x11\xCEV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x163\x03a\x05xW\x81\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x06\xF0W`@QcQ\xB2zm`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x90\x91\x16`\x04\x82\x01R\x90\x82\x90\x82\x90`$\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x02\xF8Wa\x07\xDC\x906\x90`\x04\x01a\x13&V[\x91\x90a\x07\xE6a\x1D~V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x82[\x84\x81\x10a\t\xCDWP\x80;\x15a\x02\x90W`@\x93\x91\x93Q\x91cN\\\xD2\xFD`\xE1\x1B\x83R\x80`D\x84\x010`\x04\x86\x01R`@`$\x86\x01RR`d\x83\x01`d\x82`\x05\x1B\x85\x01\x01\x91\x86\x91\x86\x97`\xBE\x19\x816\x03\x01[\x83\x8A\x10a\x08\x80W\x88\x80\x89\x81\x81\x80\x8B\x03\x81\x83\x8EZ\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x90\x91\x92\x93\x94`c\x19\x88\x82\x03\x01\x84R\x855\x82\x81\x12\x15a\x02\x8CW\x83\x01\x90a\x08\xB6a\x08\xA8\x83\x80a\x19fV[`\xC0\x84R`\xC0\x84\x01\x91a\x19\x9AV[\x91`\x01`\x01`\xA0\x1B\x03a\x08\xCB` \x83\x01a\x11\xE4V[\x16` \x83\x01R` a\x08\xE0`@\x83\x01\x83a\x19fV[\x84\x86\x03`@\x86\x01R\x80\x86R\x94\x90\x91\x01\x93\x8C\x90[\x80\x82\x10a\t\x9DWPPPc\xFF\xFF\xFF\xFFa\t\x0E``\x83\x01a\x13mV[\x16``\x83\x01Rc\xFF\xFF\xFF\xFFa\t%`\x80\x83\x01a\x13mV[\x16`\x80\x83\x01R`\xA0\x81\x015`\x1E\x19\x826\x03\x01\x81\x12\x15a\t\x99W\x01\x90` \x825\x92\x01\x90`\x01`\x01`@\x1B\x03\x83\x11a\t\x99W\x826\x03\x82\x13a\t\x99W\x83\x83` \x94\x85\x94\x84`\xA0\x87\x96`\x01\x9A\x03\x91\x01R\x81\x84R\x84\x84\x017\x8D\x83\x82\x84\x01\x01R`\x1F\x80\x19\x91\x01\x16\x01\x01\x97\x01\x94\x01\x99\x01\x98\x91\x90\x93\x92\x93a\x08_V[\x8B\x80\xFD[\x90\x91\x94`@\x80`\x01\x92\x83\x80`\xA0\x1B\x03a\t\xB5\x8Aa\x11\xE4V[\x16\x81R` \x89\x015` \x82\x01R\x01\x96\x01\x92\x01\x90a\x08\xF3V[\x90\x92\x91\x93\x82\x94\x83\x95[a\t\xEEa\t\xE4\x85\x85\x85a\x18\xFBV[`@\x81\x01\x90a\x19\x1DV[\x90P\x87\x10\x15a\n>Wa\n\x05a\t\xE4\x85\x85\x85a\x18\xFBV[\x88\x10\x15a\n*W`\x01\x91` a\n\"\x92\x8A`\x06\x1B\x01\x015\x90a\x13\xEEV[\x96\x01\x95a\t\xD6V[cNH{q`\xE0\x1B\x86R`2`\x04R`$\x86\xFD[\x91\x95P\x92\x93\x91`\x01\x91a\n|\x90a\nf\x8103a\na` a\x02\xAA\x89\x8F\x8Ea\x18\xFBV[a\x1D\xA1V[\x84a\nw` a\x02\xAA\x86\x8C\x8Ba\x18\xFBV[a\x1D\xECV[\x01a\x08\x12V[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80a\n\x9Da\x11\xCEV[a\n\xA5a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x06\xF0W`@Qc\xA0\x16\x9D\xDD`\xE0\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x90\x91\x16`\x04\x82\x01R\x90\x82\x90\x82\x90`$\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80a\x0B*a\x11\xCEV[a\x0B2a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x06\xF0W`@QcO\x90l\xF9`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x90\x92\x16`$\x83\x01R\x82\x90\x82\x90\x81\x83\x81`D\x81\x01a\x066V[P4a\x01\xE9W`@6`\x03\x19\x01\x12a\x01\xE9Wa\x0B\xB0a\x11\xCEV[\x90`$5`\x01`\x01`@\x1B\x03\x81\x11a\x02\xF8W```\x03\x19\x826\x03\x01\x12a\x02\xF8W`@Q\x92a\x0B\xDD\x84a\x12\x85V[\x81`\x04\x015`\x01`\x01`@\x1B\x03\x81\x11a\x05tW\x82\x016`#\x82\x01\x12\x15a\x05tWa\x0C\x11\x906\x90`$`\x04\x82\x015\x91\x01a\x12\xF0V[\x84R` \x84\x01\x90`$\x83\x015\x82R`D`@\x86\x01\x93\x015\x83R`\x01\x80`\xA0\x1B\x03\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x163\x03a\x0C\xF3W\x92\x93\x84\x93\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x0C\xEFW\x85a\x0C\xD1\x93\x81\x95`@Q\x97\x88\x96\x87\x95\x86\x94c\x99&\xEE}`\xE0\x1B\x86R`\x01\x80`\xA0\x1B\x03\x16`\x04\x86\x01R`@`$\x86\x01RQ```D\x86\x01R`\xA4\x85\x01\x90a\x18\xD7V[\x91Q`d\x84\x01RQ`\x84\x83\x01R\x03\x92Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x85\x80\xFD[cC\x94\xDB\xDF`\xE1\x1B\x84R`\x04\x84\xFD[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`3T`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9Wa\r\x89a\x1C\x80V[`3\x80T`\x01`\x01`\xA0\x1B\x03\x19\x81\x16\x90\x91U\x81\x90`\x01`\x01`\xA0\x1B\x03\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0\x82\x80\xA3\x80\xF3[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x01\xE9W`@6`\x03\x19\x01\x12a\x01\xE9Wa\x0E,a\x11\xCEV[`$5\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x02\x90W\x82T\x91`\xFF\x83`\x08\x1C\x16\x15\x92\x83\x80\x94a\x0F\xAAW[\x80\x15a\x0F\x93W[\x15a\x0F7W`\xFF\x19\x81\x16`\x01\x17\x85U\x83a\x0F&W[P`\xFF\x84T`\x08\x1C\x16\x15a\x0E\xCDWa\x0E\x8Aa\x0E\x8F\x92a\x1D6V[a\x1C\xD8V[a\x0E\x96W\x80\xF3[a\xFF\0\x19\x81T\x16\x81U\x7F\x7F&\xB8?\xF9n\x1F+jh/\x138R\xF6y\x8A\t\xC4e\xDA\x95\x92\x14`\xCE\xFB8G@$\x98` `@Q`\x01\x81R\xA1\x80\xF3[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`+`$\x82\x01R\x7FInitializable: contract is not i`D\x82\x01Rjnitializing`\xA8\x1B`d\x82\x01R`\x84\x90\xFD[a\xFF\xFF\x19\x16a\x01\x01\x17\x84U_a\x0EpV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`.`$\x82\x01R\x7FInitializable: contract is alrea`D\x82\x01Rm\x19\x1EH\x1A[\x9A]\x1AX[\x1A^\x99Y`\x92\x1B`d\x82\x01R`\x84\x90\xFD[P0;\x15\x80\x15a\x0E[WP`\x01`\xFF\x82\x16\x14a\x0E[V[P`\x01`\xFF\x82\x16\x10a\x0ETV[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x03_a\x0F\xD4a\x11\xCEV[a\x0E\x8Aa\x1C\x80V[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x03\xDEa\x03\xD2a\x0F\xFCa\x11\xCEV[a\x14\x90V[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80a\x10\x1Ca\x11\xCEV[a\x10$a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x06\xF0W`@Qc\xEBZN\x87`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x90\x92\x16`$\x83\x01R\x82\x90\x82\x90\x81\x83\x81`D\x81\x01a\x066V[P4a\x01\xE9W\x80a\x10\x986a\x11\xF8V[a\x10\xA3\x92\x91\x92a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x05\x9FW`@QcJ\x86\xC07`\xE1\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x93\x84\x16`$\x82\x01R\x93\x90\x92\x16`D\x84\x01R`\x01`\x01`\xE0\x1B\x03\x19\x16`d\x83\x01R\x82\x90\x82\x90\x81\x83\x81`\x84\x81\x01a\x066V[P4a\x11\xCAW` 6`\x03\x19\x01\x12a\x11\xCAWa\x119a\x11\xCEV[a\x11Aa\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x11\xCAW`@Qc&\x89Y\xE5`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x92\x90\x92\x16`$\x83\x01R_\x90\x82\x90`D\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x11\xBFWa\x11\xB1WP\x80\xF3[a\x11\xBD\x91P_\x90a\x12\xB4V[\0[`@Q=_\x82>=\x90\xFD[_\x80\xFD[`\x045\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x11\xCAWV[5\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x11\xCAWV[``\x90`\x03\x19\x01\x12a\x11\xCAW`\x045`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90`$5`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90`D5`\x01`\x01`\xE0\x1B\x03\x19\x81\x16\x81\x03a\x11\xCAW\x90V[` `@\x81\x83\x01\x92\x82\x81R\x84Q\x80\x94R\x01\x92\x01\x90_[\x81\x81\x10a\x12fWPPP\x90V[\x82Q`\x01`\x01`\xA0\x1B\x03\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x12YV[``\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x12\xA0W`@RV[cNH{q`\xE0\x1B_R`A`\x04R`$_\xFD[\x90`\x1F\x80\x19\x91\x01\x16\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x12\xA0W`@RV[`\x01`\x01`@\x1B\x03\x81\x11a\x12\xA0W`\x1F\x01`\x1F\x19\x16` \x01\x90V[\x92\x91\x92a\x12\xFC\x82a\x12\xD5V[\x91a\x13\n`@Q\x93\x84a\x12\xB4V[\x82\x94\x81\x84R\x81\x83\x01\x11a\x11\xCAW\x82\x81` \x93\x84_\x96\x017\x01\x01RV[\x91\x81`\x1F\x84\x01\x12\x15a\x11\xCAW\x825\x91`\x01`\x01`@\x1B\x03\x83\x11a\x11\xCAW` \x80\x85\x01\x94\x84`\x05\x1B\x01\x01\x11a\x11\xCAWV[`\x01`\x01`@\x1B\x03\x81\x11a\x12\xA0W`\x05\x1B` \x01\x90V[5\x90c\xFF\xFF\xFF\xFF\x82\x16\x82\x03a\x11\xCAWV[\x90\x81` \x91\x03\x12a\x11\xCAWQ`\xFF\x81\x16\x81\x03a\x11\xCAW\x90V[\x90a\x13\xA1\x82a\x13VV[a\x13\xAE`@Q\x91\x82a\x12\xB4V[\x82\x81R\x80\x92a\x13\xBF`\x1F\x19\x91a\x13VV[\x01\x90` 6\x91\x017V[\x90\x81Q\x81\x10\x15a\x13\xDAW\x01` \x01\x90V[cNH{q`\xE0\x1B_R`2`\x04R`$_\xFD[\x91\x90\x82\x01\x80\x92\x11a\x13\xFBWV[cNH{q`\xE0\x1B_R`\x11`\x04R`$_\xFD[\x90\x81`@\x91\x03\x12a\x11\xCAW`@Q\x90`@\x82\x01\x82\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x12\xA0W`@R\x80Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x11\xCAW` \x91\x83R\x01Qk\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x81\x16\x81\x03a\x11\xCAW` \x82\x01R\x90V[\x80Q\x82\x10\x15a\x13\xDAW` \x91`\x05\x1B\x01\x01\x90V[_\x19\x81\x14a\x13\xFBW`\x01\x01\x90V[`@Qc\t\xAA\x15'`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x91\x82\x16`\x04\x82\x01R\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x16` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x18\xA3W[P`@Q\x91c\x87\x1E\xF0I`\xE0\x1B\x83R`\x04\x83\x01R` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x18_W[P`\x01`\x01`\xC0\x1B\x03\x82\x16\x90\x81\x15\x90\x81\x15a\x17\xFCW[Pa\x17\xE2W\x80_\x91[a\x17\xBDWPa\xFF\xFF\x16a\x15C\x81a\x12\xD5V[\x90a\x15Q`@Q\x92\x83a\x12\xB4V[\x80\x82Ra\x15``\x1F\x19\x91a\x12\xD5V[\x016` \x83\x017__[\x82Q\x82\x10\x80a\x17\xB2W[\x15a\x15\xC2W`\x01\x81\x1B\x84\x16`\x01`\x01`\xC0\x1B\x03\x16a\x15\x9BW[a\x15\x96\x90a\x14\x82V[a\x15jV[\x90`\x01a\x15\x96\x91`\xFF`\xF8\x1B\x84`\xF8\x1B\x16_\x1Aa\x15\xB8\x82\x87a\x13\xC9V[S\x01\x91\x90Pa\x15\x8DV[P_\x93\x92PP\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x83[\x81Q\x85\x10\x15a\x16}Wa\x16\x08\x85\x83a\x13\xC9V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R`\x04\x82\x01R` \x81`$\x81\x87Z\xFA\x90\x81\x15a\x11\xBFW_\x91a\x16KW[Pa\x16C\x90`\x01\x92a\x13\xEEV[\x94\x01\x93a\x15\xF5V[\x90P` \x81=\x82\x11a\x16uW[\x81a\x16e` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ`\x01a\x166V[=\x91Pa\x16XV[a\x16\x88\x91\x94Pa\x13\x97V[\x92_\x90_[\x81Q\x81\x10\x15a\x17\xACWa\x16\xA0\x81\x83a\x13\xC9V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R\x80`\x04\x83\x01R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x17yW[P\x90_\x91[\x81\x83\x10a\x16\xE6WPPP`\x01\x01a\x16\x8DV[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x11\xBFW`\x01\x92a\x17B\x92_\x91a\x17KW[P\x83\x80`\xA0\x1B\x03\x90Q\x16a\x17<\x82\x8Da\x14nV[Ra\x14\x82V[\x95\x01\x91\x90a\x16\xD4V[a\x17l\x91P`@=\x81\x11a\x17rW[a\x17d\x81\x83a\x12\xB4V[\x81\x01\x90a\x14\x0FV[_a\x17(V[P=a\x17ZV[\x90\x91P` \x81=\x82\x11a\x17\xA4W[\x81a\x17\x94` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ\x90_a\x16\xCFV[=\x91Pa\x17\x87V[PPPPV[Pa\x01\0\x81\x10a\x15tV[_\x19\x81\x01\x81\x81\x11a\x13\xFBWa\xFF\xFF\x91\x16\x91\x16a\xFF\xFF\x81\x14a\x13\xFBW`\x01\x01\x90\x80a\x151V[PP`@Qa\x17\xF2` \x82a\x12\xB4V[_\x81R_6\x817\x90V[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x91P` \x90\x82\x90`\x04\x90\x82\x90Z\xFA\x80\x15a\x11\xBFW`\xFF\x91_\x91a\x180W[P\x16\x15_a\x15(V[a\x18R\x91P` =` \x11a\x18XW[a\x18J\x81\x83a\x12\xB4V[\x81\x01\x90a\x13~V[_a\x18'V[P=a\x18@V[\x90\x91P` \x81=` \x11a\x18\x9BW[\x81a\x18{` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ`\x01`\x01`\xC0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90_a\x15\x12V[=\x91Pa\x18nV[\x90\x91P` \x81=` \x11a\x18\xCFW[\x81a\x18\xBF` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ\x90_a\x14\xE7V[=\x91Pa\x18\xB2V[\x80Q\x80\x83R` \x92\x91\x81\x90\x84\x01\x84\x84\x01^_\x82\x82\x01\x84\x01R`\x1F\x01`\x1F\x19\x16\x01\x01\x90V[\x91\x90\x81\x10\x15a\x13\xDAW`\x05\x1B\x81\x015\x90`\xBE\x19\x816\x03\x01\x82\x12\x15a\x11\xCAW\x01\x90V[\x905\x90`\x1E\x19\x816\x03\x01\x82\x12\x15a\x11\xCAW\x01\x805\x90`\x01`\x01`@\x1B\x03\x82\x11a\x11\xCAW` \x01\x91\x81`\x06\x1B6\x03\x83\x13a\x11\xCAWV[5`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90V[\x905`\x1E\x19\x826\x03\x01\x81\x12\x15a\x11\xCAW\x01` \x815\x91\x01\x91`\x01`\x01`@\x1B\x03\x82\x11a\x11\xCAW\x81`\x06\x1B6\x03\x83\x13a\x11\xCAWV[\x91` \x90\x82\x81R\x01\x91\x90_\x90[\x80\x82\x10a\x19\xB4WPPP\x90V[\x90\x91\x92\x835`\x01\x80`\xA0\x1B\x03\x81\x16\x80\x91\x03a\x11\xCAW\x81R` \x84\x015\x90k\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x82\x16\x80\x92\x03a\x11\xCAW`@\x81`\x01\x93` \x83\x94\x01R\x01\x94\x01\x92\x01\x90a\x19\xA7V[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90` \x81`\x04\x81\x85Z\xFA\x80\x15a\x11\xBFW`\xFF\x91_\x91a\x1C?W[P\x16\x80\x15a\x17\xE2W\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90_\x90\x81\x90[\x80\x83\x10a\x1B\xC9WPa\x1A\x99\x91Pa\x13\x97V[\x92_\x90_[`@Qc\x9A\xA1e=`\xE0\x1B\x81R` \x81`\x04\x81\x89Z\xFA\x80\x15a\x11\xBFW`\xFF\x91_\x91a\x1B\xABW[P\x16\x81\x10\x15a\x1B\xA4W`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x82\x16`\x04\x82\x01\x81\x90R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x1BqW[P\x90_\x91[\x81\x83\x10a\x1B\x13WPPP`\x01\x01a\x1A\x9EV[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x11\xBFW`\x01\x92a\x1Bh\x92_\x91a\x17KWP\x83\x80`\xA0\x1B\x03\x90Q\x16a\x17<\x82\x8Da\x14nV[\x95\x01\x91\x90a\x1B\x01V[\x90\x91P` \x81=\x82\x11a\x1B\x9CW[\x81a\x1B\x8C` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ\x90_a\x1A\xFCV[=\x91Pa\x1B\x7FV[P\x92PPPV[a\x1B\xC3\x91P` =\x81\x11a\x18XWa\x18J\x81\x83a\x12\xB4V[_a\x1A\xC4V[\x90`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x84\x16`\x04\x82\x01R` \x81`$\x81\x88Z\xFA\x90\x81\x15a\x11\xBFW_\x91a\x1C\rW[Pa\x1C\x04\x90`\x01\x92a\x13\xEEV[\x92\x01\x91\x90a\x1A\x87V[\x90P` \x81=\x82\x11a\x1C7W[\x81a\x1C'` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ`\x01a\x1B\xF7V[=\x91Pa\x1C\x1AV[a\x1CX\x91P` =` \x11a\x18XWa\x18J\x81\x83a\x12\xB4V[_a\x1AOV[\x91\x90\x81\x10\x15a\x13\xDAW`\x05\x1B\x81\x015\x90`\x9E\x19\x816\x03\x01\x82\x12\x15a\x11\xCAW\x01\x90V[`3T`\x01`\x01`\xA0\x1B\x03\x163\x03a\x1C\x94WV[`d`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R` `$\x82\x01R\x7FOwnable: caller is not the owner`D\x82\x01R\xFD[`eT`@\x80Q`\x01`\x01`\xA0\x1B\x03\x80\x84\x16\x82R\x84\x16` \x82\x01R\x91\x92\x91\x7F\xE1\x1C\xDD\xF1\x81jC1\x8C\xA1u\xBB\xC5,\xD0\x18T6\xE9\xCB\xEA\xD7\xC8:\xCCT\xA7>F\x17\x17\xE3\x91\x90\xA1`\x01`\x01`\xA0\x1B\x03\x16`\x01`\x01`\xA0\x1B\x03\x19\x91\x90\x91\x16\x17`eUV[`3\x80T`\x01`\x01`\xA0\x1B\x03\x92\x83\x16`\x01`\x01`\xA0\x1B\x03\x19\x82\x16\x81\x17\x90\x92U\x90\x91\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0_\x80\xA3V[`eT`\x01`\x01`\xA0\x1B\x03\x163\x03a\x1D\x92WV[c\x8Ey\xFD\xB5`\xE0\x1B_R`\x04_\xFD[`@Qc#\xB8r\xDD`\xE0\x1B` \x82\x01R`\x01`\x01`\xA0\x1B\x03\x92\x83\x16`$\x82\x01R\x92\x90\x91\x16`D\x83\x01R`d\x80\x83\x01\x93\x90\x93R\x91\x81Ra\x1D\xEA\x91a\x1D\xE5`\x84\x83a\x12\xB4V[a\x1E\xAAV[V[`@Qcn\xB1v\x9F`\xE1\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x83\x16`$\x82\x01R` \x81\x80`D\x81\x01\x03\x81`\x01`\x01`\xA0\x1B\x03\x86\x16Z\xFA\x90\x81\x15a\x11\xBFW_\x91a\x1EvW[Pa\x1D\xEA\x93a\x1E@\x91a\x13\xEEV[`@Qc\t^\xA7\xB3`\xE0\x1B` \x82\x01R`\x01`\x01`\xA0\x1B\x03\x90\x93\x16`$\x84\x01R`D\x80\x84\x01\x91\x90\x91R\x82Ra\x1D\xE5`d\x83a\x12\xB4V[\x90P` \x81=` \x11a\x1E\xA2W[\x81a\x1E\x91` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQa\x1D\xEAa\x1E2V[=\x91Pa\x1E\x84V[`@\x80Q\x90\x92\x90\x91`\x01`\x01`\xA0\x1B\x03\x16a\x1E\xC5\x84\x84a\x12\xB4V[` \x83R\x7FSafeERC20: low-level call failed` \x84\x01R\x80;\x15a\x1F\xBFW_\x82\x81\x92\x82` a\x1F4\x97\x96Q\x93\x01\x91Z\xF1=\x15a\x1F\xB7W=\x90a\x1F\x19\x82a\x12\xD5V[\x91a\x1F&\x86Q\x93\x84a\x12\xB4V[\x82R=_` \x84\x01>a \x03V[\x80Q\x80a\x1F@WPPPV[\x81` \x91\x81\x01\x03\x12a\x11\xCAW` \x01Q\x80\x15\x90\x81\x15\x03a\x11\xCAWa\x1FaWPV[QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`*`$\x82\x01R\x7FSafeERC20: ERC20 operation did n`D\x82\x01Ri\x1B\xDD\x08\x1C\xDDX\xD8\xD9YY`\xB2\x1B`d\x82\x01R`\x84\x90\xFD[``\x90a \x03V[\x83QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`\x1D`$\x82\x01R\x7FAddress: call to non-contract\0\0\0`D\x82\x01R`d\x90\xFD[\x90\x91\x90\x15a \x0FWP\x90V[\x81Q\x15a \x1FWP\x80Q\x90` \x01\xFD[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R\x90\x81\x90a C\x90`$\x83\x01\x90a\x18\xD7V[\x03\x90\xFD\xFE\xA2dipfsX\"\x12 \x19\xA3\xA5O\xB4\x93\n\x18\xDC<\x9D\x8FL6\x04H*]\xED\xA6\x8CW\xFAx\xD6\x9C1Q\xFE\xED\x90@dsolcC\0\x08\x1B\x003",
     );
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040526004361015610011575f80fd5b5f5f3560e01c806326f017e2146114fd57806333cfb7b7146114d95780633bc28c8c1461145a5780633d0714221461117657806367940c89146111585780636b3aa72e146111135780636ecbccfe146110a4578063715018a61461104757806377ef731d14611002578063847d634f14610e175780638999817f14610d8e5780638d68349a14610d6b5780638da5cb5b14610d425780639926ee7d14610be1578063a364f4da14610b28578063a98fb35514610a90578063b134427114610a67578063c1a8e2c5146108b7578063ca8aa7c714610872578063ce7b5e4b146107ed578063e46f1816146107c4578063e481af9d14610798578063f25f1610146106d3578063f2fde38b1461060a578063fc299dee146105e1578063fcd1c375146105c35763fce36c7d14610143575f80fd5b3461022d57602036600319011261022d576004356001600160401b0381116105bf576101739036906004016117f4565b6065549192916001600160a01b0316330361053f577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031692825b82811061036e5750833b1561036a576040519163fce36c7d60e01b835280602484016020600486015252604483019060448160051b8501019280928691609e19813603015b84841061023b5788808981818e8183818f03925af180156102305761021c5750f35b816102269161169b565b61022d5780f35b80fd5b6040513d84823e3d90fd5b9091929394956043198882030184528635828112156103665783019060a08101918035601e1982360301811215610310578101602081359101936001600160401b038211610362578160061b3603851361036257819060a085525260c0830193908c905b8082106103145750505060208101356001600160a01b03811690819003610310579282608063ffffffff6102fc8260209796600199898099015260408101356040870152836102f0606083016116bc565b166060870152016116bc565b1691015298019401940192949391906101fa565b8b80fd5b91949091906001600160a01b0361032a8761160f565b16815260208601356bffffffffffffffffffffffff811680910361035e57602082015260409081019501916001019061029f565b8e80fd5b8c80fd5b8980fd5b8280fd5b8360206001600160a01b0361038e826103888689896120d0565b016120f2565b166064604061039e8689896120d0565b013560405194859384926323b872dd60e01b845233600485015230602485015260448401525af180156104de57610523575b506001600160a01b036103e960206103888487876120d0565b604051636eb1769f60e11b81523060048201526001600160a01b03881660248201529160209183916044918391165afa9081156104de5790859182916104e9575b50602090610495906104626001600160a01b0361044c85610388898c8c6120d0565b1691604061045b888b8b6120d0565b0135611824565b60405163095ea7b360e01b81526001600160a01b038b166004820152602481019190915293849283919082906044820190565b03925af180156104de5790600192916104b0575b50016101b5565b6104d09060203d81116104d7575b6104c8818361169b565b810190612106565b505f6104a9565b503d6104be565b6040513d87823e3d90fd5b9150506020813d821161051b575b816105046020938361169b565b810103126105175751849061049561042a565b5f80fd5b3d91506104f7565b61053a9060203d81116104d7576104c8818361169b565b6103d0565b60405162461bcd60e51b815260206004820152604c60248201527f536572766963654d616e61676572426173652e6f6e6c7952657761726473496e60448201527f69746961746f723a2063616c6c6572206973206e6f742074686520726577617260648201526b32399034b734ba34b0ba37b960a11b608482015260a490fd5b5080fd5b503461022d578060031936011261022d576020606854604051908152f35b503461022d578060031936011261022d576065546040516001600160a01b039091168152602090f35b503461022d57602036600319011261022d576106246115f9565b61062c61211e565b6001600160a01b0316801561067f57603380546001600160a01b0319811683179091556001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08380a380f35b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b503461022d57602036600319011261022d57806004356001600160a01b038116908190036107955761072f337f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031614611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b156107935782916044839260405194859384926334f65bfd60e21b845230600485015260248401525af180156102305761021c5750f35b505b50fd5b503461022d578060031936011261022d576107c06107b4611e70565b60405191829182611623565b0390f35b503461022d578060031936011261022d576067546040516001600160a01b039091168152602090f35b503461022d57806107fd366117b8565b90610806612176565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031691823b1561086d5761085c9284928360405180968195829463b66bd98960e01b84523060048501611db9565b03925af180156102305761021c5750f35b505050fd5b503461022d578060031936011261022d576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b503461022d57604036600319011261022d576108d16115f9565b906024356001600160401b0381116105bf576108f19036906004016117f4565b92610926337f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031614611de3565b6040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031694909161095f83611680565b6001600160a01b0316825230602083019081529261097c826116cd565b9161098a604051938461169b565b808352602083019060051b820191368311610a6357905b828210610a4b5750505060408201908152843b15610a4757604051636e3492b560e01b815260206004820181905292516001600160a01b03908116602483015293519093166044840152516060606484015280516084840181905260a48401929190910190845b818110610a2b57505050818394818581819503925af180156102305761021c5750f35b825163ffffffff16845260209384019390920191600101610a08565b8380fd5b60208091610a58846116bc565b8152019101906109a1565b8680fd5b503461022d578060031936011261022d576066546040516001600160a01b039091168152602090f35b503461022d57602036600319011261022d57806004356001600160401b03811161079557610ac290369060040161179a565b610aca61211e565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156107935760405163a98fb35560e01b815260206004820152918391839182908490829061085c906024830190611d95565b503461022d57602036600319011261022d5780610b436115f9565b610b77337f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031614611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b15610793576040516351b27a6d60e11b81526001600160a01b0390911660048201529082908290602490829084905af180156102305761021c5750f35b503461022d57604036600319011261022d5780610bfc6115f9565b602435906001600160401b03821161079357606060031983360301126107935760405190610c2982611680565b82600401356001600160401b038111610d3e57830136602382011215610d3e57610c5d903690602460048201359101611764565b82526020820191602484013583526044604082019401358452610ca960018060a01b037f0000000000000000000000000000000000000000000000000000000000000000163314611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b15610d3a5785610d1c93819560405197889687958694639926ee7d60e01b865260018060a01b0316600486015260406024860152516060604486015260a4850190611d95565b9151606484015251608483015203925af180156102305761021c5750f35b8580fd5b8480fd5b503461022d578060031936011261022d576033546040516001600160a01b039091168152602090f35b503461022d578060031936011261022d57602060ff606954166040519015158152f35b503461022d57602036600319011261022d577f2f8afc8a78fd958f3301c0233aa326b9c4b9a2884a7483227d6b0555aaa03adb610e11610dcc6115f9565b610dd461211e565b606780546001600160a01b0319166001600160a01b0392909216918217905542606881905560408051928352602083019190915290918291820190565b0390a180f35b503461022d57602036600319011261022d57600435906001600160401b03821161022d573660238301121561022d578160040135610e54816116cd565b92610e62604051948561169b565b81845260208401906024829360051b82010190368211610d3e5760248101925b828410610f8c5750610ec2925050506001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000163314611de3565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b1561036a5760405191630130fc2760e51b835260448301943060048501526040602485015251809552606483019460648160051b8501019190855b818110610f4a57868087818180890381838c5af180156102305761021c5750f35b909192602080610f7d6001936063198a8203018c52604083895163ffffffff815116845201519181858201520190611d59565b95019801910196919096610f29565b83356001600160401b038111610a6357820160406023198236030112610a635760405190610fb982611665565b610fc5602482016116bc565b825260448101356001600160401b038111610ffe5791610fef6020949260248695369201016116e4565b83820152815201930192610e82565b8880fd5b503461022d578060031936011261022d576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b503461022d578060031936011261022d5761106061211e565b603380546001600160a01b0319811690915581906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b503461022d57806110b4366117b8565b906110bd612176565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031691823b1561086d5761085c92849283604051809681958294630287f75160e51b84523060048501611db9565b503461022d578060031936011261022d576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b503461022d578060031936011261022d57602060405162093a808152f35b5034610517576020366003190112610517576004356001600160401b0381116105175760a06003198236030112610517576040519060a082018281106001600160401b03821117611446576040526111d08160040161160f565b82526111de602482016116bc565b906020830191825260448101356001600160401b0381116105175761120990600436918401016116e4565b916040840192835260648201356001600160401b038111610517578201913660238401121561051757600483013592611241846116cd565b9361124f604051958661169b565b808552602060048187019260051b840101019136831161051757602401905b82821061143657505050606085019283526084810135906001600160401b0382116105175760046112a2923692010161179a565b608085019081526066549091906001600160a01b031633036113cb577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031693843b156105175760408051633635205760e01b8152306004820152602481019190915295516001600160a01b03166044870152905163ffffffff1660648601525160a06084860152849291906113439060e4850190611d59565b9151916043198482030160a4850152602080845192838152019301905f5b8181106113b2575050505f836113878296948294516043198483030160c4850152611d95565b03925af180156113a757611399575080f35b6113a591505f9061169b565b005b6040513d5f823e3d90fd5b8251855287955060209485019490920191600101611361565b60405162461bcd60e51b815260206004820152603960248201527f536572766963654d616e61676572426173652e6f6e6c79536c61736865723a2060448201527f63616c6c6572206973206e6f742074686520736c6173686572000000000000006064820152608490fd5b813581526020918201910161126e565b634e487b7160e01b5f52604160045260245ffd5b34610517576020366003190112610517576114736115f9565b61147b61211e565b606554604080516001600160a01b038084168252841660208201529192917fe11cddf1816a43318ca175bbc52cd0185436e9cbead7c83acc54a73e461717e39190a16001600160a01b03166001600160a01b03199190911617606555005b34610517576020366003190112610517576107c06107b46114f86115f9565b611912565b34610517575f3660031901126105175761151561211e565b60685462093a8081018091116115e557421061158957606754606654604080516001600160a01b03808416825284166020820181905292917fe0d49a54274423183dadecbdf239eaac6e06ba88320b26fe8cc5ec9d050a639591a16001600160a01b03199081169190911760665516606755005b60405162461bcd60e51b815260206004820152602e60248201527f536572766963654d616e616765723a20536c61736865722070726f706f73616c60448201526d0819195b185e481b9bdd081b595d60921b6064820152608490fd5b634e487b7160e01b5f52601160045260245ffd5b600435906001600160a01b038216820361051757565b35906001600160a01b038216820361051757565b60206040818301928281528451809452019201905f5b8181106116465750505090565b82516001600160a01b0316845260209384019390920191600101611639565b604081019081106001600160401b0382111761144657604052565b606081019081106001600160401b0382111761144657604052565b90601f801991011681019081106001600160401b0382111761144657604052565b359063ffffffff8216820361051757565b6001600160401b0381116114465760051b60200190565b9080601f830112156105175781356116fb816116cd565b92611709604051948561169b565b81845260208085019260051b82010192831161051757602001905b8282106117315750505090565b6020809161173e8461160f565b815201910190611724565b6001600160401b03811161144657601f01601f191660200190565b92919261177082611749565b9161177e604051938461169b565b829481845281830111610517578281602093845f960137010152565b9080601f83011215610517578160206117b593359101611764565b90565b9060406003198301126105175760043563ffffffff811681036105175791602435906001600160401b038211610517576117b5916004016116e4565b9181601f84011215610517578235916001600160401b038311610517576020808501948460051b01011161051757565b919082018092116115e557565b90816020910312610517575160ff811681036105175790565b90611854826116cd565b611861604051918261169b565b8281528092611872601f19916116cd565b0190602036910137565b90815181101561188d570160200190565b634e487b7160e01b5f52603260045260245ffd5b9081604091031261051757604051906118b982611665565b8051906001600160a01b038216820361051757602091835201516bffffffffffffffffffffffff8116810361051757602082015290565b805182101561188d5760209160051b010190565b5f1981146115e55760010190565b6040516309aa152760e11b81526001600160a01b039182166004820152907f000000000000000000000000000000000000000000000000000000000000000016602082602481845afa9182156113a7575f92611d25575b506040519163871ef04960e01b83526004830152602082602481845afa9182156113a7575f92611ce1575b506001600160c01b038216908115908115611c7e575b50611c6457805f915b611c3f575061ffff166119c581611749565b906119d3604051928361169b565b8082526119e2601f1991611749565b013660208301375f5f5b8251821080611c34575b15611a44576001811b84166001600160c01b0316611a1d575b611a1890611904565b6119ec565b906001611a189160ff60f81b8460f81b165f1a611a3a828761187c565b5301919050611a0f565b505f939250507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690835b8151851015611aff57611a8a858361187c565b5160f81c60405190633ca5a5f560e01b82526004820152602081602481875afa9081156113a7575f91611acd575b50611ac590600192611824565b940193611a77565b90506020813d8211611af7575b81611ae76020938361169b565b8101031261051757516001611ab8565b3d9150611ada565b611b0a91945061184a565b925f905f5b8151811015611c2e57611b22818361187c565b5160f81c60405190633ca5a5f560e01b8252806004830152602082602481895afa9182156113a7575f92611bfb575b50905f915b818310611b6857505050600101611b0f565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156113a757600192611bc4925f91611bcd575b50838060a01b03905116611bbe828d6118f0565b52611904565b95019190611b56565b611bee915060403d8111611bf4575b611be6818361169b565b8101906118a1565b5f611baa565b503d611bdc565b9091506020813d8211611c26575b81611c166020938361169b565b810103126105175751905f611b51565b3d9150611c09565b50505050565b5061010081106119f6565b5f1981018181116115e55761ffff9116911661ffff81146115e55760010190806119b3565b5050604051611c7460208261169b565b5f81525f36813790565b604051639aa1653d60e01b81529150602090829060049082905afa80156113a75760ff915f91611cb2575b5016155f6119aa565b611cd4915060203d602011611cda575b611ccc818361169b565b810190611831565b5f611ca9565b503d611cc2565b9091506020813d602011611d1d575b81611cfd6020938361169b565b8101031261051757516001600160c01b038116810361051757905f611994565b3d9150611cf0565b9091506020813d602011611d51575b81611d416020938361169b565b810103126105175751905f611969565b3d9150611d34565b90602080835192838152019201905f5b818110611d765750505090565b82516001600160a01b0316845260209384019390920191600101611d69565b805180835260209291819084018484015e5f828201840152601f01601f1916010190565b63ffffffff6117b5949360609360018060a01b031683521660208201528160408201520190611d59565b15611dea57565b60405162461bcd60e51b815260206004820152605260248201527f536572766963654d616e61676572426173652e6f6e6c7952656769737472794360448201527f6f6f7264696e61746f723a2063616c6c6572206973206e6f742074686520726560648201527133b4b9ba393c9031b7b7b93234b730ba37b960711b608482015260a490fd5b604051639aa1653d60e01b81527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690602081600481855afa80156113a75760ff915f916120b1575b50168015611c64577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316905f9081905b80831061203b5750611f0b915061184a565b925f905f5b604051639aa1653d60e01b8152602081600481895afa80156113a75760ff915f9161201d575b501681101561201657604051633ca5a5f560e01b815260ff821660048201819052602082602481895afa9182156113a7575f92611fe3575b50905f915b818310611f8557505050600101611f10565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156113a757600192611fda925f91611bcd5750838060a01b03905116611bbe828d6118f0565b95019190611f73565b9091506020813d821161200e575b81611ffe6020938361169b565b810103126105175751905f611f6e565b3d9150611ff1565b5092505050565b612035915060203d8111611cda57611ccc818361169b565b5f611f36565b90604051633ca5a5f560e01b815260ff84166004820152602081602481885afa9081156113a7575f9161207f575b5061207690600192611824565b92019190611ef9565b90506020813d82116120a9575b816120996020938361169b565b8101031261051757516001612069565b3d915061208c565b6120ca915060203d602011611cda57611ccc818361169b565b5f611ec1565b919081101561188d5760051b81013590609e1981360301821215610517570190565b356001600160a01b03811681036105175790565b90816020910312610517575180151581036105175790565b6033546001600160a01b0316330361213257565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fd5b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633036121a857565b60405162461bcd60e51b815260206004820152604660248201527f536572766963654d616e61676572426173652e6f6e6c795374616b655265676960448201527f737472793a2063616c6c6572206973206e6f7420746865207374616b6520726560648201526567697374727960d01b608482015260a490fdfea26469706673582212204d9a395fd2d7be3715f8c3b3d9264e68488d03ce1e0dbbabf108d7e6cb85e43064736f6c634300081b0033
+    ///0x60806040526004361015610011575f80fd5b5f5f3560e01c80631785f53c1461111f5780631fdb0cfd14611088578063279432eb1461100157806333cfb7b714610fdc5780633bc28c8c14610fb7578063485cc95514610e125780636b3aa72e14610dcd578063715018a614610d7057806377ef731d14610d2b5780638da5cb5b14610d025780639926ee7d14610b965780639da16d8e14610b0f578063a0169ddd14610a82578063a20b99bf146107ab578063a364f4da146106f5578063a98fb35514610647578063ba550880146105a3578063c1a8e2c5146103e2578063e481af9d146103b6578063f2fde38b14610325578063fc299dee146102fc5763fce36c7d1461010c575f80fd5b346101e95760203660031901126101e9576004356001600160401b0381116102f85761013c903690600401611326565b610147929192611d7e565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690825b8181106102945750813b15610290576040519363fce36c7d60e01b8552816024860160206004880152526044850160448360051b87010192828690609e19813603015b8383106101f75788808b8181808c0381838f5af180156101ec576101d85750f35b816101e2916112b4565b6101e95780f35b80fd5b6040513d84823e3d90fd5b9091929394956043198a820301865286358281121561028c5760206001928582930190608063ffffffff61027a826102406102328780611966565b60a0885260a088019161199a565b95898060a01b036102528983016111e4565b1688870152604081013560408701528361026e6060830161136d565b1660608701520161136d565b169101529801960194930191906101b7565b8980fd5b8280fd5b806102c96102b060206102aa600195878b611c5e565b01611952565b60406102bd84878b611c5e565b01359030903390611da1565b6102f26102dc60206102aa84878b611c5e565b8560406102ea85888c611c5e565b013591611dec565b01610174565b5080fd5b50346101e957806003193601126101e9576065546040516001600160a01b039091168152602090f35b50346101e95760203660031901126101e95761033f6111ce565b610347611c80565b6001600160a01b038116156103625761035f90611d36565b80f35b60405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608490fd5b50346101e957806003193601126101e9576103de6103d26119fe565b60405191829182611243565b0390f35b50346101e95760403660031901126101e9576103fc6111ce565b90602435916001600160401b0383116102f857366023840112156102f85782600401359261042984611356565b9361043760405195866112b4565b8085526024602086019160051b8301019136831161059f57602401905b828210610587575050507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03163303610578576040519061049b82611285565b6001600160a01b0390811682523060208301908152604083019485527f000000000000000000000000000000000000000000000000000000000000000090911693909190843b1561057457604051636e3492b560e01b815260206004820181905292516001600160a01b03908116602483015293519093166044840152516060606484015280516084840181905260a48401929190910190845b81811061055857505050818394818581819503925af180156101ec576101d85750f35b825163ffffffff16845260209384019390920191600101610535565b8380fd5b634394dbdf60e11b8252600482fd5b602080916105948461136d565b815201910190610454565b8480fd5b50346101e957806105b3366111f8565b6105be929192611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b1561059f57604051630664120160e01b81523060048201526001600160a01b0393841660248201529390921660448401526001600160e01b031916606483015282908290818381608481015b03925af180156101ec576101d85750f35b50346101e95760203660031901126101e957806004356001600160401b0381116106f257366023820112156106f25761068a9036906024816004013591016112f0565b610692611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156106f05760405163a98fb35560e01b81526020600482015291839183918290849082906106369060248301906118d7565b505b50fd5b50346101e95760203660031901126101e95761070f6111ce565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031633036105785781907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b156106f0576040516351b27a6d60e11b81526001600160a01b0390911660048201529082908290602490829084905af180156101ec576101d85750f35b50346101e95760203660031901126101e9576004356001600160401b0381116102f8576107dc903690600401611326565b91906107e6611d7e565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316825b8481106109cd5750803b156102905760409391935191634e5cd2fd60e11b8352806044840130600486015260406024860152526064830160648260051b850101918691869760be19813603015b838a10610880578880898181808b0381838e5af180156101ec576101d85750f35b909192939460631988820301845285358281121561028c578301906108b66108a88380611966565b60c0845260c084019161199a565b916001600160a01b036108cb602083016111e4565b16602083015260206108e06040830183611966565b848603604086015280865294909101938c905b80821061099d5750505063ffffffff61090e6060830161136d565b16606083015263ffffffff6109256080830161136d565b16608083015260a0810135601e1982360301811215610999570190602082359201906001600160401b03831161099957823603821361099957838360209485948460a0879660019a03910152818452848401378d838284010152601f8019910116010197019401990198919093929361085f565b8b80fd5b909194604080600192838060a01b036109b58a6111e4565b168152602089013560208201520196019201906108f3565b90929193829483955b6109ee6109e48585856118fb565b604081019061191d565b9050871015610a3e57610a056109e48585856118fb565b881015610a2a576001916020610a22928a60061b010135906113ee565b9601956109d6565b634e487b7160e01b86526032600452602486fd5b919550929391600191610a7c90610a66813033610a6160206102aa898f8e6118fb565b611da1565b84610a7760206102aa868c8b6118fb565b611dec565b01610812565b50346101e95760203660031901126101e95780610a9d6111ce565b610aa5611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b156106f05760405163a0169ddd60e01b81526001600160a01b0390911660048201529082908290602490829084905af180156101ec576101d85750f35b50346101e95760203660031901126101e95780610b2a6111ce565b610b32611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156106f057604051634f906cf960e01b81523060048201526001600160a01b0390921660248301528290829081838160448101610636565b50346101e95760403660031901126101e957610bb06111ce565b906024356001600160401b0381116102f857606060031982360301126102f85760405192610bdd84611285565b81600401356001600160401b0381116105745782013660238201121561057457610c119036906024600482013591016112f0565b8452602084019060248301358252604460408601930135835260018060a01b037f0000000000000000000000000000000000000000000000000000000000000000163303610cf35792938493907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690813b15610cef5785610cd193819560405197889687958694639926ee7d60e01b865260018060a01b0316600486015260406024860152516060604486015260a48501906118d7565b9151606484015251608483015203925af180156101ec576101d85750f35b8580fd5b634394dbdf60e11b8452600484fd5b50346101e957806003193601126101e9576033546040516001600160a01b039091168152602090f35b50346101e957806003193601126101e9576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346101e957806003193601126101e957610d89611c80565b603380546001600160a01b0319811690915581906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b50346101e957806003193601126101e9576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346101e95760403660031901126101e957610e2c6111ce565b602435906001600160a01b03821682036102905782549160ff8360081c161592838094610faa575b8015610f93575b15610f375760ff198116600117855583610f26575b5060ff845460081c1615610ecd57610e8a610e8f92611d36565b611cd8565b610e965780f35b61ff001981541681557f7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498602060405160018152a180f35b60405162461bcd60e51b815260206004820152602b60248201527f496e697469616c697a61626c653a20636f6e7472616374206973206e6f74206960448201526a6e697469616c697a696e6760a81b6064820152608490fd5b61ffff19166101011784555f610e70565b60405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b6064820152608490fd5b50303b158015610e5b5750600160ff821614610e5b565b50600160ff821610610e54565b50346101e95760203660031901126101e95761035f610fd46111ce565b610e8a611c80565b50346101e95760203660031901126101e9576103de6103d2610ffc6111ce565b611490565b50346101e95760203660031901126101e9578061101c6111ce565b611024611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156106f05760405163eb5a4e8760e01b81523060048201526001600160a01b0390921660248301528290829081838160448101610636565b50346101e95780611098366111f8565b6110a3929192611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b1561059f57604051634a86c03760e11b81523060048201526001600160a01b0393841660248201529390921660448401526001600160e01b03191660648301528290829081838160848101610636565b50346111ca5760203660031901126111ca576111396111ce565b611141611c80565b7f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316803b156111ca5760405163268959e560e01b81523060048201526001600160a01b039290921660248301525f908290604490829084905af180156111bf576111b1575080f35b6111bd91505f906112b4565b005b6040513d5f823e3d90fd5b5f80fd5b600435906001600160a01b03821682036111ca57565b35906001600160a01b03821682036111ca57565b60609060031901126111ca576004356001600160a01b03811681036111ca57906024356001600160a01b03811681036111ca57906044356001600160e01b0319811681036111ca5790565b60206040818301928281528451809452019201905f5b8181106112665750505090565b82516001600160a01b0316845260209384019390920191600101611259565b606081019081106001600160401b038211176112a057604052565b634e487b7160e01b5f52604160045260245ffd5b90601f801991011681019081106001600160401b038211176112a057604052565b6001600160401b0381116112a057601f01601f191660200190565b9291926112fc826112d5565b9161130a60405193846112b4565b8294818452818301116111ca578281602093845f960137010152565b9181601f840112156111ca578235916001600160401b0383116111ca576020808501948460051b0101116111ca57565b6001600160401b0381116112a05760051b60200190565b359063ffffffff821682036111ca57565b908160209103126111ca575160ff811681036111ca5790565b906113a182611356565b6113ae60405191826112b4565b82815280926113bf601f1991611356565b0190602036910137565b9081518110156113da570160200190565b634e487b7160e01b5f52603260045260245ffd5b919082018092116113fb57565b634e487b7160e01b5f52601160045260245ffd5b908160409103126111ca5760405190604082018281106001600160401b038211176112a0576040528051906001600160a01b03821682036111ca57602091835201516bffffffffffffffffffffffff811681036111ca57602082015290565b80518210156113da5760209160051b010190565b5f1981146113fb5760010190565b6040516309aa152760e11b81526001600160a01b039182166004820152907f000000000000000000000000000000000000000000000000000000000000000016602082602481845afa9182156111bf575f926118a3575b506040519163871ef04960e01b83526004830152602082602481845afa9182156111bf575f9261185f575b506001600160c01b0382169081159081156117fc575b506117e257805f915b6117bd575061ffff16611543816112d5565b9061155160405192836112b4565b808252611560601f19916112d5565b013660208301375f5f5b82518210806117b2575b156115c2576001811b84166001600160c01b031661159b575b61159690611482565b61156a565b9060016115969160ff60f81b8460f81b165f1a6115b882876113c9565b530191905061158d565b505f939250507f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690835b815185101561167d5761160885836113c9565b5160f81c60405190633ca5a5f560e01b82526004820152602081602481875afa9081156111bf575f9161164b575b50611643906001926113ee565b9401936115f5565b90506020813d8211611675575b81611665602093836112b4565b810103126111ca57516001611636565b3d9150611658565b611688919450611397565b925f905f5b81518110156117ac576116a081836113c9565b5160f81c60405190633ca5a5f560e01b8252806004830152602082602481895afa9182156111bf575f92611779575b50905f915b8183106116e65750505060010161168d565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156111bf57600192611742925f9161174b575b50838060a01b0390511661173c828d61146e565b52611482565b950191906116d4565b61176c915060403d8111611772575b61176481836112b4565b81019061140f565b5f611728565b503d61175a565b9091506020813d82116117a4575b81611794602093836112b4565b810103126111ca5751905f6116cf565b3d9150611787565b50505050565b506101008110611574565b5f1981018181116113fb5761ffff9116911661ffff81146113fb576001019080611531565b50506040516117f26020826112b4565b5f81525f36813790565b604051639aa1653d60e01b81529150602090829060049082905afa80156111bf5760ff915f91611830575b5016155f611528565b611852915060203d602011611858575b61184a81836112b4565b81019061137e565b5f611827565b503d611840565b9091506020813d60201161189b575b8161187b602093836112b4565b810103126111ca57516001600160c01b03811681036111ca57905f611512565b3d915061186e565b9091506020813d6020116118cf575b816118bf602093836112b4565b810103126111ca5751905f6114e7565b3d91506118b2565b805180835260209291819084018484015e5f828201840152601f01601f1916010190565b91908110156113da5760051b8101359060be19813603018212156111ca570190565b903590601e19813603018212156111ca57018035906001600160401b0382116111ca57602001918160061b360383136111ca57565b356001600160a01b03811681036111ca5790565b9035601e19823603018112156111ca5701602081359101916001600160401b0382116111ca578160061b360383136111ca57565b916020908281520191905f905b8082106119b45750505090565b909192833560018060a01b0381168091036111ca5781526020840135906bffffffffffffffffffffffff82168092036111ca576040816001936020839401520194019201906119a7565b604051639aa1653d60e01b81527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690602081600481855afa80156111bf5760ff915f91611c3f575b501680156117e2577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316905f9081905b808310611bc95750611a999150611397565b925f905f5b604051639aa1653d60e01b8152602081600481895afa80156111bf5760ff915f91611bab575b5016811015611ba457604051633ca5a5f560e01b815260ff821660048201819052602082602481895afa9182156111bf575f92611b71575b50905f915b818310611b1357505050600101611a9e565b604080516356e4026d60e11b815260ff83166004820152602481018590529396929391929190816044818b5afa9182156111bf57600192611b68925f9161174b5750838060a01b0390511661173c828d61146e565b95019190611b01565b9091506020813d8211611b9c575b81611b8c602093836112b4565b810103126111ca5751905f611afc565b3d9150611b7f565b5092505050565b611bc3915060203d81116118585761184a81836112b4565b5f611ac4565b90604051633ca5a5f560e01b815260ff84166004820152602081602481885afa9081156111bf575f91611c0d575b50611c04906001926113ee565b92019190611a87565b90506020813d8211611c37575b81611c27602093836112b4565b810103126111ca57516001611bf7565b3d9150611c1a565b611c58915060203d6020116118585761184a81836112b4565b5f611a4f565b91908110156113da5760051b81013590609e19813603018212156111ca570190565b6033546001600160a01b03163303611c9457565b606460405162461bcd60e51b815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fd5b606554604080516001600160a01b038084168252841660208201529192917fe11cddf1816a43318ca175bbc52cd0185436e9cbead7c83acc54a73e461717e39190a16001600160a01b03166001600160a01b03199190911617606555565b603380546001600160a01b039283166001600160a01b0319821681179092559091167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e05f80a3565b6065546001600160a01b03163303611d9257565b638e79fdb560e01b5f5260045ffd5b6040516323b872dd60e01b60208201526001600160a01b039283166024820152929091166044830152606480830193909352918152611dea91611de56084836112b4565b611eaa565b565b604051636eb1769f60e11b81523060048201526001600160a01b0383166024820152602081806044810103816001600160a01b0386165afa9081156111bf575f91611e76575b50611dea93611e40916113ee565b60405163095ea7b360e01b60208201526001600160a01b0390931660248401526044808401919091528252611de56064836112b4565b90506020813d602011611ea2575b81611e91602093836112b4565b810103126111ca5751611dea611e32565b3d9150611e84565b60408051909290916001600160a01b0316611ec584846112b4565b602083527f5361666545524332303a206c6f772d6c6576656c2063616c6c206661696c65646020840152803b15611fbf575f828192826020611f349796519301915af13d15611fb7573d90611f19826112d5565b91611f26865193846112b4565b82523d5f602084013e612003565b805180611f4057505050565b81602091810103126111ca57602001518015908115036111ca57611f615750565b5162461bcd60e51b815260206004820152602a60248201527f5361666545524332303a204552433230206f7065726174696f6e20646964206e6044820152691bdd081cdd58d8d9595960b21b6064820152608490fd5b606090612003565b835162461bcd60e51b815260206004820152601d60248201527f416464726573733a2063616c6c20746f206e6f6e2d636f6e74726163740000006044820152606490fd5b9091901561200f575090565b81511561201f5750805190602001fd5b60405162461bcd60e51b8152602060048201529081906120439060248301906118d7565b0390fdfea264697066735822122019a3a54fb4930a18dc3c9d8f4c3604482a5deda68c57fa78d69c3151feed904064736f6c634300081b0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R`\x046\x10\x15a\0\x11W_\x80\xFD[__5`\xE0\x1C\x80c&\xF0\x17\xE2\x14a\x14\xFDW\x80c3\xCF\xB7\xB7\x14a\x14\xD9W\x80c;\xC2\x8C\x8C\x14a\x14ZW\x80c=\x07\x14\"\x14a\x11vW\x80cg\x94\x0C\x89\x14a\x11XW\x80ck:\xA7.\x14a\x11\x13W\x80cn\xCB\xCC\xFE\x14a\x10\xA4W\x80cqP\x18\xA6\x14a\x10GW\x80cw\xEFs\x1D\x14a\x10\x02W\x80c\x84}cO\x14a\x0E\x17W\x80c\x89\x99\x81\x7F\x14a\r\x8EW\x80c\x8Dh4\x9A\x14a\rkW\x80c\x8D\xA5\xCB[\x14a\rBW\x80c\x99&\xEE}\x14a\x0B\xE1W\x80c\xA3d\xF4\xDA\x14a\x0B(W\x80c\xA9\x8F\xB3U\x14a\n\x90W\x80c\xB14Bq\x14a\ngW\x80c\xC1\xA8\xE2\xC5\x14a\x08\xB7W\x80c\xCA\x8A\xA7\xC7\x14a\x08rW\x80c\xCE{^K\x14a\x07\xEDW\x80c\xE4o\x18\x16\x14a\x07\xC4W\x80c\xE4\x81\xAF\x9D\x14a\x07\x98W\x80c\xF2_\x16\x10\x14a\x06\xD3W\x80c\xF2\xFD\xE3\x8B\x14a\x06\nW\x80c\xFC)\x9D\xEE\x14a\x05\xE1W\x80c\xFC\xD1\xC3u\x14a\x05\xC3Wc\xFC\xE3l}\x14a\x01CW_\x80\xFD[4a\x02-W` 6`\x03\x19\x01\x12a\x02-W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x05\xBFWa\x01s\x906\x90`\x04\x01a\x17\xF4V[`eT\x91\x92\x91`\x01`\x01`\xA0\x1B\x03\x163\x03a\x05?W\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x92\x82[\x82\x81\x10a\x03nWP\x83;\x15a\x03jW`@Q\x91c\xFC\xE3l}`\xE0\x1B\x83R\x80`$\x84\x01` `\x04\x86\x01RR`D\x83\x01\x90`D\x81`\x05\x1B\x85\x01\x01\x92\x80\x92\x86\x91`\x9E\x19\x816\x03\x01[\x84\x84\x10a\x02;W\x88\x80\x89\x81\x81\x8E\x81\x83\x81\x8F\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x81a\x02&\x91a\x16\x9BV[a\x02-W\x80\xF3[\x80\xFD[`@Q=\x84\x82>=\x90\xFD[\x90\x91\x92\x93\x94\x95`C\x19\x88\x82\x03\x01\x84R\x865\x82\x81\x12\x15a\x03fW\x83\x01\x90`\xA0\x81\x01\x91\x805`\x1E\x19\x826\x03\x01\x81\x12\x15a\x03\x10W\x81\x01` \x815\x91\x01\x93`\x01`\x01`@\x1B\x03\x82\x11a\x03bW\x81`\x06\x1B6\x03\x85\x13a\x03bW\x81\x90`\xA0\x85RR`\xC0\x83\x01\x93\x90\x8C\x90[\x80\x82\x10a\x03\x14WPPP` \x81\x015`\x01`\x01`\xA0\x1B\x03\x81\x16\x90\x81\x90\x03a\x03\x10W\x92\x82`\x80c\xFF\xFF\xFF\xFFa\x02\xFC\x82` \x97\x96`\x01\x99\x89\x80\x99\x01R`@\x81\x015`@\x87\x01R\x83a\x02\xF0``\x83\x01a\x16\xBCV[\x16``\x87\x01R\x01a\x16\xBCV[\x16\x91\x01R\x98\x01\x94\x01\x94\x01\x92\x94\x93\x91\x90a\x01\xFAV[\x8B\x80\xFD[\x91\x94\x90\x91\x90`\x01`\x01`\xA0\x1B\x03a\x03*\x87a\x16\x0FV[\x16\x81R` \x86\x015k\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x81\x16\x80\x91\x03a\x03^W` \x82\x01R`@\x90\x81\x01\x95\x01\x91`\x01\x01\x90a\x02\x9FV[\x8E\x80\xFD[\x8C\x80\xFD[\x89\x80\xFD[\x82\x80\xFD[\x83` `\x01`\x01`\xA0\x1B\x03a\x03\x8E\x82a\x03\x88\x86\x89\x89a \xD0V[\x01a \xF2V[\x16`d`@a\x03\x9E\x86\x89\x89a \xD0V[\x015`@Q\x94\x85\x93\x84\x92c#\xB8r\xDD`\xE0\x1B\x84R3`\x04\x85\x01R0`$\x85\x01R`D\x84\x01RZ\xF1\x80\x15a\x04\xDEWa\x05#W[P`\x01`\x01`\xA0\x1B\x03a\x03\xE9` a\x03\x88\x84\x87\x87a \xD0V[`@Qcn\xB1v\x9F`\xE1\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x88\x16`$\x82\x01R\x91` \x91\x83\x91`D\x91\x83\x91\x16Z\xFA\x90\x81\x15a\x04\xDEW\x90\x85\x91\x82\x91a\x04\xE9W[P` \x90a\x04\x95\x90a\x04b`\x01`\x01`\xA0\x1B\x03a\x04L\x85a\x03\x88\x89\x8C\x8Ca \xD0V[\x16\x91`@a\x04[\x88\x8B\x8Ba \xD0V[\x015a\x18$V[`@Qc\t^\xA7\xB3`\xE0\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x8B\x16`\x04\x82\x01R`$\x81\x01\x91\x90\x91R\x93\x84\x92\x83\x91\x90\x82\x90`D\x82\x01\x90V[\x03\x92Z\xF1\x80\x15a\x04\xDEW\x90`\x01\x92\x91a\x04\xB0W[P\x01a\x01\xB5V[a\x04\xD0\x90` =\x81\x11a\x04\xD7W[a\x04\xC8\x81\x83a\x16\x9BV[\x81\x01\x90a!\x06V[P_a\x04\xA9V[P=a\x04\xBEV[`@Q=\x87\x82>=\x90\xFD[\x91PP` \x81=\x82\x11a\x05\x1BW[\x81a\x05\x04` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x84\x90a\x04\x95a\x04*V[_\x80\xFD[=\x91Pa\x04\xF7V[a\x05:\x90` =\x81\x11a\x04\xD7Wa\x04\xC8\x81\x83a\x16\x9BV[a\x03\xD0V[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`L`$\x82\x01R\x7FServiceManagerBase.onlyRewardsIn`D\x82\x01R\x7Fitiator: caller is not the rewar`d\x82\x01Rk29\x904\xB74\xBA4\xB0\xBA7\xB9`\xA1\x1B`\x84\x82\x01R`\xA4\x90\xFD[P\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W` `hT`@Q\x90\x81R\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`eT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-Wa\x06$a\x15\xF9V[a\x06,a!\x1EV[`\x01`\x01`\xA0\x1B\x03\x16\x80\x15a\x06\x7FW`3\x80T`\x01`\x01`\xA0\x1B\x03\x19\x81\x16\x83\x17\x90\x91U`\x01`\x01`\xA0\x1B\x03\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0\x83\x80\xA3\x80\xF3[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`&`$\x82\x01R\x7FOwnable: new owner is the zero a`D\x82\x01Reddress`\xD0\x1B`d\x82\x01R`\x84\x90\xFD[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x80`\x045`\x01`\x01`\xA0\x1B\x03\x81\x16\x90\x81\x90\x03a\x07\x95Wa\x07/3\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x07\x93W\x82\x91`D\x83\x92`@Q\x94\x85\x93\x84\x92c4\xF6[\xFD`\xE2\x1B\x84R0`\x04\x85\x01R`$\x84\x01RZ\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[P[P\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-Wa\x07\xC0a\x07\xB4a\x1EpV[`@Q\x91\x82\x91\x82a\x16#V[\x03\x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`gT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W\x80a\x07\xFD6a\x17\xB8V[\x90a\x08\x06a!vV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x91\x82;\x15a\x08mWa\x08\\\x92\x84\x92\x83`@Q\x80\x96\x81\x95\x82\x94c\xB6k\xD9\x89`\xE0\x1B\x84R0`\x04\x85\x01a\x1D\xB9V[\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[PPP\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x02-W`@6`\x03\x19\x01\x12a\x02-Wa\x08\xD1a\x15\xF9V[\x90`$5`\x01`\x01`@\x1B\x03\x81\x11a\x05\xBFWa\x08\xF1\x906\x90`\x04\x01a\x17\xF4V[\x92a\t&3\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x14a\x1D\xE3V[`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x94\x90\x91a\t_\x83a\x16\x80V[`\x01`\x01`\xA0\x1B\x03\x16\x82R0` \x83\x01\x90\x81R\x92a\t|\x82a\x16\xCDV[\x91a\t\x8A`@Q\x93\x84a\x16\x9BV[\x80\x83R` \x83\x01\x90`\x05\x1B\x82\x01\x916\x83\x11a\ncW\x90[\x82\x82\x10a\nKWPPP`@\x82\x01\x90\x81R\x84;\x15a\nGW`@Qcn4\x92\xB5`\xE0\x1B\x81R` `\x04\x82\x01\x81\x90R\x92Q`\x01`\x01`\xA0\x1B\x03\x90\x81\x16`$\x83\x01R\x93Q\x90\x93\x16`D\x84\x01RQ```d\x84\x01R\x80Q`\x84\x84\x01\x81\x90R`\xA4\x84\x01\x92\x91\x90\x91\x01\x90\x84[\x81\x81\x10a\n+WPPP\x81\x83\x94\x81\x85\x81\x81\x95\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x82Qc\xFF\xFF\xFF\xFF\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\n\x08V[\x83\x80\xFD[` \x80\x91a\nX\x84a\x16\xBCV[\x81R\x01\x91\x01\x90a\t\xA1V[\x86\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`fT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x80`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x07\x95Wa\n\xC2\x906\x90`\x04\x01a\x17\x9AV[a\n\xCAa!\x1EV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x07\x93W`@Qc\xA9\x8F\xB3U`\xE0\x1B\x81R` `\x04\x82\x01R\x91\x83\x91\x83\x91\x82\x90\x84\x90\x82\x90a\x08\\\x90`$\x83\x01\x90a\x1D\x95V[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x80a\x0BCa\x15\xF9V[a\x0Bw3\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x07\x93W`@QcQ\xB2zm`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x90\x91\x16`\x04\x82\x01R\x90\x82\x90\x82\x90`$\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[P4a\x02-W`@6`\x03\x19\x01\x12a\x02-W\x80a\x0B\xFCa\x15\xF9V[`$5\x90`\x01`\x01`@\x1B\x03\x82\x11a\x07\x93W```\x03\x19\x836\x03\x01\x12a\x07\x93W`@Q\x90a\x0C)\x82a\x16\x80V[\x82`\x04\x015`\x01`\x01`@\x1B\x03\x81\x11a\r>W\x83\x016`#\x82\x01\x12\x15a\r>Wa\x0C]\x906\x90`$`\x04\x82\x015\x91\x01a\x17dV[\x82R` \x82\x01\x91`$\x84\x015\x83R`D`@\x82\x01\x94\x015\x84Ra\x0C\xA9`\x01\x80`\xA0\x1B\x03\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x163\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\r:W\x85a\r\x1C\x93\x81\x95`@Q\x97\x88\x96\x87\x95\x86\x94c\x99&\xEE}`\xE0\x1B\x86R`\x01\x80`\xA0\x1B\x03\x16`\x04\x86\x01R`@`$\x86\x01RQ```D\x86\x01R`\xA4\x85\x01\x90a\x1D\x95V[\x91Q`d\x84\x01RQ`\x84\x83\x01R\x03\x92Z\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x85\x80\xFD[\x84\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`3T`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W` `\xFF`iT\x16`@Q\x90\x15\x15\x81R\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W\x7F/\x8A\xFC\x8Ax\xFD\x95\x8F3\x01\xC0#:\xA3&\xB9\xC4\xB9\xA2\x88Jt\x83\"}k\x05U\xAA\xA0:\xDBa\x0E\x11a\r\xCCa\x15\xF9V[a\r\xD4a!\x1EV[`g\x80T`\x01`\x01`\xA0\x1B\x03\x19\x16`\x01`\x01`\xA0\x1B\x03\x92\x90\x92\x16\x91\x82\x17\x90UB`h\x81\x90U`@\x80Q\x92\x83R` \x83\x01\x91\x90\x91R\x90\x91\x82\x91\x82\x01\x90V[\x03\x90\xA1\x80\xF3[P4a\x02-W` 6`\x03\x19\x01\x12a\x02-W`\x045\x90`\x01`\x01`@\x1B\x03\x82\x11a\x02-W6`#\x83\x01\x12\x15a\x02-W\x81`\x04\x015a\x0ET\x81a\x16\xCDV[\x92a\x0Eb`@Q\x94\x85a\x16\x9BV[\x81\x84R` \x84\x01\x90`$\x82\x93`\x05\x1B\x82\x01\x01\x906\x82\x11a\r>W`$\x81\x01\x92[\x82\x84\x10a\x0F\x8CWPa\x0E\xC2\x92PPP`\x01`\x01`\xA0\x1B\x03\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x163\x14a\x1D\xE3V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x03jW`@Q\x91c\x010\xFC'`\xE5\x1B\x83R`D\x83\x01\x940`\x04\x85\x01R`@`$\x85\x01RQ\x80\x95R`d\x83\x01\x94`d\x81`\x05\x1B\x85\x01\x01\x91\x90\x85[\x81\x81\x10a\x0FJW\x86\x80\x87\x81\x81\x80\x89\x03\x81\x83\x8CZ\xF1\x80\x15a\x020Wa\x02\x1CWP\xF3[\x90\x91\x92` \x80a\x0F}`\x01\x93`c\x19\x8A\x82\x03\x01\x8CR`@\x83\x89Qc\xFF\xFF\xFF\xFF\x81Q\x16\x84R\x01Q\x91\x81\x85\x82\x01R\x01\x90a\x1DYV[\x95\x01\x98\x01\x91\x01\x96\x91\x90\x96a\x0F)V[\x835`\x01`\x01`@\x1B\x03\x81\x11a\ncW\x82\x01`@`#\x19\x826\x03\x01\x12a\ncW`@Q\x90a\x0F\xB9\x82a\x16eV[a\x0F\xC5`$\x82\x01a\x16\xBCV[\x82R`D\x81\x015`\x01`\x01`@\x1B\x03\x81\x11a\x0F\xFEW\x91a\x0F\xEF` \x94\x92`$\x86\x956\x92\x01\x01a\x16\xE4V[\x83\x82\x01R\x81R\x01\x93\x01\x92a\x0E\x82V[\x88\x80\xFD[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-Wa\x10`a!\x1EV[`3\x80T`\x01`\x01`\xA0\x1B\x03\x19\x81\x16\x90\x91U\x81\x90`\x01`\x01`\xA0\x1B\x03\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0\x82\x80\xA3\x80\xF3[P4a\x02-W\x80a\x10\xB46a\x17\xB8V[\x90a\x10\xBDa!vV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x91\x82;\x15a\x08mWa\x08\\\x92\x84\x92\x83`@Q\x80\x96\x81\x95\x82\x94c\x02\x87\xF7Q`\xE5\x1B\x84R0`\x04\x85\x01a\x1D\xB9V[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x02-W\x80`\x03\x196\x01\x12a\x02-W` `@Qb\t:\x80\x81R\xF3[P4a\x05\x17W` 6`\x03\x19\x01\x12a\x05\x17W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x05\x17W`\xA0`\x03\x19\x826\x03\x01\x12a\x05\x17W`@Q\x90`\xA0\x82\x01\x82\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@Ra\x11\xD0\x81`\x04\x01a\x16\x0FV[\x82Ra\x11\xDE`$\x82\x01a\x16\xBCV[\x90` \x83\x01\x91\x82R`D\x81\x015`\x01`\x01`@\x1B\x03\x81\x11a\x05\x17Wa\x12\t\x90`\x046\x91\x84\x01\x01a\x16\xE4V[\x91`@\x84\x01\x92\x83R`d\x82\x015`\x01`\x01`@\x1B\x03\x81\x11a\x05\x17W\x82\x01\x916`#\x84\x01\x12\x15a\x05\x17W`\x04\x83\x015\x92a\x12A\x84a\x16\xCDV[\x93a\x12O`@Q\x95\x86a\x16\x9BV[\x80\x85R` `\x04\x81\x87\x01\x92`\x05\x1B\x84\x01\x01\x01\x916\x83\x11a\x05\x17W`$\x01\x90[\x82\x82\x10a\x146WPPP``\x85\x01\x92\x83R`\x84\x81\x015\x90`\x01`\x01`@\x1B\x03\x82\x11a\x05\x17W`\x04a\x12\xA2\x926\x92\x01\x01a\x17\x9AV[`\x80\x85\x01\x90\x81R`fT\x90\x91\x90`\x01`\x01`\xA0\x1B\x03\x163\x03a\x13\xCBW\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x93\x84;\x15a\x05\x17W`@\x80Qc65 W`\xE0\x1B\x81R0`\x04\x82\x01R`$\x81\x01\x91\x90\x91R\x95Q`\x01`\x01`\xA0\x1B\x03\x16`D\x87\x01R\x90Qc\xFF\xFF\xFF\xFF\x16`d\x86\x01RQ`\xA0`\x84\x86\x01R\x84\x92\x91\x90a\x13C\x90`\xE4\x85\x01\x90a\x1DYV[\x91Q\x91`C\x19\x84\x82\x03\x01`\xA4\x85\x01R` \x80\x84Q\x92\x83\x81R\x01\x93\x01\x90_[\x81\x81\x10a\x13\xB2WPPP_\x83a\x13\x87\x82\x96\x94\x82\x94Q`C\x19\x84\x83\x03\x01`\xC4\x85\x01Ra\x1D\x95V[\x03\x92Z\xF1\x80\x15a\x13\xA7Wa\x13\x99WP\x80\xF3[a\x13\xA5\x91P_\x90a\x16\x9BV[\0[`@Q=_\x82>=\x90\xFD[\x82Q\x85R\x87\x95P` \x94\x85\x01\x94\x90\x92\x01\x91`\x01\x01a\x13aV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`9`$\x82\x01R\x7FServiceManagerBase.onlySlasher: `D\x82\x01R\x7Fcaller is not the slasher\0\0\0\0\0\0\0`d\x82\x01R`\x84\x90\xFD[\x815\x81R` \x91\x82\x01\x91\x01a\x12nV[cNH{q`\xE0\x1B_R`A`\x04R`$_\xFD[4a\x05\x17W` 6`\x03\x19\x01\x12a\x05\x17Wa\x14sa\x15\xF9V[a\x14{a!\x1EV[`eT`@\x80Q`\x01`\x01`\xA0\x1B\x03\x80\x84\x16\x82R\x84\x16` \x82\x01R\x91\x92\x91\x7F\xE1\x1C\xDD\xF1\x81jC1\x8C\xA1u\xBB\xC5,\xD0\x18T6\xE9\xCB\xEA\xD7\xC8:\xCCT\xA7>F\x17\x17\xE3\x91\x90\xA1`\x01`\x01`\xA0\x1B\x03\x16`\x01`\x01`\xA0\x1B\x03\x19\x91\x90\x91\x16\x17`eU\0[4a\x05\x17W` 6`\x03\x19\x01\x12a\x05\x17Wa\x07\xC0a\x07\xB4a\x14\xF8a\x15\xF9V[a\x19\x12V[4a\x05\x17W_6`\x03\x19\x01\x12a\x05\x17Wa\x15\x15a!\x1EV[`hTb\t:\x80\x81\x01\x80\x91\x11a\x15\xE5WB\x10a\x15\x89W`gT`fT`@\x80Q`\x01`\x01`\xA0\x1B\x03\x80\x84\x16\x82R\x84\x16` \x82\x01\x81\x90R\x92\x91\x7F\xE0\xD4\x9AT'D#\x18=\xAD\xEC\xBD\xF29\xEA\xACn\x06\xBA\x882\x0B&\xFE\x8C\xC5\xEC\x9D\x05\nc\x95\x91\xA1`\x01`\x01`\xA0\x1B\x03\x19\x90\x81\x16\x91\x90\x91\x17`fU\x16`gU\0[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`.`$\x82\x01R\x7FServiceManager: Slasher proposal`D\x82\x01Rm\x08\x19\x19[\x18^H\x1B\x9B\xDD\x08\x1BY]`\x92\x1B`d\x82\x01R`\x84\x90\xFD[cNH{q`\xE0\x1B_R`\x11`\x04R`$_\xFD[`\x045\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x05\x17WV[5\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x05\x17WV[` `@\x81\x83\x01\x92\x82\x81R\x84Q\x80\x94R\x01\x92\x01\x90_[\x81\x81\x10a\x16FWPPP\x90V[\x82Q`\x01`\x01`\xA0\x1B\x03\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x169V[`@\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@RV[``\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@RV[\x90`\x1F\x80\x19\x91\x01\x16\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x14FW`@RV[5\x90c\xFF\xFF\xFF\xFF\x82\x16\x82\x03a\x05\x17WV[`\x01`\x01`@\x1B\x03\x81\x11a\x14FW`\x05\x1B` \x01\x90V[\x90\x80`\x1F\x83\x01\x12\x15a\x05\x17W\x815a\x16\xFB\x81a\x16\xCDV[\x92a\x17\t`@Q\x94\x85a\x16\x9BV[\x81\x84R` \x80\x85\x01\x92`\x05\x1B\x82\x01\x01\x92\x83\x11a\x05\x17W` \x01\x90[\x82\x82\x10a\x171WPPP\x90V[` \x80\x91a\x17>\x84a\x16\x0FV[\x81R\x01\x91\x01\x90a\x17$V[`\x01`\x01`@\x1B\x03\x81\x11a\x14FW`\x1F\x01`\x1F\x19\x16` \x01\x90V[\x92\x91\x92a\x17p\x82a\x17IV[\x91a\x17~`@Q\x93\x84a\x16\x9BV[\x82\x94\x81\x84R\x81\x83\x01\x11a\x05\x17W\x82\x81` \x93\x84_\x96\x017\x01\x01RV[\x90\x80`\x1F\x83\x01\x12\x15a\x05\x17W\x81` a\x17\xB5\x935\x91\x01a\x17dV[\x90V[\x90`@`\x03\x19\x83\x01\x12a\x05\x17W`\x045c\xFF\xFF\xFF\xFF\x81\x16\x81\x03a\x05\x17W\x91`$5\x90`\x01`\x01`@\x1B\x03\x82\x11a\x05\x17Wa\x17\xB5\x91`\x04\x01a\x16\xE4V[\x91\x81`\x1F\x84\x01\x12\x15a\x05\x17W\x825\x91`\x01`\x01`@\x1B\x03\x83\x11a\x05\x17W` \x80\x85\x01\x94\x84`\x05\x1B\x01\x01\x11a\x05\x17WV[\x91\x90\x82\x01\x80\x92\x11a\x15\xE5WV[\x90\x81` \x91\x03\x12a\x05\x17WQ`\xFF\x81\x16\x81\x03a\x05\x17W\x90V[\x90a\x18T\x82a\x16\xCDV[a\x18a`@Q\x91\x82a\x16\x9BV[\x82\x81R\x80\x92a\x18r`\x1F\x19\x91a\x16\xCDV[\x01\x90` 6\x91\x017V[\x90\x81Q\x81\x10\x15a\x18\x8DW\x01` \x01\x90V[cNH{q`\xE0\x1B_R`2`\x04R`$_\xFD[\x90\x81`@\x91\x03\x12a\x05\x17W`@Q\x90a\x18\xB9\x82a\x16eV[\x80Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x05\x17W` \x91\x83R\x01Qk\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x81\x16\x81\x03a\x05\x17W` \x82\x01R\x90V[\x80Q\x82\x10\x15a\x18\x8DW` \x91`\x05\x1B\x01\x01\x90V[_\x19\x81\x14a\x15\xE5W`\x01\x01\x90V[`@Qc\t\xAA\x15'`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x91\x82\x16`\x04\x82\x01R\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x16` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1D%W[P`@Q\x91c\x87\x1E\xF0I`\xE0\x1B\x83R`\x04\x83\x01R` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1C\xE1W[P`\x01`\x01`\xC0\x1B\x03\x82\x16\x90\x81\x15\x90\x81\x15a\x1C~W[Pa\x1CdW\x80_\x91[a\x1C?WPa\xFF\xFF\x16a\x19\xC5\x81a\x17IV[\x90a\x19\xD3`@Q\x92\x83a\x16\x9BV[\x80\x82Ra\x19\xE2`\x1F\x19\x91a\x17IV[\x016` \x83\x017__[\x82Q\x82\x10\x80a\x1C4W[\x15a\x1ADW`\x01\x81\x1B\x84\x16`\x01`\x01`\xC0\x1B\x03\x16a\x1A\x1DW[a\x1A\x18\x90a\x19\x04V[a\x19\xECV[\x90`\x01a\x1A\x18\x91`\xFF`\xF8\x1B\x84`\xF8\x1B\x16_\x1Aa\x1A:\x82\x87a\x18|V[S\x01\x91\x90Pa\x1A\x0FV[P_\x93\x92PP\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x83[\x81Q\x85\x10\x15a\x1A\xFFWa\x1A\x8A\x85\x83a\x18|V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R`\x04\x82\x01R` \x81`$\x81\x87Z\xFA\x90\x81\x15a\x13\xA7W_\x91a\x1A\xCDW[Pa\x1A\xC5\x90`\x01\x92a\x18$V[\x94\x01\x93a\x1AwV[\x90P` \x81=\x82\x11a\x1A\xF7W[\x81a\x1A\xE7` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ`\x01a\x1A\xB8V[=\x91Pa\x1A\xDAV[a\x1B\n\x91\x94Pa\x18JV[\x92_\x90_[\x81Q\x81\x10\x15a\x1C.Wa\x1B\"\x81\x83a\x18|V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R\x80`\x04\x83\x01R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1B\xFBW[P\x90_\x91[\x81\x83\x10a\x1BhWPPP`\x01\x01a\x1B\x0FV[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x13\xA7W`\x01\x92a\x1B\xC4\x92_\x91a\x1B\xCDW[P\x83\x80`\xA0\x1B\x03\x90Q\x16a\x1B\xBE\x82\x8Da\x18\xF0V[Ra\x19\x04V[\x95\x01\x91\x90a\x1BVV[a\x1B\xEE\x91P`@=\x81\x11a\x1B\xF4W[a\x1B\xE6\x81\x83a\x16\x9BV[\x81\x01\x90a\x18\xA1V[_a\x1B\xAAV[P=a\x1B\xDCV[\x90\x91P` \x81=\x82\x11a\x1C&W[\x81a\x1C\x16` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x90_a\x1BQV[=\x91Pa\x1C\tV[PPPPV[Pa\x01\0\x81\x10a\x19\xF6V[_\x19\x81\x01\x81\x81\x11a\x15\xE5Wa\xFF\xFF\x91\x16\x91\x16a\xFF\xFF\x81\x14a\x15\xE5W`\x01\x01\x90\x80a\x19\xB3V[PP`@Qa\x1Ct` \x82a\x16\x9BV[_\x81R_6\x817\x90V[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x91P` \x90\x82\x90`\x04\x90\x82\x90Z\xFA\x80\x15a\x13\xA7W`\xFF\x91_\x91a\x1C\xB2W[P\x16\x15_a\x19\xAAV[a\x1C\xD4\x91P` =` \x11a\x1C\xDAW[a\x1C\xCC\x81\x83a\x16\x9BV[\x81\x01\x90a\x181V[_a\x1C\xA9V[P=a\x1C\xC2V[\x90\x91P` \x81=` \x11a\x1D\x1DW[\x81a\x1C\xFD` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ`\x01`\x01`\xC0\x1B\x03\x81\x16\x81\x03a\x05\x17W\x90_a\x19\x94V[=\x91Pa\x1C\xF0V[\x90\x91P` \x81=` \x11a\x1DQW[\x81a\x1DA` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x90_a\x19iV[=\x91Pa\x1D4V[\x90` \x80\x83Q\x92\x83\x81R\x01\x92\x01\x90_[\x81\x81\x10a\x1DvWPPP\x90V[\x82Q`\x01`\x01`\xA0\x1B\x03\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x1DiV[\x80Q\x80\x83R` \x92\x91\x81\x90\x84\x01\x84\x84\x01^_\x82\x82\x01\x84\x01R`\x1F\x01`\x1F\x19\x16\x01\x01\x90V[c\xFF\xFF\xFF\xFFa\x17\xB5\x94\x93``\x93`\x01\x80`\xA0\x1B\x03\x16\x83R\x16` \x82\x01R\x81`@\x82\x01R\x01\x90a\x1DYV[\x15a\x1D\xEAWV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`R`$\x82\x01R\x7FServiceManagerBase.onlyRegistryC`D\x82\x01R\x7Foordinator: caller is not the re`d\x82\x01Rq3\xB4\xB9\xBA9<\x901\xB7\xB7\xB924\xB70\xBA7\xB9`q\x1B`\x84\x82\x01R`\xA4\x90\xFD[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90` \x81`\x04\x81\x85Z\xFA\x80\x15a\x13\xA7W`\xFF\x91_\x91a \xB1W[P\x16\x80\x15a\x1CdW\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90_\x90\x81\x90[\x80\x83\x10a ;WPa\x1F\x0B\x91Pa\x18JV[\x92_\x90_[`@Qc\x9A\xA1e=`\xE0\x1B\x81R` \x81`\x04\x81\x89Z\xFA\x80\x15a\x13\xA7W`\xFF\x91_\x91a \x1DW[P\x16\x81\x10\x15a \x16W`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x82\x16`\x04\x82\x01\x81\x90R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x13\xA7W_\x92a\x1F\xE3W[P\x90_\x91[\x81\x83\x10a\x1F\x85WPPP`\x01\x01a\x1F\x10V[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x13\xA7W`\x01\x92a\x1F\xDA\x92_\x91a\x1B\xCDWP\x83\x80`\xA0\x1B\x03\x90Q\x16a\x1B\xBE\x82\x8Da\x18\xF0V[\x95\x01\x91\x90a\x1FsV[\x90\x91P` \x81=\x82\x11a \x0EW[\x81a\x1F\xFE` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ\x90_a\x1FnV[=\x91Pa\x1F\xF1V[P\x92PPPV[a 5\x91P` =\x81\x11a\x1C\xDAWa\x1C\xCC\x81\x83a\x16\x9BV[_a\x1F6V[\x90`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x84\x16`\x04\x82\x01R` \x81`$\x81\x88Z\xFA\x90\x81\x15a\x13\xA7W_\x91a \x7FW[Pa v\x90`\x01\x92a\x18$V[\x92\x01\x91\x90a\x1E\xF9V[\x90P` \x81=\x82\x11a \xA9W[\x81a \x99` \x93\x83a\x16\x9BV[\x81\x01\x03\x12a\x05\x17WQ`\x01a iV[=\x91Pa \x8CV[a \xCA\x91P` =` \x11a\x1C\xDAWa\x1C\xCC\x81\x83a\x16\x9BV[_a\x1E\xC1V[\x91\x90\x81\x10\x15a\x18\x8DW`\x05\x1B\x81\x015\x90`\x9E\x19\x816\x03\x01\x82\x12\x15a\x05\x17W\x01\x90V[5`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x05\x17W\x90V[\x90\x81` \x91\x03\x12a\x05\x17WQ\x80\x15\x15\x81\x03a\x05\x17W\x90V[`3T`\x01`\x01`\xA0\x1B\x03\x163\x03a!2WV[`d`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R` `$\x82\x01R\x7FOwnable: caller is not the owner`D\x82\x01R\xFD[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x163\x03a!\xA8WV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`F`$\x82\x01R\x7FServiceManagerBase.onlyStakeRegi`D\x82\x01R\x7Fstry: caller is not the stake re`d\x82\x01Registry`\xD0\x1B`\x84\x82\x01R`\xA4\x90\xFD\xFE\xA2dipfsX\"\x12 M\x9A9_\xD2\xD7\xBE7\x15\xF8\xC3\xB3\xD9&NhH\x8D\x03\xCE\x1E\r\xBB\xAB\xF1\x08\xD7\xE6\xCB\x85\xE40dsolcC\0\x08\x1B\x003",
+        b"`\x80`@R`\x046\x10\x15a\0\x11W_\x80\xFD[__5`\xE0\x1C\x80c\x17\x85\xF5<\x14a\x11\x1FW\x80c\x1F\xDB\x0C\xFD\x14a\x10\x88W\x80c'\x942\xEB\x14a\x10\x01W\x80c3\xCF\xB7\xB7\x14a\x0F\xDCW\x80c;\xC2\x8C\x8C\x14a\x0F\xB7W\x80cH\\\xC9U\x14a\x0E\x12W\x80ck:\xA7.\x14a\r\xCDW\x80cqP\x18\xA6\x14a\rpW\x80cw\xEFs\x1D\x14a\r+W\x80c\x8D\xA5\xCB[\x14a\r\x02W\x80c\x99&\xEE}\x14a\x0B\x96W\x80c\x9D\xA1m\x8E\x14a\x0B\x0FW\x80c\xA0\x16\x9D\xDD\x14a\n\x82W\x80c\xA2\x0B\x99\xBF\x14a\x07\xABW\x80c\xA3d\xF4\xDA\x14a\x06\xF5W\x80c\xA9\x8F\xB3U\x14a\x06GW\x80c\xBAU\x08\x80\x14a\x05\xA3W\x80c\xC1\xA8\xE2\xC5\x14a\x03\xE2W\x80c\xE4\x81\xAF\x9D\x14a\x03\xB6W\x80c\xF2\xFD\xE3\x8B\x14a\x03%W\x80c\xFC)\x9D\xEE\x14a\x02\xFCWc\xFC\xE3l}\x14a\x01\x0CW_\x80\xFD[4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x02\xF8Wa\x01<\x906\x90`\x04\x01a\x13&V[a\x01G\x92\x91\x92a\x1D~V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x82[\x81\x81\x10a\x02\x94WP\x81;\x15a\x02\x90W`@Q\x93c\xFC\xE3l}`\xE0\x1B\x85R\x81`$\x86\x01` `\x04\x88\x01RR`D\x85\x01`D\x83`\x05\x1B\x87\x01\x01\x92\x82\x86\x90`\x9E\x19\x816\x03\x01[\x83\x83\x10a\x01\xF7W\x88\x80\x8B\x81\x81\x80\x8C\x03\x81\x83\x8FZ\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x81a\x01\xE2\x91a\x12\xB4V[a\x01\xE9W\x80\xF3[\x80\xFD[`@Q=\x84\x82>=\x90\xFD[\x90\x91\x92\x93\x94\x95`C\x19\x8A\x82\x03\x01\x86R\x865\x82\x81\x12\x15a\x02\x8CW` `\x01\x92\x85\x82\x93\x01\x90`\x80c\xFF\xFF\xFF\xFFa\x02z\x82a\x02@a\x022\x87\x80a\x19fV[`\xA0\x88R`\xA0\x88\x01\x91a\x19\x9AV[\x95\x89\x80`\xA0\x1B\x03a\x02R\x89\x83\x01a\x11\xE4V[\x16\x88\x87\x01R`@\x81\x015`@\x87\x01R\x83a\x02n``\x83\x01a\x13mV[\x16``\x87\x01R\x01a\x13mV[\x16\x91\x01R\x98\x01\x96\x01\x94\x93\x01\x91\x90a\x01\xB7V[\x89\x80\xFD[\x82\x80\xFD[\x80a\x02\xC9a\x02\xB0` a\x02\xAA`\x01\x95\x87\x8Ba\x1C^V[\x01a\x19RV[`@a\x02\xBD\x84\x87\x8Ba\x1C^V[\x015\x900\x903\x90a\x1D\xA1V[a\x02\xF2a\x02\xDC` a\x02\xAA\x84\x87\x8Ba\x1C^V[\x85`@a\x02\xEA\x85\x88\x8Ca\x1C^V[\x015\x91a\x1D\xECV[\x01a\x01tV[P\x80\xFD[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`eT`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x03?a\x11\xCEV[a\x03Ga\x1C\x80V[`\x01`\x01`\xA0\x1B\x03\x81\x16\x15a\x03bWa\x03_\x90a\x1D6V[\x80\xF3[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`&`$\x82\x01R\x7FOwnable: new owner is the zero a`D\x82\x01Reddress`\xD0\x1B`d\x82\x01R`\x84\x90\xFD[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9Wa\x03\xDEa\x03\xD2a\x19\xFEV[`@Q\x91\x82\x91\x82a\x12CV[\x03\x90\xF3[P4a\x01\xE9W`@6`\x03\x19\x01\x12a\x01\xE9Wa\x03\xFCa\x11\xCEV[\x90`$5\x91`\x01`\x01`@\x1B\x03\x83\x11a\x02\xF8W6`#\x84\x01\x12\x15a\x02\xF8W\x82`\x04\x015\x92a\x04)\x84a\x13VV[\x93a\x047`@Q\x95\x86a\x12\xB4V[\x80\x85R`$` \x86\x01\x91`\x05\x1B\x83\x01\x01\x916\x83\x11a\x05\x9FW`$\x01\x90[\x82\x82\x10a\x05\x87WPPP\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x163\x03a\x05xW`@Q\x90a\x04\x9B\x82a\x12\x85V[`\x01`\x01`\xA0\x1B\x03\x90\x81\x16\x82R0` \x83\x01\x90\x81R`@\x83\x01\x94\x85R\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x90\x91\x16\x93\x90\x91\x90\x84;\x15a\x05tW`@Qcn4\x92\xB5`\xE0\x1B\x81R` `\x04\x82\x01\x81\x90R\x92Q`\x01`\x01`\xA0\x1B\x03\x90\x81\x16`$\x83\x01R\x93Q\x90\x93\x16`D\x84\x01RQ```d\x84\x01R\x80Q`\x84\x84\x01\x81\x90R`\xA4\x84\x01\x92\x91\x90\x91\x01\x90\x84[\x81\x81\x10a\x05XWPPP\x81\x83\x94\x81\x85\x81\x81\x95\x03\x92Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x82Qc\xFF\xFF\xFF\xFF\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x055V[\x83\x80\xFD[cC\x94\xDB\xDF`\xE1\x1B\x82R`\x04\x82\xFD[` \x80\x91a\x05\x94\x84a\x13mV[\x81R\x01\x91\x01\x90a\x04TV[\x84\x80\xFD[P4a\x01\xE9W\x80a\x05\xB36a\x11\xF8V[a\x05\xBE\x92\x91\x92a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x05\x9FW`@Qc\x06d\x12\x01`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x93\x84\x16`$\x82\x01R\x93\x90\x92\x16`D\x84\x01R`\x01`\x01`\xE0\x1B\x03\x19\x16`d\x83\x01R\x82\x90\x82\x90\x81\x83\x81`\x84\x81\x01[\x03\x92Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x06\xF2W6`#\x82\x01\x12\x15a\x06\xF2Wa\x06\x8A\x906\x90`$\x81`\x04\x015\x91\x01a\x12\xF0V[a\x06\x92a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x06\xF0W`@Qc\xA9\x8F\xB3U`\xE0\x1B\x81R` `\x04\x82\x01R\x91\x83\x91\x83\x91\x82\x90\x84\x90\x82\x90a\x066\x90`$\x83\x01\x90a\x18\xD7V[P[P\xFD[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x07\x0Fa\x11\xCEV[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x163\x03a\x05xW\x81\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x06\xF0W`@QcQ\xB2zm`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x90\x91\x16`\x04\x82\x01R\x90\x82\x90\x82\x90`$\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W`\x045`\x01`\x01`@\x1B\x03\x81\x11a\x02\xF8Wa\x07\xDC\x906\x90`\x04\x01a\x13&V[\x91\x90a\x07\xE6a\x1D~V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x82[\x84\x81\x10a\t\xCDWP\x80;\x15a\x02\x90W`@\x93\x91\x93Q\x91cN\\\xD2\xFD`\xE1\x1B\x83R\x80`D\x84\x010`\x04\x86\x01R`@`$\x86\x01RR`d\x83\x01`d\x82`\x05\x1B\x85\x01\x01\x91\x86\x91\x86\x97`\xBE\x19\x816\x03\x01[\x83\x8A\x10a\x08\x80W\x88\x80\x89\x81\x81\x80\x8B\x03\x81\x83\x8EZ\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x90\x91\x92\x93\x94`c\x19\x88\x82\x03\x01\x84R\x855\x82\x81\x12\x15a\x02\x8CW\x83\x01\x90a\x08\xB6a\x08\xA8\x83\x80a\x19fV[`\xC0\x84R`\xC0\x84\x01\x91a\x19\x9AV[\x91`\x01`\x01`\xA0\x1B\x03a\x08\xCB` \x83\x01a\x11\xE4V[\x16` \x83\x01R` a\x08\xE0`@\x83\x01\x83a\x19fV[\x84\x86\x03`@\x86\x01R\x80\x86R\x94\x90\x91\x01\x93\x8C\x90[\x80\x82\x10a\t\x9DWPPPc\xFF\xFF\xFF\xFFa\t\x0E``\x83\x01a\x13mV[\x16``\x83\x01Rc\xFF\xFF\xFF\xFFa\t%`\x80\x83\x01a\x13mV[\x16`\x80\x83\x01R`\xA0\x81\x015`\x1E\x19\x826\x03\x01\x81\x12\x15a\t\x99W\x01\x90` \x825\x92\x01\x90`\x01`\x01`@\x1B\x03\x83\x11a\t\x99W\x826\x03\x82\x13a\t\x99W\x83\x83` \x94\x85\x94\x84`\xA0\x87\x96`\x01\x9A\x03\x91\x01R\x81\x84R\x84\x84\x017\x8D\x83\x82\x84\x01\x01R`\x1F\x80\x19\x91\x01\x16\x01\x01\x97\x01\x94\x01\x99\x01\x98\x91\x90\x93\x92\x93a\x08_V[\x8B\x80\xFD[\x90\x91\x94`@\x80`\x01\x92\x83\x80`\xA0\x1B\x03a\t\xB5\x8Aa\x11\xE4V[\x16\x81R` \x89\x015` \x82\x01R\x01\x96\x01\x92\x01\x90a\x08\xF3V[\x90\x92\x91\x93\x82\x94\x83\x95[a\t\xEEa\t\xE4\x85\x85\x85a\x18\xFBV[`@\x81\x01\x90a\x19\x1DV[\x90P\x87\x10\x15a\n>Wa\n\x05a\t\xE4\x85\x85\x85a\x18\xFBV[\x88\x10\x15a\n*W`\x01\x91` a\n\"\x92\x8A`\x06\x1B\x01\x015\x90a\x13\xEEV[\x96\x01\x95a\t\xD6V[cNH{q`\xE0\x1B\x86R`2`\x04R`$\x86\xFD[\x91\x95P\x92\x93\x91`\x01\x91a\n|\x90a\nf\x8103a\na` a\x02\xAA\x89\x8F\x8Ea\x18\xFBV[a\x1D\xA1V[\x84a\nw` a\x02\xAA\x86\x8C\x8Ba\x18\xFBV[a\x1D\xECV[\x01a\x08\x12V[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80a\n\x9Da\x11\xCEV[a\n\xA5a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x06\xF0W`@Qc\xA0\x16\x9D\xDD`\xE0\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x90\x91\x16`\x04\x82\x01R\x90\x82\x90\x82\x90`$\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80a\x0B*a\x11\xCEV[a\x0B2a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x06\xF0W`@QcO\x90l\xF9`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x90\x92\x16`$\x83\x01R\x82\x90\x82\x90\x81\x83\x81`D\x81\x01a\x066V[P4a\x01\xE9W`@6`\x03\x19\x01\x12a\x01\xE9Wa\x0B\xB0a\x11\xCEV[\x90`$5`\x01`\x01`@\x1B\x03\x81\x11a\x02\xF8W```\x03\x19\x826\x03\x01\x12a\x02\xF8W`@Q\x92a\x0B\xDD\x84a\x12\x85V[\x81`\x04\x015`\x01`\x01`@\x1B\x03\x81\x11a\x05tW\x82\x016`#\x82\x01\x12\x15a\x05tWa\x0C\x11\x906\x90`$`\x04\x82\x015\x91\x01a\x12\xF0V[\x84R` \x84\x01\x90`$\x83\x015\x82R`D`@\x86\x01\x93\x015\x83R`\x01\x80`\xA0\x1B\x03\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x163\x03a\x0C\xF3W\x92\x93\x84\x93\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x81;\x15a\x0C\xEFW\x85a\x0C\xD1\x93\x81\x95`@Q\x97\x88\x96\x87\x95\x86\x94c\x99&\xEE}`\xE0\x1B\x86R`\x01\x80`\xA0\x1B\x03\x16`\x04\x86\x01R`@`$\x86\x01RQ```D\x86\x01R`\xA4\x85\x01\x90a\x18\xD7V[\x91Q`d\x84\x01RQ`\x84\x83\x01R\x03\x92Z\xF1\x80\x15a\x01\xECWa\x01\xD8WP\xF3[\x85\x80\xFD[cC\x94\xDB\xDF`\xE1\x1B\x84R`\x04\x84\xFD[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`3T`@Q`\x01`\x01`\xA0\x1B\x03\x90\x91\x16\x81R` \x90\xF3[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9Wa\r\x89a\x1C\x80V[`3\x80T`\x01`\x01`\xA0\x1B\x03\x19\x81\x16\x90\x91U\x81\x90`\x01`\x01`\xA0\x1B\x03\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0\x82\x80\xA3\x80\xF3[P4a\x01\xE9W\x80`\x03\x196\x01\x12a\x01\xE9W`@Q\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x81R` \x90\xF3[P4a\x01\xE9W`@6`\x03\x19\x01\x12a\x01\xE9Wa\x0E,a\x11\xCEV[`$5\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x02\x90W\x82T\x91`\xFF\x83`\x08\x1C\x16\x15\x92\x83\x80\x94a\x0F\xAAW[\x80\x15a\x0F\x93W[\x15a\x0F7W`\xFF\x19\x81\x16`\x01\x17\x85U\x83a\x0F&W[P`\xFF\x84T`\x08\x1C\x16\x15a\x0E\xCDWa\x0E\x8Aa\x0E\x8F\x92a\x1D6V[a\x1C\xD8V[a\x0E\x96W\x80\xF3[a\xFF\0\x19\x81T\x16\x81U\x7F\x7F&\xB8?\xF9n\x1F+jh/\x138R\xF6y\x8A\t\xC4e\xDA\x95\x92\x14`\xCE\xFB8G@$\x98` `@Q`\x01\x81R\xA1\x80\xF3[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`+`$\x82\x01R\x7FInitializable: contract is not i`D\x82\x01Rjnitializing`\xA8\x1B`d\x82\x01R`\x84\x90\xFD[a\xFF\xFF\x19\x16a\x01\x01\x17\x84U_a\x0EpV[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`.`$\x82\x01R\x7FInitializable: contract is alrea`D\x82\x01Rm\x19\x1EH\x1A[\x9A]\x1AX[\x1A^\x99Y`\x92\x1B`d\x82\x01R`\x84\x90\xFD[P0;\x15\x80\x15a\x0E[WP`\x01`\xFF\x82\x16\x14a\x0E[V[P`\x01`\xFF\x82\x16\x10a\x0ETV[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x03_a\x0F\xD4a\x11\xCEV[a\x0E\x8Aa\x1C\x80V[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9Wa\x03\xDEa\x03\xD2a\x0F\xFCa\x11\xCEV[a\x14\x90V[P4a\x01\xE9W` 6`\x03\x19\x01\x12a\x01\xE9W\x80a\x10\x1Ca\x11\xCEV[a\x10$a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x06\xF0W`@Qc\xEBZN\x87`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x90\x92\x16`$\x83\x01R\x82\x90\x82\x90\x81\x83\x81`D\x81\x01a\x066V[P4a\x01\xE9W\x80a\x10\x986a\x11\xF8V[a\x10\xA3\x92\x91\x92a\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x05\x9FW`@QcJ\x86\xC07`\xE1\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x93\x84\x16`$\x82\x01R\x93\x90\x92\x16`D\x84\x01R`\x01`\x01`\xE0\x1B\x03\x19\x16`d\x83\x01R\x82\x90\x82\x90\x81\x83\x81`\x84\x81\x01a\x066V[P4a\x11\xCAW` 6`\x03\x19\x01\x12a\x11\xCAWa\x119a\x11\xCEV[a\x11Aa\x1C\x80V[\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x80;\x15a\x11\xCAW`@Qc&\x89Y\xE5`\xE0\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x92\x90\x92\x16`$\x83\x01R_\x90\x82\x90`D\x90\x82\x90\x84\x90Z\xF1\x80\x15a\x11\xBFWa\x11\xB1WP\x80\xF3[a\x11\xBD\x91P_\x90a\x12\xB4V[\0[`@Q=_\x82>=\x90\xFD[_\x80\xFD[`\x045\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x11\xCAWV[5\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x11\xCAWV[``\x90`\x03\x19\x01\x12a\x11\xCAW`\x045`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90`$5`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90`D5`\x01`\x01`\xE0\x1B\x03\x19\x81\x16\x81\x03a\x11\xCAW\x90V[` `@\x81\x83\x01\x92\x82\x81R\x84Q\x80\x94R\x01\x92\x01\x90_[\x81\x81\x10a\x12fWPPP\x90V[\x82Q`\x01`\x01`\xA0\x1B\x03\x16\x84R` \x93\x84\x01\x93\x90\x92\x01\x91`\x01\x01a\x12YV[``\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x12\xA0W`@RV[cNH{q`\xE0\x1B_R`A`\x04R`$_\xFD[\x90`\x1F\x80\x19\x91\x01\x16\x81\x01\x90\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x12\xA0W`@RV[`\x01`\x01`@\x1B\x03\x81\x11a\x12\xA0W`\x1F\x01`\x1F\x19\x16` \x01\x90V[\x92\x91\x92a\x12\xFC\x82a\x12\xD5V[\x91a\x13\n`@Q\x93\x84a\x12\xB4V[\x82\x94\x81\x84R\x81\x83\x01\x11a\x11\xCAW\x82\x81` \x93\x84_\x96\x017\x01\x01RV[\x91\x81`\x1F\x84\x01\x12\x15a\x11\xCAW\x825\x91`\x01`\x01`@\x1B\x03\x83\x11a\x11\xCAW` \x80\x85\x01\x94\x84`\x05\x1B\x01\x01\x11a\x11\xCAWV[`\x01`\x01`@\x1B\x03\x81\x11a\x12\xA0W`\x05\x1B` \x01\x90V[5\x90c\xFF\xFF\xFF\xFF\x82\x16\x82\x03a\x11\xCAWV[\x90\x81` \x91\x03\x12a\x11\xCAWQ`\xFF\x81\x16\x81\x03a\x11\xCAW\x90V[\x90a\x13\xA1\x82a\x13VV[a\x13\xAE`@Q\x91\x82a\x12\xB4V[\x82\x81R\x80\x92a\x13\xBF`\x1F\x19\x91a\x13VV[\x01\x90` 6\x91\x017V[\x90\x81Q\x81\x10\x15a\x13\xDAW\x01` \x01\x90V[cNH{q`\xE0\x1B_R`2`\x04R`$_\xFD[\x91\x90\x82\x01\x80\x92\x11a\x13\xFBWV[cNH{q`\xE0\x1B_R`\x11`\x04R`$_\xFD[\x90\x81`@\x91\x03\x12a\x11\xCAW`@Q\x90`@\x82\x01\x82\x81\x10`\x01`\x01`@\x1B\x03\x82\x11\x17a\x12\xA0W`@R\x80Q\x90`\x01`\x01`\xA0\x1B\x03\x82\x16\x82\x03a\x11\xCAW` \x91\x83R\x01Qk\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x81\x16\x81\x03a\x11\xCAW` \x82\x01R\x90V[\x80Q\x82\x10\x15a\x13\xDAW` \x91`\x05\x1B\x01\x01\x90V[_\x19\x81\x14a\x13\xFBW`\x01\x01\x90V[`@Qc\t\xAA\x15'`\xE1\x1B\x81R`\x01`\x01`\xA0\x1B\x03\x91\x82\x16`\x04\x82\x01R\x90\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x16` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x18\xA3W[P`@Q\x91c\x87\x1E\xF0I`\xE0\x1B\x83R`\x04\x83\x01R` \x82`$\x81\x84Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x18_W[P`\x01`\x01`\xC0\x1B\x03\x82\x16\x90\x81\x15\x90\x81\x15a\x17\xFCW[Pa\x17\xE2W\x80_\x91[a\x17\xBDWPa\xFF\xFF\x16a\x15C\x81a\x12\xD5V[\x90a\x15Q`@Q\x92\x83a\x12\xB4V[\x80\x82Ra\x15``\x1F\x19\x91a\x12\xD5V[\x016` \x83\x017__[\x82Q\x82\x10\x80a\x17\xB2W[\x15a\x15\xC2W`\x01\x81\x1B\x84\x16`\x01`\x01`\xC0\x1B\x03\x16a\x15\x9BW[a\x15\x96\x90a\x14\x82V[a\x15jV[\x90`\x01a\x15\x96\x91`\xFF`\xF8\x1B\x84`\xF8\x1B\x16_\x1Aa\x15\xB8\x82\x87a\x13\xC9V[S\x01\x91\x90Pa\x15\x8DV[P_\x93\x92PP\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90\x83[\x81Q\x85\x10\x15a\x16}Wa\x16\x08\x85\x83a\x13\xC9V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R`\x04\x82\x01R` \x81`$\x81\x87Z\xFA\x90\x81\x15a\x11\xBFW_\x91a\x16KW[Pa\x16C\x90`\x01\x92a\x13\xEEV[\x94\x01\x93a\x15\xF5V[\x90P` \x81=\x82\x11a\x16uW[\x81a\x16e` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ`\x01a\x166V[=\x91Pa\x16XV[a\x16\x88\x91\x94Pa\x13\x97V[\x92_\x90_[\x81Q\x81\x10\x15a\x17\xACWa\x16\xA0\x81\x83a\x13\xC9V[Q`\xF8\x1C`@Q\x90c<\xA5\xA5\xF5`\xE0\x1B\x82R\x80`\x04\x83\x01R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x17yW[P\x90_\x91[\x81\x83\x10a\x16\xE6WPPP`\x01\x01a\x16\x8DV[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x11\xBFW`\x01\x92a\x17B\x92_\x91a\x17KW[P\x83\x80`\xA0\x1B\x03\x90Q\x16a\x17<\x82\x8Da\x14nV[Ra\x14\x82V[\x95\x01\x91\x90a\x16\xD4V[a\x17l\x91P`@=\x81\x11a\x17rW[a\x17d\x81\x83a\x12\xB4V[\x81\x01\x90a\x14\x0FV[_a\x17(V[P=a\x17ZV[\x90\x91P` \x81=\x82\x11a\x17\xA4W[\x81a\x17\x94` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ\x90_a\x16\xCFV[=\x91Pa\x17\x87V[PPPPV[Pa\x01\0\x81\x10a\x15tV[_\x19\x81\x01\x81\x81\x11a\x13\xFBWa\xFF\xFF\x91\x16\x91\x16a\xFF\xFF\x81\x14a\x13\xFBW`\x01\x01\x90\x80a\x151V[PP`@Qa\x17\xF2` \x82a\x12\xB4V[_\x81R_6\x817\x90V[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x91P` \x90\x82\x90`\x04\x90\x82\x90Z\xFA\x80\x15a\x11\xBFW`\xFF\x91_\x91a\x180W[P\x16\x15_a\x15(V[a\x18R\x91P` =` \x11a\x18XW[a\x18J\x81\x83a\x12\xB4V[\x81\x01\x90a\x13~V[_a\x18'V[P=a\x18@V[\x90\x91P` \x81=` \x11a\x18\x9BW[\x81a\x18{` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ`\x01`\x01`\xC0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90_a\x15\x12V[=\x91Pa\x18nV[\x90\x91P` \x81=` \x11a\x18\xCFW[\x81a\x18\xBF` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ\x90_a\x14\xE7V[=\x91Pa\x18\xB2V[\x80Q\x80\x83R` \x92\x91\x81\x90\x84\x01\x84\x84\x01^_\x82\x82\x01\x84\x01R`\x1F\x01`\x1F\x19\x16\x01\x01\x90V[\x91\x90\x81\x10\x15a\x13\xDAW`\x05\x1B\x81\x015\x90`\xBE\x19\x816\x03\x01\x82\x12\x15a\x11\xCAW\x01\x90V[\x905\x90`\x1E\x19\x816\x03\x01\x82\x12\x15a\x11\xCAW\x01\x805\x90`\x01`\x01`@\x1B\x03\x82\x11a\x11\xCAW` \x01\x91\x81`\x06\x1B6\x03\x83\x13a\x11\xCAWV[5`\x01`\x01`\xA0\x1B\x03\x81\x16\x81\x03a\x11\xCAW\x90V[\x905`\x1E\x19\x826\x03\x01\x81\x12\x15a\x11\xCAW\x01` \x815\x91\x01\x91`\x01`\x01`@\x1B\x03\x82\x11a\x11\xCAW\x81`\x06\x1B6\x03\x83\x13a\x11\xCAWV[\x91` \x90\x82\x81R\x01\x91\x90_\x90[\x80\x82\x10a\x19\xB4WPPP\x90V[\x90\x91\x92\x835`\x01\x80`\xA0\x1B\x03\x81\x16\x80\x91\x03a\x11\xCAW\x81R` \x84\x015\x90k\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x82\x16\x80\x92\x03a\x11\xCAW`@\x81`\x01\x93` \x83\x94\x01R\x01\x94\x01\x92\x01\x90a\x19\xA7V[`@Qc\x9A\xA1e=`\xE0\x1B\x81R\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90` \x81`\x04\x81\x85Z\xFA\x80\x15a\x11\xBFW`\xFF\x91_\x91a\x1C?W[P\x16\x80\x15a\x17\xE2W\x7F\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0`\x01`\x01`\xA0\x1B\x03\x16\x90_\x90\x81\x90[\x80\x83\x10a\x1B\xC9WPa\x1A\x99\x91Pa\x13\x97V[\x92_\x90_[`@Qc\x9A\xA1e=`\xE0\x1B\x81R` \x81`\x04\x81\x89Z\xFA\x80\x15a\x11\xBFW`\xFF\x91_\x91a\x1B\xABW[P\x16\x81\x10\x15a\x1B\xA4W`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x82\x16`\x04\x82\x01\x81\x90R` \x82`$\x81\x89Z\xFA\x91\x82\x15a\x11\xBFW_\x92a\x1BqW[P\x90_\x91[\x81\x83\x10a\x1B\x13WPPP`\x01\x01a\x1A\x9EV[`@\x80QcV\xE4\x02m`\xE1\x1B\x81R`\xFF\x83\x16`\x04\x82\x01R`$\x81\x01\x85\x90R\x93\x96\x92\x93\x91\x92\x91\x90\x81`D\x81\x8BZ\xFA\x91\x82\x15a\x11\xBFW`\x01\x92a\x1Bh\x92_\x91a\x17KWP\x83\x80`\xA0\x1B\x03\x90Q\x16a\x17<\x82\x8Da\x14nV[\x95\x01\x91\x90a\x1B\x01V[\x90\x91P` \x81=\x82\x11a\x1B\x9CW[\x81a\x1B\x8C` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ\x90_a\x1A\xFCV[=\x91Pa\x1B\x7FV[P\x92PPPV[a\x1B\xC3\x91P` =\x81\x11a\x18XWa\x18J\x81\x83a\x12\xB4V[_a\x1A\xC4V[\x90`@Qc<\xA5\xA5\xF5`\xE0\x1B\x81R`\xFF\x84\x16`\x04\x82\x01R` \x81`$\x81\x88Z\xFA\x90\x81\x15a\x11\xBFW_\x91a\x1C\rW[Pa\x1C\x04\x90`\x01\x92a\x13\xEEV[\x92\x01\x91\x90a\x1A\x87V[\x90P` \x81=\x82\x11a\x1C7W[\x81a\x1C'` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQ`\x01a\x1B\xF7V[=\x91Pa\x1C\x1AV[a\x1CX\x91P` =` \x11a\x18XWa\x18J\x81\x83a\x12\xB4V[_a\x1AOV[\x91\x90\x81\x10\x15a\x13\xDAW`\x05\x1B\x81\x015\x90`\x9E\x19\x816\x03\x01\x82\x12\x15a\x11\xCAW\x01\x90V[`3T`\x01`\x01`\xA0\x1B\x03\x163\x03a\x1C\x94WV[`d`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R` `$\x82\x01R\x7FOwnable: caller is not the owner`D\x82\x01R\xFD[`eT`@\x80Q`\x01`\x01`\xA0\x1B\x03\x80\x84\x16\x82R\x84\x16` \x82\x01R\x91\x92\x91\x7F\xE1\x1C\xDD\xF1\x81jC1\x8C\xA1u\xBB\xC5,\xD0\x18T6\xE9\xCB\xEA\xD7\xC8:\xCCT\xA7>F\x17\x17\xE3\x91\x90\xA1`\x01`\x01`\xA0\x1B\x03\x16`\x01`\x01`\xA0\x1B\x03\x19\x91\x90\x91\x16\x17`eUV[`3\x80T`\x01`\x01`\xA0\x1B\x03\x92\x83\x16`\x01`\x01`\xA0\x1B\x03\x19\x82\x16\x81\x17\x90\x92U\x90\x91\x16\x7F\x8B\xE0\x07\x9CS\x16Y\x14\x13D\xCD\x1F\xD0\xA4\xF2\x84\x19I\x7F\x97\"\xA3\xDA\xAF\xE3\xB4\x18okdW\xE0_\x80\xA3V[`eT`\x01`\x01`\xA0\x1B\x03\x163\x03a\x1D\x92WV[c\x8Ey\xFD\xB5`\xE0\x1B_R`\x04_\xFD[`@Qc#\xB8r\xDD`\xE0\x1B` \x82\x01R`\x01`\x01`\xA0\x1B\x03\x92\x83\x16`$\x82\x01R\x92\x90\x91\x16`D\x83\x01R`d\x80\x83\x01\x93\x90\x93R\x91\x81Ra\x1D\xEA\x91a\x1D\xE5`\x84\x83a\x12\xB4V[a\x1E\xAAV[V[`@Qcn\xB1v\x9F`\xE1\x1B\x81R0`\x04\x82\x01R`\x01`\x01`\xA0\x1B\x03\x83\x16`$\x82\x01R` \x81\x80`D\x81\x01\x03\x81`\x01`\x01`\xA0\x1B\x03\x86\x16Z\xFA\x90\x81\x15a\x11\xBFW_\x91a\x1EvW[Pa\x1D\xEA\x93a\x1E@\x91a\x13\xEEV[`@Qc\t^\xA7\xB3`\xE0\x1B` \x82\x01R`\x01`\x01`\xA0\x1B\x03\x90\x93\x16`$\x84\x01R`D\x80\x84\x01\x91\x90\x91R\x82Ra\x1D\xE5`d\x83a\x12\xB4V[\x90P` \x81=` \x11a\x1E\xA2W[\x81a\x1E\x91` \x93\x83a\x12\xB4V[\x81\x01\x03\x12a\x11\xCAWQa\x1D\xEAa\x1E2V[=\x91Pa\x1E\x84V[`@\x80Q\x90\x92\x90\x91`\x01`\x01`\xA0\x1B\x03\x16a\x1E\xC5\x84\x84a\x12\xB4V[` \x83R\x7FSafeERC20: low-level call failed` \x84\x01R\x80;\x15a\x1F\xBFW_\x82\x81\x92\x82` a\x1F4\x97\x96Q\x93\x01\x91Z\xF1=\x15a\x1F\xB7W=\x90a\x1F\x19\x82a\x12\xD5V[\x91a\x1F&\x86Q\x93\x84a\x12\xB4V[\x82R=_` \x84\x01>a \x03V[\x80Q\x80a\x1F@WPPPV[\x81` \x91\x81\x01\x03\x12a\x11\xCAW` \x01Q\x80\x15\x90\x81\x15\x03a\x11\xCAWa\x1FaWPV[QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`*`$\x82\x01R\x7FSafeERC20: ERC20 operation did n`D\x82\x01Ri\x1B\xDD\x08\x1C\xDDX\xD8\xD9YY`\xB2\x1B`d\x82\x01R`\x84\x90\xFD[``\x90a \x03V[\x83QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R`\x1D`$\x82\x01R\x7FAddress: call to non-contract\0\0\0`D\x82\x01R`d\x90\xFD[\x90\x91\x90\x15a \x0FWP\x90V[\x81Q\x15a \x1FWP\x80Q\x90` \x01\xFD[`@QbF\x1B\xCD`\xE5\x1B\x81R` `\x04\x82\x01R\x90\x81\x90a C\x90`$\x83\x01\x90a\x18\xD7V[\x03\x90\xFD\xFE\xA2dipfsX\"\x12 \x19\xA3\xA5O\xB4\x93\n\x18\xDC<\x9D\x8FL6\x04H*]\xED\xA6\x8CW\xFAx\xD6\x9C1Q\xFE\xED\x90@dsolcC\0\x08\x1B\x003",
     );
+    /**Custom error with signature `DelayPeriodNotPassed()` and selector `0xfb623b04`.
+    ```solidity
+    error DelayPeriodNotPassed();
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct DelayPeriodNotPassed {}
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        #[doc(hidden)]
+        type UnderlyingSolTuple<'a> = ();
+        #[doc(hidden)]
+        type UnderlyingRustTuple<'a> = ();
+        #[cfg(test)]
+        #[allow(dead_code, unreachable_patterns)]
+        fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+            match _t {
+                alloy_sol_types::private::AssertTypeEq::<
+                    <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                >(_) => {}
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<DelayPeriodNotPassed> for UnderlyingRustTuple<'_> {
+            fn from(value: DelayPeriodNotPassed) -> Self {
+                ()
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<UnderlyingRustTuple<'_>> for DelayPeriodNotPassed {
+            fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                Self {}
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolError for DelayPeriodNotPassed {
+            type Parameters<'a> = UnderlyingSolTuple<'a>;
+            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "DelayPeriodNotPassed()";
+            const SELECTOR: [u8; 4] = [251u8, 98u8, 59u8, 4u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                ()
+            }
+        }
+    };
+    /**Custom error with signature `OnlyRegistryCoordinator()` and selector `0x8729b7be`.
+    ```solidity
+    error OnlyRegistryCoordinator();
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct OnlyRegistryCoordinator {}
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        #[doc(hidden)]
+        type UnderlyingSolTuple<'a> = ();
+        #[doc(hidden)]
+        type UnderlyingRustTuple<'a> = ();
+        #[cfg(test)]
+        #[allow(dead_code, unreachable_patterns)]
+        fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+            match _t {
+                alloy_sol_types::private::AssertTypeEq::<
+                    <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                >(_) => {}
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<OnlyRegistryCoordinator> for UnderlyingRustTuple<'_> {
+            fn from(value: OnlyRegistryCoordinator) -> Self {
+                ()
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<UnderlyingRustTuple<'_>> for OnlyRegistryCoordinator {
+            fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                Self {}
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolError for OnlyRegistryCoordinator {
+            type Parameters<'a> = UnderlyingSolTuple<'a>;
+            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "OnlyRegistryCoordinator()";
+            const SELECTOR: [u8; 4] = [135u8, 41u8, 183u8, 190u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                ()
+            }
+        }
+    };
+    /**Custom error with signature `OnlyRewardsInitiator()` and selector `0x8e79fdb5`.
+    ```solidity
+    error OnlyRewardsInitiator();
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct OnlyRewardsInitiator {}
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        #[doc(hidden)]
+        type UnderlyingSolTuple<'a> = ();
+        #[doc(hidden)]
+        type UnderlyingRustTuple<'a> = ();
+        #[cfg(test)]
+        #[allow(dead_code, unreachable_patterns)]
+        fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+            match _t {
+                alloy_sol_types::private::AssertTypeEq::<
+                    <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                >(_) => {}
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<OnlyRewardsInitiator> for UnderlyingRustTuple<'_> {
+            fn from(value: OnlyRewardsInitiator) -> Self {
+                ()
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<UnderlyingRustTuple<'_>> for OnlyRewardsInitiator {
+            fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                Self {}
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolError for OnlyRewardsInitiator {
+            type Parameters<'a> = UnderlyingSolTuple<'a>;
+            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "OnlyRewardsInitiator()";
+            const SELECTOR: [u8; 4] = [142u8, 121u8, 253u8, 181u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                ()
+            }
+        }
+    };
+    /**Custom error with signature `OnlyStakeRegistry()` and selector `0x46bf2281`.
+    ```solidity
+    error OnlyStakeRegistry();
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct OnlyStakeRegistry {}
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        #[doc(hidden)]
+        type UnderlyingSolTuple<'a> = ();
+        #[doc(hidden)]
+        type UnderlyingRustTuple<'a> = ();
+        #[cfg(test)]
+        #[allow(dead_code, unreachable_patterns)]
+        fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+            match _t {
+                alloy_sol_types::private::AssertTypeEq::<
+                    <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                >(_) => {}
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<OnlyStakeRegistry> for UnderlyingRustTuple<'_> {
+            fn from(value: OnlyStakeRegistry) -> Self {
+                ()
+            }
+        }
+        #[automatically_derived]
+        #[doc(hidden)]
+        impl ::core::convert::From<UnderlyingRustTuple<'_>> for OnlyStakeRegistry {
+            fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                Self {}
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolError for OnlyStakeRegistry {
+            type Parameters<'a> = UnderlyingSolTuple<'a>;
+            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "OnlyStakeRegistry()";
+            const SELECTOR: [u8; 4] = [70u8, 191u8, 34u8, 129u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                ()
+            }
+        }
+    };
     /**Event with signature `Initialized(uint8)` and selector `0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498`.
     ```solidity
     event Initialized(uint8 version);
@@ -2612,236 +2720,26 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     };
-    /**Event with signature `SlasherProposed(address,uint256)` and selector `0x2f8afc8a78fd958f3301c0233aa326b9c4b9a2884a7483227d6b0555aaa03adb`.
-    ```solidity
-    event SlasherProposed(address newSlasher, uint256 slasherProposalTimestamp);
-    ```*/
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    #[derive(Clone)]
-    pub struct SlasherProposed {
-        #[allow(missing_docs)]
-        pub newSlasher: alloy::sol_types::private::Address,
-        #[allow(missing_docs)]
-        pub slasherProposalTimestamp: alloy::sol_types::private::primitives::aliases::U256,
-    }
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        #[automatically_derived]
-        impl alloy_sol_types::SolEvent for SlasherProposed {
-            type DataTuple<'a> = (
-                alloy::sol_types::sol_data::Address,
-                alloy::sol_types::sol_data::Uint<256>,
-            );
-            type DataToken<'a> = <Self::DataTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type TopicList = (alloy_sol_types::sol_data::FixedBytes<32>,);
-            const SIGNATURE: &'static str = "SlasherProposed(address,uint256)";
-            const SIGNATURE_HASH: alloy_sol_types::private::B256 =
-                alloy_sol_types::private::B256::new([
-                    47u8, 138u8, 252u8, 138u8, 120u8, 253u8, 149u8, 143u8, 51u8, 1u8, 192u8, 35u8,
-                    58u8, 163u8, 38u8, 185u8, 196u8, 185u8, 162u8, 136u8, 74u8, 116u8, 131u8, 34u8,
-                    125u8, 107u8, 5u8, 85u8, 170u8, 160u8, 58u8, 219u8,
-                ]);
-            const ANONYMOUS: bool = false;
-            #[allow(unused_variables)]
-            #[inline]
-            fn new(
-                topics: <Self::TopicList as alloy_sol_types::SolType>::RustType,
-                data: <Self::DataTuple<'_> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                Self {
-                    newSlasher: data.0,
-                    slasherProposalTimestamp: data.1,
-                }
-            }
-            #[inline]
-            fn check_signature(
-                topics: &<Self::TopicList as alloy_sol_types::SolType>::RustType,
-            ) -> alloy_sol_types::Result<()> {
-                if topics.0 != Self::SIGNATURE_HASH {
-                    return Err(alloy_sol_types::Error::invalid_event_signature_hash(
-                        Self::SIGNATURE,
-                        topics.0,
-                        Self::SIGNATURE_HASH,
-                    ));
-                }
-                Ok(())
-            }
-            #[inline]
-            fn tokenize_body(&self) -> Self::DataToken<'_> {
-                (
-                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self.newSlasher,
-                    ),
-                    <alloy::sol_types::sol_data::Uint<256> as alloy_sol_types::SolType>::tokenize(
-                        &self.slasherProposalTimestamp,
-                    ),
-                )
-            }
-            #[inline]
-            fn topics(&self) -> <Self::TopicList as alloy_sol_types::SolType>::RustType {
-                (Self::SIGNATURE_HASH.into(),)
-            }
-            #[inline]
-            fn encode_topics_raw(
-                &self,
-                out: &mut [alloy_sol_types::abi::token::WordToken],
-            ) -> alloy_sol_types::Result<()> {
-                if out.len() < <Self::TopicList as alloy_sol_types::TopicList>::COUNT {
-                    return Err(alloy_sol_types::Error::Overrun);
-                }
-                out[0usize] = alloy_sol_types::abi::token::WordToken(Self::SIGNATURE_HASH);
-                Ok(())
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::private::IntoLogData for SlasherProposed {
-            fn to_log_data(&self) -> alloy_sol_types::private::LogData {
-                From::from(self)
-            }
-            fn into_log_data(self) -> alloy_sol_types::private::LogData {
-                From::from(&self)
-            }
-        }
-        #[automatically_derived]
-        impl From<&SlasherProposed> for alloy_sol_types::private::LogData {
-            #[inline]
-            fn from(this: &SlasherProposed) -> alloy_sol_types::private::LogData {
-                alloy_sol_types::SolEvent::encode_log_data(this)
-            }
-        }
-    };
-    /**Event with signature `SlasherUpdated(address,address)` and selector `0xe0d49a54274423183dadecbdf239eaac6e06ba88320b26fe8cc5ec9d050a6395`.
-    ```solidity
-    event SlasherUpdated(address prevSlasher, address newSlasher);
-    ```*/
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    #[derive(Clone)]
-    pub struct SlasherUpdated {
-        #[allow(missing_docs)]
-        pub prevSlasher: alloy::sol_types::private::Address,
-        #[allow(missing_docs)]
-        pub newSlasher: alloy::sol_types::private::Address,
-    }
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        #[automatically_derived]
-        impl alloy_sol_types::SolEvent for SlasherUpdated {
-            type DataTuple<'a> = (
-                alloy::sol_types::sol_data::Address,
-                alloy::sol_types::sol_data::Address,
-            );
-            type DataToken<'a> = <Self::DataTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type TopicList = (alloy_sol_types::sol_data::FixedBytes<32>,);
-            const SIGNATURE: &'static str = "SlasherUpdated(address,address)";
-            const SIGNATURE_HASH: alloy_sol_types::private::B256 =
-                alloy_sol_types::private::B256::new([
-                    224u8, 212u8, 154u8, 84u8, 39u8, 68u8, 35u8, 24u8, 61u8, 173u8, 236u8, 189u8,
-                    242u8, 57u8, 234u8, 172u8, 110u8, 6u8, 186u8, 136u8, 50u8, 11u8, 38u8, 254u8,
-                    140u8, 197u8, 236u8, 157u8, 5u8, 10u8, 99u8, 149u8,
-                ]);
-            const ANONYMOUS: bool = false;
-            #[allow(unused_variables)]
-            #[inline]
-            fn new(
-                topics: <Self::TopicList as alloy_sol_types::SolType>::RustType,
-                data: <Self::DataTuple<'_> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                Self {
-                    prevSlasher: data.0,
-                    newSlasher: data.1,
-                }
-            }
-            #[inline]
-            fn check_signature(
-                topics: &<Self::TopicList as alloy_sol_types::SolType>::RustType,
-            ) -> alloy_sol_types::Result<()> {
-                if topics.0 != Self::SIGNATURE_HASH {
-                    return Err(alloy_sol_types::Error::invalid_event_signature_hash(
-                        Self::SIGNATURE,
-                        topics.0,
-                        Self::SIGNATURE_HASH,
-                    ));
-                }
-                Ok(())
-            }
-            #[inline]
-            fn tokenize_body(&self) -> Self::DataToken<'_> {
-                (
-                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self.prevSlasher,
-                    ),
-                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self.newSlasher,
-                    ),
-                )
-            }
-            #[inline]
-            fn topics(&self) -> <Self::TopicList as alloy_sol_types::SolType>::RustType {
-                (Self::SIGNATURE_HASH.into(),)
-            }
-            #[inline]
-            fn encode_topics_raw(
-                &self,
-                out: &mut [alloy_sol_types::abi::token::WordToken],
-            ) -> alloy_sol_types::Result<()> {
-                if out.len() < <Self::TopicList as alloy_sol_types::TopicList>::COUNT {
-                    return Err(alloy_sol_types::Error::Overrun);
-                }
-                out[0usize] = alloy_sol_types::abi::token::WordToken(Self::SIGNATURE_HASH);
-                Ok(())
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::private::IntoLogData for SlasherUpdated {
-            fn to_log_data(&self) -> alloy_sol_types::private::LogData {
-                From::from(self)
-            }
-            fn into_log_data(self) -> alloy_sol_types::private::LogData {
-                From::from(&self)
-            }
-        }
-        #[automatically_derived]
-        impl From<&SlasherUpdated> for alloy_sol_types::private::LogData {
-            #[inline]
-            fn from(this: &SlasherUpdated) -> alloy_sol_types::private::LogData {
-                alloy_sol_types::SolEvent::encode_log_data(this)
-            }
-        }
-    };
     /**Constructor`.
     ```solidity
-    constructor(address _avsDirectory, address _registryCoordinator, address _stakeRegistry, address rewards_coordinator, address allocationManager, address _incredibleSquaringTaskManager);
+    constructor(address _avsDirectory, address _slashingRegistryCoordinator, address _stakeRegistry, address rewards_coordinator, address allocationManager, address _permissionController, address _incredibleSquaringTaskManager);
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct constructorCall {
+        #[allow(missing_docs)]
         pub _avsDirectory: alloy::sol_types::private::Address,
-        pub _registryCoordinator: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub _slashingRegistryCoordinator: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub _stakeRegistry: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub rewards_coordinator: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub allocationManager: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub _permissionController: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub _incredibleSquaringTaskManager: alloy::sol_types::private::Address,
     }
     const _: () = {
@@ -2855,9 +2753,11 @@ pub mod IncredibleSquaringServiceManager {
                 alloy::sol_types::sol_data::Address,
                 alloy::sol_types::sol_data::Address,
                 alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::Address,
             );
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (
+                alloy::sol_types::private::Address,
                 alloy::sol_types::private::Address,
                 alloy::sol_types::private::Address,
                 alloy::sol_types::private::Address,
@@ -2880,10 +2780,11 @@ pub mod IncredibleSquaringServiceManager {
                 fn from(value: constructorCall) -> Self {
                     (
                         value._avsDirectory,
-                        value._registryCoordinator,
+                        value._slashingRegistryCoordinator,
                         value._stakeRegistry,
                         value.rewards_coordinator,
                         value.allocationManager,
+                        value._permissionController,
                         value._incredibleSquaringTaskManager,
                     )
                 }
@@ -2894,11 +2795,12 @@ pub mod IncredibleSquaringServiceManager {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
                     Self {
                         _avsDirectory: tuple.0,
-                        _registryCoordinator: tuple.1,
+                        _slashingRegistryCoordinator: tuple.1,
                         _stakeRegistry: tuple.2,
                         rewards_coordinator: tuple.3,
                         allocationManager: tuple.4,
-                        _incredibleSquaringTaskManager: tuple.5,
+                        _permissionController: tuple.5,
+                        _incredibleSquaringTaskManager: tuple.6,
                     }
                 }
             }
@@ -2906,6 +2808,7 @@ pub mod IncredibleSquaringServiceManager {
         #[automatically_derived]
         impl alloy_sol_types::SolConstructor for constructorCall {
             type Parameters<'a> = (
+                alloy::sol_types::sol_data::Address,
                 alloy::sol_types::sol_data::Address,
                 alloy::sol_types::sol_data::Address,
                 alloy::sol_types::sol_data::Address,
@@ -2927,7 +2830,7 @@ pub mod IncredibleSquaringServiceManager {
                         &self._avsDirectory,
                     ),
                     <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self._registryCoordinator,
+                        &self._slashingRegistryCoordinator,
                     ),
                     <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
                         &self._stakeRegistry,
@@ -2939,25 +2842,29 @@ pub mod IncredibleSquaringServiceManager {
                         &self.allocationManager,
                     ),
                     <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self._permissionController,
+                    ),
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
                         &self._incredibleSquaringTaskManager,
                     ),
                 )
             }
         }
     };
-    /**Function with signature `SLASHER_PROPOSAL_DELAY()` and selector `0x67940c89`.
+    /**Function with signature `addPendingAdmin(address)` and selector `0x279432eb`.
     ```solidity
-    function SLASHER_PROPOSAL_DELAY() external view returns (uint256);
+    function addPendingAdmin(address admin) external;
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct SLASHER_PROPOSAL_DELAYCall {}
-    ///Container type for the return parameters of the [`SLASHER_PROPOSAL_DELAY()`](SLASHER_PROPOSAL_DELAYCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct SLASHER_PROPOSAL_DELAYReturn {
-        pub _0: alloy::sol_types::private::primitives::aliases::U256,
+    pub struct addPendingAdminCall {
+        #[allow(missing_docs)]
+        pub admin: alloy::sol_types::private::Address,
     }
+    ///Container type for the return parameters of the [`addPendingAdmin(address)`](addPendingAdminCall) function.
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct addPendingAdminReturn {}
     #[allow(
         non_camel_case_types,
         non_snake_case,
@@ -2966,383 +2873,6 @@ pub mod IncredibleSquaringServiceManager {
     )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<SLASHER_PROPOSAL_DELAYCall> for UnderlyingRustTuple<'_> {
-                fn from(value: SLASHER_PROPOSAL_DELAYCall) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for SLASHER_PROPOSAL_DELAYCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Uint<256>,);
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::primitives::aliases::U256,);
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<SLASHER_PROPOSAL_DELAYReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: SLASHER_PROPOSAL_DELAYReturn) -> Self {
-                    (value._0,)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for SLASHER_PROPOSAL_DELAYReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { _0: tuple.0 }
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for SLASHER_PROPOSAL_DELAYCall {
-            type Parameters<'a> = ();
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = SLASHER_PROPOSAL_DELAYReturn;
-            type ReturnTuple<'a> = (alloy::sol_types::sol_data::Uint<256>,);
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "SLASHER_PROPOSAL_DELAY()";
-            const SELECTOR: [u8; 4] = [103u8, 148u8, 12u8, 137u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                ()
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
-    /**Function with signature `acceptProposedSlasher()` and selector `0x26f017e2`.
-    ```solidity
-    function acceptProposedSlasher() external;
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct acceptProposedSlasherCall {}
-    ///Container type for the return parameters of the [`acceptProposedSlasher()`](acceptProposedSlasherCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct acceptProposedSlasherReturn {}
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<acceptProposedSlasherCall> for UnderlyingRustTuple<'_> {
-                fn from(value: acceptProposedSlasherCall) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for acceptProposedSlasherCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<acceptProposedSlasherReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: acceptProposedSlasherReturn) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for acceptProposedSlasherReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for acceptProposedSlasherCall {
-            type Parameters<'a> = ();
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = acceptProposedSlasherReturn;
-            type ReturnTuple<'a> = ();
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "acceptProposedSlasher()";
-            const SELECTOR: [u8; 4] = [38u8, 240u8, 23u8, 226u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                ()
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
-    /**Function with signature `addStrategyToOperatorSet(uint32,address[])` and selector `0x6ecbccfe`.
-    ```solidity
-    function addStrategyToOperatorSet(uint32 operatorSetId, address[] memory strategies) external;
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct addStrategyToOperatorSetCall {
-        pub operatorSetId: u32,
-        pub strategies: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-    }
-    ///Container type for the return parameters of the [`addStrategyToOperatorSet(uint32,address[])`](addStrategyToOperatorSetCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct addStrategyToOperatorSetReturn {}
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (
-                alloy::sol_types::sol_data::Uint<32>,
-                alloy::sol_types::sol_data::Array<alloy::sol_types::sol_data::Address>,
-            );
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (
-                u32,
-                alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-            );
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<addStrategyToOperatorSetCall> for UnderlyingRustTuple<'_> {
-                fn from(value: addStrategyToOperatorSetCall) -> Self {
-                    (value.operatorSetId, value.strategies)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for addStrategyToOperatorSetCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {
-                        operatorSetId: tuple.0,
-                        strategies: tuple.1,
-                    }
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<addStrategyToOperatorSetReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: addStrategyToOperatorSetReturn) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for addStrategyToOperatorSetReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for addStrategyToOperatorSetCall {
-            type Parameters<'a> = (
-                alloy::sol_types::sol_data::Uint<32>,
-                alloy::sol_types::sol_data::Array<alloy::sol_types::sol_data::Address>,
-            );
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = addStrategyToOperatorSetReturn;
-            type ReturnTuple<'a> = ();
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "addStrategyToOperatorSet(uint32,address[])";
-            const SELECTOR: [u8; 4] = [110u8, 203u8, 204u8, 254u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                (
-                    <alloy::sol_types::sol_data::Uint<
-                        32,
-                    > as alloy_sol_types::SolType>::tokenize(&self.operatorSetId),
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::SolType>::tokenize(&self.strategies),
-                )
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
-    /**Function with signature `allocationManager()` and selector `0xca8aa7c7`.
-    ```solidity
-    function allocationManager() external view returns (address);
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct allocationManagerCall {}
-    ///Container type for the return parameters of the [`allocationManager()`](allocationManagerCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct allocationManagerReturn {
-        pub _0: alloy::sol_types::private::Address,
-    }
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<allocationManagerCall> for UnderlyingRustTuple<'_> {
-                fn from(value: allocationManagerCall) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for allocationManagerCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
         {
             #[doc(hidden)]
             type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Address,);
@@ -3359,28 +2889,57 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<allocationManagerReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: allocationManagerReturn) -> Self {
-                    (value._0,)
+            impl ::core::convert::From<addPendingAdminCall> for UnderlyingRustTuple<'_> {
+                fn from(value: addPendingAdminCall) -> Self {
+                    (value.admin,)
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for allocationManagerReturn {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for addPendingAdminCall {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { _0: tuple.0 }
+                    Self { admin: tuple.0 }
+                }
+            }
+        }
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = ();
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = ();
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<addPendingAdminReturn> for UnderlyingRustTuple<'_> {
+                fn from(value: addPendingAdminReturn) -> Self {
+                    ()
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for addPendingAdminReturn {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self {}
                 }
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::SolCall for allocationManagerCall {
-            type Parameters<'a> = ();
+        impl alloy_sol_types::SolCall for addPendingAdminCall {
+            type Parameters<'a> = (alloy::sol_types::sol_data::Address,);
             type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = allocationManagerReturn;
-            type ReturnTuple<'a> = (alloy::sol_types::sol_data::Address,);
+            type Return = addPendingAdminReturn;
+            type ReturnTuple<'a> = ();
             type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "allocationManager()";
-            const SELECTOR: [u8; 4] = [202u8, 138u8, 167u8, 199u8];
+            const SIGNATURE: &'static str = "addPendingAdmin(address)";
+            const SELECTOR: [u8; 4] = [39u8, 148u8, 50u8, 235u8];
             #[inline]
             fn new<'a>(
                 tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
@@ -3389,7 +2948,11 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[inline]
             fn tokenize(&self) -> Self::Token<'_> {
-                ()
+                (
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.admin,
+                    ),
+                )
             }
             #[inline]
             fn abi_decode_returns(
@@ -3414,6 +2977,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct avsDirectoryReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
     #[allow(
@@ -3520,6 +3084,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct createAVSRewardsSubmissionCall {
+        #[allow(missing_docs)]
         pub rewardsSubmissions: alloy::sol_types::private::Vec<
             <IRewardsCoordinatorTypes::RewardsSubmission as alloy::sol_types::SolType>::RustType,
         >,
@@ -3638,21 +3203,22 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     };
-    /**Function with signature `createOperatorSets((uint32,address[])[])` and selector `0x847d634f`.
+    /**Function with signature `createOperatorDirectedAVSRewardsSubmission(((address,uint96)[],address,(address,uint256)[],uint32,uint32,string)[])` and selector `0xa20b99bf`.
     ```solidity
-    function createOperatorSets(IAllocationManagerTypes.CreateSetParams[] memory params) external;
+    function createOperatorDirectedAVSRewardsSubmission(IRewardsCoordinatorTypes.OperatorDirectedRewardsSubmission[] memory operatorDirectedRewardsSubmissions) external;
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct createOperatorSetsCall {
-        pub params: alloy::sol_types::private::Vec<
-            <IAllocationManagerTypes::CreateSetParams as alloy::sol_types::SolType>::RustType,
+    pub struct createOperatorDirectedAVSRewardsSubmissionCall {
+        #[allow(missing_docs)]
+        pub operatorDirectedRewardsSubmissions: alloy::sol_types::private::Vec<
+            <IRewardsCoordinatorTypes::OperatorDirectedRewardsSubmission as alloy::sol_types::SolType>::RustType,
         >,
     }
-    ///Container type for the return parameters of the [`createOperatorSets((uint32,address[])[])`](createOperatorSetsCall) function.
+    ///Container type for the return parameters of the [`createOperatorDirectedAVSRewardsSubmission(((address,uint96)[],address,(address,uint256)[],uint32,uint32,string)[])`](createOperatorDirectedAVSRewardsSubmissionCall) function.
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct createOperatorSetsReturn {}
+    pub struct createOperatorDirectedAVSRewardsSubmissionReturn {}
     #[allow(
         non_camel_case_types,
         non_snake_case,
@@ -3663,12 +3229,15 @@ pub mod IncredibleSquaringServiceManager {
         use alloy::sol_types as alloy_sol_types;
         {
             #[doc(hidden)]
-            type UnderlyingSolTuple<'a> =
-                (alloy::sol_types::sol_data::Array<IAllocationManagerTypes::CreateSetParams>,);
+            type UnderlyingSolTuple<'a> = (
+                alloy::sol_types::sol_data::Array<
+                    IRewardsCoordinatorTypes::OperatorDirectedRewardsSubmission,
+                >,
+            );
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (
                 alloy::sol_types::private::Vec<
-                    <IAllocationManagerTypes::CreateSetParams as alloy::sol_types::SolType>::RustType,
+                    <IRewardsCoordinatorTypes::OperatorDirectedRewardsSubmission as alloy::sol_types::SolType>::RustType,
                 >,
             );
             #[cfg(test)]
@@ -3682,16 +3251,22 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<createOperatorSetsCall> for UnderlyingRustTuple<'_> {
-                fn from(value: createOperatorSetsCall) -> Self {
-                    (value.params,)
+            impl ::core::convert::From<createOperatorDirectedAVSRewardsSubmissionCall>
+                for UnderlyingRustTuple<'_>
+            {
+                fn from(value: createOperatorDirectedAVSRewardsSubmissionCall) -> Self {
+                    (value.operatorDirectedRewardsSubmissions,)
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for createOperatorSetsCall {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+                for createOperatorDirectedAVSRewardsSubmissionCall
+            {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { params: tuple.0 }
+                    Self {
+                        operatorDirectedRewardsSubmissions: tuple.0,
+                    }
                 }
             }
         }
@@ -3711,29 +3286,36 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<createOperatorSetsReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: createOperatorSetsReturn) -> Self {
+            impl ::core::convert::From<createOperatorDirectedAVSRewardsSubmissionReturn>
+                for UnderlyingRustTuple<'_>
+            {
+                fn from(value: createOperatorDirectedAVSRewardsSubmissionReturn) -> Self {
                     ()
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for createOperatorSetsReturn {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>>
+                for createOperatorDirectedAVSRewardsSubmissionReturn
+            {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
                     Self {}
                 }
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::SolCall for createOperatorSetsCall {
-            type Parameters<'a> =
-                (alloy::sol_types::sol_data::Array<IAllocationManagerTypes::CreateSetParams>,);
+        impl alloy_sol_types::SolCall for createOperatorDirectedAVSRewardsSubmissionCall {
+            type Parameters<'a> = (
+                alloy::sol_types::sol_data::Array<
+                    IRewardsCoordinatorTypes::OperatorDirectedRewardsSubmission,
+                >,
+            );
             type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = createOperatorSetsReturn;
+            type Return = createOperatorDirectedAVSRewardsSubmissionReturn;
             type ReturnTuple<'a> = ();
             type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "createOperatorSets((uint32,address[])[])";
-            const SELECTOR: [u8; 4] = [132u8, 125u8, 99u8, 79u8];
+            const SIGNATURE: &'static str = "createOperatorDirectedAVSRewardsSubmission(((address,uint96)[],address,(address,uint256)[],uint32,uint32,string)[])";
+            const SELECTOR: [u8; 4] = [162u8, 11u8, 153u8, 191u8];
             #[inline]
             fn new<'a>(
                 tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
@@ -3743,9 +3325,9 @@ pub mod IncredibleSquaringServiceManager {
             #[inline]
             fn tokenize(&self) -> Self::Token<'_> {
                 (<alloy::sol_types::sol_data::Array<
-                    IAllocationManagerTypes::CreateSetParams,
+                    IRewardsCoordinatorTypes::OperatorDirectedRewardsSubmission,
                 > as alloy_sol_types::SolType>::tokenize(
-                    &self.params
+                    &self.operatorDirectedRewardsSubmissions,
                 ),)
             }
             #[inline]
@@ -3767,6 +3349,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct deregisterOperatorFromAVSCall {
+        #[allow(missing_docs)]
         pub operator: alloy::sol_types::private::Address,
     }
     ///Container type for the return parameters of the [`deregisterOperatorFromAVS(address)`](deregisterOperatorFromAVSCall) function.
@@ -3881,7 +3464,9 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct deregisterOperatorFromOperatorSetsCall {
+        #[allow(missing_docs)]
         pub operator: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub operatorSetIds: alloy::sol_types::private::Vec<u32>,
     }
     ///Container type for the return parameters of the [`deregisterOperatorFromOperatorSets(address,uint32[])`](deregisterOperatorFromOperatorSetsCall) function.
@@ -4011,12 +3596,14 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getOperatorRestakedStrategiesCall {
+        #[allow(missing_docs)]
         pub operator: alloy::sol_types::private::Address,
     }
     ///Container type for the return parameters of the [`getOperatorRestakedStrategies(address)`](getOperatorRestakedStrategiesCall) function.
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getOperatorRestakedStrategiesReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
     }
     #[allow(
@@ -4134,6 +3721,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getRestakeableStrategiesReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
     }
     #[allow(
@@ -4247,6 +3835,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct incredibleSquaringTaskManagerReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
     #[allow(
@@ -4346,19 +3935,22 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     };
-    /**Function with signature `migrationFinalized()` and selector `0x8d68349a`.
+    /**Function with signature `initialize(address,address)` and selector `0x485cc955`.
     ```solidity
-    function migrationFinalized() external view returns (bool);
+    function initialize(address initialOwner, address rewardsInitiator) external;
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct migrationFinalizedCall {}
-    ///Container type for the return parameters of the [`migrationFinalized()`](migrationFinalizedCall) function.
+    pub struct initializeCall {
+        #[allow(missing_docs)]
+        pub initialOwner: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub rewardsInitiator: alloy::sol_types::private::Address,
+    }
+    ///Container type for the return parameters of the [`initialize(address,address)`](initializeCall) function.
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct migrationFinalizedReturn {
-        pub _0: bool,
-    }
+    pub struct initializeReturn {}
     #[allow(
         non_camel_case_types,
         non_snake_case,
@@ -4367,6 +3959,44 @@ pub mod IncredibleSquaringServiceManager {
     )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = (
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::Address,
+            );
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = (
+                alloy::sol_types::private::Address,
+                alloy::sol_types::private::Address,
+            );
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<initializeCall> for UnderlyingRustTuple<'_> {
+                fn from(value: initializeCall) -> Self {
+                    (value.initialOwner, value.rewardsInitiator)
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for initializeCall {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self {
+                        initialOwner: tuple.0,
+                        rewardsInitiator: tuple.1,
+                    }
+                }
+            }
+        }
         {
             #[doc(hidden)]
             type UnderlyingSolTuple<'a> = ();
@@ -4383,57 +4013,31 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<migrationFinalizedCall> for UnderlyingRustTuple<'_> {
-                fn from(value: migrationFinalizedCall) -> Self {
+            impl ::core::convert::From<initializeReturn> for UnderlyingRustTuple<'_> {
+                fn from(value: initializeReturn) -> Self {
                     ()
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for migrationFinalizedCall {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for initializeReturn {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
                     Self {}
                 }
             }
         }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Bool,);
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (bool,);
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<migrationFinalizedReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: migrationFinalizedReturn) -> Self {
-                    (value._0,)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for migrationFinalizedReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { _0: tuple.0 }
-                }
-            }
-        }
         #[automatically_derived]
-        impl alloy_sol_types::SolCall for migrationFinalizedCall {
-            type Parameters<'a> = ();
+        impl alloy_sol_types::SolCall for initializeCall {
+            type Parameters<'a> = (
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::Address,
+            );
             type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = migrationFinalizedReturn;
-            type ReturnTuple<'a> = (alloy::sol_types::sol_data::Bool,);
+            type Return = initializeReturn;
+            type ReturnTuple<'a> = ();
             type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "migrationFinalized()";
-            const SELECTOR: [u8; 4] = [141u8, 104u8, 52u8, 154u8];
+            const SIGNATURE: &'static str = "initialize(address,address)";
+            const SELECTOR: [u8; 4] = [72u8, 92u8, 201u8, 85u8];
             #[inline]
             fn new<'a>(
                 tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
@@ -4442,7 +4046,14 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[inline]
             fn tokenize(&self) -> Self::Token<'_> {
-                ()
+                (
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.initialOwner,
+                    ),
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.rewardsInitiator,
+                    ),
+                )
             }
             #[inline]
             fn abi_decode_returns(
@@ -4467,6 +4078,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct ownerReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
     #[allow(
@@ -4566,232 +4178,6 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     };
-    /**Function with signature `proposeNewSlasher(address)` and selector `0x8999817f`.
-    ```solidity
-    function proposeNewSlasher(address newSlasher) external;
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct proposeNewSlasherCall {
-        pub newSlasher: alloy::sol_types::private::Address,
-    }
-    ///Container type for the return parameters of the [`proposeNewSlasher(address)`](proposeNewSlasherCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct proposeNewSlasherReturn {}
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Address,);
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::Address,);
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<proposeNewSlasherCall> for UnderlyingRustTuple<'_> {
-                fn from(value: proposeNewSlasherCall) -> Self {
-                    (value.newSlasher,)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for proposeNewSlasherCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {
-                        newSlasher: tuple.0,
-                    }
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<proposeNewSlasherReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: proposeNewSlasherReturn) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for proposeNewSlasherReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for proposeNewSlasherCall {
-            type Parameters<'a> = (alloy::sol_types::sol_data::Address,);
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = proposeNewSlasherReturn;
-            type ReturnTuple<'a> = ();
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "proposeNewSlasher(address)";
-            const SELECTOR: [u8; 4] = [137u8, 153u8, 129u8, 127u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                (
-                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self.newSlasher,
-                    ),
-                )
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
-    /**Function with signature `proposedSlasher()` and selector `0xe46f1816`.
-    ```solidity
-    function proposedSlasher() external view returns (address);
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct proposedSlasherCall {}
-    ///Container type for the return parameters of the [`proposedSlasher()`](proposedSlasherCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct proposedSlasherReturn {
-        pub _0: alloy::sol_types::private::Address,
-    }
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<proposedSlasherCall> for UnderlyingRustTuple<'_> {
-                fn from(value: proposedSlasherCall) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for proposedSlasherCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Address,);
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::Address,);
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<proposedSlasherReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: proposedSlasherReturn) -> Self {
-                    (value._0,)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for proposedSlasherReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { _0: tuple.0 }
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for proposedSlasherCall {
-            type Parameters<'a> = ();
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = proposedSlasherReturn;
-            type ReturnTuple<'a> = (alloy::sol_types::sol_data::Address,);
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "proposedSlasher()";
-            const SELECTOR: [u8; 4] = [228u8, 111u8, 24u8, 22u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                ()
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
     /**Function with signature `registerOperatorToAVS(address,(bytes,bytes32,uint256))` and selector `0x9926ee7d`.
     ```solidity
     function registerOperatorToAVS(address operator, ISignatureUtils.SignatureWithSaltAndExpiry memory operatorSignature) external;
@@ -4799,7 +4185,9 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct registerOperatorToAVSCall {
+        #[allow(missing_docs)]
         pub operator: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub operatorSignature:
             <ISignatureUtils::SignatureWithSaltAndExpiry as alloy::sol_types::SolType>::RustType,
     }
@@ -4924,20 +4312,139 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     };
-    /**Function with signature `removeStrategiesFromOperatorSet(uint32,address[])` and selector `0xce7b5e4b`.
+    /**Function with signature `removeAdmin(address)` and selector `0x1785f53c`.
     ```solidity
-    function removeStrategiesFromOperatorSet(uint32 operatorSetId, address[] memory strategies) external;
+    function removeAdmin(address admin) external;
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct removeStrategiesFromOperatorSetCall {
-        pub operatorSetId: u32,
-        pub strategies: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
+    pub struct removeAdminCall {
+        #[allow(missing_docs)]
+        pub admin: alloy::sol_types::private::Address,
     }
-    ///Container type for the return parameters of the [`removeStrategiesFromOperatorSet(uint32,address[])`](removeStrategiesFromOperatorSetCall) function.
+    ///Container type for the return parameters of the [`removeAdmin(address)`](removeAdminCall) function.
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct removeStrategiesFromOperatorSetReturn {}
+    pub struct removeAdminReturn {}
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Address,);
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::Address,);
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<removeAdminCall> for UnderlyingRustTuple<'_> {
+                fn from(value: removeAdminCall) -> Self {
+                    (value.admin,)
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removeAdminCall {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self { admin: tuple.0 }
+                }
+            }
+        }
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = ();
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = ();
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<removeAdminReturn> for UnderlyingRustTuple<'_> {
+                fn from(value: removeAdminReturn) -> Self {
+                    ()
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removeAdminReturn {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self {}
+                }
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolCall for removeAdminCall {
+            type Parameters<'a> = (alloy::sol_types::sol_data::Address,);
+            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
+            type Return = removeAdminReturn;
+            type ReturnTuple<'a> = ();
+            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "removeAdmin(address)";
+            const SELECTOR: [u8; 4] = [23u8, 133u8, 245u8, 60u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                (
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.admin,
+                    ),
+                )
+            }
+            #[inline]
+            fn abi_decode_returns(
+                data: &[u8],
+                validate: bool,
+            ) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
+                    data, validate,
+                )
+                .map(Into::into)
+            }
+        }
+    };
+    /**Function with signature `removeAppointee(address,address,bytes4)` and selector `0xba550880`.
+    ```solidity
+    function removeAppointee(address appointee, address target, bytes4 selector) external;
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct removeAppointeeCall {
+        #[allow(missing_docs)]
+        pub appointee: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub target: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub selector: alloy::sol_types::private::FixedBytes<4>,
+    }
+    ///Container type for the return parameters of the [`removeAppointee(address,address,bytes4)`](removeAppointeeCall) function.
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct removeAppointeeReturn {}
     #[allow(
         non_camel_case_types,
         non_snake_case,
@@ -4949,13 +4456,15 @@ pub mod IncredibleSquaringServiceManager {
         {
             #[doc(hidden)]
             type UnderlyingSolTuple<'a> = (
-                alloy::sol_types::sol_data::Uint<32>,
-                alloy::sol_types::sol_data::Array<alloy::sol_types::sol_data::Address>,
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::FixedBytes<4>,
             );
             #[doc(hidden)]
             type UnderlyingRustTuple<'a> = (
-                u32,
-                alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
+                alloy::sol_types::private::Address,
+                alloy::sol_types::private::Address,
+                alloy::sol_types::private::FixedBytes<4>,
             );
             #[cfg(test)]
             #[allow(dead_code, unreachable_patterns)]
@@ -4968,18 +4477,19 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<removeStrategiesFromOperatorSetCall> for UnderlyingRustTuple<'_> {
-                fn from(value: removeStrategiesFromOperatorSetCall) -> Self {
-                    (value.operatorSetId, value.strategies)
+            impl ::core::convert::From<removeAppointeeCall> for UnderlyingRustTuple<'_> {
+                fn from(value: removeAppointeeCall) -> Self {
+                    (value.appointee, value.target, value.selector)
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removeStrategiesFromOperatorSetCall {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removeAppointeeCall {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
                     Self {
-                        operatorSetId: tuple.0,
-                        strategies: tuple.1,
+                        appointee: tuple.0,
+                        target: tuple.1,
+                        selector: tuple.2,
                     }
                 }
             }
@@ -5000,31 +4510,32 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<removeStrategiesFromOperatorSetReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: removeStrategiesFromOperatorSetReturn) -> Self {
+            impl ::core::convert::From<removeAppointeeReturn> for UnderlyingRustTuple<'_> {
+                fn from(value: removeAppointeeReturn) -> Self {
                     ()
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removeStrategiesFromOperatorSetReturn {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removeAppointeeReturn {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
                     Self {}
                 }
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::SolCall for removeStrategiesFromOperatorSetCall {
+        impl alloy_sol_types::SolCall for removeAppointeeCall {
             type Parameters<'a> = (
-                alloy::sol_types::sol_data::Uint<32>,
-                alloy::sol_types::sol_data::Array<alloy::sol_types::sol_data::Address>,
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::FixedBytes<4>,
             );
             type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = removeStrategiesFromOperatorSetReturn;
+            type Return = removeAppointeeReturn;
             type ReturnTuple<'a> = ();
             type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "removeStrategiesFromOperatorSet(uint32,address[])";
-            const SELECTOR: [u8; 4] = [206u8, 123u8, 94u8, 75u8];
+            const SIGNATURE: &'static str = "removeAppointee(address,address,bytes4)";
+            const SELECTOR: [u8; 4] = [186u8, 85u8, 8u8, 128u8];
             #[inline]
             fn new<'a>(
                 tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
@@ -5034,12 +4545,132 @@ pub mod IncredibleSquaringServiceManager {
             #[inline]
             fn tokenize(&self) -> Self::Token<'_> {
                 (
-                    <alloy::sol_types::sol_data::Uint<
-                        32,
-                    > as alloy_sol_types::SolType>::tokenize(&self.operatorSetId),
-                    <alloy::sol_types::sol_data::Array<
-                        alloy::sol_types::sol_data::Address,
-                    > as alloy_sol_types::SolType>::tokenize(&self.strategies),
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.appointee,
+                    ),
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.target,
+                    ),
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        4,
+                    > as alloy_sol_types::SolType>::tokenize(&self.selector),
+                )
+            }
+            #[inline]
+            fn abi_decode_returns(
+                data: &[u8],
+                validate: bool,
+            ) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
+                    data, validate,
+                )
+                .map(Into::into)
+            }
+        }
+    };
+    /**Function with signature `removePendingAdmin(address)` and selector `0x9da16d8e`.
+    ```solidity
+    function removePendingAdmin(address pendingAdmin) external;
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct removePendingAdminCall {
+        #[allow(missing_docs)]
+        pub pendingAdmin: alloy::sol_types::private::Address,
+    }
+    ///Container type for the return parameters of the [`removePendingAdmin(address)`](removePendingAdminCall) function.
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct removePendingAdminReturn {}
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Address,);
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::Address,);
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<removePendingAdminCall> for UnderlyingRustTuple<'_> {
+                fn from(value: removePendingAdminCall) -> Self {
+                    (value.pendingAdmin,)
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removePendingAdminCall {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self {
+                        pendingAdmin: tuple.0,
+                    }
+                }
+            }
+        }
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = ();
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = ();
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<removePendingAdminReturn> for UnderlyingRustTuple<'_> {
+                fn from(value: removePendingAdminReturn) -> Self {
+                    ()
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for removePendingAdminReturn {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self {}
+                }
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolCall for removePendingAdminCall {
+            type Parameters<'a> = (alloy::sol_types::sol_data::Address,);
+            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
+            type Return = removePendingAdminReturn;
+            type ReturnTuple<'a> = ();
+            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "removePendingAdmin(address)";
+            const SELECTOR: [u8; 4] = [157u8, 161u8, 109u8, 142u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                (
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.pendingAdmin,
+                    ),
                 )
             }
             #[inline]
@@ -5173,6 +4804,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct rewardsInitiatorReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
     #[allow(
@@ -5272,19 +4904,161 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     };
-    /**Function with signature `setAVSRegistrar(address)` and selector `0xf25f1610`.
+    /**Function with signature `setAppointee(address,address,bytes4)` and selector `0x1fdb0cfd`.
     ```solidity
-    function setAVSRegistrar(address registrar) external;
+    function setAppointee(address appointee, address target, bytes4 selector) external;
     ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct setAVSRegistrarCall {
-        pub registrar: alloy::sol_types::private::Address,
+    pub struct setAppointeeCall {
+        #[allow(missing_docs)]
+        pub appointee: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub target: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
+        pub selector: alloy::sol_types::private::FixedBytes<4>,
     }
-    ///Container type for the return parameters of the [`setAVSRegistrar(address)`](setAVSRegistrarCall) function.
+    ///Container type for the return parameters of the [`setAppointee(address,address,bytes4)`](setAppointeeCall) function.
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
-    pub struct setAVSRegistrarReturn {}
+    pub struct setAppointeeReturn {}
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
+    const _: () = {
+        use alloy::sol_types as alloy_sol_types;
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = (
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::FixedBytes<4>,
+            );
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = (
+                alloy::sol_types::private::Address,
+                alloy::sol_types::private::Address,
+                alloy::sol_types::private::FixedBytes<4>,
+            );
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<setAppointeeCall> for UnderlyingRustTuple<'_> {
+                fn from(value: setAppointeeCall) -> Self {
+                    (value.appointee, value.target, value.selector)
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for setAppointeeCall {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self {
+                        appointee: tuple.0,
+                        target: tuple.1,
+                        selector: tuple.2,
+                    }
+                }
+            }
+        }
+        {
+            #[doc(hidden)]
+            type UnderlyingSolTuple<'a> = ();
+            #[doc(hidden)]
+            type UnderlyingRustTuple<'a> = ();
+            #[cfg(test)]
+            #[allow(dead_code, unreachable_patterns)]
+            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
+                match _t {
+                    alloy_sol_types::private::AssertTypeEq::<
+                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
+                    >(_) => {}
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<setAppointeeReturn> for UnderlyingRustTuple<'_> {
+                fn from(value: setAppointeeReturn) -> Self {
+                    ()
+                }
+            }
+            #[automatically_derived]
+            #[doc(hidden)]
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for setAppointeeReturn {
+                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
+                    Self {}
+                }
+            }
+        }
+        #[automatically_derived]
+        impl alloy_sol_types::SolCall for setAppointeeCall {
+            type Parameters<'a> = (
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::Address,
+                alloy::sol_types::sol_data::FixedBytes<4>,
+            );
+            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
+            type Return = setAppointeeReturn;
+            type ReturnTuple<'a> = ();
+            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
+            const SIGNATURE: &'static str = "setAppointee(address,address,bytes4)";
+            const SELECTOR: [u8; 4] = [31u8, 219u8, 12u8, 253u8];
+            #[inline]
+            fn new<'a>(
+                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
+            ) -> Self {
+                tuple.into()
+            }
+            #[inline]
+            fn tokenize(&self) -> Self::Token<'_> {
+                (
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.appointee,
+                    ),
+                    <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
+                        &self.target,
+                    ),
+                    <alloy::sol_types::sol_data::FixedBytes<
+                        4,
+                    > as alloy_sol_types::SolType>::tokenize(&self.selector),
+                )
+            }
+            #[inline]
+            fn abi_decode_returns(
+                data: &[u8],
+                validate: bool,
+            ) -> alloy_sol_types::Result<Self::Return> {
+                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
+                    data, validate,
+                )
+                .map(Into::into)
+            }
+        }
+    };
+    /**Function with signature `setClaimerFor(address)` and selector `0xa0169ddd`.
+    ```solidity
+    function setClaimerFor(address claimer) external;
+    ```*/
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct setClaimerForCall {
+        #[allow(missing_docs)]
+        pub claimer: alloy::sol_types::private::Address,
+    }
+    ///Container type for the return parameters of the [`setClaimerFor(address)`](setClaimerForCall) function.
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
+    #[derive(Clone)]
+    pub struct setClaimerForReturn {}
     #[allow(
         non_camel_case_types,
         non_snake_case,
@@ -5309,16 +5083,16 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<setAVSRegistrarCall> for UnderlyingRustTuple<'_> {
-                fn from(value: setAVSRegistrarCall) -> Self {
-                    (value.registrar,)
+            impl ::core::convert::From<setClaimerForCall> for UnderlyingRustTuple<'_> {
+                fn from(value: setClaimerForCall) -> Self {
+                    (value.claimer,)
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for setAVSRegistrarCall {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for setClaimerForCall {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { registrar: tuple.0 }
+                    Self { claimer: tuple.0 }
                 }
             }
         }
@@ -5338,28 +5112,28 @@ pub mod IncredibleSquaringServiceManager {
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<setAVSRegistrarReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: setAVSRegistrarReturn) -> Self {
+            impl ::core::convert::From<setClaimerForReturn> for UnderlyingRustTuple<'_> {
+                fn from(value: setClaimerForReturn) -> Self {
                     ()
                 }
             }
             #[automatically_derived]
             #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for setAVSRegistrarReturn {
+            impl ::core::convert::From<UnderlyingRustTuple<'_>> for setClaimerForReturn {
                 fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
                     Self {}
                 }
             }
         }
         #[automatically_derived]
-        impl alloy_sol_types::SolCall for setAVSRegistrarCall {
+        impl alloy_sol_types::SolCall for setClaimerForCall {
             type Parameters<'a> = (alloy::sol_types::sol_data::Address,);
             type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = setAVSRegistrarReturn;
+            type Return = setClaimerForReturn;
             type ReturnTuple<'a> = ();
             type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "setAVSRegistrar(address)";
-            const SELECTOR: [u8; 4] = [242u8, 95u8, 22u8, 16u8];
+            const SIGNATURE: &'static str = "setClaimerFor(address)";
+            const SELECTOR: [u8; 4] = [160u8, 22u8, 157u8, 221u8];
             #[inline]
             fn new<'a>(
                 tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
@@ -5370,7 +5144,7 @@ pub mod IncredibleSquaringServiceManager {
             fn tokenize(&self) -> Self::Token<'_> {
                 (
                     <alloy::sol_types::sol_data::Address as alloy_sol_types::SolType>::tokenize(
-                        &self.registrar,
+                        &self.claimer,
                     ),
                 )
             }
@@ -5393,6 +5167,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct setRewardsInitiatorCall {
+        #[allow(missing_docs)]
         pub newRewardsInitiator: alloy::sol_types::private::Address,
     }
     ///Container type for the return parameters of the [`setRewardsInitiator(address)`](setRewardsInitiatorCall) function.
@@ -5502,344 +5277,6 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     };
-    /**Function with signature `slashOperator((address,uint32,address[],uint256[],string))` and selector `0x3d071422`.
-    ```solidity
-    function slashOperator(IAllocationManagerTypes.SlashingParams memory params) external;
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct slashOperatorCall {
-        pub params:
-            <IAllocationManagerTypes::SlashingParams as alloy::sol_types::SolType>::RustType,
-    }
-    ///Container type for the return parameters of the [`slashOperator((address,uint32,address[],uint256[],string))`](slashOperatorCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct slashOperatorReturn {}
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (IAllocationManagerTypes::SlashingParams,);
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (
-                <IAllocationManagerTypes::SlashingParams as alloy::sol_types::SolType>::RustType,
-            );
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<slashOperatorCall> for UnderlyingRustTuple<'_> {
-                fn from(value: slashOperatorCall) -> Self {
-                    (value.params,)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for slashOperatorCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { params: tuple.0 }
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<slashOperatorReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: slashOperatorReturn) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for slashOperatorReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for slashOperatorCall {
-            type Parameters<'a> = (IAllocationManagerTypes::SlashingParams,);
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = slashOperatorReturn;
-            type ReturnTuple<'a> = ();
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str =
-                "slashOperator((address,uint32,address[],uint256[],string))";
-            const SELECTOR: [u8; 4] = [61u8, 7u8, 20u8, 34u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                (
-                    <IAllocationManagerTypes::SlashingParams as alloy_sol_types::SolType>::tokenize(
-                        &self.params,
-                    ),
-                )
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
-    /**Function with signature `slasher()` and selector `0xb1344271`.
-    ```solidity
-    function slasher() external view returns (address);
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct slasherCall {}
-    ///Container type for the return parameters of the [`slasher()`](slasherCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct slasherReturn {
-        pub _0: alloy::sol_types::private::Address,
-    }
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<slasherCall> for UnderlyingRustTuple<'_> {
-                fn from(value: slasherCall) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for slasherCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Address,);
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::Address,);
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<slasherReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: slasherReturn) -> Self {
-                    (value._0,)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for slasherReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { _0: tuple.0 }
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for slasherCall {
-            type Parameters<'a> = ();
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = slasherReturn;
-            type ReturnTuple<'a> = (alloy::sol_types::sol_data::Address,);
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "slasher()";
-            const SELECTOR: [u8; 4] = [177u8, 52u8, 66u8, 113u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                ()
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
-    /**Function with signature `slasherProposalTimestamp()` and selector `0xfcd1c375`.
-    ```solidity
-    function slasherProposalTimestamp() external view returns (uint256);
-    ```*/
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct slasherProposalTimestampCall {}
-    ///Container type for the return parameters of the [`slasherProposalTimestamp()`](slasherProposalTimestampCall) function.
-    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
-    pub struct slasherProposalTimestampReturn {
-        pub _0: alloy::sol_types::private::primitives::aliases::U256,
-    }
-    #[allow(
-        non_camel_case_types,
-        non_snake_case,
-        clippy::pub_underscore_fields,
-        clippy::style
-    )]
-    const _: () = {
-        use alloy::sol_types as alloy_sol_types;
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = ();
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = ();
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<slasherProposalTimestampCall> for UnderlyingRustTuple<'_> {
-                fn from(value: slasherProposalTimestampCall) -> Self {
-                    ()
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for slasherProposalTimestampCall {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self {}
-                }
-            }
-        }
-        {
-            #[doc(hidden)]
-            type UnderlyingSolTuple<'a> = (alloy::sol_types::sol_data::Uint<256>,);
-            #[doc(hidden)]
-            type UnderlyingRustTuple<'a> = (alloy::sol_types::private::primitives::aliases::U256,);
-            #[cfg(test)]
-            #[allow(dead_code, unreachable_patterns)]
-            fn _type_assertion(_t: alloy_sol_types::private::AssertTypeEq<UnderlyingRustTuple>) {
-                match _t {
-                    alloy_sol_types::private::AssertTypeEq::<
-                        <UnderlyingSolTuple as alloy_sol_types::SolType>::RustType,
-                    >(_) => {}
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<slasherProposalTimestampReturn> for UnderlyingRustTuple<'_> {
-                fn from(value: slasherProposalTimestampReturn) -> Self {
-                    (value._0,)
-                }
-            }
-            #[automatically_derived]
-            #[doc(hidden)]
-            impl ::core::convert::From<UnderlyingRustTuple<'_>> for slasherProposalTimestampReturn {
-                fn from(tuple: UnderlyingRustTuple<'_>) -> Self {
-                    Self { _0: tuple.0 }
-                }
-            }
-        }
-        #[automatically_derived]
-        impl alloy_sol_types::SolCall for slasherProposalTimestampCall {
-            type Parameters<'a> = ();
-            type Token<'a> = <Self::Parameters<'a> as alloy_sol_types::SolType>::Token<'a>;
-            type Return = slasherProposalTimestampReturn;
-            type ReturnTuple<'a> = (alloy::sol_types::sol_data::Uint<256>,);
-            type ReturnToken<'a> = <Self::ReturnTuple<'a> as alloy_sol_types::SolType>::Token<'a>;
-            const SIGNATURE: &'static str = "slasherProposalTimestamp()";
-            const SELECTOR: [u8; 4] = [252u8, 209u8, 195u8, 117u8];
-            #[inline]
-            fn new<'a>(
-                tuple: <Self::Parameters<'a> as alloy_sol_types::SolType>::RustType,
-            ) -> Self {
-                tuple.into()
-            }
-            #[inline]
-            fn tokenize(&self) -> Self::Token<'_> {
-                ()
-            }
-            #[inline]
-            fn abi_decode_returns(
-                data: &[u8],
-                validate: bool,
-            ) -> alloy_sol_types::Result<Self::Return> {
-                <Self::ReturnTuple<'_> as alloy_sol_types::SolType>::abi_decode_sequence(
-                    data, validate,
-                )
-                .map(Into::into)
-            }
-        }
-    };
     /**Function with signature `transferOwnership(address)` and selector `0xf2fde38b`.
     ```solidity
     function transferOwnership(address newOwner) external;
@@ -5847,6 +5284,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct transferOwnershipCall {
+        #[allow(missing_docs)]
         pub newOwner: alloy::sol_types::private::Address,
     }
     ///Container type for the return parameters of the [`transferOwnership(address)`](transferOwnershipCall) function.
@@ -5961,6 +5399,7 @@ pub mod IncredibleSquaringServiceManager {
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct updateAVSMetadataURICall {
+        #[allow(missing_docs)]
         pub _metadataURI: alloy::sol_types::private::String,
     }
     ///Container type for the return parameters of the [`updateAVSMetadataURI(string)`](updateAVSMetadataURICall) function.
@@ -6072,32 +5511,49 @@ pub mod IncredibleSquaringServiceManager {
     };
     ///Container for all the [`IncredibleSquaringServiceManager`](self) function calls.
     pub enum IncredibleSquaringServiceManagerCalls {
-        SLASHER_PROPOSAL_DELAY(SLASHER_PROPOSAL_DELAYCall),
-        acceptProposedSlasher(acceptProposedSlasherCall),
-        addStrategyToOperatorSet(addStrategyToOperatorSetCall),
-        allocationManager(allocationManagerCall),
+        #[allow(missing_docs)]
+        addPendingAdmin(addPendingAdminCall),
+        #[allow(missing_docs)]
         avsDirectory(avsDirectoryCall),
+        #[allow(missing_docs)]
         createAVSRewardsSubmission(createAVSRewardsSubmissionCall),
-        createOperatorSets(createOperatorSetsCall),
+        #[allow(missing_docs)]
+        createOperatorDirectedAVSRewardsSubmission(createOperatorDirectedAVSRewardsSubmissionCall),
+        #[allow(missing_docs)]
         deregisterOperatorFromAVS(deregisterOperatorFromAVSCall),
+        #[allow(missing_docs)]
         deregisterOperatorFromOperatorSets(deregisterOperatorFromOperatorSetsCall),
+        #[allow(missing_docs)]
         getOperatorRestakedStrategies(getOperatorRestakedStrategiesCall),
+        #[allow(missing_docs)]
         getRestakeableStrategies(getRestakeableStrategiesCall),
+        #[allow(missing_docs)]
         incredibleSquaringTaskManager(incredibleSquaringTaskManagerCall),
-        migrationFinalized(migrationFinalizedCall),
+        #[allow(missing_docs)]
+        initialize(initializeCall),
+        #[allow(missing_docs)]
         owner(ownerCall),
-        proposeNewSlasher(proposeNewSlasherCall),
-        proposedSlasher(proposedSlasherCall),
+        #[allow(missing_docs)]
         registerOperatorToAVS(registerOperatorToAVSCall),
-        removeStrategiesFromOperatorSet(removeStrategiesFromOperatorSetCall),
+        #[allow(missing_docs)]
+        removeAdmin(removeAdminCall),
+        #[allow(missing_docs)]
+        removeAppointee(removeAppointeeCall),
+        #[allow(missing_docs)]
+        removePendingAdmin(removePendingAdminCall),
+        #[allow(missing_docs)]
         renounceOwnership(renounceOwnershipCall),
+        #[allow(missing_docs)]
         rewardsInitiator(rewardsInitiatorCall),
-        setAVSRegistrar(setAVSRegistrarCall),
+        #[allow(missing_docs)]
+        setAppointee(setAppointeeCall),
+        #[allow(missing_docs)]
+        setClaimerFor(setClaimerForCall),
+        #[allow(missing_docs)]
         setRewardsInitiator(setRewardsInitiatorCall),
-        slashOperator(slashOperatorCall),
-        slasher(slasherCall),
-        slasherProposalTimestamp(slasherProposalTimestampCall),
+        #[allow(missing_docs)]
         transferOwnership(transferOwnershipCall),
+        #[allow(missing_docs)]
         updateAVSMetadataURI(updateAVSMetadataURICall),
     }
     #[automatically_derived]
@@ -6109,32 +5565,27 @@ pub mod IncredibleSquaringServiceManager {
         ///
         /// Prefer using `SolInterface` methods instead.
         pub const SELECTORS: &'static [[u8; 4usize]] = &[
-            [38u8, 240u8, 23u8, 226u8],
+            [23u8, 133u8, 245u8, 60u8],
+            [31u8, 219u8, 12u8, 253u8],
+            [39u8, 148u8, 50u8, 235u8],
             [51u8, 207u8, 183u8, 183u8],
             [59u8, 194u8, 140u8, 140u8],
-            [61u8, 7u8, 20u8, 34u8],
-            [103u8, 148u8, 12u8, 137u8],
+            [72u8, 92u8, 201u8, 85u8],
             [107u8, 58u8, 167u8, 46u8],
-            [110u8, 203u8, 204u8, 254u8],
             [113u8, 80u8, 24u8, 166u8],
             [119u8, 239u8, 115u8, 29u8],
-            [132u8, 125u8, 99u8, 79u8],
-            [137u8, 153u8, 129u8, 127u8],
-            [141u8, 104u8, 52u8, 154u8],
             [141u8, 165u8, 203u8, 91u8],
             [153u8, 38u8, 238u8, 125u8],
+            [157u8, 161u8, 109u8, 142u8],
+            [160u8, 22u8, 157u8, 221u8],
+            [162u8, 11u8, 153u8, 191u8],
             [163u8, 100u8, 244u8, 218u8],
             [169u8, 143u8, 179u8, 85u8],
-            [177u8, 52u8, 66u8, 113u8],
+            [186u8, 85u8, 8u8, 128u8],
             [193u8, 168u8, 226u8, 197u8],
-            [202u8, 138u8, 167u8, 199u8],
-            [206u8, 123u8, 94u8, 75u8],
-            [228u8, 111u8, 24u8, 22u8],
             [228u8, 129u8, 175u8, 157u8],
-            [242u8, 95u8, 22u8, 16u8],
             [242u8, 253u8, 227u8, 139u8],
             [252u8, 41u8, 157u8, 238u8],
-            [252u8, 209u8, 195u8, 117u8],
             [252u8, 227u8, 108u8, 125u8],
         ];
     }
@@ -6142,28 +5593,21 @@ pub mod IncredibleSquaringServiceManager {
     impl alloy_sol_types::SolInterface for IncredibleSquaringServiceManagerCalls {
         const NAME: &'static str = "IncredibleSquaringServiceManagerCalls";
         const MIN_DATA_LENGTH: usize = 0usize;
-        const COUNT: usize = 27usize;
+        const COUNT: usize = 22usize;
         #[inline]
         fn selector(&self) -> [u8; 4] {
             match self {
-                Self::SLASHER_PROPOSAL_DELAY(_) => {
-                    <SLASHER_PROPOSAL_DELAYCall as alloy_sol_types::SolCall>::SELECTOR
+                Self::addPendingAdmin(_) => {
+                    <addPendingAdminCall as alloy_sol_types::SolCall>::SELECTOR
                 }
-                Self::acceptProposedSlasher(_) => {
-                    <acceptProposedSlasherCall as alloy_sol_types::SolCall>::SELECTOR
+                Self::avsDirectory(_) => {
+                    <avsDirectoryCall as alloy_sol_types::SolCall>::SELECTOR
                 }
-                Self::addStrategyToOperatorSet(_) => {
-                    <addStrategyToOperatorSetCall as alloy_sol_types::SolCall>::SELECTOR
-                }
-                Self::allocationManager(_) => {
-                    <allocationManagerCall as alloy_sol_types::SolCall>::SELECTOR
-                }
-                Self::avsDirectory(_) => <avsDirectoryCall as alloy_sol_types::SolCall>::SELECTOR,
                 Self::createAVSRewardsSubmission(_) => {
                     <createAVSRewardsSubmissionCall as alloy_sol_types::SolCall>::SELECTOR
                 }
-                Self::createOperatorSets(_) => {
-                    <createOperatorSetsCall as alloy_sol_types::SolCall>::SELECTOR
+                Self::createOperatorDirectedAVSRewardsSubmission(_) => {
+                    <createOperatorDirectedAVSRewardsSubmissionCall as alloy_sol_types::SolCall>::SELECTOR
                 }
                 Self::deregisterOperatorFromAVS(_) => {
                     <deregisterOperatorFromAVSCall as alloy_sol_types::SolCall>::SELECTOR
@@ -6180,21 +5624,21 @@ pub mod IncredibleSquaringServiceManager {
                 Self::incredibleSquaringTaskManager(_) => {
                     <incredibleSquaringTaskManagerCall as alloy_sol_types::SolCall>::SELECTOR
                 }
-                Self::migrationFinalized(_) => {
-                    <migrationFinalizedCall as alloy_sol_types::SolCall>::SELECTOR
+                Self::initialize(_) => {
+                    <initializeCall as alloy_sol_types::SolCall>::SELECTOR
                 }
                 Self::owner(_) => <ownerCall as alloy_sol_types::SolCall>::SELECTOR,
-                Self::proposeNewSlasher(_) => {
-                    <proposeNewSlasherCall as alloy_sol_types::SolCall>::SELECTOR
-                }
-                Self::proposedSlasher(_) => {
-                    <proposedSlasherCall as alloy_sol_types::SolCall>::SELECTOR
-                }
                 Self::registerOperatorToAVS(_) => {
                     <registerOperatorToAVSCall as alloy_sol_types::SolCall>::SELECTOR
                 }
-                Self::removeStrategiesFromOperatorSet(_) => {
-                    <removeStrategiesFromOperatorSetCall as alloy_sol_types::SolCall>::SELECTOR
+                Self::removeAdmin(_) => {
+                    <removeAdminCall as alloy_sol_types::SolCall>::SELECTOR
+                }
+                Self::removeAppointee(_) => {
+                    <removeAppointeeCall as alloy_sol_types::SolCall>::SELECTOR
+                }
+                Self::removePendingAdmin(_) => {
+                    <removePendingAdminCall as alloy_sol_types::SolCall>::SELECTOR
                 }
                 Self::renounceOwnership(_) => {
                     <renounceOwnershipCall as alloy_sol_types::SolCall>::SELECTOR
@@ -6202,16 +5646,14 @@ pub mod IncredibleSquaringServiceManager {
                 Self::rewardsInitiator(_) => {
                     <rewardsInitiatorCall as alloy_sol_types::SolCall>::SELECTOR
                 }
-                Self::setAVSRegistrar(_) => {
-                    <setAVSRegistrarCall as alloy_sol_types::SolCall>::SELECTOR
+                Self::setAppointee(_) => {
+                    <setAppointeeCall as alloy_sol_types::SolCall>::SELECTOR
+                }
+                Self::setClaimerFor(_) => {
+                    <setClaimerForCall as alloy_sol_types::SolCall>::SELECTOR
                 }
                 Self::setRewardsInitiator(_) => {
                     <setRewardsInitiatorCall as alloy_sol_types::SolCall>::SELECTOR
-                }
-                Self::slashOperator(_) => <slashOperatorCall as alloy_sol_types::SolCall>::SELECTOR,
-                Self::slasher(_) => <slasherCall as alloy_sol_types::SolCall>::SELECTOR,
-                Self::slasherProposalTimestamp(_) => {
-                    <slasherProposalTimestampCall as alloy_sol_types::SolCall>::SELECTOR
                 }
                 Self::transferOwnership(_) => {
                     <transferOwnershipCall as alloy_sol_types::SolCall>::SELECTOR
@@ -6230,7 +5672,7 @@ pub mod IncredibleSquaringServiceManager {
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -6243,17 +5685,43 @@ pub mod IncredibleSquaringServiceManager {
                 IncredibleSquaringServiceManagerCalls,
             >] = &[
                 {
-                    fn acceptProposedSlasher(
+                    fn removeAdmin(
                         data: &[u8],
                         validate: bool,
                     ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
                     {
-                        <acceptProposedSlasherCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                        <removeAdminCall as alloy_sol_types::SolCall>::abi_decode_raw(
                             data, validate,
                         )
-                        .map(IncredibleSquaringServiceManagerCalls::acceptProposedSlasher)
+                        .map(IncredibleSquaringServiceManagerCalls::removeAdmin)
                     }
-                    acceptProposedSlasher
+                    removeAdmin
+                },
+                {
+                    fn setAppointee(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
+                    {
+                        <setAppointeeCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerCalls::setAppointee)
+                    }
+                    setAppointee
+                },
+                {
+                    fn addPendingAdmin(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
+                    {
+                        <addPendingAdminCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerCalls::addPendingAdmin)
+                    }
+                    addPendingAdmin
                 },
                 {
                     fn getOperatorRestakedStrategies(
@@ -6285,30 +5753,15 @@ pub mod IncredibleSquaringServiceManager {
                     setRewardsInitiator
                 },
                 {
-                    fn slashOperator(
+                    fn initialize(
                         data: &[u8],
                         validate: bool,
                     ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
                     {
-                        <slashOperatorCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::slashOperator)
+                        <initializeCall as alloy_sol_types::SolCall>::abi_decode_raw(data, validate)
+                            .map(IncredibleSquaringServiceManagerCalls::initialize)
                     }
-                    slashOperator
-                },
-                {
-                    fn SLASHER_PROPOSAL_DELAY(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <SLASHER_PROPOSAL_DELAYCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::SLASHER_PROPOSAL_DELAY)
-                    }
-                    SLASHER_PROPOSAL_DELAY
+                    initialize
                 },
                 {
                     fn avsDirectory(
@@ -6322,19 +5775,6 @@ pub mod IncredibleSquaringServiceManager {
                         .map(IncredibleSquaringServiceManagerCalls::avsDirectory)
                     }
                     avsDirectory
-                },
-                {
-                    fn addStrategyToOperatorSet(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <addStrategyToOperatorSetCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::addStrategyToOperatorSet)
-                    }
-                    addStrategyToOperatorSet
                 },
                 {
                     fn renounceOwnership(
@@ -6366,45 +5806,6 @@ pub mod IncredibleSquaringServiceManager {
                     incredibleSquaringTaskManager
                 },
                 {
-                    fn createOperatorSets(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <createOperatorSetsCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::createOperatorSets)
-                    }
-                    createOperatorSets
-                },
-                {
-                    fn proposeNewSlasher(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <proposeNewSlasherCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::proposeNewSlasher)
-                    }
-                    proposeNewSlasher
-                },
-                {
-                    fn migrationFinalized(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <migrationFinalizedCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::migrationFinalized)
-                    }
-                    migrationFinalized
-                },
-                {
                     fn owner(
                         data: &[u8],
                         validate: bool,
@@ -6427,6 +5828,48 @@ pub mod IncredibleSquaringServiceManager {
                         .map(IncredibleSquaringServiceManagerCalls::registerOperatorToAVS)
                     }
                     registerOperatorToAVS
+                },
+                {
+                    fn removePendingAdmin(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
+                    {
+                        <removePendingAdminCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerCalls::removePendingAdmin)
+                    }
+                    removePendingAdmin
+                },
+                {
+                    fn setClaimerFor(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
+                    {
+                        <setClaimerForCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerCalls::setClaimerFor)
+                    }
+                    setClaimerFor
+                },
+                {
+                    fn createOperatorDirectedAVSRewardsSubmission(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
+                    {
+                        <createOperatorDirectedAVSRewardsSubmissionCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                                data,
+                                validate,
+                            )
+                            .map(
+                                IncredibleSquaringServiceManagerCalls::createOperatorDirectedAVSRewardsSubmission,
+                            )
+                    }
+                    createOperatorDirectedAVSRewardsSubmission
                 },
                 {
                     fn deregisterOperatorFromAVS(
@@ -6455,15 +5898,17 @@ pub mod IncredibleSquaringServiceManager {
                     updateAVSMetadataURI
                 },
                 {
-                    fn slasher(
+                    fn removeAppointee(
                         data: &[u8],
                         validate: bool,
                     ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
                     {
-                        <slasherCall as alloy_sol_types::SolCall>::abi_decode_raw(data, validate)
-                            .map(IncredibleSquaringServiceManagerCalls::slasher)
+                        <removeAppointeeCall as alloy_sol_types::SolCall>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerCalls::removeAppointee)
                     }
-                    slasher
+                    removeAppointee
                 },
                 {
                     fn deregisterOperatorFromOperatorSets(
@@ -6482,48 +5927,6 @@ pub mod IncredibleSquaringServiceManager {
                     deregisterOperatorFromOperatorSets
                 },
                 {
-                    fn allocationManager(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <allocationManagerCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::allocationManager)
-                    }
-                    allocationManager
-                },
-                {
-                    fn removeStrategiesFromOperatorSet(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <removeStrategiesFromOperatorSetCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                                data,
-                                validate,
-                            )
-                            .map(
-                                IncredibleSquaringServiceManagerCalls::removeStrategiesFromOperatorSet,
-                            )
-                    }
-                    removeStrategiesFromOperatorSet
-                },
-                {
-                    fn proposedSlasher(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <proposedSlasherCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::proposedSlasher)
-                    }
-                    proposedSlasher
-                },
-                {
                     fn getRestakeableStrategies(
                         data: &[u8],
                         validate: bool,
@@ -6535,19 +5938,6 @@ pub mod IncredibleSquaringServiceManager {
                         .map(IncredibleSquaringServiceManagerCalls::getRestakeableStrategies)
                     }
                     getRestakeableStrategies
-                },
-                {
-                    fn setAVSRegistrar(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <setAVSRegistrarCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::setAVSRegistrar)
-                    }
-                    setAVSRegistrar
                 },
                 {
                     fn transferOwnership(
@@ -6576,19 +5966,6 @@ pub mod IncredibleSquaringServiceManager {
                     rewardsInitiator
                 },
                 {
-                    fn slasherProposalTimestamp(
-                        data: &[u8],
-                        validate: bool,
-                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerCalls>
-                    {
-                        <slasherProposalTimestampCall as alloy_sol_types::SolCall>::abi_decode_raw(
-                            data, validate,
-                        )
-                        .map(IncredibleSquaringServiceManagerCalls::slasherProposalTimestamp)
-                    }
-                    slasherProposalTimestamp
-                },
-                {
                     fn createAVSRewardsSubmission(
                         data: &[u8],
                         validate: bool,
@@ -6611,28 +5988,13 @@ pub mod IncredibleSquaringServiceManager {
                     selector,
                 ));
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {
             match self {
-                Self::SLASHER_PROPOSAL_DELAY(inner) => {
-                    <SLASHER_PROPOSAL_DELAYCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
-                }
-                Self::acceptProposedSlasher(inner) => {
-                    <acceptProposedSlasherCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
-                }
-                Self::addStrategyToOperatorSet(inner) => {
-                    <addStrategyToOperatorSetCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
-                }
-                Self::allocationManager(inner) => {
-                    <allocationManagerCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                Self::addPendingAdmin(inner) => {
+                    <addPendingAdminCall as alloy_sol_types::SolCall>::abi_encoded_size(
                         inner,
                     )
                 }
@@ -6646,8 +6008,8 @@ pub mod IncredibleSquaringServiceManager {
                         inner,
                     )
                 }
-                Self::createOperatorSets(inner) => {
-                    <createOperatorSetsCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                Self::createOperatorDirectedAVSRewardsSubmission(inner) => {
+                    <createOperatorDirectedAVSRewardsSubmissionCall as alloy_sol_types::SolCall>::abi_encoded_size(
                         inner,
                     )
                 }
@@ -6676,31 +6038,29 @@ pub mod IncredibleSquaringServiceManager {
                         inner,
                     )
                 }
-                Self::migrationFinalized(inner) => {
-                    <migrationFinalizedCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
+                Self::initialize(inner) => {
+                    <initializeCall as alloy_sol_types::SolCall>::abi_encoded_size(inner)
                 }
                 Self::owner(inner) => {
                     <ownerCall as alloy_sol_types::SolCall>::abi_encoded_size(inner)
-                }
-                Self::proposeNewSlasher(inner) => {
-                    <proposeNewSlasherCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
-                }
-                Self::proposedSlasher(inner) => {
-                    <proposedSlasherCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
                 }
                 Self::registerOperatorToAVS(inner) => {
                     <registerOperatorToAVSCall as alloy_sol_types::SolCall>::abi_encoded_size(
                         inner,
                     )
                 }
-                Self::removeStrategiesFromOperatorSet(inner) => {
-                    <removeStrategiesFromOperatorSetCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                Self::removeAdmin(inner) => {
+                    <removeAdminCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                        inner,
+                    )
+                }
+                Self::removeAppointee(inner) => {
+                    <removeAppointeeCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                        inner,
+                    )
+                }
+                Self::removePendingAdmin(inner) => {
+                    <removePendingAdminCall as alloy_sol_types::SolCall>::abi_encoded_size(
                         inner,
                     )
                 }
@@ -6714,26 +6074,18 @@ pub mod IncredibleSquaringServiceManager {
                         inner,
                     )
                 }
-                Self::setAVSRegistrar(inner) => {
-                    <setAVSRegistrarCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                Self::setAppointee(inner) => {
+                    <setAppointeeCall as alloy_sol_types::SolCall>::abi_encoded_size(
+                        inner,
+                    )
+                }
+                Self::setClaimerFor(inner) => {
+                    <setClaimerForCall as alloy_sol_types::SolCall>::abi_encoded_size(
                         inner,
                     )
                 }
                 Self::setRewardsInitiator(inner) => {
                     <setRewardsInitiatorCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
-                }
-                Self::slashOperator(inner) => {
-                    <slashOperatorCall as alloy_sol_types::SolCall>::abi_encoded_size(
-                        inner,
-                    )
-                }
-                Self::slasher(inner) => {
-                    <slasherCall as alloy_sol_types::SolCall>::abi_encoded_size(inner)
-                }
-                Self::slasherProposalTimestamp(inner) => {
-                    <slasherProposalTimestampCall as alloy_sol_types::SolCall>::abi_encoded_size(
                         inner,
                     )
                 }
@@ -6752,26 +6104,8 @@ pub mod IncredibleSquaringServiceManager {
         #[inline]
         fn abi_encode_raw(&self, out: &mut alloy_sol_types::private::Vec<u8>) {
             match self {
-                Self::SLASHER_PROPOSAL_DELAY(inner) => {
-                    <SLASHER_PROPOSAL_DELAYCall as alloy_sol_types::SolCall>::abi_encode_raw(
-                        inner,
-                        out,
-                    )
-                }
-                Self::acceptProposedSlasher(inner) => {
-                    <acceptProposedSlasherCall as alloy_sol_types::SolCall>::abi_encode_raw(
-                        inner,
-                        out,
-                    )
-                }
-                Self::addStrategyToOperatorSet(inner) => {
-                    <addStrategyToOperatorSetCall as alloy_sol_types::SolCall>::abi_encode_raw(
-                        inner,
-                        out,
-                    )
-                }
-                Self::allocationManager(inner) => {
-                    <allocationManagerCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                Self::addPendingAdmin(inner) => {
+                    <addPendingAdminCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
@@ -6788,8 +6122,8 @@ pub mod IncredibleSquaringServiceManager {
                         out,
                     )
                 }
-                Self::createOperatorSets(inner) => {
-                    <createOperatorSetsCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                Self::createOperatorDirectedAVSRewardsSubmission(inner) => {
+                    <createOperatorDirectedAVSRewardsSubmissionCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
@@ -6824,8 +6158,8 @@ pub mod IncredibleSquaringServiceManager {
                         out,
                     )
                 }
-                Self::migrationFinalized(inner) => {
-                    <migrationFinalizedCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                Self::initialize(inner) => {
+                    <initializeCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
@@ -6833,26 +6167,26 @@ pub mod IncredibleSquaringServiceManager {
                 Self::owner(inner) => {
                     <ownerCall as alloy_sol_types::SolCall>::abi_encode_raw(inner, out)
                 }
-                Self::proposeNewSlasher(inner) => {
-                    <proposeNewSlasherCall as alloy_sol_types::SolCall>::abi_encode_raw(
-                        inner,
-                        out,
-                    )
-                }
-                Self::proposedSlasher(inner) => {
-                    <proposedSlasherCall as alloy_sol_types::SolCall>::abi_encode_raw(
-                        inner,
-                        out,
-                    )
-                }
                 Self::registerOperatorToAVS(inner) => {
                     <registerOperatorToAVSCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
                 }
-                Self::removeStrategiesFromOperatorSet(inner) => {
-                    <removeStrategiesFromOperatorSetCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                Self::removeAdmin(inner) => {
+                    <removeAdminCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                        inner,
+                        out,
+                    )
+                }
+                Self::removeAppointee(inner) => {
+                    <removeAppointeeCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                        inner,
+                        out,
+                    )
+                }
+                Self::removePendingAdmin(inner) => {
+                    <removePendingAdminCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
@@ -6869,29 +6203,20 @@ pub mod IncredibleSquaringServiceManager {
                         out,
                     )
                 }
-                Self::setAVSRegistrar(inner) => {
-                    <setAVSRegistrarCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                Self::setAppointee(inner) => {
+                    <setAppointeeCall as alloy_sol_types::SolCall>::abi_encode_raw(
+                        inner,
+                        out,
+                    )
+                }
+                Self::setClaimerFor(inner) => {
+                    <setClaimerForCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
                 }
                 Self::setRewardsInitiator(inner) => {
                     <setRewardsInitiatorCall as alloy_sol_types::SolCall>::abi_encode_raw(
-                        inner,
-                        out,
-                    )
-                }
-                Self::slashOperator(inner) => {
-                    <slashOperatorCall as alloy_sol_types::SolCall>::abi_encode_raw(
-                        inner,
-                        out,
-                    )
-                }
-                Self::slasher(inner) => {
-                    <slasherCall as alloy_sol_types::SolCall>::abi_encode_raw(inner, out)
-                }
-                Self::slasherProposalTimestamp(inner) => {
-                    <slasherProposalTimestampCall as alloy_sol_types::SolCall>::abi_encode_raw(
                         inner,
                         out,
                     )
@@ -6911,13 +6236,181 @@ pub mod IncredibleSquaringServiceManager {
             }
         }
     }
+    ///Container for all the [`IncredibleSquaringServiceManager`](self) custom errors.
+    pub enum IncredibleSquaringServiceManagerErrors {
+        #[allow(missing_docs)]
+        DelayPeriodNotPassed(DelayPeriodNotPassed),
+        #[allow(missing_docs)]
+        OnlyRegistryCoordinator(OnlyRegistryCoordinator),
+        #[allow(missing_docs)]
+        OnlyRewardsInitiator(OnlyRewardsInitiator),
+        #[allow(missing_docs)]
+        OnlyStakeRegistry(OnlyStakeRegistry),
+    }
+    #[automatically_derived]
+    impl IncredibleSquaringServiceManagerErrors {
+        /// All the selectors of this enum.
+        ///
+        /// Note that the selectors might not be in the same order as the variants.
+        /// No guarantees are made about the order of the selectors.
+        ///
+        /// Prefer using `SolInterface` methods instead.
+        pub const SELECTORS: &'static [[u8; 4usize]] = &[
+            [70u8, 191u8, 34u8, 129u8],
+            [135u8, 41u8, 183u8, 190u8],
+            [142u8, 121u8, 253u8, 181u8],
+            [251u8, 98u8, 59u8, 4u8],
+        ];
+    }
+    #[automatically_derived]
+    impl alloy_sol_types::SolInterface for IncredibleSquaringServiceManagerErrors {
+        const NAME: &'static str = "IncredibleSquaringServiceManagerErrors";
+        const MIN_DATA_LENGTH: usize = 0usize;
+        const COUNT: usize = 4usize;
+        #[inline]
+        fn selector(&self) -> [u8; 4] {
+            match self {
+                Self::DelayPeriodNotPassed(_) => {
+                    <DelayPeriodNotPassed as alloy_sol_types::SolError>::SELECTOR
+                }
+                Self::OnlyRegistryCoordinator(_) => {
+                    <OnlyRegistryCoordinator as alloy_sol_types::SolError>::SELECTOR
+                }
+                Self::OnlyRewardsInitiator(_) => {
+                    <OnlyRewardsInitiator as alloy_sol_types::SolError>::SELECTOR
+                }
+                Self::OnlyStakeRegistry(_) => {
+                    <OnlyStakeRegistry as alloy_sol_types::SolError>::SELECTOR
+                }
+            }
+        }
+        #[inline]
+        fn selector_at(i: usize) -> ::core::option::Option<[u8; 4]> {
+            Self::SELECTORS.get(i).copied()
+        }
+        #[inline]
+        fn valid_selector(selector: [u8; 4]) -> bool {
+            Self::SELECTORS.binary_search(&selector).is_ok()
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        fn abi_decode_raw(
+            selector: [u8; 4],
+            data: &[u8],
+            validate: bool,
+        ) -> alloy_sol_types::Result<Self> {
+            static DECODE_SHIMS: &[fn(
+                &[u8],
+                bool,
+            ) -> alloy_sol_types::Result<
+                IncredibleSquaringServiceManagerErrors,
+            >] = &[
+                {
+                    fn OnlyStakeRegistry(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerErrors>
+                    {
+                        <OnlyStakeRegistry as alloy_sol_types::SolError>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerErrors::OnlyStakeRegistry)
+                    }
+                    OnlyStakeRegistry
+                },
+                {
+                    fn OnlyRegistryCoordinator(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerErrors>
+                    {
+                        <OnlyRegistryCoordinator as alloy_sol_types::SolError>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerErrors::OnlyRegistryCoordinator)
+                    }
+                    OnlyRegistryCoordinator
+                },
+                {
+                    fn OnlyRewardsInitiator(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerErrors>
+                    {
+                        <OnlyRewardsInitiator as alloy_sol_types::SolError>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerErrors::OnlyRewardsInitiator)
+                    }
+                    OnlyRewardsInitiator
+                },
+                {
+                    fn DelayPeriodNotPassed(
+                        data: &[u8],
+                        validate: bool,
+                    ) -> alloy_sol_types::Result<IncredibleSquaringServiceManagerErrors>
+                    {
+                        <DelayPeriodNotPassed as alloy_sol_types::SolError>::abi_decode_raw(
+                            data, validate,
+                        )
+                        .map(IncredibleSquaringServiceManagerErrors::DelayPeriodNotPassed)
+                    }
+                    DelayPeriodNotPassed
+                },
+            ];
+            let Ok(idx) = Self::SELECTORS.binary_search(&selector) else {
+                return Err(alloy_sol_types::Error::unknown_selector(
+                    <Self as alloy_sol_types::SolInterface>::NAME,
+                    selector,
+                ));
+            };
+            DECODE_SHIMS[idx](data, validate)
+        }
+        #[inline]
+        fn abi_encoded_size(&self) -> usize {
+            match self {
+                Self::DelayPeriodNotPassed(inner) => {
+                    <DelayPeriodNotPassed as alloy_sol_types::SolError>::abi_encoded_size(inner)
+                }
+                Self::OnlyRegistryCoordinator(inner) => {
+                    <OnlyRegistryCoordinator as alloy_sol_types::SolError>::abi_encoded_size(inner)
+                }
+                Self::OnlyRewardsInitiator(inner) => {
+                    <OnlyRewardsInitiator as alloy_sol_types::SolError>::abi_encoded_size(inner)
+                }
+                Self::OnlyStakeRegistry(inner) => {
+                    <OnlyStakeRegistry as alloy_sol_types::SolError>::abi_encoded_size(inner)
+                }
+            }
+        }
+        #[inline]
+        fn abi_encode_raw(&self, out: &mut alloy_sol_types::private::Vec<u8>) {
+            match self {
+                Self::DelayPeriodNotPassed(inner) => {
+                    <DelayPeriodNotPassed as alloy_sol_types::SolError>::abi_encode_raw(inner, out)
+                }
+                Self::OnlyRegistryCoordinator(inner) => {
+                    <OnlyRegistryCoordinator as alloy_sol_types::SolError>::abi_encode_raw(
+                        inner, out,
+                    )
+                }
+                Self::OnlyRewardsInitiator(inner) => {
+                    <OnlyRewardsInitiator as alloy_sol_types::SolError>::abi_encode_raw(inner, out)
+                }
+                Self::OnlyStakeRegistry(inner) => {
+                    <OnlyStakeRegistry as alloy_sol_types::SolError>::abi_encode_raw(inner, out)
+                }
+            }
+        }
+    }
     ///Container for all the [`IncredibleSquaringServiceManager`](self) events.
     pub enum IncredibleSquaringServiceManagerEvents {
+        #[allow(missing_docs)]
         Initialized(Initialized),
+        #[allow(missing_docs)]
         OwnershipTransferred(OwnershipTransferred),
+        #[allow(missing_docs)]
         RewardsInitiatorUpdated(RewardsInitiatorUpdated),
-        SlasherProposed(SlasherProposed),
-        SlasherUpdated(SlasherUpdated),
     }
     #[automatically_derived]
     impl IncredibleSquaringServiceManagerEvents {
@@ -6929,11 +6422,6 @@ pub mod IncredibleSquaringServiceManager {
         /// Prefer using `SolInterface` methods instead.
         pub const SELECTORS: &'static [[u8; 32usize]] = &[
             [
-                47u8, 138u8, 252u8, 138u8, 120u8, 253u8, 149u8, 143u8, 51u8, 1u8, 192u8, 35u8,
-                58u8, 163u8, 38u8, 185u8, 196u8, 185u8, 162u8, 136u8, 74u8, 116u8, 131u8, 34u8,
-                125u8, 107u8, 5u8, 85u8, 170u8, 160u8, 58u8, 219u8,
-            ],
-            [
                 127u8, 38u8, 184u8, 63u8, 249u8, 110u8, 31u8, 43u8, 106u8, 104u8, 47u8, 19u8, 56u8,
                 82u8, 246u8, 121u8, 138u8, 9u8, 196u8, 101u8, 218u8, 149u8, 146u8, 20u8, 96u8,
                 206u8, 251u8, 56u8, 71u8, 64u8, 36u8, 152u8,
@@ -6942,11 +6430,6 @@ pub mod IncredibleSquaringServiceManager {
                 139u8, 224u8, 7u8, 156u8, 83u8, 22u8, 89u8, 20u8, 19u8, 68u8, 205u8, 31u8, 208u8,
                 164u8, 242u8, 132u8, 25u8, 73u8, 127u8, 151u8, 34u8, 163u8, 218u8, 175u8, 227u8,
                 180u8, 24u8, 111u8, 107u8, 100u8, 87u8, 224u8,
-            ],
-            [
-                224u8, 212u8, 154u8, 84u8, 39u8, 68u8, 35u8, 24u8, 61u8, 173u8, 236u8, 189u8,
-                242u8, 57u8, 234u8, 172u8, 110u8, 6u8, 186u8, 136u8, 50u8, 11u8, 38u8, 254u8,
-                140u8, 197u8, 236u8, 157u8, 5u8, 10u8, 99u8, 149u8,
             ],
             [
                 225u8, 28u8, 221u8, 241u8, 129u8, 106u8, 67u8, 49u8, 140u8, 161u8, 117u8, 187u8,
@@ -6958,7 +6441,7 @@ pub mod IncredibleSquaringServiceManager {
     #[automatically_derived]
     impl alloy_sol_types::SolEventInterface for IncredibleSquaringServiceManagerEvents {
         const NAME: &'static str = "IncredibleSquaringServiceManagerEvents";
-        const COUNT: usize = 5usize;
+        const COUNT: usize = 3usize;
         fn decode_raw_log(
             topics: &[alloy_sol_types::Word],
             data: &[u8],
@@ -6982,18 +6465,6 @@ pub mod IncredibleSquaringServiceManager {
                         topics, data, validate,
                     )
                     .map(Self::RewardsInitiatorUpdated)
-                }
-                Some(<SlasherProposed as alloy_sol_types::SolEvent>::SIGNATURE_HASH) => {
-                    <SlasherProposed as alloy_sol_types::SolEvent>::decode_raw_log(
-                        topics, data, validate,
-                    )
-                    .map(Self::SlasherProposed)
-                }
-                Some(<SlasherUpdated as alloy_sol_types::SolEvent>::SIGNATURE_HASH) => {
-                    <SlasherUpdated as alloy_sol_types::SolEvent>::decode_raw_log(
-                        topics, data, validate,
-                    )
-                    .map(Self::SlasherUpdated)
                 }
                 _ => alloy_sol_types::private::Err(alloy_sol_types::Error::InvalidLog {
                     name: <Self as alloy_sol_types::SolEventInterface>::NAME,
@@ -7020,12 +6491,6 @@ pub mod IncredibleSquaringServiceManager {
                 Self::RewardsInitiatorUpdated(inner) => {
                     alloy_sol_types::private::IntoLogData::to_log_data(inner)
                 }
-                Self::SlasherProposed(inner) => {
-                    alloy_sol_types::private::IntoLogData::to_log_data(inner)
-                }
-                Self::SlasherUpdated(inner) => {
-                    alloy_sol_types::private::IntoLogData::to_log_data(inner)
-                }
             }
         }
         fn into_log_data(self) -> alloy_sol_types::private::LogData {
@@ -7037,12 +6502,6 @@ pub mod IncredibleSquaringServiceManager {
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
                 Self::RewardsInitiatorUpdated(inner) => {
-                    alloy_sol_types::private::IntoLogData::into_log_data(inner)
-                }
-                Self::SlasherProposed(inner) => {
-                    alloy_sol_types::private::IntoLogData::into_log_data(inner)
-                }
-                Self::SlasherUpdated(inner) => {
                     alloy_sol_types::private::IntoLogData::into_log_data(inner)
                 }
             }
@@ -7076,10 +6535,11 @@ pub mod IncredibleSquaringServiceManager {
     >(
         provider: P,
         _avsDirectory: alloy::sol_types::private::Address,
-        _registryCoordinator: alloy::sol_types::private::Address,
+        _slashingRegistryCoordinator: alloy::sol_types::private::Address,
         _stakeRegistry: alloy::sol_types::private::Address,
         rewards_coordinator: alloy::sol_types::private::Address,
         allocationManager: alloy::sol_types::private::Address,
+        _permissionController: alloy::sol_types::private::Address,
         _incredibleSquaringTaskManager: alloy::sol_types::private::Address,
     ) -> impl ::core::future::Future<
         Output = alloy_contract::Result<IncredibleSquaringServiceManagerInstance<T, P, N>>,
@@ -7087,10 +6547,11 @@ pub mod IncredibleSquaringServiceManager {
         IncredibleSquaringServiceManagerInstance::<T, P, N>::deploy(
             provider,
             _avsDirectory,
-            _registryCoordinator,
+            _slashingRegistryCoordinator,
             _stakeRegistry,
             rewards_coordinator,
             allocationManager,
+            _permissionController,
             _incredibleSquaringTaskManager,
         )
     }
@@ -7107,19 +6568,21 @@ pub mod IncredibleSquaringServiceManager {
     >(
         provider: P,
         _avsDirectory: alloy::sol_types::private::Address,
-        _registryCoordinator: alloy::sol_types::private::Address,
+        _slashingRegistryCoordinator: alloy::sol_types::private::Address,
         _stakeRegistry: alloy::sol_types::private::Address,
         rewards_coordinator: alloy::sol_types::private::Address,
         allocationManager: alloy::sol_types::private::Address,
+        _permissionController: alloy::sol_types::private::Address,
         _incredibleSquaringTaskManager: alloy::sol_types::private::Address,
     ) -> alloy_contract::RawCallBuilder<T, P, N> {
         IncredibleSquaringServiceManagerInstance::<T, P, N>::deploy_builder(
             provider,
             _avsDirectory,
-            _registryCoordinator,
+            _slashingRegistryCoordinator,
             _stakeRegistry,
             rewards_coordinator,
             allocationManager,
+            _permissionController,
             _incredibleSquaringTaskManager,
         )
     }
@@ -7177,19 +6640,21 @@ pub mod IncredibleSquaringServiceManager {
         pub async fn deploy(
             provider: P,
             _avsDirectory: alloy::sol_types::private::Address,
-            _registryCoordinator: alloy::sol_types::private::Address,
+            _slashingRegistryCoordinator: alloy::sol_types::private::Address,
             _stakeRegistry: alloy::sol_types::private::Address,
             rewards_coordinator: alloy::sol_types::private::Address,
             allocationManager: alloy::sol_types::private::Address,
+            _permissionController: alloy::sol_types::private::Address,
             _incredibleSquaringTaskManager: alloy::sol_types::private::Address,
         ) -> alloy_contract::Result<IncredibleSquaringServiceManagerInstance<T, P, N>> {
             let call_builder = Self::deploy_builder(
                 provider,
                 _avsDirectory,
-                _registryCoordinator,
+                _slashingRegistryCoordinator,
                 _stakeRegistry,
                 rewards_coordinator,
                 allocationManager,
+                _permissionController,
                 _incredibleSquaringTaskManager,
             );
             let contract_address = call_builder.deploy().await?;
@@ -7204,10 +6669,11 @@ pub mod IncredibleSquaringServiceManager {
         pub fn deploy_builder(
             provider: P,
             _avsDirectory: alloy::sol_types::private::Address,
-            _registryCoordinator: alloy::sol_types::private::Address,
+            _slashingRegistryCoordinator: alloy::sol_types::private::Address,
             _stakeRegistry: alloy::sol_types::private::Address,
             rewards_coordinator: alloy::sol_types::private::Address,
             allocationManager: alloy::sol_types::private::Address,
+            _permissionController: alloy::sol_types::private::Address,
             _incredibleSquaringTaskManager: alloy::sol_types::private::Address,
         ) -> alloy_contract::RawCallBuilder<T, P, N> {
             alloy_contract::RawCallBuilder::new_raw_deploy(
@@ -7216,10 +6682,11 @@ pub mod IncredibleSquaringServiceManager {
                     &BYTECODE[..],
                     &alloy_sol_types::SolConstructor::abi_encode(&constructorCall {
                         _avsDirectory,
-                        _registryCoordinator,
+                        _slashingRegistryCoordinator,
                         _stakeRegistry,
                         rewards_coordinator,
                         allocationManager,
+                        _permissionController,
                         _incredibleSquaringTaskManager,
                     })[..],
                 ]
@@ -7277,34 +6744,12 @@ pub mod IncredibleSquaringServiceManager {
         ) -> alloy_contract::SolCallBuilder<T, &P, C, N> {
             alloy_contract::SolCallBuilder::new_sol(&self.provider, &self.address, call)
         }
-        ///Creates a new call builder for the [`SLASHER_PROPOSAL_DELAY`] function.
-        pub fn SLASHER_PROPOSAL_DELAY(
+        ///Creates a new call builder for the [`addPendingAdmin`] function.
+        pub fn addPendingAdmin(
             &self,
-        ) -> alloy_contract::SolCallBuilder<T, &P, SLASHER_PROPOSAL_DELAYCall, N> {
-            self.call_builder(&SLASHER_PROPOSAL_DELAYCall {})
-        }
-        ///Creates a new call builder for the [`acceptProposedSlasher`] function.
-        pub fn acceptProposedSlasher(
-            &self,
-        ) -> alloy_contract::SolCallBuilder<T, &P, acceptProposedSlasherCall, N> {
-            self.call_builder(&acceptProposedSlasherCall {})
-        }
-        ///Creates a new call builder for the [`addStrategyToOperatorSet`] function.
-        pub fn addStrategyToOperatorSet(
-            &self,
-            operatorSetId: u32,
-            strategies: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-        ) -> alloy_contract::SolCallBuilder<T, &P, addStrategyToOperatorSetCall, N> {
-            self.call_builder(&addStrategyToOperatorSetCall {
-                operatorSetId,
-                strategies,
-            })
-        }
-        ///Creates a new call builder for the [`allocationManager`] function.
-        pub fn allocationManager(
-            &self,
-        ) -> alloy_contract::SolCallBuilder<T, &P, allocationManagerCall, N> {
-            self.call_builder(&allocationManagerCall {})
+            admin: alloy::sol_types::private::Address,
+        ) -> alloy_contract::SolCallBuilder<T, &P, addPendingAdminCall, N> {
+            self.call_builder(&addPendingAdminCall { admin })
         }
         ///Creates a new call builder for the [`avsDirectory`] function.
         pub fn avsDirectory(&self) -> alloy_contract::SolCallBuilder<T, &P, avsDirectoryCall, N> {
@@ -7319,14 +6764,17 @@ pub mod IncredibleSquaringServiceManager {
         ) -> alloy_contract::SolCallBuilder<T, &P, createAVSRewardsSubmissionCall, N> {
             self.call_builder(&createAVSRewardsSubmissionCall { rewardsSubmissions })
         }
-        ///Creates a new call builder for the [`createOperatorSets`] function.
-        pub fn createOperatorSets(
+        ///Creates a new call builder for the [`createOperatorDirectedAVSRewardsSubmission`] function.
+        pub fn createOperatorDirectedAVSRewardsSubmission(
             &self,
-            params: alloy::sol_types::private::Vec<
-                <IAllocationManagerTypes::CreateSetParams as alloy::sol_types::SolType>::RustType,
+            operatorDirectedRewardsSubmissions: alloy::sol_types::private::Vec<
+                <IRewardsCoordinatorTypes::OperatorDirectedRewardsSubmission as alloy::sol_types::SolType>::RustType,
             >,
-        ) -> alloy_contract::SolCallBuilder<T, &P, createOperatorSetsCall, N> {
-            self.call_builder(&createOperatorSetsCall { params })
+        ) -> alloy_contract::SolCallBuilder<T, &P, createOperatorDirectedAVSRewardsSubmissionCall, N>
+        {
+            self.call_builder(&createOperatorDirectedAVSRewardsSubmissionCall {
+                operatorDirectedRewardsSubmissions,
+            })
         }
         ///Creates a new call builder for the [`deregisterOperatorFromAVS`] function.
         pub fn deregisterOperatorFromAVS(
@@ -7366,28 +6814,20 @@ pub mod IncredibleSquaringServiceManager {
         ) -> alloy_contract::SolCallBuilder<T, &P, incredibleSquaringTaskManagerCall, N> {
             self.call_builder(&incredibleSquaringTaskManagerCall {})
         }
-        ///Creates a new call builder for the [`migrationFinalized`] function.
-        pub fn migrationFinalized(
+        ///Creates a new call builder for the [`initialize`] function.
+        pub fn initialize(
             &self,
-        ) -> alloy_contract::SolCallBuilder<T, &P, migrationFinalizedCall, N> {
-            self.call_builder(&migrationFinalizedCall {})
+            initialOwner: alloy::sol_types::private::Address,
+            rewardsInitiator: alloy::sol_types::private::Address,
+        ) -> alloy_contract::SolCallBuilder<T, &P, initializeCall, N> {
+            self.call_builder(&initializeCall {
+                initialOwner,
+                rewardsInitiator,
+            })
         }
         ///Creates a new call builder for the [`owner`] function.
         pub fn owner(&self) -> alloy_contract::SolCallBuilder<T, &P, ownerCall, N> {
             self.call_builder(&ownerCall {})
-        }
-        ///Creates a new call builder for the [`proposeNewSlasher`] function.
-        pub fn proposeNewSlasher(
-            &self,
-            newSlasher: alloy::sol_types::private::Address,
-        ) -> alloy_contract::SolCallBuilder<T, &P, proposeNewSlasherCall, N> {
-            self.call_builder(&proposeNewSlasherCall { newSlasher })
-        }
-        ///Creates a new call builder for the [`proposedSlasher`] function.
-        pub fn proposedSlasher(
-            &self,
-        ) -> alloy_contract::SolCallBuilder<T, &P, proposedSlasherCall, N> {
-            self.call_builder(&proposedSlasherCall {})
         }
         ///Creates a new call builder for the [`registerOperatorToAVS`] function.
         pub fn registerOperatorToAVS(
@@ -7400,16 +6840,32 @@ pub mod IncredibleSquaringServiceManager {
                 operatorSignature,
             })
         }
-        ///Creates a new call builder for the [`removeStrategiesFromOperatorSet`] function.
-        pub fn removeStrategiesFromOperatorSet(
+        ///Creates a new call builder for the [`removeAdmin`] function.
+        pub fn removeAdmin(
             &self,
-            operatorSetId: u32,
-            strategies: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
-        ) -> alloy_contract::SolCallBuilder<T, &P, removeStrategiesFromOperatorSetCall, N> {
-            self.call_builder(&removeStrategiesFromOperatorSetCall {
-                operatorSetId,
-                strategies,
+            admin: alloy::sol_types::private::Address,
+        ) -> alloy_contract::SolCallBuilder<T, &P, removeAdminCall, N> {
+            self.call_builder(&removeAdminCall { admin })
+        }
+        ///Creates a new call builder for the [`removeAppointee`] function.
+        pub fn removeAppointee(
+            &self,
+            appointee: alloy::sol_types::private::Address,
+            target: alloy::sol_types::private::Address,
+            selector: alloy::sol_types::private::FixedBytes<4>,
+        ) -> alloy_contract::SolCallBuilder<T, &P, removeAppointeeCall, N> {
+            self.call_builder(&removeAppointeeCall {
+                appointee,
+                target,
+                selector,
             })
+        }
+        ///Creates a new call builder for the [`removePendingAdmin`] function.
+        pub fn removePendingAdmin(
+            &self,
+            pendingAdmin: alloy::sol_types::private::Address,
+        ) -> alloy_contract::SolCallBuilder<T, &P, removePendingAdminCall, N> {
+            self.call_builder(&removePendingAdminCall { pendingAdmin })
         }
         ///Creates a new call builder for the [`renounceOwnership`] function.
         pub fn renounceOwnership(
@@ -7423,12 +6879,25 @@ pub mod IncredibleSquaringServiceManager {
         ) -> alloy_contract::SolCallBuilder<T, &P, rewardsInitiatorCall, N> {
             self.call_builder(&rewardsInitiatorCall {})
         }
-        ///Creates a new call builder for the [`setAVSRegistrar`] function.
-        pub fn setAVSRegistrar(
+        ///Creates a new call builder for the [`setAppointee`] function.
+        pub fn setAppointee(
             &self,
-            registrar: alloy::sol_types::private::Address,
-        ) -> alloy_contract::SolCallBuilder<T, &P, setAVSRegistrarCall, N> {
-            self.call_builder(&setAVSRegistrarCall { registrar })
+            appointee: alloy::sol_types::private::Address,
+            target: alloy::sol_types::private::Address,
+            selector: alloy::sol_types::private::FixedBytes<4>,
+        ) -> alloy_contract::SolCallBuilder<T, &P, setAppointeeCall, N> {
+            self.call_builder(&setAppointeeCall {
+                appointee,
+                target,
+                selector,
+            })
+        }
+        ///Creates a new call builder for the [`setClaimerFor`] function.
+        pub fn setClaimerFor(
+            &self,
+            claimer: alloy::sol_types::private::Address,
+        ) -> alloy_contract::SolCallBuilder<T, &P, setClaimerForCall, N> {
+            self.call_builder(&setClaimerForCall { claimer })
         }
         ///Creates a new call builder for the [`setRewardsInitiator`] function.
         pub fn setRewardsInitiator(
@@ -7438,23 +6907,6 @@ pub mod IncredibleSquaringServiceManager {
             self.call_builder(&setRewardsInitiatorCall {
                 newRewardsInitiator,
             })
-        }
-        ///Creates a new call builder for the [`slashOperator`] function.
-        pub fn slashOperator(
-            &self,
-            params: <IAllocationManagerTypes::SlashingParams as alloy::sol_types::SolType>::RustType,
-        ) -> alloy_contract::SolCallBuilder<T, &P, slashOperatorCall, N> {
-            self.call_builder(&slashOperatorCall { params })
-        }
-        ///Creates a new call builder for the [`slasher`] function.
-        pub fn slasher(&self) -> alloy_contract::SolCallBuilder<T, &P, slasherCall, N> {
-            self.call_builder(&slasherCall {})
-        }
-        ///Creates a new call builder for the [`slasherProposalTimestamp`] function.
-        pub fn slasherProposalTimestamp(
-            &self,
-        ) -> alloy_contract::SolCallBuilder<T, &P, slasherProposalTimestampCall, N> {
-            self.call_builder(&slasherProposalTimestampCall {})
         }
         ///Creates a new call builder for the [`transferOwnership`] function.
         pub fn transferOwnership(
@@ -7503,14 +6955,6 @@ pub mod IncredibleSquaringServiceManager {
             &self,
         ) -> alloy_contract::Event<T, &P, RewardsInitiatorUpdated, N> {
             self.event_filter::<RewardsInitiatorUpdated>()
-        }
-        ///Creates a new event filter for the [`SlasherProposed`] event.
-        pub fn SlasherProposed_filter(&self) -> alloy_contract::Event<T, &P, SlasherProposed, N> {
-            self.event_filter::<SlasherProposed>()
-        }
-        ///Creates a new event filter for the [`SlasherUpdated`] event.
-        pub fn SlasherUpdated_filter(&self) -> alloy_contract::Event<T, &P, SlasherUpdated, N> {
-            self.event_filter::<SlasherUpdated>()
         }
     }
 }

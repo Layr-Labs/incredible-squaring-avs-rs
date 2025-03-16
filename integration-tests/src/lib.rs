@@ -20,7 +20,6 @@ mod tests {
     use incredible_squaring_avs::commands::avs::{
         create_total_delegated_stake_quorum, modify_allocation_for_operator,
         register_for_operator_sets, register_operator_with_el_and_deposit_tokens_in_strategy,
-        set_appointee_for_avs,
     };
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -189,9 +188,6 @@ mod tests {
 
         create_total_delegated_stake_quorum(
             get_incredible_squaring_strategy_address().await,
-            get_incredible_squaring_service_manager().await,
-            incredible_config.permission_controller_address().unwrap(),
-            incredible_config.allocation_manager_addr().unwrap(),
             incredible_config.registry_coordinator_addr().unwrap(),
             incredible_config.operator_pvt_key(),
             incredible_config.ecdsa_keystore_path(),
@@ -369,21 +365,7 @@ mod tests {
 
         create_total_delegated_stake_quorum(
             get_incredible_squaring_strategy_address().await,
-            get_incredible_squaring_service_manager().await,
-            incredible_config.permission_controller_address().unwrap(),
-            incredible_config.allocation_manager_addr().unwrap(),
             incredible_config.registry_coordinator_addr().unwrap(),
-            incredible_config.operator_pvt_key(),
-            incredible_config.ecdsa_keystore_path(),
-            incredible_config.ecdsa_keystore_password(),
-            ANVIL_HTTP_URL,
-        )
-        .await
-        .unwrap();
-        set_appointee_for_avs(
-            get_incredible_squaring_service_manager().await,
-            get_incredible_squaring_task_manager().await,
-            incredible_config.allocation_manager_addr().unwrap(),
             incredible_config.operator_pvt_key(),
             incredible_config.ecdsa_keystore_path(),
             incredible_config.ecdsa_keystore_password(),

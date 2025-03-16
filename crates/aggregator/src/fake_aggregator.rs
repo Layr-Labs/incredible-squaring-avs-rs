@@ -14,7 +14,7 @@ use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggrega
 use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use futures_util::StreamExt;
-use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
+use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureCheckerTypes::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse,
 };
