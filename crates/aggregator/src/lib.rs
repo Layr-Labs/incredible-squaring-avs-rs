@@ -320,108 +320,25 @@ impl Aggregator {
             &signed_task_response.task_response,
         ));
 
-        let response =
+        let _response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
 
-        if response.is_none() {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
+        let signature = signed_task_response.signature();
+        let operator_id = signed_task_response.operator_id();
+
+        let handle = &self.service_handle;
+        let result = handle
+            .process_signature(TaskSignature::new(
+                task_index,
                 task_response_digest,
-                signed_task_response.clone().task_response,
-            );
-            self.tasks_responses.insert(task_index, inner_map);
+                signature,
+                operator_id,
+            ))
+            .await;
+
+        if result.is_err() {
+            info!("Response received for task that was already completed");
         }
-
-        let entry = self.task_quorum.entry(task_index).or_insert(U96::from(0));
-        let old_entry = *entry;
-        let mut total_stake = U96::from(0);
-        let mut quorum_threshold_percentage = 0;
-        let registry_coordinator_instance =
-            RegistryCoordinator::new(registry_coordinator, get_provider(&self.avs_writer.rpc_url));
-        let op_state = OperatorStateRetriever::new(
-            operator_state_retriever,
-            get_provider(&self.avs_writer.rpc_url),
-        );
-        if let Some(task) = self.tasks.get(&task_index) {
-            dbg!("Some task found");
-            quorum_threshold_percentage = task.quorumThresholdPercentage;
-            let state = op_state
-                .getOperatorState_0(
-                    registry_coordinator,
-                    task.quorumNumbers.clone(),
-                    task.taskCreatedBlock,
-                )
-                .call()
-                .await?
-                ._0;
-            let operator_address = registry_coordinator_instance
-                .getOperatorFromId(signed_task_response.operator_id())
-                .call()
-                .await?
-                ._0;
-            for operators in state.iter() {
-                for operator in operators {
-                    total_stake += operator.stake;
-                    if operator.operator == operator_address {
-                        *entry += operator.stake;
-                    }
-                }
-            }
-        }
-
-        let quorum_threshold_amount =
-            U96::from((total_stake * (U96::from(quorum_threshold_percentage))) / U96::from(100));
-        info!(
-            "quorum_threshold_amount for task index {:?} : {:?}",
-            task_index, quorum_threshold_amount
-        );
-
-        if old_entry < quorum_threshold_amount {
-            let signature = signed_task_response.signature();
-            let operator_id = signed_task_response.operator_id();
-
-            let handle = &self.service_handle;
-            let result = handle
-                .process_signature(TaskSignature::new(
-                    task_index,
-                    task_response_digest,
-                    signature,
-                    operator_id,
-                ))
-                .await;
-
-            if result.is_err() {
-                info!("Response received for task that was already completed");
-            }
-        }
-
-        let quorum_reached = {
-            *entry >= quorum_threshold_amount // total stake is 12000. quorum threshold percentag in new task is 40% . hence 4800.
-        };
-
-        if quorum_reached && (old_entry < quorum_threshold_amount) {
-            info!("quorum reached for task index: {:?}", task_index);
-            if let Ok(aggregated_response) =
-                self.aggregator_response.receive_aggregated_response().await
-            {
-                self.send_aggregated_response_to_contract(
-                    aggregated_response,
-                    signed_task_response,
-                )
-                .await?;
-            }
-        } else if old_entry >= quorum_threshold_amount {
-            info!(
-                "quorum already reached for index{:?}, ignoring more signatures",
-                task_index
-            );
-        } else {
-            info!(
-                "quorum not reached yet for index:{:?}. waiting to receive more signatures ",
-                task_index
-            );
-        }
-
         Ok(())
     }
 
