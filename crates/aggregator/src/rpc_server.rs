@@ -1,5 +1,5 @@
-use eigen_crypto_bls::Signature;
 use eigen_types::operator::OperatorId;
+use eigensdk::crypto_bls::Signature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use serde::{Deserialize, Serialize};
 // use alloy::sol_types::SolCall;

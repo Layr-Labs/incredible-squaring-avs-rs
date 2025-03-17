@@ -29,6 +29,7 @@ metrics-util = "0.17.0"
 
 # eigensdk-rs
 eigensdk.workspace = true
+eigen-types.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true

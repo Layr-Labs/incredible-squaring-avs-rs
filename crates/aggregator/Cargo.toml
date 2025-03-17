@@ -12,6 +12,8 @@ workspace = true
 
 [dependencies]
 eigensdk.workspace = true
+eigen-utils.workspace = true
+eigen-types.workspace = true
 incredible-bindings.workspace = true
 ark-bn254.workspace = true
 alloy.workspace = true

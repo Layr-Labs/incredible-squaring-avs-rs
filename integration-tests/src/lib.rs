@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod tests {
 
-    use eigen_logging::{init_logger, log_level::LogLevel};
+    use eigensdk::logging::{init_logger, log_level::LogLevel};
     use incredible_config::IncredibleConfig;
     use std::{
         process::Stdio,

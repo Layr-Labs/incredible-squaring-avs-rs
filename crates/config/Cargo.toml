@@ -32,7 +32,8 @@ ruint = "1.12.3"
 
 #eigensdk-rs
 eigensdk.workspace = true
-
+eigen-utils.workspace = true
+eigen-types.workspace = true
 [dev-dependencies]
 tempfile = "3.10.1"
 incredible-testing-utils.workspace = true

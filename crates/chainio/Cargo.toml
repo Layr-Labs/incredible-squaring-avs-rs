@@ -24,3 +24,5 @@ reqwest.workspace = true
 
 #eigensdk-rs
 eigensdk.workspace = true
+eigen-utils.workspace = true
+eigen-types.workspace = true

@@ -13,20 +13,20 @@ use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_common::{get_provider, get_ws_provider};
-use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_logging::get_logger;
-use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_blsaggregation::bls_agg::{
-    AggregateReceiver, BlsAggregatorService, ServiceHandle, TaskMetadata, TaskSignature,
-};
-use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
-use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
-use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use eigen_types::avs::TaskResponseDigest;
 use eigen_utils::rewardsv2::middleware::operatorstateretriever::OperatorStateRetriever;
 use eigen_utils::rewardsv2::middleware::registrycoordinator::RegistryCoordinator;
+use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
+use eigensdk::common::{get_provider, get_ws_provider};
+use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
+use eigensdk::logging::get_logger;
+use eigensdk::services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
+use eigensdk::services_blsaggregation::bls_agg::{
+    AggregateReceiver, BlsAggregatorService, ServiceHandle, TaskMetadata, TaskSignature,
+};
+use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
+use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 pub use error::AggregatorError;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;

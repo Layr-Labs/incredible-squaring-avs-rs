@@ -3,18 +3,18 @@ use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
-use eigen_client_elcontracts::reader::ELChainReader;
-use eigen_client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
-use eigen_common::get_provider;
-use eigen_crypto_bls::BlsKeyPair;
-use eigen_logging::{get_logger, init_logger, log_level::LogLevel};
-use eigen_metrics::prometheus::init_registry;
-use eigen_testing_utils::anvil_constants::{
+use eigen_types::operator::Operator;
+use eigensdk::client_avsregistry::writer::AvsRegistryChainWriter;
+use eigensdk::client_elcontracts::reader::ELChainReader;
+use eigensdk::client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
+use eigensdk::common::get_provider;
+use eigensdk::crypto_bls::BlsKeyPair;
+use eigensdk::logging::{get_logger, init_logger, log_level::LogLevel};
+use eigensdk::metrics::prometheus::init_registry;
+use eigensdk::testing_utils::anvil_constants::{
     get_avs_directory_address, get_delegation_manager_address, get_rewards_coordinator_address,
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
-use eigen_types::operator::Operator;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
