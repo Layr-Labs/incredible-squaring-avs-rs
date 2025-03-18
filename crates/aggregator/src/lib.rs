@@ -382,17 +382,17 @@ impl Aggregator {
                 continue;
             };
 
-            if let Some(task_response) = aggregator
-                .lock()
-                .await
-                .tasks_responses
-                .get(&service_response.task_index)
-                .and_then(|map| map.get(&service_response.task_response_digest))
-            {
+            if let Some(task_response) = {
+                let lock = aggregator.lock().await;
+                lock.tasks_responses
+                    .get(&service_response.task_index)
+                    .and_then(|map| map.get(&service_response.task_response_digest))
+                    .cloned()
+            } {
                 aggregator
                     .lock()
                     .await
-                    .send_aggregated_response_to_contract(service_response, task_response.clone())
+                    .send_aggregated_response_to_contract(service_response, task_response)
                     .await?;
             } else {
                 info!(
@@ -461,6 +461,17 @@ impl Aggregator {
     }
 }
 
+/// Checks if the task response is already in the map
+///
+/// # Arguments
+///
+/// * `outer_map` - The outer map with the task index as the key and the inner map with the task response digest as the key
+/// * `outer_key` - The outer key with the task index
+/// * `inner_key` - The inner key with the task response digest
+///
+/// # Returns
+///
+/// * `Option<&TaskResponse>` - The task response if it exists
 fn check_double_mapping(
     outer_map: &HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
     outer_key: u32,
