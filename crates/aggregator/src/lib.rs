@@ -322,18 +322,6 @@ impl Aggregator {
         let signature = signed_task_response.signature();
         let operator_id = signed_task_response.operator_id();
 
-        let response =
-            check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
-
-        if response.is_none() {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
-                task_response_digest,
-                signed_task_response.clone().task_response,
-            );
-            self.tasks_responses.insert(task_index, inner_map);
-        }
-
         let handle = &self.service_handle;
         let result = handle
             .process_signature(TaskSignature::new(
@@ -348,6 +336,18 @@ impl Aggregator {
             info!("Response received for task that was already completed");
             // TODO: Review if we need to return an error here
             return Ok(());
+        }
+
+        let should_insert =
+            check_double_mapping(&self.tasks_responses, task_index, task_response_digest).is_none();
+
+        if should_insert {
+            let mut inner_map = HashMap::new();
+            inner_map.insert(
+                task_response_digest,
+                signed_task_response.clone().task_response,
+            );
+            self.tasks_responses.insert(task_index, inner_map);
         }
 
         Ok(())
