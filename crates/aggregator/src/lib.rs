@@ -25,7 +25,6 @@ use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggrega
 use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 pub use error::AggregatorError;
-use eyre::eyre;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureCheckerTypes::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -60,8 +59,6 @@ pub struct Aggregator {
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store tasks responses
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
-    /// HashMap to store signed task responses
-    pub signed_task_responses: HashMap<u32, SignedTaskResponse>,
     /// Service handle to interact with the BLS Aggregator Service
     pub service_handle: ServiceHandle,
 }
@@ -128,7 +125,6 @@ impl Aggregator {
                 port_address: config.aggregator_ip_addr(),
                 avs_writer,
                 tasks_responses: HashMap::new(),
-                signed_task_responses: HashMap::new(),
                 tasks: HashMap::new(),
                 service_handle: handle,
             },
@@ -326,8 +322,17 @@ impl Aggregator {
         let signature = signed_task_response.signature();
         let operator_id = signed_task_response.operator_id();
 
-        let _response =
+        let response =
             check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
+
+        if response.is_none() {
+            let mut inner_map = HashMap::new();
+            inner_map.insert(
+                task_response_digest,
+                signed_task_response.clone().task_response,
+            );
+            self.tasks_responses.insert(task_index, inner_map);
+        }
 
         let handle = &self.service_handle;
         let result = handle
@@ -344,12 +349,6 @@ impl Aggregator {
             // TODO: Review if we need to return an error here
             return Ok(());
         }
-
-        // Insert the signed task response into the signed_task_responses map
-        // REVIEW: Are we adding the same task response multiple times?
-        // We need to store the signed task response bc we need to use it with send_aggregated_response_to_contract()
-        self.signed_task_responses
-            .insert(task_index, signed_task_response);
 
         Ok(())
     }
@@ -369,34 +368,49 @@ impl Aggregator {
     ) -> eyre::Result<()> {
         loop {
             // Wait for the next response without blocking the rest of the state
-            let Ok(service_response) = aggregate_receiver_channel
+            let response = aggregate_receiver_channel
                 .receive_aggregated_response()
-                .await
-            else {
+                .await;
+
+            let Ok(service_response) = response else {
+                info!("Error receiving aggregated response: {:?}", response.err());
                 continue;
             };
 
-            let signed_task_response = aggregator
-                .lock()
-                .await
-                .signed_task_responses
-                .remove(&service_response.task_index)
-                .inspect(|_signed_task_response| {
-                    info!(
-                        "Sending aggregated response to contract for task_index: {}",
-                        service_response.task_index
-                    )
-                });
+            info!(
+                "Received aggregated response for task_index: {}",
+                service_response.task_index
+            );
 
-            if let Some(signed_task_response) = signed_task_response {
-                aggregator
+            let aggregator_guard = aggregator.lock().await;
+
+            let task_response_opt = aggregator_guard
+                .tasks_responses
+                .get(&service_response.task_index)
+                .and_then(|inner_map| inner_map.get(&service_response.task_response_digest));
+
+            if let Some(task_response) = task_response_opt {
+                info!(
+                    "Sending aggregated response to contract for task_index: {}",
+                    task_response.referenceTaskIndex
+                );
+
+                let task_response_clone = task_response.clone();
+                // Liberamos el lock antes de llamar a send_aggregated_response_to_contract
+                drop(aggregator_guard);
+
+                match aggregator
                     .lock()
                     .await
-                    .send_aggregated_response_to_contract(service_response, signed_task_response)
-                    .await?;
+                    .send_aggregated_response_to_contract(service_response, task_response_clone)
+                    .await
+                {
+                    Ok(_) => info!("Response sent to contract successfully"),
+                    Err(e) => info!("Error sending response to contract: {:?}", e),
+                }
             } else {
                 info!(
-                    "No found signed_task_response for the task_index: {}",
+                    "Not found task_response for task_index: {}",
                     service_response.task_index
                 );
             }
@@ -415,7 +429,7 @@ impl Aggregator {
     pub async fn send_aggregated_response_to_contract(
         &self,
         response: BlsAggregationServiceResponse,
-        signed_task_response: SignedTaskResponse,
+        task_response: TaskResponse,
     ) -> Result<(), AggregatorError> {
         let mut non_signer_pub_keys = Vec::<G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
@@ -454,13 +468,8 @@ impl Aggregator {
         };
 
         let task = &self.tasks[&response.task_index];
-        let task_response = signed_task_response.task_response;
         self.avs_writer
-            .send_aggregated_response(
-                task.clone(),
-                task_response.clone(),
-                non_signer_stakes_and_signature,
-            )
+            .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
             .await?;
         Ok(())
     }
