@@ -7,18 +7,14 @@ pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
 use alloy::dyn_abi::SolType;
-use alloy::primitives::aliases::U96;
-use alloy::primitives::Address;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
 use ark_ec::AffineRepr;
 use eigen_types::avs::TaskResponseDigest;
-use eigen_utils::slashing::middleware::operatorstateretriever::OperatorStateRetriever;
-use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
-use eigensdk::common::{get_provider, get_ws_provider};
+use eigensdk::common::get_ws_provider;
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigensdk::logging::get_logger;
 use eigensdk::services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
@@ -55,13 +51,10 @@ pub const BLOCK_TIME_SECONDS: u32 = 12;
 /// Aggregator
 #[derive(Debug)]
 pub struct Aggregator {
+    /// Socket address
     port_address: String,
-    /// avs writer
+    /// AVS writer
     pub avs_writer: AvsWriter,
-    //bls_aggregation_service: BlsAggregatorService<
-    //    AvsRegistryServiceChainCaller<AvsRegistryChainReader, OperatorInfoServiceInMemory>,
-    //>,
-    task_quorum: HashMap<u32, U96>,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
@@ -132,7 +125,6 @@ impl Aggregator {
             avs_writer,
             tasks_responses: HashMap::new(),
             tasks: HashMap::new(),
-            task_quorum: HashMap::new(),
             service_handle: handle,
             aggregator_response,
         })
@@ -303,8 +295,9 @@ impl Aggregator {
             &signed_task_response.task_response,
         ));
 
+        let tasks_responses_clone = self.tasks_responses.clone();
         let _response =
-            check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
+            check_double_mapping(&tasks_responses_clone, task_index, task_response_digest);
 
         let signature = signed_task_response.signature();
         let operator_id = signed_task_response.operator_id();
