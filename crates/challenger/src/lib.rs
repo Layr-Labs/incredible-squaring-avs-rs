@@ -166,6 +166,7 @@ impl Challenger {
                     let contract_stakeregistry = StakeRegistry::new(address!("cd8a1c3ba11cf5ecfa6267617243239504a98d90"), get_provider(&self.rpc_url));
                     let current_total_stake = contract_stakeregistry.getCurrentTotalStake(0).call().await.unwrap()._0;
                     info!("current_total_stake{:?}",current_total_stake);
+
                     info!("operator_2_shares_in_strategy_before_slashing{:?}",bal_pp2);
                     info!("current_block_number{:?}",get_provider(&self.rpc_url).get_block_number().await);
                     let _ = self.raise_challenge(task_index).await;
