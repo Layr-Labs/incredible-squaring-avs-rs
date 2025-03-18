@@ -247,7 +247,8 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
+        let (aggregator, aggregate_receiver) =
+            Aggregator::new(incredible_config.clone()).await.unwrap();
 
         let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
         let arc_agg_clone = Arc::clone(&arc_agg);
@@ -275,7 +276,7 @@ mod tests {
         });
 
         tokio::spawn(async move {
-            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg))
+            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
                 .await
                 .unwrap();
         });
@@ -432,10 +433,12 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
+        let (aggregator, aggregate_receiver) =
+            Aggregator::new(incredible_config.clone()).await.unwrap();
 
         let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
         let arc_agg_clone = Arc::clone(&arc_agg);
+        let arc_agg_for_server = Arc::clone(&arc_agg);
 
         // Run process_tasks in a separate thread
         std::thread::spawn(move || {
@@ -452,8 +455,21 @@ mod tests {
         // Run the server in a separate thread
         std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg)).await {
+                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg_for_server)).await {
                     eprintln!("Server error: {:?}", e);
+                }
+            });
+        });
+
+        std::thread::spawn(move || {
+            tokio::runtime::Runtime::new().unwrap().block_on(async {
+                if let Err(e) = Aggregator::process_aggregator_responses(
+                    Arc::clone(&arc_agg),
+                    aggregate_receiver,
+                )
+                .await
+                {
+                    eprintln!("Process aggregator responses error: {:?}", e);
                 }
             });
         });
