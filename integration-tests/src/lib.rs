@@ -461,18 +461,12 @@ mod tests {
             });
         });
 
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::process_aggregator_responses(
-                    Arc::clone(&arc_agg),
-                    aggregate_receiver,
-                )
+        tokio::spawn(async move {
+            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
                 .await
-                {
-                    eprintln!("Process aggregator responses error: {:?}", e);
-                }
-            });
+                .unwrap();
         });
+
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
         let mut challenger = Challenger::build(incredible_config.clone()).await.unwrap();
