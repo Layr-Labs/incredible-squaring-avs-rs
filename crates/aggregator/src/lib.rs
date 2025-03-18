@@ -66,9 +66,9 @@ pub struct Aggregator {
     pub tasks: HashMap<u32, Task>,
     /// HashMap to store task responses
     pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
-
+    /// Service handle to interact with the BLS Aggregator Service
     service_handle: ServiceHandle,
-
+    /// Aggregate receiver to receive the aggregated responses from the BLS Aggregator Service
     aggregator_response: AggregateReceiver,
 }
 
@@ -139,23 +139,14 @@ impl Aggregator {
     }
 
     /// Starts the aggregator service
-    pub async fn start(
-        self,
-        ws_rpc_url: String,
-        operator_state_retriever: Address,
-        registry_coordinator: Address,
-    ) -> eyre::Result<()> {
+    pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
         info!("Starting aggregator");
 
         let service_handle = self.service_handle.clone();
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
 
         // Spawn two tasks: one for the server and one for processing tasks
-        let server_handle = tokio::spawn(Self::start_server(
-            Arc::clone(&aggregator),
-            operator_state_retriever,
-            registry_coordinator,
-        ));
+        let server_handle = tokio::spawn(Self::start_server(Arc::clone(&aggregator)));
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
             Arc::clone(&aggregator),
@@ -188,8 +179,6 @@ impl Aggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn start_server(
         aggregator: Arc<tokio::sync::Mutex<Self>>,
-        operator_state_retriever: Address,
-        registry_coordinator: Address,
     ) -> eyre::Result<(), AggregatorError> {
         let mut io = IoHandler::new();
         io.add_method("process_signed_task_response", {
@@ -207,11 +196,7 @@ impl Aggregator {
                     let result = aggregator
                         .lock()
                         .await
-                        .process_signed_task_response(
-                            signed_task_response,
-                            operator_state_retriever,
-                            registry_coordinator,
-                        )
+                        .process_signed_task_response(signed_task_response)
                         .await;
 
                     // Check quorum
@@ -311,8 +296,6 @@ impl Aggregator {
     pub async fn process_signed_task_response(
         &mut self,
         signed_task_response: SignedTaskResponse,
-        operator_state_retriever: Address,
-        registry_coordinator: Address,
     ) -> Result<(), AggregatorError> {
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
@@ -339,6 +322,7 @@ impl Aggregator {
         if result.is_err() {
             info!("Response received for task that was already completed");
         }
+
         Ok(())
     }
 
