@@ -275,12 +275,9 @@ mod tests {
         });
 
         tokio::spawn(async move {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::process_aggregator_responses(Arc::clone(&arc_agg)).await
-                {
-                    eprintln!("Process aggregator responses error: {:?}", e);
-                }
-            });
+            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg))
+                .await
+                .unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
