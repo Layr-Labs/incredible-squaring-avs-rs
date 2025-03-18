@@ -25,6 +25,7 @@ use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggrega
 use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 pub use error::AggregatorError;
+use eyre::eyre;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureCheckerTypes::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -63,8 +64,6 @@ pub struct Aggregator {
     pub signed_task_responses: HashMap<u32, SignedTaskResponse>,
     /// Service handle to interact with the BLS Aggregator Service
     pub service_handle: ServiceHandle,
-    /// Aggregate receiver to receive the aggregated responses from the BLS Aggregator Service
-    pub aggregator_response: Option<AggregateReceiver>,
 }
 
 impl Aggregator {
@@ -81,7 +80,9 @@ impl Aggregator {
     /// # Errors
     ///
     /// * `AggregatorError` - The error that occurred
-    pub async fn new(config: IncredibleConfig) -> Result<Self, AggregatorError> {
+    pub async fn new(
+        config: IncredibleConfig,
+    ) -> Result<(Self, AggregateReceiver), AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
             config.registry_coordinator_addr()?,
@@ -122,15 +123,17 @@ impl Aggregator {
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
         let (handle, aggregator_response) = bls_aggregation_service.start();
-        Ok(Self {
-            port_address: config.aggregator_ip_addr(),
-            avs_writer,
-            tasks_responses: HashMap::new(),
-            signed_task_responses: HashMap::new(),
-            tasks: HashMap::new(),
-            service_handle: handle,
-            aggregator_response: Some(aggregator_response),
-        })
+        Ok((
+            Self {
+                port_address: config.aggregator_ip_addr(),
+                avs_writer,
+                tasks_responses: HashMap::new(),
+                signed_task_responses: HashMap::new(),
+                tasks: HashMap::new(),
+                service_handle: handle,
+            },
+            aggregator_response,
+        ))
     }
 
     /// Starts the aggregator service with three tasks: one for the server,
@@ -147,7 +150,11 @@ impl Aggregator {
     /// # Errors
     ///
     /// * The error that occurred
-    pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
+    pub async fn start(
+        self,
+        ws_rpc_url: String,
+        aggregator_response: AggregateReceiver,
+    ) -> eyre::Result<()> {
         info!("Starting aggregator");
 
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
@@ -161,8 +168,10 @@ impl Aggregator {
             Arc::clone(&aggregator),
         ));
         // 3) Process aggregator responses
-        let responses_handle =
-            tokio::spawn(Self::process_aggregator_responses(Arc::clone(&aggregator)));
+        let responses_handle = tokio::spawn(Self::process_aggregator_responses(
+            Arc::clone(&aggregator),
+            aggregator_response,
+        ));
 
         // Wait for the tasks to complete and handle potential errors
         let (server_result, process_result, responses_result) =
@@ -337,6 +346,8 @@ impl Aggregator {
         }
 
         // Insert the signed task response into the signed_task_responses map
+        // REVIEW: Are we adding the same task response multiple times?
+        // We need to store the signed task response bc we need to use it with send_aggregated_response_to_contract()
         self.signed_task_responses
             .insert(task_index, signed_task_response);
 
@@ -354,47 +365,40 @@ impl Aggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_aggregator_responses(
         aggregator: Arc<tokio::sync::Mutex<Self>>,
+        mut aggregate_receiver_channel: AggregateReceiver,
     ) -> eyre::Result<()> {
-        // Extract the channel once. This is done because we dont want to block while waiting for the response
-        let mut aggregate_receiver_channel = aggregator
-            .lock()
-            .await
-            .aggregator_response
-            .take()
-            .expect("Expected aggregator_response");
-
         loop {
             // Wait for the next response without blocking the rest of the state
-            if let Ok(service_response) = aggregate_receiver_channel
+            let Ok(service_response) = aggregate_receiver_channel
                 .receive_aggregated_response()
                 .await
-            {
-                let signed_task_response = aggregator
-                    .lock()
-                    .await
-                    .signed_task_responses
-                    .remove(&service_response.task_index);
+            else {
+                continue;
+            };
 
-                if let Some(signed_task_response) = signed_task_response {
+            let signed_task_response = aggregator
+                .lock()
+                .await
+                .signed_task_responses
+                .remove(&service_response.task_index)
+                .inspect(|_signed_task_response| {
                     info!(
                         "Sending aggregated response to contract for task_index: {}",
                         service_response.task_index
-                    );
+                    )
+                });
 
-                    aggregator
-                        .lock()
-                        .await
-                        .send_aggregated_response_to_contract(
-                            service_response,
-                            signed_task_response,
-                        )
-                        .await?;
-                } else {
-                    info!(
-                        "No found signed_task_response for the task_index: {}",
-                        service_response.task_index
-                    );
-                }
+            if let Some(signed_task_response) = signed_task_response {
+                aggregator
+                    .lock()
+                    .await
+                    .send_aggregated_response_to_contract(service_response, signed_task_response)
+                    .await?;
+            } else {
+                info!(
+                    "No found signed_task_response for the task_index: {}",
+                    service_response.task_index
+                );
             }
         }
     }
