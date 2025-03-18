@@ -367,47 +367,33 @@ impl Aggregator {
         mut aggregate_receiver_channel: AggregateReceiver,
     ) -> eyre::Result<()> {
         loop {
-            // Wait for the next response without blocking the rest of the state
-            let response = aggregate_receiver_channel
+            // Wait for the next response of the aggregate receiver channel
+            let Ok(service_response) = aggregate_receiver_channel
                 .receive_aggregated_response()
-                .await;
-
-            let Ok(service_response) = response else {
-                info!("Error receiving aggregated response: {:?}", response.err());
+                .await
+                .inspect(|service_response| {
+                    info!(
+                        "Received aggregated response for task_index: {}",
+                        service_response.task_index
+                    )
+                })
+                .inspect_err(|e| info!("Error receiving aggregated response: {:?}", e))
+            else {
                 continue;
             };
 
-            info!(
-                "Received aggregated response for task_index: {}",
-                service_response.task_index
-            );
-
-            let aggregator_guard = aggregator.lock().await;
-
-            let task_response_opt = aggregator_guard
+            if let Some(task_response) = aggregator
+                .lock()
+                .await
                 .tasks_responses
                 .get(&service_response.task_index)
-                .and_then(|inner_map| inner_map.get(&service_response.task_response_digest));
-
-            if let Some(task_response) = task_response_opt {
-                info!(
-                    "Sending aggregated response to contract for task_index: {}",
-                    task_response.referenceTaskIndex
-                );
-
-                let task_response_clone = task_response.clone();
-                // Liberamos el lock antes de llamar a send_aggregated_response_to_contract
-                drop(aggregator_guard);
-
-                match aggregator
+                .and_then(|map| map.get(&service_response.task_response_digest))
+            {
+                aggregator
                     .lock()
                     .await
-                    .send_aggregated_response_to_contract(service_response, task_response_clone)
-                    .await
-                {
-                    Ok(_) => info!("Response sent to contract successfully"),
-                    Err(e) => info!("Error sending response to contract: {:?}", e),
-                }
+                    .send_aggregated_response_to_contract(service_response, task_response.clone())
+                    .await?;
             } else {
                 info!(
                     "Not found task_response for task_index: {}",
