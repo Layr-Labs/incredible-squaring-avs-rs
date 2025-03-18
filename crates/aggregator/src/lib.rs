@@ -131,32 +131,45 @@ impl Aggregator {
     }
 
     /// Starts the aggregator service
+    /// TODO: TERMINAR DE AGREGAR DOC
+    ///
+    /// # Arguments
+    ///
+    /// * `ws_rpc_url` - The websocket RPC URL
+    ///
+    /// # Returns
+    ///
+    /// * `eyre::Result<()>` - The result of the operation
+    ///
+    /// # Errors
+    ///
+    /// * The error that occurred
     pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
         info!("Starting aggregator");
 
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
 
         // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
+        // 1) Process signatures
         let server_handle = tokio::spawn(Self::start_server(Arc::clone(&aggregator)));
+        // 2) Process tasks
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
             Arc::clone(&aggregator),
         ));
+        // 3) Process aggregator responses
         let responses_handle =
             tokio::spawn(Self::process_aggregator_responses(Arc::clone(&aggregator)));
 
-        // Wait for the tasks to complete and handle potential errors
-        match tokio::try_join!(server_handle, process_handle, responses_handle) {
-            Ok((server_result, process_result, responses_result)) => {
-                server_result?;
-                process_result?;
-                responses_result?;
-            }
-            Err(e) => {
-                eprintln!("Error in task execution: {:?}", e);
-                return Err(eyre::eyre!("Task execution failed"));
-            }
-        }
+        // Wait for the tasks to complete and handle potential errors}
+        let (server_result, process_result, responses_result) =
+            tokio::try_join!(server_handle, process_handle, responses_handle)
+                .inspect_err(|e| eprintln!("Error in task execution: {:?}", e))
+                .map_err(|e| eyre::eyre!("Task execution failed {e}"))?;
+
+        server_result?;
+        process_result?;
+        responses_result?;
 
         Ok(())
     }
@@ -345,10 +358,8 @@ impl Aggregator {
         };
 
         loop {
-            // Wait for the next response without blocking the rest of the state
-            let response = receiver.receive_aggregated_response().await;
-
-            if let Ok(response) = response {
+            // Wait for the next response without blocking the rest of the state            let response = <
+            if let Ok(response) = receiver.receive_aggregated_response().await {
                 let signed_task_response = {
                     let mut agg = aggregator.lock().await;
                     agg.signed_task_responses.remove(&response.task_index)
