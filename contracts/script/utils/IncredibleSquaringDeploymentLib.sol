@@ -206,8 +206,7 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgradeAndCall(
             result.slashingRegistryCoordinator, slashingRegistryCoordinatorImpl, upgradeCall
         );
-        console2.log("allocation_manager");
-        console2.log(core.allocationManager);
+     
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
@@ -217,13 +216,11 @@ library IncredibleSquaringDeploymentLib {
             IPermissionController(core.permissionController),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
-        console2.log("allocation_manager");
-        console2.log(core.allocationManager);
+     
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
             IPauserRegistry(address(pausercontract)),
-            30,
-            result.incredibleSquaringServiceManager
+            30
         );
         bytes memory servicemanagerupgradecall =
             abi.encodeCall(IncredibleSquaringServiceManager.initialize, (admin, admin));
@@ -232,10 +229,11 @@ library IncredibleSquaringDeploymentLib {
             address(incredibleSquaringServiceManagerImpl),
             servicemanagerupgradecall
         );
-
+    
+        console2.log(result.incredibleSquaringServiceManager);
         bytes memory taskmanagerupgradecall = abi.encodeCall(
             IncredibleSquaringTaskManager.initialize,
-            (admin, isConfig.aggregator_addr, isConfig.task_generator_addr, core.allocationManager, result.slasher)
+            (admin, isConfig.aggregator_addr, isConfig.task_generator_addr, core.allocationManager, result.slasher,result.incredibleSquaringServiceManager)
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)

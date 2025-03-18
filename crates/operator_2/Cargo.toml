@@ -17,6 +17,7 @@ thiserror.workspace = true
 incredible-bindings.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
+rand.workspace = true
 incredible-operator.workspace = true
 
 # eigensdk-rs

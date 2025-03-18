@@ -8,6 +8,7 @@ use alloy::{
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
+use rand::Rng;
 
 use alloy::primitives::U256;
 use alloy::providers::{Provider, ProviderBuilder};
@@ -92,8 +93,15 @@ impl OperatorBuilder {
         #[allow(unused_assignments)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
+        let mut rng = rand::rng();
+        let should_be_correct = rng.random_bool(0.2); // 20% chance of being correct
+
         let num_squared = if self.slash_simulate {
-            U256::from(28) // not a perfect square, so it can't be correct in any input
+            if should_be_correct {
+                number_to_be_squared * number_to_be_squared // Correct answer
+            } else {
+                U256::from(28) // Incorrect answer 80% of the time
+            }
         } else {
             number_to_be_squared * number_to_be_squared
         };

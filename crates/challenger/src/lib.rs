@@ -1,5 +1,10 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
+use alloy::primitives::address;
+use eigen_utils::slashing::core::allocationmanager::AllocationManager;
+use eigen_utils::slashing::core::delegationmanager::DelegationManager;
+use eigen_utils::slashing::middleware::stakeregistry::StakeRegistry;
+use eigen_utils::slashing::sdk::mockerc20::MockERC20;
 use eigensdk::common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
@@ -17,7 +22,7 @@ use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
-    respondToTaskCall, NewTaskCreated, TaskResponded,
+    self, respondToTaskCall, NewTaskCreated, TaskResponded
 };
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
@@ -140,7 +145,39 @@ impl Challenger {
                 let answer = answer_in_response.task_response.numberSquared;
                 if answer != (num_to_square * num_to_square) {
                     info!("raising challenge for task index {:?} to slash the signatories for this task." ,task_index);
+                    let delegation_manager_contract = DelegationManager::new(address!("cf7ed3acca5a467e9e704c703e8d87f634fb0fc9"), get_provider(&self.rpc_url));
+                    let strategy_address = address!("5e3d0fde6f793b3115a9e7f5ebc195bbeed35d6c");
+                    let bal_pp1 =delegation_manager_contract.operatorShares(address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"),address!("5e3d0fde6f793b3115a9e7f5ebc195bbeed35d6c")).call().await.unwrap().shares;
+                    info!("operator_shares_in_strategy_before_slashing{:?}",bal_pp1);
+                    let contract_allocation = AllocationManager::new(address!("8a791620dd6260079bf849dc5567adc3f2fdc318"), get_provider(&self.rpc_url));
+                    let max_magnitude = contract_allocation.getMaxMagnitude(address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"), strategy_address).call().await.unwrap()._0;
+                    info!("max_magnitude{:?}",max_magnitude);
+                    let max_mag = contract_allocation.getMaxMagnitudesAtBlock(address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"), vec![strategy_address], get_provider(&self.rpc_url).get_block_number().await.unwrap() as u32).call().await.unwrap()._0;
+                    info!("max_mag{:?}",max_mag);
+                    let operator_set = AllocationManager::OperatorSet{avs:address!("5f3f1dbd7b74c6b46e8c44f98792a1daf8d69154"),id:0};
+                    let s = contract_allocation.getAllocation(address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"), operator_set.clone(), strategy_address).call().await.unwrap()._0;
+                    let sttt = contract_allocation.getStrategiesInOperatorSet(operator_set.clone()).call().await.unwrap()._0;
+                    info!("sttt{:?}",sttt);
+                    info!("current_magnitude{:?}",s.currentMagnitude);
+                    let is_task_manager = IncredibleSquaringTaskManager::new(address!("2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3"), get_provider(&self.rpc_url));
+                    let serr = is_task_manager.serviceManager().call().await.unwrap()._0;
+                    info!("ppppp{:?}",serr);
+                    let bal_pp2 = delegation_manager_contract.operatorShares(address!("0b065a0423f076a340f37e16e1ce22e23d66caf2"),address!("5e3d0fde6f793b3115a9e7f5ebc195bbeed35d6c")).call().await.unwrap().shares;
+                    let contract_stakeregistry = StakeRegistry::new(address!("cd8a1c3ba11cf5ecfa6267617243239504a98d90"), get_provider(&self.rpc_url));
+                    let current_total_stake = contract_stakeregistry.getCurrentTotalStake(0).call().await.unwrap()._0;
+                    info!("current_total_stake{:?}",current_total_stake);
+                    info!("operator_2_shares_in_strategy_before_slashing{:?}",bal_pp2);
+                    info!("current_block_number{:?}",get_provider(&self.rpc_url).get_block_number().await);
                     let _ = self.raise_challenge(task_index).await;
+                    let s = contract_allocation.getAllocation(address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"), operator_set.clone(), strategy_address).call().await.unwrap()._0;
+                    info!("current_magnitude_second{:?}",s.currentMagnitude);
+                    info!("current_block_number_2{:?}",get_provider(&self.rpc_url).get_block_number().await);
+                    let max_mag = contract_allocation.getMaxMagnitudesAtBlock(address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"), vec![strategy_address], get_provider(&self.rpc_url).get_block_number().await.unwrap() as u32).call().await.unwrap()._0;
+                    info!("max_mag_2{:?}",max_mag);
+                    let bal_pp1 =delegation_manager_contract.operatorShares(address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"),address!("5e3d0fde6f793b3115a9e7f5ebc195bbeed35d6c")).call().await.unwrap().shares;
+                    info!("operator_shares_in_strategy_after_slashing{:?}",bal_pp1);
+                    let bal_pp2 = delegation_manager_contract.operatorShares(address!("0b065a0423f076a340f37e16e1ce22e23d66caf2"),address!("5e3d0fde6f793b3115a9e7f5ebc195bbeed35d6c")).call().await.unwrap().shares;
+                    info!("operator_2_shares_in_strategy_after_slashing{:?}",bal_pp2);
                     return Ok(());
                 }
                 info!("challenger:correct answer, no slashing occurred");

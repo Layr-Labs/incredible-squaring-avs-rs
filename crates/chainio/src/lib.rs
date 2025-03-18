@@ -121,7 +121,6 @@ impl AvsWriter {
         let wallet = get_signer(&self.signer, &self.rpc_url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(self.task_manager_addr, wallet);
-
         let challenge_tx_call = task_manager_contract.raiseAndResolveChallenge(
             task,
             task_response.clone(),
@@ -145,7 +144,6 @@ impl AvsWriter {
             }
 
             Err(e) => {
-                info!("raise_e{:?}", e);
                 Err(ChainIoError::ContractError(e))
             }
         }
