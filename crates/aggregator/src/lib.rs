@@ -57,12 +57,12 @@ pub struct Aggregator {
     pub avs_writer: AvsWriter,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
-    /// HashMap to store task responses
-    pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+    /// HashMap to store signed task responses
+    pub signed_task_responses: HashMap<u32, SignedTaskResponse>,
     /// Service handle to interact with the BLS Aggregator Service
-    service_handle: ServiceHandle,
+    pub service_handle: ServiceHandle,
     /// Aggregate receiver to receive the aggregated responses from the BLS Aggregator Service
-    aggregator_response: AggregateReceiver,
+    pub aggregator_response: Option<AggregateReceiver>,
 }
 
 impl Aggregator {
@@ -123,10 +123,10 @@ impl Aggregator {
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
             avs_writer,
-            tasks_responses: HashMap::new(),
+            signed_task_responses: HashMap::new(),
             tasks: HashMap::new(),
             service_handle: handle,
-            aggregator_response,
+            aggregator_response: Some(aggregator_response),
         })
     }
 
@@ -134,22 +134,23 @@ impl Aggregator {
     pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
         info!("Starting aggregator");
 
-        let service_handle = self.service_handle.clone();
         let aggregator = Arc::new(tokio::sync::Mutex::new(self));
 
-        // Spawn two tasks: one for the server and one for processing tasks
+        // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
         let server_handle = tokio::spawn(Self::start_server(Arc::clone(&aggregator)));
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
             Arc::clone(&aggregator),
-            service_handle,
         ));
+        let responses_handle =
+            tokio::spawn(Self::process_aggregator_responses(Arc::clone(&aggregator)));
 
-        // Wait for both tasks to complete and handle potential errors
-        match tokio::try_join!(server_handle, process_handle) {
-            Ok((server_result, process_result)) => {
+        // Wait for the tasks to complete and handle potential errors
+        match tokio::try_join!(server_handle, process_handle, responses_handle) {
+            Ok((server_result, process_result, responses_result)) => {
                 server_result?;
                 process_result?;
+                responses_result?;
             }
             Err(e) => {
                 eprintln!("Error in task execution: {:?}", e);
@@ -228,7 +229,6 @@ impl Aggregator {
     pub async fn process_tasks(
         ws_rpc_url: String,
         aggregator: Arc<tokio::sync::Mutex<Self>>,
-        service_handle: ServiceHandle,
     ) -> eyre::Result<()> {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;
@@ -267,7 +267,10 @@ impl Aggregator {
                 time_to_expiry,
             );
 
-            let _ = service_handle
+            let _ = aggregator
+                .lock()
+                .await
+                .service_handle
                 .initialize_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
@@ -295,10 +298,6 @@ impl Aggregator {
             &signed_task_response.task_response,
         ));
 
-        let tasks_responses_clone = self.tasks_responses.clone();
-        let _response =
-            check_double_mapping(&tasks_responses_clone, task_index, task_response_digest);
-
         let signature = signed_task_response.signature();
         let operator_id = signed_task_response.operator_id();
 
@@ -314,9 +313,64 @@ impl Aggregator {
 
         if result.is_err() {
             info!("Response received for task that was already completed");
+            // TODO: Review if we need to return an error here
+            return Ok(());
         }
 
+        // Insert the signed task response into the signed_task_responses map
+        self.signed_task_responses
+            .insert(task_index, signed_task_response);
+
         Ok(())
+    }
+
+    /// Processes the aggregator responses
+    ///
+    /// # Arguments
+    ///
+    /// * `aggregator` - The aggregator
+    ///
+    /// # Returns   
+    ///
+    /// * `eyre::Result<()>` - The result of the operation
+    pub async fn process_aggregator_responses(
+        aggregator: Arc<tokio::sync::Mutex<Self>>,
+    ) -> eyre::Result<()> {
+        // Extract the channel once. This is done because we dont want to block while waiting for the response
+        let mut receiver = {
+            let mut agg = aggregator.lock().await;
+            agg.aggregator_response
+                .take()
+                .expect("Expected aggregator_response")
+        };
+
+        loop {
+            // Wait for the next response without blocking the rest of the state
+            let response = receiver.receive_aggregated_response().await;
+
+            if let Ok(response) = response {
+                let signed_task_response = {
+                    let mut agg = aggregator.lock().await;
+                    agg.signed_task_responses.remove(&response.task_index)
+                };
+
+                if let Some(signed_task_response) = signed_task_response {
+                    info!(
+                        "Sending aggregated response to contract for task_index: {}",
+                        response.task_index
+                    );
+                    let agg = aggregator.lock().await;
+                    let _ = agg
+                        .send_aggregated_response_to_contract(response, signed_task_response)
+                        .await;
+                } else {
+                    info!(
+                        "No found signed_task_response for the task_index: {}",
+                        response.task_index
+                    );
+                }
+            }
+        }
     }
 
     /// Sends the aggregated response to the contract
