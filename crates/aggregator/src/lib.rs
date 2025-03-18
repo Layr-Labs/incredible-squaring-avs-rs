@@ -359,6 +359,7 @@ impl Aggregator {
                         "Sending aggregated response to contract for task_index: {}",
                         response.task_index
                     );
+
                     let agg = aggregator.lock().await;
                     let _ = agg
                         .send_aggregated_response_to_contract(response, signed_task_response)
