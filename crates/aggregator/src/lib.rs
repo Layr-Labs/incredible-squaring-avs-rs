@@ -57,6 +57,8 @@ pub struct Aggregator {
     pub avs_writer: AvsWriter,
     /// HashMap to store tasks
     pub tasks: HashMap<u32, Task>,
+    /// HashMap to store tasks responses
+    pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
     /// HashMap to store signed task responses
     pub signed_task_responses: HashMap<u32, SignedTaskResponse>,
     /// Service handle to interact with the BLS Aggregator Service
@@ -123,6 +125,7 @@ impl Aggregator {
         Ok(Self {
             port_address: config.aggregator_ip_addr(),
             avs_writer,
+            tasks_responses: HashMap::new(),
             signed_task_responses: HashMap::new(),
             tasks: HashMap::new(),
             service_handle: handle,
@@ -130,8 +133,8 @@ impl Aggregator {
         })
     }
 
-    /// Starts the aggregator service
-    /// TODO: TERMINAR DE AGREGAR DOC
+    /// Starts the aggregator service with three tasks: one for the server,
+    /// one for processing tasks and one for processing aggregator responses.
     ///
     /// # Arguments
     ///
@@ -161,7 +164,7 @@ impl Aggregator {
         let responses_handle =
             tokio::spawn(Self::process_aggregator_responses(Arc::clone(&aggregator)));
 
-        // Wait for the tasks to complete and handle potential errors}
+        // Wait for the tasks to complete and handle potential errors
         let (server_result, process_result, responses_result) =
             tokio::try_join!(server_handle, process_handle, responses_handle)
                 .inspect_err(|e| eprintln!("Error in task execution: {:?}", e))
@@ -314,6 +317,9 @@ impl Aggregator {
         let signature = signed_task_response.signature();
         let operator_id = signed_task_response.operator_id();
 
+        let _response =
+            check_double_mapping(&self.tasks_responses, task_index, task_response_digest);
+
         let handle = &self.service_handle;
         let result = handle
             .process_signature(TaskSignature::new(
@@ -350,35 +356,43 @@ impl Aggregator {
         aggregator: Arc<tokio::sync::Mutex<Self>>,
     ) -> eyre::Result<()> {
         // Extract the channel once. This is done because we dont want to block while waiting for the response
-        let mut receiver = {
-            let mut agg = aggregator.lock().await;
-            agg.aggregator_response
-                .take()
-                .expect("Expected aggregator_response")
-        };
+        let mut aggregate_receiver_channel = aggregator
+            .lock()
+            .await
+            .aggregator_response
+            .take()
+            .expect("Expected aggregator_response");
 
         loop {
-            // Wait for the next response without blocking the rest of the state            let response = <
-            if let Ok(response) = receiver.receive_aggregated_response().await {
-                let signed_task_response = {
-                    let mut agg = aggregator.lock().await;
-                    agg.signed_task_responses.remove(&response.task_index)
-                };
+            // Wait for the next response without blocking the rest of the state
+            if let Ok(service_response) = aggregate_receiver_channel
+                .receive_aggregated_response()
+                .await
+            {
+                let signed_task_response = aggregator
+                    .lock()
+                    .await
+                    .signed_task_responses
+                    .remove(&service_response.task_index);
 
                 if let Some(signed_task_response) = signed_task_response {
                     info!(
                         "Sending aggregated response to contract for task_index: {}",
-                        response.task_index
+                        service_response.task_index
                     );
 
-                    let agg = aggregator.lock().await;
-                    let _ = agg
-                        .send_aggregated_response_to_contract(response, signed_task_response)
-                        .await;
+                    aggregator
+                        .lock()
+                        .await
+                        .send_aggregated_response_to_contract(
+                            service_response,
+                            signed_task_response,
+                        )
+                        .await?;
                 } else {
                     info!(
                         "No found signed_task_response for the task_index: {}",
-                        response.task_index
+                        service_response.task_index
                     );
                 }
             }
@@ -453,12 +467,9 @@ fn check_double_mapping(
     outer_key: u32,
     inner_key: TaskResponseDigest,
 ) -> Option<&TaskResponse> {
-    if let Some(inner_map) = outer_map.get(&outer_key) {
-        if let Some(value) = inner_map.get(&inner_key) {
-            return Some(value);
-        }
-    }
-    None
+    outer_map
+        .get(&outer_key)
+        .and_then(|inner_map| inner_map.get(&inner_key))
 }
 
 #[cfg(test)]
