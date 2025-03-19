@@ -12,7 +12,7 @@ members = [
   "crates/testing-utils",
   "crates/task_generator",
   "crates/operator_2",
-  "integration-tests"
+  "integration-tests",
 ]
 
 resolver = "2"
@@ -41,7 +41,9 @@ clap = "4.5.11"
 eyre = "0.6.12"
 tokio = { version = "1.21", default-features = false }
 thiserror = "2"
-ark-bn254 = { version = "0.5.0", features = ["curve"], default-features = false }
+ark-bn254 = { version = "0.5.0", features = [
+  "curve",
+], default-features = false }
 futures-util = "0.3.31"
 metrics = "0.24.0"
 metrics-util = "0.19.0"
@@ -49,31 +51,32 @@ reqwest = "0.12.9"
 serde_json = "1.0.120"
 rand = "0.9.0"
 #alloy
-alloy = { version = "0.9", features = ["full","signer-keystore","reqwest"] }
+alloy = { version = "0.9", features = ["full", "signer-keystore", "reqwest"] }
 serde = "1.0.203"
 tracing = "0.1.40"
 tempfile = "3"
-rust-bls-bn254 = {git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = ["std"] }
+rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = [
+  "std",
+] }
 rand_core = "0.6"
 toml = "0.8"
 
 
-incredible-operator = {path = "crates/operator/" , features = ["default"]}
-incredible-aggregator = {path = "crates/aggregator/"}
-incredible-squaring-avs = {path = "bin/incredible-squaring-avs/"}
-incredible-cli-runner = {path = "crates/cli/"}
-incredible-config = {path = "crates/config/"}
-incredible-bindings = {path = "crates/bindings/"}
-incredible-metrics  = {path = "crates/metrics/"}
-incredible-avs = {path = "crates/avs/"}
-incredible-challenger = {path = "crates/challenger/"}
-incredible-chainio = {path = "crates/chainio/"}
-incredible-testing-utils = {path = "crates/testing-utils/"}
-incredible-task-generator = {path = "crates/task_generator/"}
-incredible-operator-2 = {path = "crates/operator_2/" , features = ["default"]}
+incredible-operator = { path = "crates/operator/", features = ["default"] }
+incredible-aggregator = { path = "crates/aggregator/" }
+incredible-squaring-avs = { path = "bin/incredible-squaring-avs/" }
+incredible-cli-runner = { path = "crates/cli/" }
+incredible-config = { path = "crates/config/" }
+incredible-bindings = { path = "crates/bindings/" }
+incredible-metrics = { path = "crates/metrics/" }
+incredible-avs = { path = "crates/avs/" }
+incredible-challenger = { path = "crates/challenger/" }
+incredible-chainio = { path = "crates/chainio/" }
+incredible-testing-utils = { path = "crates/testing-utils/" }
+incredible-task-generator = { path = "crates/task_generator/" }
+incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 
 # eigensdk-rs 
-eigensdk = {git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "223402f", features = ["full"]}
-eigen-types =  { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
-eigen-metrics-collectors-rpc-calls = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
+eigensdk = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13", features = [
+  "full",
+] }

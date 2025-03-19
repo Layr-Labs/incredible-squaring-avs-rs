@@ -1,7 +1,7 @@
 //! config
 use alloy::hex::FromHex;
 use alloy::primitives::{Address, Bytes, FixedBytes, U256};
-use eigen_types::operator::OperatorId;
+use eigensdk::types::operator::OperatorId;
 use error::ConfigError;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;

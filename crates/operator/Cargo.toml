@@ -19,10 +19,7 @@ eyre.workspace = true
 futures-util.workspace = true
 rand.workspace = true
 # eigensdk-rs
-eigen-types.workspace = true
 eigensdk.workspace = true
-eigen-metrics-collectors-rpc-calls.workspace = true
-eigen-utils.workspace = true
 
 
 rust-bls-bn254.workspace = true

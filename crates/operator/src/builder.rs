@@ -12,11 +12,11 @@ use rand::Rng;
 
 use alloy::primitives::U256;
 use alloy::providers::{Provider, ProviderBuilder};
-use eigen_types::operator::OperatorId;
 use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
 use eigensdk::client_eth::instrumented_client::InstrumentedClient;
 use eigensdk::crypto_bls::BlsKeyPair;
 use eigensdk::logging::get_logger;
+use eigensdk::types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
 use incredible_aggregator::rpc_server::SignedTaskResponse;

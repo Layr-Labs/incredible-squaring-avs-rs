@@ -11,7 +11,8 @@ description = "eigen layer operator"
 workspace = true
 
 [dependencies]
-eigensdk.workspace = true
-eigen-utils.workspace = true
 alloy.workspace = true
 tracing.workspace = true
+
+# eigen-rs
+eigensdk.workspace = true

@@ -8,11 +8,13 @@ use alloy::{
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
-use eigen_types::operator::OperatorId;
+use incredible_operator::{client::ClientAggregator, error::OperatorError};
+
 use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
 use eigensdk::client_eth::instrumented_client::InstrumentedClient;
 use eigensdk::crypto_bls::BlsKeyPair;
 use eigensdk::logging::get_logger;
+use eigensdk::types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
 use incredible_aggregator::rpc_server::SignedTaskResponse;
@@ -21,7 +23,6 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
     self, NewTaskCreated,
 };
 use incredible_config::IncredibleConfig;
-use incredible_operator::{client::ClientAggregator, error::OperatorError};
 use rand::Rng;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use tracing::info;

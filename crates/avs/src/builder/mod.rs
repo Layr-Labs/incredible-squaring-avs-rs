@@ -70,13 +70,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-        let aggregator = Aggregator::new(avs.config.clone()).await?;
+        let (aggregator, aggregator_response) = Aggregator::new(avs.config.clone()).await?;
         let aggregator_service_with_rpc_client = aggregator
-            .start(
-                avs.config.ws_rpc_url().clone(),
-                avs.config.operator_state_retriever_addr()?,
-                avs.config.registry_coordinator_addr()?,
-            )
+            .start(avs.config.ws_rpc_url().clone(), aggregator_response)
             .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
 
         let task_manager = TaskManager::new(

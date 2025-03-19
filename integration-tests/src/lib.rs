@@ -247,10 +247,12 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
+        let (aggregator, aggregate_receiver) =
+            Aggregator::new(incredible_config.clone()).await.unwrap();
 
         let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
         let arc_agg_clone = Arc::clone(&arc_agg);
+        let arc_agg_for_server = Arc::clone(&arc_agg);
 
         // Run process_tasks in a separate thread
         std::thread::spawn(move || {
@@ -267,17 +269,18 @@ mod tests {
         // Run the server in a separate thread
         std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::start_server(
-                    Arc::clone(&arc_agg),
-                    get_incredible_squaring_operator_state_retriever().await,
-                    get_incredible_squaring_registry_coordinator().await,
-                )
-                .await
-                {
+                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg_for_server)).await {
                     eprintln!("Server error: {:?}", e);
                 }
             });
         });
+
+        tokio::spawn(async move {
+            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
+                .await
+                .unwrap();
+        });
+
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
         let task_generator = incredible_task_generator::TaskManager::new(
@@ -440,10 +443,12 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let aggregator = Aggregator::new(incredible_config.clone()).await.unwrap();
+        let (aggregator, aggregate_receiver) =
+            Aggregator::new(incredible_config.clone()).await.unwrap();
 
         let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
         let arc_agg_clone = Arc::clone(&arc_agg);
+        let arc_agg_for_server = Arc::clone(&arc_agg);
 
         // Run process_tasks in a separate thread
         std::thread::spawn(move || {
@@ -460,17 +465,18 @@ mod tests {
         // Run the server in a separate thread
         std::thread::spawn(move || {
             tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::start_server(
-                    Arc::clone(&arc_agg),
-                    get_incredible_squaring_operator_state_retriever().await,
-                    get_incredible_squaring_registry_coordinator().await,
-                )
-                .await
-                {
+                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg_for_server)).await {
                     eprintln!("Server error: {:?}", e);
                 }
             });
         });
+
+        tokio::spawn(async move {
+            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
+                .await
+                .unwrap();
+        });
+
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
         let mut challenger = Challenger::build(incredible_config.clone()).await.unwrap();
