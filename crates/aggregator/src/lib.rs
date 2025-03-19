@@ -217,37 +217,31 @@ impl Aggregator {
         >,
     ) -> eyre::Result<(), AggregatorError> {
         let mut io = IoHandler::new();
-        let service_handle_clone = service_handle.clone();
-        let task_responses_clone = Arc::clone(&task_responses);
-        io.add_method("process_signed_task_response", {
-            let service_handle = service_handle_clone.clone();
-            let task_responses = Arc::clone(&task_responses_clone);
-            move |params: Params| {
-                let service_handle = service_handle.clone();
-                let task_responses = Arc::clone(&task_responses);
-                async move {
-                    let signed_task_response: SignedTaskResponse = match params {
-                        Params::Map(map) => serde_json::from_value(map["params"].clone()).expect(
-                            "Error in adding method in io handler for start_server function",
-                        ),
-                        _ => return Err(Error::invalid_params("Expected a map")),
-                    };
-                    // Call the process_signed_task_response function
-                    let mut task_responses_lock = task_responses.lock().await;
-                    let result = Self::process_signed_task_response(
-                        signed_task_response,
-                        &service_handle,
-                        &mut task_responses_lock,
-                    )
-                    .await;
+        let method = move |params: Params| {
+            let service_handle = service_handle.clone();
+            let task_responses = Arc::clone(&task_responses);
+            async move {
+                let signed_task_response: SignedTaskResponse = match params {
+                    Params::Map(map) => serde_json::from_value(map["params"].clone())
+                        .expect("Error in adding method in io handler for start_server function"),
+                    _ => return Err(Error::invalid_params("Expected a map")),
+                };
+                // Call the process_signed_task_response function
+                let mut task_responses_lock = task_responses.lock().await;
+                let result = Self::process_signed_task_response(
+                    signed_task_response,
+                    &service_handle,
+                    &mut task_responses_lock,
+                )
+                .await;
 
-                    match result {
-                        Ok(_) => Ok(Value::Bool(true)),
-                        Err(_) => Err(Error::invalid_params("invalid")),
-                    }
+                match result {
+                    Ok(_) => Ok(Value::Bool(true)),
+                    Err(_) => Err(Error::invalid_params("invalid")),
                 }
             }
-        });
+        };
+        io.add_method("process_signed_task_response", method);
         let socket: SocketAddr = port_address.parse().map_err(|e| {
             AggregatorError::IOError(std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
         })?;
