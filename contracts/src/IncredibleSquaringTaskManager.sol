@@ -246,9 +246,8 @@ contract IncredibleSquaringTaskManager is
                         break;
                     }
                 }
-    
-                if (wasSigningOperator == true) {
 
+                if (wasSigningOperator == true) {
                     OperatorSet memory operatorset =
                         OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
                     IStrategy[] memory istrategy =
