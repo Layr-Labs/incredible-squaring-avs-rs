@@ -76,6 +76,4 @@ incredible-task-generator = { path = "crates/task_generator/" }
 incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 
 # eigensdk-rs 
-eigensdk = { git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "7cfce13", features = [
-  "full",
-] }
+eigensdk = { version = "0.5.0", features = ["full"] }
