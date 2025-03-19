@@ -123,6 +123,10 @@ pub struct OperatorConfig {
     pub allocation_delay: String,
 
     pub slash_simulate: bool,
+
+    pub operator_1_times_failing: String,
+
+    pub operator_2_times_failing: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -372,6 +376,24 @@ impl IncredibleConfig {
 
     pub fn slash_simulate(&self) -> bool {
         self.operator_config.slash_simulate
+    }
+
+    pub fn set_operator_1_times_failing(&mut self, times_failing: String) {
+        self.operator_config.operator_1_times_failing = times_failing;
+    }
+
+    pub fn set_operator_2_times_failing(&mut self, times_failing: String) {
+        self.operator_config.operator_2_times_failing = times_failing;
+    }
+
+    pub fn operator_1_times_failing(&self) -> Result<u32, ConfigError> {
+        u32::from_str(&self.operator_config.operator_1_times_failing)
+            .map_err(ConfigError::ParseIntError)
+    }
+
+    pub fn operator_2_times_failing(&self) -> Result<u32, ConfigError> {
+        u32::from_str(&self.operator_config.operator_2_times_failing)
+            .map_err(ConfigError::ParseIntError)
     }
 
     pub fn allocation_delay(&mut self) -> Result<u32, ConfigError> {

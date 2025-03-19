@@ -242,12 +242,13 @@ contract IncredibleSquaringTaskManager is
                 for (uint256 k = 0; k < addressOfNonSigningOperators.length; k++) {
                     if (operatorAddress == addressOfNonSigningOperators[k]) {
                         // if the operator was a non-signer, then we set the flag to false
-                        wasSigningOperator == false;
+                        wasSigningOperator = false;
                         break;
                     }
                 }
-
+    
                 if (wasSigningOperator == true) {
+
                     OperatorSet memory operatorset =
                         OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
                     IStrategy[] memory istrategy =

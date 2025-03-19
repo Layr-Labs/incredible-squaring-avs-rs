@@ -26,6 +26,8 @@ operator_1_token_amount = "5000000000000000000000"
 operator_2_token_amount = "7000000000000000000000"
 allocation_delay = "0"
 slash_simulate = true
+times_failing_operator_1 = "90"
+times_failing_operator_2 =  "10"
 
 [aggregator_config]
 ip_address = "127.0.0.1:8080"

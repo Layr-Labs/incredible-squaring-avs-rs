@@ -47,7 +47,8 @@ pub struct OperatorBuilder {
 
     operator_state_retriever: Address,
 
-    slash_simulate: bool,
+
+    times_failing: u32,
 }
 
 impl OperatorBuilder {
@@ -67,7 +68,6 @@ impl OperatorBuilder {
         let operator_address = config.operator_address()?;
         let mut client = ClientAggregator::new(config.aggregator_ip_addr());
         let _ = client.dial_aggregator_rpc_client();
-        let slash = config.slash_simulate();
 
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
@@ -78,7 +78,7 @@ impl OperatorBuilder {
             client,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
-            slash_simulate: slash,
+            times_failing: config.operator_1_times_failing()?,
         })
     }
 
@@ -94,16 +94,14 @@ impl OperatorBuilder {
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
         let mut rng = rand::rng();
-        let should_be_correct = rng.random_bool(0.2); // 20% chance of being correct
+        let should_fail = rng.random_bool(self.times_failing as f64 / 100.0);
 
-        let num_squared = if self.slash_simulate {
-            if should_be_correct {
-                number_to_be_squared * number_to_be_squared // Correct answer
-            } else {
-                U256::from(28) // Incorrect answer 80% of the time
-            }
+        let num_squared = if should_fail {
+            info!("operator1 : incorrect answer");
+            U256::from(28)  // Incorrect answer
         } else {
-            number_to_be_squared * number_to_be_squared
+            info!("operator1 : correct answer");
+            number_to_be_squared * number_to_be_squared // Correct answer
         };
 
         TaskResponse {
