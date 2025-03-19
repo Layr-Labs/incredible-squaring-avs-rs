@@ -122,8 +122,6 @@ pub struct OperatorConfig {
 
     pub allocation_delay: String,
 
-    pub slash_simulate: bool,
-
     pub operator_1_times_failing: String,
 
     pub operator_2_times_failing: String,
@@ -368,14 +366,6 @@ impl IncredibleConfig {
 
     pub fn set_allocation_delay(&mut self, delay: String) {
         self.operator_config.allocation_delay = delay;
-    }
-
-    pub fn set_slash_simulate(&mut self, slash: bool) {
-        self.operator_config.slash_simulate = slash;
-    }
-
-    pub fn slash_simulate(&self) -> bool {
-        self.operator_config.slash_simulate
     }
 
     pub fn set_operator_1_times_failing(&mut self, times_failing: String) {
@@ -709,7 +699,8 @@ mod tests {
         operator_1_token_amount = "5000000000000000000000"
         operator_2_token_amount = "7000000000000000000000"
         allocation_delay = "1"
-        slash_simulate = false    
+        operator_1_times_failing = "90"
+        operator_2_times_failing = "10"
         "#;
 
         let _config: OperatorConfig = toml::from_str(config_file).unwrap();

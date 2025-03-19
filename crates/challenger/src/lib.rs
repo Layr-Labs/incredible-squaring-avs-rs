@@ -1,7 +1,6 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
-use alloy::primitives::{address, Address};
-use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
+use alloy::primitives::Address;
 use eigen_utils::slashing::core::delegationmanager::DelegationManager;
 use eigensdk::common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -339,6 +338,9 @@ mod tests {
         hex::FromHex,
         primitives::{Bytes, FixedBytes, TxHash, U256},
     };
+    use eigensdk::testing_utils::anvil_constants::{
+        get_delegation_manager_address, get_erc20_mock_strategy, ANVIL_HTTP_URL,
+    };
     use incredible_chainio::fake_avs_writer::FakeAvsWriter;
     use incredible_task_generator::TaskManager;
     use incredible_testing_utils::{
@@ -348,40 +350,42 @@ mod tests {
     };
     use std::str::FromStr;
     const INCREDIBLE_CONFIG_FILE: &str = r#"
-[rpc_config]
-chain_id = 31337
-http_rpc_url = "http://localhost:8545"
-ws_rpc_url = "ws://localhost:8546"
-signer = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    [rpc_config]
+    chain_id = 31337
+    http_rpc_url = "http://localhost:8545"
+    ws_rpc_url = "ws://localhost:8546"
+    signer = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
-[ecdsa_config]
-keystore_path = "../testing-utils/src/ecdsakeystore.json"
-keystore_password = "test"
-keystore_2_path = "../testing-utils/src/ecdsa_keystore_2.json"
-keystore_2_password = "test"
+    [ecdsa_config]
+    keystore_path = "../testing-utils/src/ecdsakeystore.json"
+    keystore_password = "test"
+    keystore_2_path = "../testing-utils/src/ecdsa_keystore_2.json"
+    keystore_2_password = "test"
 
-[bls_config]
-keystore_path = "../testing-utils/src/blskeystore.json"
-keystore_password = "testpassword"
-keystore_2_path = "../testing-utils/src/bls_keystore_2.json"
-keystore_2_password = "test"
+    [bls_config]
+    keystore_path = "../testing-utils/src/blskeystore.json"
+    keystore_password = "testpassword"
+    keystore_2_path = "../testing-utils/src/bls_keystore_2.json"
+    keystore_2_password = "test"
 
-[operator_config]
-operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
-operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
-operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
-operator_set_id = "1"
-operator_1_token_amount = "5000000000000000000000"
-operator_2_token_amount = "7000000000000000000000"
-allocation_delay = "1"
-slash_simulate = false
+    [operator_config]
+    operator_address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+    operator_id = "0xb345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
+    operator_2_address = "0x0b065a0423f076a340f37e16e1ce22e23d66caf2"
+    operator_2_id = "0x17a0935b43b64cc3536d48621208fddb680ef8998561f0a1669a3ccda66676be"
+    operator_set_id = "1"
+    operator_1_token_amount = "5000000000000000000000"
+    operator_2_token_amount = "7000000000000000000000"
+    allocation_delay = "1"
+    operator_1_times_failing = "90"
+    operator_2_times_failing = "10"
 
-[task_manager_config]
-signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-"#;
+    [task_manager_config]
+    signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 
-    /// Build challenger
+    "#;
+
+    //  Build challenger
     pub(crate) async fn build_challenger() -> Result<Challenger, ChallengerError> {
         let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE)?;
         config.set_service_manager_address(
@@ -392,12 +396,23 @@ signer = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
                 .await
                 .to_string(),
         );
+        config.set_delegation_manager_addr(
+            get_delegation_manager_address(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
+        config.set_erc20_mock_strategy_address(
+            get_erc20_mock_strategy(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
         Challenger::build(config).await
     }
 
     #[tokio::test]
     async fn test_process_new_task_created_log() {
         let mut challenger = build_challenger().await.unwrap();
+        let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
         let new_task_created = NewTaskCreated {
             taskIndex: 1,
             task: Task {

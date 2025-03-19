@@ -254,9 +254,6 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     )]
     operator_pvt_key: String,
 
-    #[arg(long, value_name = "SLASH_SIMULATE", default_value_t = false)]
-    slash_simulate: bool,
-
     #[arg(long, value_name = "TIMES_FAILING_OPERATOR_1", default_value = "90")]
     times_failing_operator_1: String,
 
@@ -418,7 +415,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             operator_2_token_amount,
             allocation_delay,
             metadata_uri,
-            slash_simulate,
             allocation_manager_address,
             times_failing_operator_1,
             times_failing_operator_2,
@@ -430,7 +426,6 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.set_service_manager_address(service_manager_address_anvil.to_string());
             config.set_node_api_port_address(node_api_address);
             config.set_metrics_port_address(metrics_address);
-            config.set_slash_simulate(slash_simulate);
             config.set_operator_1_times_failing(times_failing_operator_1);
             config.set_operator_2_times_failing(times_failing_operator_2);
             // there's a default value ,so using unwrap is no issue
