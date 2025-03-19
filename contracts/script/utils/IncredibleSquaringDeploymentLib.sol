@@ -52,7 +52,6 @@ library IncredibleSquaringDeploymentLib {
 
     string internal constant MIDDLEWARE_VERSION = "v1.4.0-testnet-holesky";
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
-    string internal constant MIDDLEWARE_VERSION = "v1.4.0-testnet-holesky";
 
     struct DeploymentData {
         address incredibleSquaringServiceManager;
@@ -130,20 +129,7 @@ library IncredibleSquaringDeploymentLib {
                 result.incredibleSquaringTaskManager
             )
         );
-        console2.log("pauser_registry");
-        console2.log(coredata.pauserRegistry);
-        console2.log("service_manager");
-        console2.log(result.incredibleSquaringServiceManager);
-        console2.log("stake_registry");
-        console2.log(result.stakeRegistry);
-        console2.log("bls_apk_registry");
-        console2.log(result.blsapkRegistry);
-        console2.log("index_registry");
-        console2.log(result.indexRegistry);
-        console2.log("avs_directory");
-        console2.log(core.avsDirectory);
-        console2.log("pauser_registry");
-        console2.log(coredata.pauserRegistry);
+      
 
         address slashingRegistryCoordinatorImpl = address(
             new SlashingRegistryCoordinator(
