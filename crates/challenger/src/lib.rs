@@ -1,8 +1,8 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
 use alloy::primitives::Address;
-use eigen_utils::slashing::core::delegationmanager::DelegationManager;
 use eigensdk::common::{get_provider, get_ws_provider};
+use eigensdk::utils::slashing::core::delegationmanager::DelegationManager;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
 };
@@ -412,7 +412,6 @@ mod tests {
     #[tokio::test]
     async fn test_process_new_task_created_log() {
         let mut challenger = build_challenger().await.unwrap();
-        let mut config: IncredibleConfig = toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
         let new_task_created = NewTaskCreated {
             taskIndex: 1,
             task: Task {
