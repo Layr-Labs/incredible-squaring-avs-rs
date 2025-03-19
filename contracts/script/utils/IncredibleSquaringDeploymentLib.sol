@@ -129,7 +129,6 @@ library IncredibleSquaringDeploymentLib {
                 result.incredibleSquaringTaskManager
             )
         );
-      
 
         address slashingRegistryCoordinatorImpl = address(
             new SlashingRegistryCoordinator(
