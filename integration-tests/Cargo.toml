@@ -10,8 +10,8 @@ description = "integration tests for incredible avs"
 
 [dependencies]
 alloy = { version = "0.9", features = ["full","signer-keystore","node-bindings"] }
-eigensdk = {git = "https://github.com/Layr-Labs/eigensdk-rs", rev = "223402f", features = ["full"]}
-eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs",  rev = "223402f"}
+eigensdk.workspace = true
+eigen-utils.workspace = true
 incredible-config = {path = "../crates/config/"}
 incredible-challenger = {path = "../crates/challenger/"}
 incredible-bindings = {path = "../crates/bindings/"}
