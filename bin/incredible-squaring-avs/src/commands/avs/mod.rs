@@ -596,7 +596,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 &rpc_url,
                 service_manager_address_anvil,
                 vec![config.erc20_mock_strategy_addr()?],
-                vec![900000000000000],
+                vec![1000000000000000000],
             )
             .await?;
 
@@ -611,7 +611,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 &rpc_url,
                 service_manager_address_anvil,
                 vec![config.erc20_mock_strategy_addr()?],
-                vec![900000000000000],
+                vec![1000000000000000000],
             )
             .await?;
             info!(tx_hash = %modify_allocation_for_operator2_tx_hash,strategy_address = %config.erc20_mock_strategy_addr()?,"allocation by operator2 for strategy");

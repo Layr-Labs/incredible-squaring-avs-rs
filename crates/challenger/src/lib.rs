@@ -1,6 +1,7 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
-use alloy::primitives::address;
+use alloy::primitives::{address, Address};
+use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigen_utils::slashing::core::delegationmanager::DelegationManager;
 use eigensdk::common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -45,6 +46,14 @@ pub struct Challenger {
     tasks: HashMap<u32, Task>,
 
     task_responses: HashMap<u32, TaskResponseData>,
+
+    delegation_manager_address: Address,
+
+    strategy_address: Address,
+
+    operator_1_address: Address,
+
+    operator_2_address: Address,
 }
 
 impl Challenger {
@@ -63,6 +72,10 @@ impl Challenger {
             rpc_url: config.http_rpc_url(),
             tasks: HashMap::new(),
             task_responses: HashMap::new(),
+            delegation_manager_address: config.delegation_manager_addr()?,
+            strategy_address: config.erc20_mock_strategy_addr()?,
+            operator_1_address: config.operator_address()?,
+            operator_2_address: config.operator_2_address()?,
         })
     }
     /// Get tasks
@@ -143,53 +156,53 @@ impl Challenger {
                 if answer != (num_to_square * num_to_square) {
                     info!("raising challenge for task index {:?} to slash the signatories for this task." ,task_index);
                     let delegation_manager_contract = DelegationManager::new(
-                        address!("cf7ed3acca5a467e9e704c703e8d87f634fb0fc9"),
+                        self.delegation_manager_address,
                         get_provider(&self.rpc_url),
                     );
-                    let strategy_address = address!("5e3d0fde6f793b3115a9e7f5ebc195bbeed35d6c");
-                    let bal_pp1 = delegation_manager_contract
-                        .operatorShares(
-                            address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"),
-                            strategy_address,
-                        )
+                    let operator_1_shares_before_slashing = delegation_manager_contract
+                        .operatorShares(self.operator_1_address, self.strategy_address)
                         .call()
                         .await
                         .unwrap()
                         .shares;
-                    info!("operator_shares_in_strategy_before_slashing{:?}", bal_pp1);
+                    info!(
+                        "operator_1 shares before slashing{:?}",
+                        operator_1_shares_before_slashing
+                    );
 
-                    let bal_pp2 = delegation_manager_contract
-                        .operatorShares(
-                            address!("0b065a0423f076a340f37e16e1ce22e23d66caf2"),
-                            strategy_address,
-                        )
+                    let operator_2_shares_before_slashing = delegation_manager_contract
+                        .operatorShares(self.operator_2_address, self.strategy_address)
                         .call()
                         .await
                         .unwrap()
                         .shares;
-                    info!("operator_2_shares_in_strategy_before_slashing{:?}", bal_pp2);
+                    info!(
+                        "operator_2 shares before slashing{:?}",
+                        operator_2_shares_before_slashing
+                    );
+
                     let _ = self.raise_challenge(task_index).await;
 
-                    let bal_pp1 = delegation_manager_contract
-                        .operatorShares(
-                            address!("f39fd6e51aad88f6f4ce6ab8827279cfffb92266"),
-                            strategy_address,
-                        )
+                    let operator_1_shares_after_slashing = delegation_manager_contract
+                        .operatorShares(self.operator_1_address, self.strategy_address)
                         .call()
                         .await
                         .unwrap()
                         .shares;
-                    info!("operator_shares_in_strategy_after_slashing{:?}", bal_pp1);
-                    let bal_pp2 = delegation_manager_contract
-                        .operatorShares(
-                            address!("0b065a0423f076a340f37e16e1ce22e23d66caf2"),
-                            strategy_address,
-                        )
+                    info!(
+                        "operator_1 shares after slashing{:?}",
+                        operator_1_shares_after_slashing
+                    );
+                    let operator_2_shares_after_slashing = delegation_manager_contract
+                        .operatorShares(self.operator_2_address, self.strategy_address)
                         .call()
                         .await
                         .unwrap()
                         .shares;
-                    info!("operator_2_shares_in_strategy_after_slashing{:?}", bal_pp2);
+                    info!(
+                        "operator_2 shares after slashing{:?}",
+                        operator_2_shares_after_slashing
+                    );
                     return Ok(());
                 }
                 info!("challenger:correct answer, no slashing occurred");

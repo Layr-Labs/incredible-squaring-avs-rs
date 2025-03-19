@@ -45,7 +45,7 @@ pub struct OperatorBuilder {
 
     operator_state_retriever: Address,
 
-    times_failing: u32
+    times_failing: u32,
 }
 
 impl OperatorBuilder {
@@ -75,7 +75,7 @@ impl OperatorBuilder {
             client,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
-            times_failing: config.operator_2_times_failing()?
+            times_failing: config.operator_2_times_failing()?,
         })
     }
 
@@ -95,7 +95,7 @@ impl OperatorBuilder {
 
         let num_squared = if should_fail {
             info!("operator2 : incorrect answer");
-            U256::from(28)  // Incorrect answer
+            U256::from(28) // Incorrect answer
         } else {
             info!("operator2 : correct answer");
             number_to_be_squared * number_to_be_squared // Correct answer

@@ -47,7 +47,6 @@ pub struct OperatorBuilder {
 
     operator_state_retriever: Address,
 
-
     times_failing: u32,
 }
 
@@ -98,7 +97,7 @@ impl OperatorBuilder {
 
         let num_squared = if should_fail {
             info!("operator1 : incorrect answer");
-            U256::from(28)  // Incorrect answer
+            U256::from(28) // Incorrect answer
         } else {
             info!("operator1 : correct answer");
             number_to_be_squared * number_to_be_squared // Correct answer
