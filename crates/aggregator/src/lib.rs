@@ -312,10 +312,6 @@ impl Aggregator {
         &mut self,
         signed_task_response: SignedTaskResponse,
     ) -> Result<(), AggregatorError> {
-        info!(
-            "process_signed_response{:?}",
-            signed_task_response.operator_id()
-        );
         let task_index = signed_task_response.task_response.referenceTaskIndex;
 
         let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
