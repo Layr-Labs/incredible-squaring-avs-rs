@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use alloy::primitives::U256;
+use alloy::providers::{Provider, ProviderBuilder};
 use alloy::{
     primitives::{keccak256, Address},
     providers::WsConnect,
@@ -8,8 +10,6 @@ use alloy::{
 };
 use incredible_operator::{client::ClientAggregator, error::OperatorError};
 
-use alloy::primitives::U256;
-use alloy::providers::{Provider, ProviderBuilder};
 use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
 use eigensdk::client_eth::instrumented_client::InstrumentedClient;
 use eigensdk::crypto_bls::BlsKeyPair;
@@ -23,6 +23,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
     self, NewTaskCreated,
 };
 use incredible_config::IncredibleConfig;
+use rand::Rng;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use tracing::info;
 
@@ -45,7 +46,7 @@ pub struct OperatorBuilder {
 
     operator_state_retriever: Address,
 
-    slash_simulate: bool,
+    times_failing: u32,
 }
 
 impl OperatorBuilder {
@@ -66,7 +67,6 @@ impl OperatorBuilder {
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
         let operator_address = config.operator_2_address()?;
-        let slash = config.slash_simulate();
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
             ws_rpc_url: config.ws_rpc_url(),
@@ -76,7 +76,7 @@ impl OperatorBuilder {
             client,
             registry_coordinator: registry_coordinator_addr,
             operator_state_retriever: operator_statr_retriever_addr,
-            slash_simulate: slash,
+            times_failing: config.operator_2_times_failing()?,
         })
     }
 
@@ -91,10 +91,15 @@ impl OperatorBuilder {
         #[allow(unused_assignments)]
         let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
 
-        let num_squared = if self.slash_simulate {
-            U256::from(24) // not a perfect square, so it can't be correct in any input
+        let mut rng = rand::rng();
+        let should_fail = rng.random_bool(self.times_failing as f64 / 100.0);
+
+        let num_squared = if should_fail {
+            info!("operator2 : incorrect answer");
+            U256::from(28) // Incorrect answer
         } else {
-            number_to_be_squared * number_to_be_squared
+            info!("operator2 : correct answer");
+            number_to_be_squared * number_to_be_squared // Correct answer
         };
 
         TaskResponse {

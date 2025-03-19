@@ -410,7 +410,8 @@ mod tests {
     operator_1_token_amount = "5000000000000000000000"
     operator_2_token_amount = "7000000000000000000000"
     allocation_delay = "1"
-    slash_simulate = false
+    operator_1_times_failing = "90"
+    operator_2_times_failing = "10"
 
     [aggregator_config]
     ip_address = "127.0.0.1:8080"

@@ -49,11 +49,11 @@ contract IncredibleSquaringTaskManager is
 
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
 
+    address public serviceManager;
     address public aggregator;
     address public generator;
     address public instantSlasher;
     address public allocationManager;
-    address public serviceManager;
 
     /* MODIFIERS */
     modifier onlyAggregator() {
@@ -71,11 +71,9 @@ contract IncredibleSquaringTaskManager is
     constructor(
         ISlashingRegistryCoordinator _slashingRegistryCoordinator,
         IPauserRegistry _pauserRegistry,
-        uint32 _taskResponseWindowBlock,
-        address _serviceManager
+        uint32 _taskResponseWindowBlock
     ) BLSSignatureChecker(_slashingRegistryCoordinator) Pausable(_pauserRegistry) {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
-        serviceManager = _serviceManager;
     }
 
     function initialize(
@@ -83,13 +81,15 @@ contract IncredibleSquaringTaskManager is
         address _aggregator,
         address _generator,
         address _allocationManager,
-        address _slasher
+        address _slasher,
+        address _serviceManager
     ) public initializer {
         _transferOwnership(initialOwner);
         aggregator = _aggregator;
         generator = _generator;
         allocationManager = _allocationManager;
         instantSlasher = _slasher;
+        serviceManager = _serviceManager;
     }
 
     /* FUNCTIONS */
@@ -242,7 +242,7 @@ contract IncredibleSquaringTaskManager is
                 for (uint256 k = 0; k < addressOfNonSigningOperators.length; k++) {
                     if (operatorAddress == addressOfNonSigningOperators[k]) {
                         // if the operator was a non-signer, then we set the flag to false
-                        wasSigningOperator == false;
+                        wasSigningOperator = false;
                         break;
                     }
                 }
