@@ -153,7 +153,16 @@ impl Aggregator {
     ) -> eyre::Result<()> {
         info!("Starting aggregator");
 
-        let aggregator = Arc::new(tokio::sync::Mutex::new(self));
+        let Self {
+            avs_writer,
+            port_address,
+            tasks,
+            tasks_responses,
+            service_handle,
+        } = self;
+
+        let task_responses = Arc::new(tokio::sync::Mutex::new(tasks_responses));
+        let tasks = Arc::new(tokio::sync::Mutex::new(tasks));
 
         // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
         // 1) Process signatures
@@ -165,7 +174,9 @@ impl Aggregator {
         ));
         // 3) Process aggregator responses
         let responses_handle = tokio::spawn(Self::process_aggregator_responses(
-            Arc::clone(&aggregator),
+            Arc::clone(&tasks),
+            Arc::clone(&task_responses),
+            avs_writer,
             aggregator_response,
         ));
 
@@ -362,7 +373,11 @@ impl Aggregator {
     ///
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_aggregator_responses(
-        aggregator: Arc<tokio::sync::Mutex<Self>>,
+        tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
+        task_responses: Arc<
+            tokio::sync::Mutex<HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>>,
+        >,
+        avs_writer: AvsWriter,
         mut aggregate_receiver_channel: AggregateReceiver,
     ) -> eyre::Result<()> {
         loop {
@@ -381,18 +396,22 @@ impl Aggregator {
                 continue;
             };
 
-            if let Some(task_response) = {
-                let lock = aggregator.lock().await;
-                lock.tasks_responses
-                    .get(&service_response.task_index)
-                    .and_then(|map| map.get(&service_response.task_response_digest))
-                    .cloned()
-            } {
-                aggregator
-                    .lock()
-                    .await
-                    .send_aggregated_response_to_contract(service_response, task_response)
-                    .await?;
+            let task_response = task_responses
+                .lock()
+                .await
+                .get(&service_response.task_index)
+                .and_then(|map| map.get(&service_response.task_response_digest))
+                .cloned();
+
+            if let Some(task_response) = task_response {
+                let tasks_lock = tasks.lock().await;
+                send_aggregated_response_to_contract(
+                    &tasks_lock,
+                    &avs_writer,
+                    task_response,
+                    service_response,
+                )
+                .await?;
             } else {
                 info!(
                     "Not found task_response for task_index: {}",
@@ -400,63 +419,6 @@ impl Aggregator {
                 );
             }
         }
-    }
-
-    /// Sends the aggregated response to the contract
-    ///
-    /// # Arguments
-    ///
-    /// * [`BlsAggregationServiceResponse`] - The aggregated response
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn send_aggregated_response_to_contract(
-        &self,
-        response: BlsAggregationServiceResponse,
-        task_response: TaskResponse,
-    ) -> Result<(), AggregatorError> {
-        let mut non_signer_pub_keys = Vec::<G1Point>::new();
-        for pub_key in response.non_signers_pub_keys_g1.iter() {
-            if pub_key.g1().x().is_some() {
-                let g1 = convert_to_g1_point(pub_key.g1())?;
-                non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
-            } else {
-                info!(
-                    "Zero non_signers for the task index :{:?}",
-                    response.task_index
-                );
-            }
-        }
-
-        let mut quorum_apks = Vec::<G1Point>::new();
-        for pub_key in response.quorum_apks_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1())?;
-            quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
-        }
-
-        let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
-            nonSignerPubkeys: non_signer_pub_keys,
-            nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
-            quorumApks: quorum_apks,
-            apkG2: G2Point {
-                X: convert_to_g2_point(response.signers_apk_g2.g2())?.X,
-                Y: convert_to_g2_point(response.signers_apk_g2.g2())?.Y,
-            },
-            sigma: G1Point {
-                X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.X,
-                Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.Y,
-            },
-            quorumApkIndices: response.quorum_apk_indices,
-            totalStakeIndices: response.total_stake_indices,
-            nonSignerStakeIndices: response.non_signer_stake_indices,
-        };
-
-        let task = &self.tasks[&response.task_index];
-        self.avs_writer
-            .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
-            .await?;
-        Ok(())
     }
 }
 
@@ -479,6 +441,65 @@ fn check_double_mapping(
     outer_map
         .get(&outer_key)
         .and_then(|inner_map| inner_map.get(&inner_key))
+}
+
+// TODO: update docs
+/// Sends the aggregated response to the contract
+///
+/// # Arguments
+///
+/// * [`BlsAggregationServiceResponse`] - The aggregated response
+///
+/// # Returns
+///
+/// * `eyre::Result<()>` - The result of the operation
+pub async fn send_aggregated_response_to_contract(
+    tasks: &HashMap<u32, Task>,
+    avs_writer: &AvsWriter,
+    task_response: TaskResponse,
+    response: BlsAggregationServiceResponse,
+) -> Result<(), AggregatorError> {
+    let mut non_signer_pub_keys = Vec::<G1Point>::new();
+    for pub_key in response.non_signers_pub_keys_g1.iter() {
+        if pub_key.g1().x().is_some() {
+            let g1 = convert_to_g1_point(pub_key.g1())?;
+            non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
+        } else {
+            info!(
+                "Zero non_signers for the task index :{:?}",
+                response.task_index
+            );
+        }
+    }
+
+    let mut quorum_apks = Vec::<G1Point>::new();
+    for pub_key in response.quorum_apks_g1.iter() {
+        let g1 = convert_to_g1_point(pub_key.g1())?;
+        quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
+    }
+
+    let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
+        nonSignerPubkeys: non_signer_pub_keys,
+        nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
+        quorumApks: quorum_apks,
+        apkG2: G2Point {
+            X: convert_to_g2_point(response.signers_apk_g2.g2())?.X,
+            Y: convert_to_g2_point(response.signers_apk_g2.g2())?.Y,
+        },
+        sigma: G1Point {
+            X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.X,
+            Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.Y,
+        },
+        quorumApkIndices: response.quorum_apk_indices,
+        totalStakeIndices: response.total_stake_indices,
+        nonSignerStakeIndices: response.non_signer_stake_indices,
+    };
+
+    let task = &tasks[&response.task_index];
+    avs_writer
+        .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
+        .await?;
+    Ok(())
 }
 
 #[cfg(test)]
