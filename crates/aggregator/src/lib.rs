@@ -166,7 +166,11 @@ impl Aggregator {
 
         // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
         // 1) Process signatures
-        let server_handle = tokio::spawn(Self::start_server(Arc::clone(&aggregator)));
+        let server_handle = tokio::spawn(Self::start_server(
+            port_address,
+            service_handle.clone(),
+            task_responses.clone(),
+        ));
         // 2) Process tasks
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
@@ -198,19 +202,29 @@ impl Aggregator {
     ///
     /// # Arguments
     ///
-    /// * `aggregator` - The aggregator
+    /// * `port_address` - The socket address for the server
+    /// * `service_handle` - The service handle to process the signature
+    /// * `task_responses` - The task responses map
     ///
     /// # Returns
     ///
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn start_server(
-        aggregator: Arc<tokio::sync::Mutex<Self>>,
+        port_address: String,
+        service_handle: ServiceHandle,
+        task_responses: Arc<
+            tokio::sync::Mutex<HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>>,
+        >,
     ) -> eyre::Result<(), AggregatorError> {
         let mut io = IoHandler::new();
+        let service_handle_clone = service_handle.clone();
+        let task_responses_clone = Arc::clone(&task_responses);
         io.add_method("process_signed_task_response", {
-            let aggregator = Arc::clone(&aggregator);
+            let service_handle = service_handle_clone.clone();
+            let task_responses = Arc::clone(&task_responses_clone);
             move |params: Params| {
-                let aggregator = Arc::clone(&aggregator);
+                let service_handle = service_handle.clone();
+                let task_responses = Arc::clone(&task_responses);
                 async move {
                     let signed_task_response: SignedTaskResponse = match params {
                         Params::Map(map) => serde_json::from_value(map["params"].clone()).expect(
@@ -219,11 +233,13 @@ impl Aggregator {
                         _ => return Err(Error::invalid_params("Expected a map")),
                     };
                     // Call the process_signed_task_response function
-                    let result = aggregator
-                        .lock()
-                        .await
-                        .process_signed_task_response(signed_task_response)
-                        .await;
+                    let mut task_responses_lock = task_responses.lock().await;
+                    let result = Self::process_signed_task_response(
+                        signed_task_response,
+                        &service_handle,
+                        &mut task_responses_lock,
+                    )
+                    .await;
 
                     match result {
                         Ok(_) => Ok(Value::Bool(true)),
@@ -232,7 +248,7 @@ impl Aggregator {
                 }
             }
         });
-        let socket: SocketAddr = aggregator.lock().await.port_address.parse().map_err(|e| {
+        let socket: SocketAddr = port_address.parse().map_err(|e| {
             AggregatorError::IOError(std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
         })?;
         let server = ServerBuilder::new(io)
@@ -244,6 +260,58 @@ impl Aggregator {
         info!("Server running at {}", socket);
 
         server.wait();
+
+        Ok(())
+    }
+
+    /// Processes the signed task response
+    ///
+    /// # Arguments
+    ///
+    /// * [`SignedTaskResponse`] - The signed task response
+    /// * `service_handle` - The service handle to process the signature
+    /// * `task_responses` - The task responses map
+    ///
+    /// # Returns
+    ///
+    /// * `eyre::Result<()>` - The result of the operation
+    pub async fn process_signed_task_response(
+        signed_task_response: SignedTaskResponse,
+        service_handle: &ServiceHandle,
+        task_responses: &mut HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+    ) -> Result<(), AggregatorError> {
+        let task_index = signed_task_response.task_response.referenceTaskIndex;
+
+        let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
+            &signed_task_response.task_response,
+        ));
+
+        let signature = signed_task_response.signature();
+        let operator_id = signed_task_response.operator_id();
+
+        let result = service_handle
+            .process_signature(TaskSignature::new(
+                task_index,
+                task_response_digest,
+                signature,
+                operator_id,
+            ))
+            .await;
+
+        if result.is_err() {
+            info!("Response received for task that was already completed");
+            // TODO: Review if we need to return an error here
+            return Ok(());
+        }
+
+        let should_insert =
+            check_double_mapping(task_responses, task_index, task_response_digest).is_none();
+
+        if should_insert {
+            let mut inner_map = HashMap::new();
+            inner_map.insert(task_response_digest, signed_task_response.task_response);
+            task_responses.insert(task_index, inner_map);
+        }
 
         Ok(())
     }
@@ -300,59 +368,6 @@ impl Aggregator {
                 .initialize_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
-        }
-
-        Ok(())
-    }
-
-    /// Processes the signed task response
-    ///
-    /// # Arguments
-    ///
-    /// * [`SignedTaskResponse`] - The signed task response
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn process_signed_task_response(
-        &mut self,
-        signed_task_response: SignedTaskResponse,
-    ) -> Result<(), AggregatorError> {
-        let task_index = signed_task_response.task_response.referenceTaskIndex;
-
-        let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
-            &signed_task_response.task_response,
-        ));
-
-        let signature = signed_task_response.signature();
-        let operator_id = signed_task_response.operator_id();
-
-        let handle = &self.service_handle;
-        let result = handle
-            .process_signature(TaskSignature::new(
-                task_index,
-                task_response_digest,
-                signature,
-                operator_id,
-            ))
-            .await;
-
-        if result.is_err() {
-            info!("Response received for task that was already completed");
-            // TODO: Review if we need to return an error here
-            return Ok(());
-        }
-
-        let should_insert =
-            check_double_mapping(&self.tasks_responses, task_index, task_response_digest).is_none();
-
-        if should_insert {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
-                task_response_digest,
-                signed_task_response.clone().task_response,
-            );
-            self.tasks_responses.insert(task_index, inner_map);
         }
 
         Ok(())
