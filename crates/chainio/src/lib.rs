@@ -9,8 +9,8 @@ use alloy::{
     primitives::{Address, U256},
     rpc::types::TransactionReceipt,
 };
-use eigen_types::operator::{QuorumNum, QuorumThresholdPercentage};
 use eigensdk::common::{get_provider, get_signer};
+use eigensdk::types::operator::{QuorumNum, QuorumThresholdPercentage};
 use error::ChainIoError;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
