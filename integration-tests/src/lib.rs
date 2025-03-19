@@ -356,7 +356,6 @@ mod tests {
                 .await
                 .to_string(),
         );
-        // incredible_config.set_slash_simulate(true);
         incredible_config.set_permission_controller_address(
             get_permission_controller_address(ANVIL_HTTP_URL.to_string())
                 .await
