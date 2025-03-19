@@ -1,15 +1,13 @@
 use std::sync::Arc;
 
+use alloy::primitives::U256;
+use alloy::providers::{Provider, ProviderBuilder};
 use alloy::{
     primitives::{keccak256, Address},
     providers::WsConnect,
     rpc::types::Filter,
     sol_types::{SolEvent, SolValue},
 };
-use incredible_operator::{client::ClientAggregator, error::OperatorError};
-use rand::Rng;
-use alloy::primitives::U256;
-use alloy::providers::{Provider, ProviderBuilder};
 use eigen_types::operator::OperatorId;
 use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
 use eigensdk::client_eth::instrumented_client::InstrumentedClient;
@@ -23,6 +21,8 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
     self, NewTaskCreated,
 };
 use incredible_config::IncredibleConfig;
+use incredible_operator::{client::ClientAggregator, error::OperatorError};
+use rand::Rng;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use tracing::info;
 

@@ -50,6 +50,7 @@ library IncredibleSquaringDeploymentLib {
     using Strings for *;
     using UpgradeableProxyLib for address;
 
+    string internal constant MIDDLEWARE_VERSION = "v1.4.0-testnet-holesky";
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     struct DeploymentData {
@@ -150,7 +151,8 @@ library IncredibleSquaringDeploymentLib {
                 IIndexRegistry(result.indexRegistry),
                 ISocketRegistry(result.socketRegistry),
                 IAllocationManager(core.allocationManager),
-                IPauserRegistry(coredata.pauserRegistry)
+                IPauserRegistry(coredata.pauserRegistry),
+                MIDDLEWARE_VERSION
             )
         );
 
@@ -206,7 +208,7 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgradeAndCall(
             result.slashingRegistryCoordinator, slashingRegistryCoordinatorImpl, upgradeCall
         );
-     
+
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
@@ -216,7 +218,7 @@ library IncredibleSquaringDeploymentLib {
             IPermissionController(core.permissionController),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
-     
+
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
             IPauserRegistry(address(pausercontract)),
@@ -229,11 +231,18 @@ library IncredibleSquaringDeploymentLib {
             address(incredibleSquaringServiceManagerImpl),
             servicemanagerupgradecall
         );
-    
+
         console2.log(result.incredibleSquaringServiceManager);
         bytes memory taskmanagerupgradecall = abi.encodeCall(
             IncredibleSquaringTaskManager.initialize,
-            (admin, isConfig.aggregator_addr, isConfig.task_generator_addr, core.allocationManager, result.slasher,result.incredibleSquaringServiceManager)
+            (
+                admin,
+                isConfig.aggregator_addr,
+                isConfig.task_generator_addr,
+                core.allocationManager,
+                result.slasher,
+                result.incredibleSquaringServiceManager
+            )
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)

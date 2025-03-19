@@ -143,9 +143,7 @@ impl AvsWriter {
                 }
             }
 
-            Err(e) => {
-                Err(ChainIoError::ContractError(e))
-            }
+            Err(e) => Err(ChainIoError::ContractError(e)),
         }
     }
 
@@ -170,7 +168,8 @@ impl AvsWriter {
             .await?
             .get_receipt()
             .await?;
-        info!("receipt for response {:?}", receipt.transaction_hash);
+        info!("receipt for response{:?}", receipt.transaction_hash);
+
         Ok(())
     }
 }

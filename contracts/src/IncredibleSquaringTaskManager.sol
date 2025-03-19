@@ -148,7 +148,6 @@ contract IncredibleSquaringTaskManager is
         for (uint256 i = 0; i < quorumNumbers.length; i++) {
             // we don't check that the quorumThresholdPercentages are not >100 because a greater value would trivially fail the check, implying
             // signed stake > total stake
-            require(quorumStakeTotals.totalStakeForQuorum[i] == 12000,"tttttt");
             require(
                 quorumStakeTotals.signedStakeForQuorum[i] * _THRESHOLD_DENOMINATOR
                     >= quorumStakeTotals.totalStakeForQuorum[i] * uint8(quorumThresholdPercentage),
