@@ -21,7 +21,6 @@ incredible-operator.workspace = true
 
 # eigensdk-rs
 eigensdk.workspace = true
-eigen-types.workspace = true
 
 rust-bls-bn254.workspace = true
 
@@ -36,8 +35,6 @@ serde_json.workspace = true
 toml.workspace = true
 tracing.workspace = true
 rand_core.workspace = true
-eigen-metrics-collectors-rpc-calls.workspace = true
-eigen-utils.workspace = true
 
 [dev-dependencies]
 incredible-testing-utils.workspace = true

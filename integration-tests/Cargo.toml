@@ -10,8 +10,6 @@ description = "integration tests for incredible avs"
 
 [dependencies]
 alloy = { version = "0.9", features = ["full","signer-keystore","node-bindings"] }
-eigensdk.workspace = true
-eigen-utils.workspace = true
 incredible-config = {path = "../crates/config/"}
 incredible-challenger = {path = "../crates/challenger/"}
 incredible-bindings = {path = "../crates/bindings/"}
@@ -21,6 +19,10 @@ incredible-operator = {path = "../crates/operator/" , features = ["integration_t
 incredible-operator-2 = {path = "../crates/operator_2/" , features = ["integration_tests"]}
 incredible-aggregator = {path = "../crates/aggregator/"}
 toml = "0.8"
+
+# eigen-rs
+eigensdk.workspace = true
+
 [dev-dependencies]
 tokio = { version = "1.21", default-features = false }
 eyre = "0.6.12"

@@ -18,8 +18,9 @@ tracing.workspace = true
 metrics.workspace = true
 metrics-util.workspace = true
 
-
+# eigensdk-rs
 eigensdk.workspace = true
+
 #incredible
 incredible-operator-2.workspace = true
 incredible-config.workspace = true
@@ -28,6 +29,7 @@ incredible-challenger.workspace = true
 incredible-aggregator.workspace = true
 incredible-task-generator.workspace = true
 incredible-metrics.workspace = true
+
 #tokio
 tokio.workspace = true
 

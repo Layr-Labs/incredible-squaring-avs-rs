@@ -5,10 +5,6 @@ use alloy::providers::Provider;
 use alloy::signers::local::{LocalSigner, PrivateKeySigner};
 use clap::value_parser;
 use clap::{Args, Parser};
-use eigen_types::operator::Operator;
-use eigen_utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
-use eigen_utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
-use eigen_utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 use eigensdk::client_elcontracts::reader::ELChainReader;
 use eigensdk::client_elcontracts::{error::ElContractsError, writer::ELChainWriter};
 use eigensdk::common::{get_provider, get_signer};
@@ -20,6 +16,12 @@ use eigensdk::testing_utils::anvil_constants::{
     get_permission_controller_address, get_rewards_coordinator_address,
     get_strategy_manager_address, ANVIL_HTTP_URL,
 };
+use eigensdk::types::operator::Operator;
+use eigensdk::utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
+use eigensdk::utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
+use eigensdk::utils::slashing::middleware::registrycoordinator::ISlashingRegistryCoordinatorTypes::OperatorSetParam;
+use eigensdk::utils::slashing::middleware::registrycoordinator::IStakeRegistryTypes::StrategyParams;
+use eigensdk::utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
 use incredible_testing_utils::{
@@ -789,19 +791,16 @@ pub async fn create_total_delegated_stake_quorum(
     let registry_coordinator_instance =
         RegistryCoordinator::new(registry_coordinator_address, get_signer(&pvt_key, rpc_url));
 
-    let operator_set_param =
-        eigen_utils::slashing::middleware::registrycoordinator::ISlashingRegistryCoordinatorTypes::OperatorSetParam {
-            maxOperatorCount: 3,
-            kickBIPsOfOperatorStake: 100,
-            kickBIPsOfTotalStake: 1000,
-        };
+    let operator_set_param = OperatorSetParam {
+        maxOperatorCount: 3,
+        kickBIPsOfOperatorStake: 100,
+        kickBIPsOfTotalStake: 1000,
+    };
     let minimum_stake: U96 = U96::from(0);
-    let strategy_params = vec![
-        eigen_utils::slashing::middleware::registrycoordinator::IStakeRegistryTypes::StrategyParams {
-            strategy: strategy_address,
-            multiplier: U96::from(1),
-        },
-    ];
+    let strategy_params = vec![StrategyParams {
+        strategy: strategy_address,
+        multiplier: U96::from(1),
+    }];
     let s = registry_coordinator_instance
         .createTotalDelegatedStakeQuorum(operator_set_param, minimum_stake, strategy_params)
         .send()

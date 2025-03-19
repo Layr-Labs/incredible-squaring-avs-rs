@@ -3,7 +3,6 @@ use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
-use eigen_types::avs::TaskResponseDigest;
 use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
 use eigensdk::common::get_ws_provider;
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
@@ -15,6 +14,7 @@ use eigensdk::services_blsaggregation::bls_agg::{
 use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
 use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
+use eigensdk::types::avs::TaskResponseDigest;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureCheckerTypes::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{

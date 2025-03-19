@@ -17,11 +17,11 @@ thiserror.workspace = true
 incredible-bindings.workspace = true
 eyre.workspace = true
 futures-util.workspace = true
+metrics.workspace = true
+metrics-util.workspace = true
 
 # eigen-rs
 eigensdk.workspace = true
-metrics.workspace = true
-metrics-util.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
