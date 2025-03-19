@@ -170,7 +170,8 @@ impl Aggregator {
         // 2) Process tasks
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
-            Arc::clone(&aggregator),
+            Arc::clone(&tasks),
+            service_handle,
         ));
         // 3) Process aggregator responses
         let responses_handle = tokio::spawn(Self::process_aggregator_responses(
@@ -259,7 +260,8 @@ impl Aggregator {
     /// * `eyre::Result<()>` - The result of the operation
     pub async fn process_tasks(
         ws_rpc_url: String,
-        aggregator: Arc<tokio::sync::Mutex<Self>>,
+        tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
+        service_handle: ServiceHandle,
     ) -> eyre::Result<()> {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new().on_ws(ws).await?;
@@ -271,11 +273,7 @@ impl Aggregator {
         while let Some(log) = stream.next().await {
             let NewTaskCreated { taskIndex, task } = log.log_decode()?.inner.data;
 
-            aggregator
-                .lock()
-                .await
-                .tasks
-                .insert(taskIndex, task.clone());
+            tasks.lock().await.insert(taskIndex, task.clone());
 
             let mut quorum_nums: Vec<u8> = vec![];
             let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
@@ -298,10 +296,7 @@ impl Aggregator {
                 time_to_expiry,
             );
 
-            let _ = aggregator
-                .lock()
-                .await
-                .service_handle
+            let _ = service_handle
                 .initialize_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
