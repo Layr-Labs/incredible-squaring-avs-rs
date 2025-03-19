@@ -22,7 +22,6 @@ import {StrategyBaseTVLLimits} from "@eigenlayer/contracts/strategies/StrategyBa
 import {PauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ISignatureUtils} from "@eigenlayer/contracts/interfaces/ISignatureUtils.sol";
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
 import {IBeacon} from "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 import {IStrategyManager} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
@@ -33,6 +32,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {StrategyFactory} from "@eigenlayer/contracts/strategies/StrategyFactory.sol";
 import {IAllocationManager} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 import {UpgradeableProxyLib} from "./UpgradeableProxyLib.sol";
+import {IRewardsCoordinatorTypes} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 
 library CoreDeploymentLib {
     using stdJson for *;
@@ -40,6 +40,7 @@ library CoreDeploymentLib {
     using UpgradeableProxyLib for address;
 
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    string internal constant MIDDLEWARE_VERSION = "v1.4.0-testnet-holesky";
 
     struct StrategyManagerConfig {
         uint256 initPausedStatus;
@@ -117,24 +118,30 @@ library CoreDeploymentLib {
                 IPauserRegistry(result.pauserRegistry),
                 IPermissionController(result.permissionController),
                 // IAVSDirectory(result.avsDirectory),
-                uint32(0) // TODO: check minWithdrawalDelay
+                uint32(0), // TODO: check minWithdrawalDelay
+                MIDDLEWARE_VERSION
             )
         );
-        address permissionControllerImpl = address(new PermissionController());
+        address permissionControllerImpl = address(new PermissionController(MIDDLEWARE_VERSION));
 
         address avsDirectoryImpl = address(
             new AVSDirectory(
                 IDelegationManager(result.delegationManager),
-                IPauserRegistry(result.pauserRegistry) // _DEALLOCATION_DELAY: 17.5 days in seconds),
+                IPauserRegistry(result.pauserRegistry), // _DEALLOCATION_DELAY: 17.5 days in seconds),
+                MIDDLEWARE_VERSION
             )
         );
 
         address strategyManagerImpl = address(
-            new StrategyManager(IDelegationManager(result.delegationManager), IPauserRegistry(result.pauserRegistry))
+            new StrategyManager(
+                IDelegationManager(result.delegationManager), IPauserRegistry(result.pauserRegistry), MIDDLEWARE_VERSION
+            )
         );
 
         address strategyFactoryImpl = address(
-            new StrategyFactory(IStrategyManager(result.strategyManager), IPauserRegistry(result.pauserRegistry))
+            new StrategyFactory(
+                IStrategyManager(result.strategyManager), IPauserRegistry(result.pauserRegistry), MIDDLEWARE_VERSION
+            )
         );
 
         address allocationManagerImpl = address(
@@ -144,7 +151,8 @@ library CoreDeploymentLib {
                 IPermissionController(result.permissionController),
                 // IAVSDirectory(result.avsDirectory),
                 uint32(0), // _DEALLOCATION_DELAY
-                uint32(0) // _ALLOCATION_CONFIGURATION_DELAY
+                uint32(0), // _ALLOCATION_CONFIGURATION_DELAY
+                MIDDLEWARE_VERSION
             )
         );
 
@@ -162,7 +170,8 @@ library CoreDeploymentLib {
                 IETHPOSDeposit(ethPOSDeposit),
                 IBeacon(result.eigenPodBeacon),
                 IDelegationManager(result.delegationManager),
-                IPauserRegistry(result.pauserRegistry)
+                IPauserRegistry(result.pauserRegistry),
+                MIDDLEWARE_VERSION
             )
         );
 
@@ -172,27 +181,39 @@ library CoreDeploymentLib {
         uint32 MAX_RETROACTIVE_LENGTH = uint32(configData.rewardsCoordinator.maxRetroactiveLength);
         uint32 MAX_FUTURE_LENGTH = 1 days;
         uint32 GENESIS_REWARDS_TIMESTAMP = 10 days;
-        address rewardsCoordinatorImpl = address(
-            new RewardsCoordinator(
-                IDelegationManager(result.delegationManager),
-                IStrategyManager(result.strategyManager),
-                IAllocationManager(result.allocationManager),
-                IPauserRegistry(result.pauserRegistry),
-                IPermissionController(result.permissionController),
-                CALCULATION_INTERVAL_SECONDS,
-                MAX_REWARDS_DURATION,
-                MAX_RETROACTIVE_LENGTH,
-                MAX_FUTURE_LENGTH,
-                GENESIS_REWARDS_TIMESTAMP
-            )
-        );
+
+        IRewardsCoordinatorTypes.RewardsCoordinatorConstructorParams memory rewardsCoordinatorConfig =
+        IRewardsCoordinatorTypes.RewardsCoordinatorConstructorParams({
+            delegationManager: IDelegationManager(result.delegationManager),
+            strategyManager: IStrategyManager(result.strategyManager),
+            allocationManager: IAllocationManager(result.allocationManager),
+            pauserRegistry: IPauserRegistry(result.pauserRegistry),
+            permissionController: IPermissionController(result.permissionController),
+            CALCULATION_INTERVAL_SECONDS: CALCULATION_INTERVAL_SECONDS,
+            MAX_REWARDS_DURATION: MAX_REWARDS_DURATION,
+            MAX_RETROACTIVE_LENGTH: MAX_RETROACTIVE_LENGTH,
+            MAX_FUTURE_LENGTH: MAX_FUTURE_LENGTH,
+            GENESIS_REWARDS_TIMESTAMP: GENESIS_REWARDS_TIMESTAMP,
+            version: MIDDLEWARE_VERSION
+        });
+
+        address rewardsCoordinatorImpl = address(new RewardsCoordinator(rewardsCoordinatorConfig));
 
         uint64 GENESIS_TIME = 1_564_000;
 
-        address eigenPodImpl =
-            address(new EigenPod(IETHPOSDeposit(ethPOSDeposit), IEigenPodManager(result.eigenPodManager), GENESIS_TIME));
-        address baseStrategyImpl =
-            address(new StrategyBase(IStrategyManager(result.strategyManager), IPauserRegistry(result.pauserRegistry)));
+        address eigenPodImpl = address(
+            new EigenPod(
+                IETHPOSDeposit(ethPOSDeposit),
+                IEigenPodManager(result.eigenPodManager),
+                GENESIS_TIME,
+                MIDDLEWARE_VERSION
+            )
+        );
+        address baseStrategyImpl = address(
+            new StrategyBase(
+                IStrategyManager(result.strategyManager), IPauserRegistry(result.pauserRegistry), MIDDLEWARE_VERSION
+            )
+        );
         /// TODO: PauserRegistry isn't upgradeable
 
         // Deploy and configure the strategy beacon
