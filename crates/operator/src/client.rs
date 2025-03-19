@@ -1,7 +1,6 @@
 use alloy::rpc::client::{ReqwestClient, RpcClient};
 use eyre::Result;
 pub use incredible_aggregator::rpc_server::SignedTaskResponse;
-use reqwest::Client;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
 use tracing::{debug, info};
@@ -10,7 +9,7 @@ use tracing::{debug, info};
 #[derive(Debug, Clone)]
 pub struct ClientAggregator {
     /// Alloy rpc client to send requests to aggregator
-    pub client: Option<RpcClient<alloy::transports::http::Http<Client>>>,
+    pub client: Option<RpcClient>,
     aggregator_ip_port_address: String,
 }
 
