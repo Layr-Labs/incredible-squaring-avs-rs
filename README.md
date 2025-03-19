@@ -41,8 +41,10 @@ cargo run --bin incredible-squaring-avs  start
 cargo run --bin incredible-squaring-avs  start --config-path <PATH>
 ```
 - Simulate slashing
+Run this command. Edit the `operator_1_times_failing` and `operator_2_times_failing` variables in config file based on your preference of they submitting incorrect answer(thereby getting slashed) from 0 to 100.
+
 ```
-cargo run --bin incredible-squaring-avs  start --slash-simulate
+cargo run --bin incredible-squaring-avs  start
 ```
 
 We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rust/tree/master/incredible_config.toml) for reference.

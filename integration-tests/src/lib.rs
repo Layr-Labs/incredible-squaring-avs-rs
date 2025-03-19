@@ -8,8 +8,8 @@ mod tests {
     use eigensdk::logging::{init_logger, log_level::LogLevel};
     use eigensdk::testing_utils::anvil_constants::{
         get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
-        get_permission_controller_address, get_rewards_coordinator_address,
-        get_strategy_manager_address,
+        get_erc20_mock_strategy, get_permission_controller_address,
+        get_rewards_coordinator_address, get_strategy_manager_address,
     };
     use incredible_aggregator::Aggregator;
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
@@ -61,8 +61,8 @@ mod tests {
     operator_1_token_amount = "5000000000000000000000"
     operator_2_token_amount = "7000000000000000000000"
     allocation_delay = "0"
-    slash_simulate = true
-
+    operator_1_times_failing = "100"
+    operator_2_times_failing = "100"
     [aggregator_config]
     ip_address = "127.0.0.1:8080"
 
@@ -346,7 +346,16 @@ mod tests {
                 .await
                 .to_string(),
         );
-        incredible_config.set_slash_simulate(true);
+        incredible_config.set_delegation_manager_addr(
+            get_delegation_manager_address(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
+        incredible_config.set_erc20_mock_strategy_address(
+            get_erc20_mock_strategy(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
         incredible_config.set_permission_controller_address(
             get_permission_controller_address(ANVIL_HTTP_URL.to_string())
                 .await

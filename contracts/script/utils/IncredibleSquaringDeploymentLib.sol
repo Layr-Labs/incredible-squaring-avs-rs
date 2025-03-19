@@ -50,8 +50,8 @@ library IncredibleSquaringDeploymentLib {
     using Strings for *;
     using UpgradeableProxyLib for address;
 
-    Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
     string internal constant MIDDLEWARE_VERSION = "v1.4.0-testnet-holesky";
+    Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     struct DeploymentData {
         address incredibleSquaringServiceManager;
@@ -129,20 +129,6 @@ library IncredibleSquaringDeploymentLib {
                 result.incredibleSquaringTaskManager
             )
         );
-        console2.log("pauser_registry");
-        console2.log(coredata.pauserRegistry);
-        console2.log("service_manager");
-        console2.log(result.incredibleSquaringServiceManager);
-        console2.log("stake_registry");
-        console2.log(result.stakeRegistry);
-        console2.log("bls_apk_registry");
-        console2.log(result.blsapkRegistry);
-        console2.log("index_registry");
-        console2.log(result.indexRegistry);
-        console2.log("avs_directory");
-        console2.log(core.avsDirectory);
-        console2.log("pauser_registry");
-        console2.log(coredata.pauserRegistry);
 
         address slashingRegistryCoordinatorImpl = address(
             new SlashingRegistryCoordinator(
@@ -208,8 +194,7 @@ library IncredibleSquaringDeploymentLib {
         UpgradeableProxyLib.upgradeAndCall(
             result.slashingRegistryCoordinator, slashingRegistryCoordinatorImpl, upgradeCall
         );
-        console2.log("allocation_manager");
-        console2.log(core.allocationManager);
+
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
@@ -219,13 +204,11 @@ library IncredibleSquaringDeploymentLib {
             IPermissionController(core.permissionController),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
-        console2.log("allocation_manager");
-        console2.log(core.allocationManager);
+
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
             IPauserRegistry(address(pausercontract)),
-            30,
-            result.incredibleSquaringServiceManager
+            30
         );
         bytes memory servicemanagerupgradecall =
             abi.encodeCall(IncredibleSquaringServiceManager.initialize, (admin, admin));
@@ -235,9 +218,17 @@ library IncredibleSquaringDeploymentLib {
             servicemanagerupgradecall
         );
 
+        console2.log(result.incredibleSquaringServiceManager);
         bytes memory taskmanagerupgradecall = abi.encodeCall(
             IncredibleSquaringTaskManager.initialize,
-            (admin, isConfig.aggregator_addr, isConfig.task_generator_addr, core.allocationManager, result.slasher)
+            (
+                admin,
+                isConfig.aggregator_addr,
+                isConfig.task_generator_addr,
+                core.allocationManager,
+                result.slasher,
+                result.incredibleSquaringServiceManager
+            )
         );
         UpgradeableProxyLib.upgradeAndCall(
             result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
