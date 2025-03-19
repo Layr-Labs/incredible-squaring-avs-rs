@@ -11,11 +11,11 @@ use incredible_operator::{client::ClientAggregator, error::OperatorError};
 #[cfg(feature = "integration_tests")]
 use alloy::primitives::U256;
 use alloy_provider::{Provider, ProviderBuilder};
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_client_eth::instrumented_client::InstrumentedClient;
-use eigen_crypto_bls::BlsKeyPair;
-use eigen_logging::get_logger;
 use eigen_types::operator::OperatorId;
+use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
+use eigensdk::client_eth::instrumented_client::InstrumentedClient;
+use eigensdk::crypto_bls::BlsKeyPair;
+use eigensdk::logging::get_logger;
 use eyre::Result;
 use futures_util::StreamExt;
 use incredible_aggregator::rpc_server::SignedTaskResponse;
@@ -175,7 +175,7 @@ mod tests {
     use alloy::primitives::U256;
     use ark_ec::AffineRepr;
     use ark_ff::PrimeField;
-    use eigen_crypto_bn254::utils::verify_message;
+    use eigensdk::crypto_bn254::utils::verify_message;
     use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::Task;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,

@@ -1,6 +1,6 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
-use eigen_common::{get_provider, get_ws_provider};
+use eigensdk::common::{get_provider, get_ws_provider};
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse, TaskResponseMetadata,
 };

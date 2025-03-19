@@ -3,18 +3,18 @@ use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
 use alloy::rpc::types::Filter;
 use alloy::sol_types::SolEvent;
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_common::get_ws_provider;
-use eigen_crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigen_logging::get_test_logger;
-use eigen_services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
-use eigen_services_blsaggregation::bls_agg::{
+use eigen_types::avs::TaskResponseDigest;
+use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
+use eigensdk::common::get_ws_provider;
+use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
+use eigensdk::logging::get_test_logger;
+use eigensdk::services_avsregistry::chaincaller::AvsRegistryServiceChainCaller;
+use eigensdk::services_blsaggregation::bls_agg::{
     AggregateReceiver, BlsAggregatorService, ServiceHandle, TaskMetadata,
 };
-use eigen_services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
-use eigen_services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
-use eigen_services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
-use eigen_types::avs::TaskResponseDigest;
+use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggregationServiceError;
+use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
+use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceInMemory;
 use futures_util::StreamExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureChecker::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
@@ -378,8 +378,8 @@ impl FakeAggregator {
 mod tests {
 
     use alloy::primitives::{FixedBytes, U256};
-    use eigen_crypto_bls::BlsKeyPair;
     use eigen_types::test::TestOperator;
+    use eigensdk::crypto_bls::BlsKeyPair;
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
         get_incredible_squaring_registry_coordinator,

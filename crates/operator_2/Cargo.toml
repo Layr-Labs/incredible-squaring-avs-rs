@@ -20,14 +20,10 @@ eyre.workspace = true
 futures-util.workspace = true
 incredible-operator.workspace = true
 
-# eigen-rs
-eigen-client-avsregistry.workspace = true
-eigen-crypto-bls.workspace = true
-eigen-cli.workspace = true
+# eigensdk-rs
+eigensdk.workspace = true
 eigen-types.workspace = true
-
 incredible-metrics.workspace = true
-
 rust-bls-bn254.workspace = true
 
 #incredible
@@ -40,11 +36,6 @@ serde_json.workspace = true
 toml.workspace = true
 tracing.workspace = true
 rand_core.workspace = true
-eigen-logging.workspace = true
-eigen-crypto-bn254.workspace = true
-eigen-metrics-collectors-rpc-calls.workspace = true
-eigen-client-eth.workspace = true
-eigen-utils.workspace = true
 
 [dev-dependencies]
 incredible-testing-utils.workspace = true
