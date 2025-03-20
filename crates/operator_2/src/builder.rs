@@ -125,7 +125,10 @@ impl OperatorBuilder {
             info!("Starting operator");
 
             let ws = WsConnect::new(self.ws_rpc_url.clone());
-            let provider = ProviderBuilder::new().on_ws(ws).await?;
+            let provider = ProviderBuilder::new()
+                .disable_recommended_fillers()
+                .on_ws(ws)
+                .await?;
 
             let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
             let sub = provider.subscribe_logs(&filter).await?;
@@ -256,6 +259,7 @@ mod tests {
                 .await
                 .to_string(),
         );
+        incredible_config.set_operator_2_times_failing("0".to_string());
         let operator_builder = OperatorBuilder::build(incredible_config, None)
             .await
             .unwrap();

@@ -322,7 +322,10 @@ impl Aggregator {
         service_handle: ServiceHandle,
     ) -> eyre::Result<()> {
         let ws = WsConnect::new(ws_rpc_url.clone());
-        let provider = ProviderBuilder::new().on_ws(ws).await?;
+        let provider = ProviderBuilder::new()
+            .disable_recommended_fillers()
+            .on_ws(ws)
+            .await?;
 
         let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
         let sub = provider.subscribe_logs(&filter).await?;
