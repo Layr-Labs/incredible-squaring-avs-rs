@@ -274,17 +274,11 @@ impl Aggregator {
             return Ok(());
         }
 
-        // TODO: simplify this
-        let should_insert = task_responses
-            .get(&task_index)
-            .and_then(|inner_map| inner_map.get(&task_response_digest))
-            .is_none();
-
-        if should_insert {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(task_response_digest, signed_task_response.task_response);
-            task_responses.insert(task_index, inner_map);
-        }
+        task_responses
+            .entry(task_index)
+            .or_insert_with(HashMap::new)
+            .entry(task_response_digest)
+            .or_insert(signed_task_response.task_response);
 
         Ok(())
     }
