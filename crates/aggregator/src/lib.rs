@@ -259,14 +259,9 @@ impl Aggregator {
         let signature = signed_task_response.signature();
         let operator_id = signed_task_response.operator_id();
 
-        let result = service_handle
-            .process_signature(TaskSignature::new(
-                task_index,
-                task_response_digest,
-                signature,
-                operator_id,
-            ))
-            .await;
+        let task_signature =
+            TaskSignature::new(task_index, task_response_digest, signature, operator_id);
+        let result = service_handle.process_signature(task_signature).await;
 
         if result.is_err() {
             info!("Response received for task that was already completed");
