@@ -247,38 +247,13 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let (aggregator, aggregate_receiver) =
-            Aggregator::new(incredible_config.clone()).await.unwrap();
+        let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
 
-        let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
-        let arc_agg_clone = Arc::clone(&arc_agg);
-        let arc_agg_for_server = Arc::clone(&arc_agg);
-
-        // Run process_tasks in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) =
-                    Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
-                        .await
-                {
-                    eprintln!("Process tasks error: {:?}", e);
-                }
-            });
-        });
-
-        // Run the server in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg_for_server)).await {
-                    eprintln!("Server error: {:?}", e);
-                }
-            });
-        });
-
-        tokio::spawn(async move {
-            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
+        let aggregator_handle = tokio::spawn(async move {
+            Aggregator::new(incredible_config.clone())
+                .await?
+                .start(ws_rpc_url)
                 .await
-                .unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -332,6 +307,9 @@ mod tests {
             ._0;
 
         assert!(!is_challenge_success);
+
+        assert!(!aggregator_handle.is_finished());
+        aggregator_handle.abort();
     }
 
     async fn test_incredible_squaring_with_challenger() {
@@ -442,38 +420,13 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let (aggregator, aggregate_receiver) =
-            Aggregator::new(incredible_config.clone()).await.unwrap();
+        let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
 
-        let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
-        let arc_agg_clone = Arc::clone(&arc_agg);
-        let arc_agg_for_server = Arc::clone(&arc_agg);
-
-        // Run process_tasks in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) =
-                    Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
-                        .await
-                {
-                    eprintln!("Process tasks error: {:?}", e);
-                }
-            });
-        });
-
-        // Run the server in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg_for_server)).await {
-                    eprintln!("Server error: {:?}", e);
-                }
-            });
-        });
-
-        tokio::spawn(async move {
-            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
+        let aggregator_handle = tokio::spawn(async move {
+            Aggregator::new(incredible_config.clone())
+                .await?
+                .start(ws_rpc_url)
                 .await
-                .unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -532,6 +485,9 @@ mod tests {
             ._0;
 
         assert!(is_challenge_success);
+
+        assert!(!aggregator_handle.is_finished());
+        aggregator_handle.abort();
     }
 
     #[tokio::test]
