@@ -259,6 +259,7 @@ mod tests {
                 .await
                 .to_string(),
         );
+        incredible_config.set_operator_2_times_failing("0".to_string());
         let operator_builder = OperatorBuilder::build(incredible_config, None)
             .await
             .unwrap();
