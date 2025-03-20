@@ -190,18 +190,8 @@ impl Aggregator {
         Ok(())
     }
 
-    /// Starts the RPC server
-    ///
-    /// # Arguments
-    ///
-    /// * `port_address` - The socket address for the server
-    /// * `service_handle` - The service handle to process the signature
-    /// * `task_responses` - The task responses map
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub fn start_server(
+    /// Starts the RPC server and returns a [`JoinHandle`] to it
+    fn start_server(
         port_address: String,
         service_handle: ServiceHandle,
         task_responses: Arc<
@@ -254,18 +244,8 @@ impl Aggregator {
         Ok(handle)
     }
 
-    /// Processes the signed task response
-    ///
-    /// # Arguments
-    ///
-    /// * [`SignedTaskResponse`] - The signed task response
-    /// * `service_handle` - The service handle to process the signature
-    /// * `task_responses` - The task responses map
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn process_signed_task_response(
+    /// Processes a signed task response received from an operator
+    async fn process_signed_task_response(
         signed_task_response: SignedTaskResponse,
         service_handle: &ServiceHandle,
         task_responses: &mut HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
@@ -294,6 +274,7 @@ impl Aggregator {
             return Ok(());
         }
 
+        // TODO: simplify this
         let should_insert =
             check_double_mapping(task_responses, task_index, task_response_digest).is_none();
 
@@ -306,17 +287,8 @@ impl Aggregator {
         Ok(())
     }
 
-    /// Processes the tasks
-    ///
-    /// # Arguments
-    ///
-    /// * `ws_rpc_url` - The websocket RPC URL
-    /// * `aggregator` - The aggregator
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn process_tasks(
+    /// Processes new tasks created in the task manager contract
+    async fn process_tasks(
         ws_rpc_url: String,
         tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
         service_handle: ServiceHandle,
@@ -366,16 +338,8 @@ impl Aggregator {
         Ok(())
     }
 
-    /// Processes the aggregator responses
-    ///
-    /// # Arguments
-    ///
-    /// * `aggregator` - The aggregator
-    ///
-    /// # Returns   
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn process_aggregator_responses(
+    /// Processes BLS Aggregator Service responses
+    async fn process_aggregator_responses(
         tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
         task_responses: Arc<
             tokio::sync::Mutex<HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>>,
@@ -446,17 +410,8 @@ fn check_double_mapping(
         .and_then(|inner_map| inner_map.get(&inner_key))
 }
 
-// TODO: update docs
-/// Sends the aggregated response to the contract
-///
-/// # Arguments
-///
-/// * [`BlsAggregationServiceResponse`] - The aggregated response
-///
-/// # Returns
-///
-/// * `eyre::Result<()>` - The result of the operation
-pub async fn send_aggregated_response_to_contract(
+/// Sends an aggregated task response to the contract
+async fn send_aggregated_response_to_contract(
     tasks: &HashMap<u32, Task>,
     avs_writer: &AvsWriter,
     task_response: TaskResponse,
