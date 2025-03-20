@@ -2,8 +2,6 @@
 
 /// Aggregator error
 pub mod error;
-#[allow(missing_docs)]
-pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
 use alloy::dyn_abi::SolType;
