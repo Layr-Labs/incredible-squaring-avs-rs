@@ -249,12 +249,11 @@ mod tests {
 
         let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
 
-        let aggregator_handle = tokio::spawn(async move {
-            Aggregator::new(incredible_config.clone())
-                .await?
-                .start(ws_rpc_url)
-                .await
-        });
+        let config_clone = incredible_config.clone();
+        let aggregator_handle =
+            tokio::spawn(
+                async move { Aggregator::new(config_clone).await?.start(ws_rpc_url).await },
+            );
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
@@ -422,12 +421,11 @@ mod tests {
 
         let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
 
-        let aggregator_handle = tokio::spawn(async move {
-            Aggregator::new(incredible_config.clone())
-                .await?
-                .start(ws_rpc_url)
-                .await
-        });
+        let config_clone = incredible_config.clone();
+        let aggregator_handle =
+            tokio::spawn(
+                async move { Aggregator::new(config_clone).await?.start(ws_rpc_url).await },
+            );
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
