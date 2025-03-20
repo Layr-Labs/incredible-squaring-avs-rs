@@ -37,8 +37,8 @@ make deploy-el-and-avs-contracts
 cargo run --bin incredible-squaring-avs  start
 ```
 The above command is with the following config w.r.t slashing:-
-  - incorrect answer : correct answer ratio for `operator1` is 90:10.
-  - incorrect answer : correct answer ratio for `operator2` is 10:90.
+  - `incorrect answer : correct answer` ratio for `operator1` is `90:10`.
+  - `incorrect answer : correct answer` ratio for `operator2` is `10:90`.
 
 - To change the parameters using a config file, provide path to a toml config file 
 ```
