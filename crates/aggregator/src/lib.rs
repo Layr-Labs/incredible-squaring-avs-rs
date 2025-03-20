@@ -54,13 +54,15 @@ pub struct Aggregator {
     /// Socket address
     port_address: String,
     /// AVS writer
-    pub avs_writer: AvsWriter,
+    avs_writer: AvsWriter,
     /// HashMap to store tasks
-    pub tasks: HashMap<u32, Task>,
+    tasks: HashMap<u32, Task>,
     /// HashMap to store tasks responses
-    pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+    tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
     /// Service handle to interact with the BLS Aggregator Service
-    pub service_handle: ServiceHandle,
+    service_handle: ServiceHandle,
+    /// To receive aggregated responses from the BLS Aggregator Service
+    aggregate_receiver: AggregateReceiver,
 }
 
 impl Aggregator {
@@ -77,9 +79,7 @@ impl Aggregator {
     /// # Errors
     ///
     /// * `AggregatorError` - The error that occurred
-    pub async fn new(
-        config: IncredibleConfig,
-    ) -> Result<(Self, AggregateReceiver), AggregatorError> {
+    pub async fn new(config: IncredibleConfig) -> Result<Self, AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
             config.registry_coordinator_addr()?,
@@ -119,17 +119,15 @@ impl Aggregator {
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
-        let (handle, aggregator_response) = bls_aggregation_service.start();
-        Ok((
-            Self {
-                port_address: config.aggregator_ip_addr(),
-                avs_writer,
-                tasks_responses: HashMap::new(),
-                tasks: HashMap::new(),
-                service_handle: handle,
-            },
-            aggregator_response,
-        ))
+        let (handle, aggregate_receiver) = bls_aggregation_service.start();
+        Ok(Self {
+            port_address: config.aggregator_ip_addr(),
+            avs_writer,
+            tasks_responses: HashMap::new(),
+            tasks: HashMap::new(),
+            service_handle: handle,
+            aggregate_receiver,
+        })
     }
 
     /// Starts the aggregator service with three tasks: one for the server,
@@ -146,11 +144,7 @@ impl Aggregator {
     /// # Errors
     ///
     /// * The error that occurred
-    pub async fn start(
-        self,
-        ws_rpc_url: String,
-        aggregator_response: AggregateReceiver,
-    ) -> eyre::Result<()> {
+    pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
         info!("Starting aggregator");
 
         let Self {
@@ -159,6 +153,7 @@ impl Aggregator {
             tasks,
             tasks_responses,
             service_handle,
+            aggregate_receiver,
         } = self;
 
         let task_responses = Arc::new(tokio::sync::Mutex::new(tasks_responses));
@@ -182,7 +177,7 @@ impl Aggregator {
             Arc::clone(&tasks),
             Arc::clone(&task_responses),
             avs_writer,
-            aggregator_response,
+            aggregate_receiver,
         ));
 
         // Wait for the tasks to complete and handle potential errors
