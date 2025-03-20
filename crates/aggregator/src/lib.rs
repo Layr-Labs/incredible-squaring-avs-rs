@@ -271,7 +271,7 @@ impl Aggregator {
 
         task_responses
             .entry(task_index)
-            .or_insert_with(HashMap::new)
+            .or_default()
             .entry(task_response_digest)
             .or_insert(signed_task_response.task_response);
 
