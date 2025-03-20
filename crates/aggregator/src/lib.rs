@@ -275,8 +275,10 @@ impl Aggregator {
         }
 
         // TODO: simplify this
-        let should_insert =
-            check_double_mapping(task_responses, task_index, task_response_digest).is_none();
+        let should_insert = task_responses
+            .get(&task_index)
+            .and_then(|inner_map| inner_map.get(&task_response_digest))
+            .is_none();
 
         if should_insert {
             let mut inner_map = HashMap::new();
@@ -389,27 +391,6 @@ impl Aggregator {
     }
 }
 
-/// Checks if the task response is already in the map
-///
-/// # Arguments
-///
-/// * `outer_map` - The outer map with the task index as the key and the inner map with the task response digest as the key
-/// * `outer_key` - The outer key with the task index
-/// * `inner_key` - The inner key with the task response digest
-///
-/// # Returns
-///
-/// * `Option<&TaskResponse>` - The task response if it exists
-fn check_double_mapping(
-    outer_map: &HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
-    outer_key: u32,
-    inner_key: TaskResponseDigest,
-) -> Option<&TaskResponse> {
-    outer_map
-        .get(&outer_key)
-        .and_then(|inner_map| inner_map.get(&inner_key))
-}
-
 /// Sends an aggregated task response to the contract
 async fn send_aggregated_response_to_contract(
     tasks: &HashMap<u32, Task>,
@@ -458,26 +439,4 @@ async fn send_aggregated_response_to_contract(
         .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
         .await?;
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_check_double_mapping() {
-        let mut outer_map = HashMap::new();
-        let mut inner_map = HashMap::new();
-        inner_map.insert(
-            TaskResponseDigest::default(),
-            TaskResponse {
-                referenceTaskIndex: "0".parse().unwrap(),
-                numberSquared: "0".parse().unwrap(),
-            },
-        );
-        outer_map.insert(1, inner_map);
-        let result = check_double_mapping(&outer_map, 1, TaskResponseDigest::default());
-        assert!(result.is_some());
-    }
 }
