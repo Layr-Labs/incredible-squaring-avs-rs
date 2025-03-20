@@ -41,6 +41,7 @@ pub use rpc_server::SignedTaskResponse;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use tokio::task::JoinHandle;
 use tracing::info;
 
 /// Task Challenge Window Block : 100 blocks
@@ -161,11 +162,8 @@ impl Aggregator {
 
         // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
         // 1) Process signatures
-        let server_handle = tokio::spawn(Self::start_server(
-            port_address,
-            service_handle.clone(),
-            task_responses.clone(),
-        ));
+        let server_handle =
+            Self::start_server(port_address, service_handle.clone(), task_responses.clone())?;
         // 2) Process tasks
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
@@ -181,12 +179,11 @@ impl Aggregator {
         ));
 
         // Wait for the tasks to complete and handle potential errors
-        let (server_result, process_result, responses_result) =
+        let (_server_result, process_result, responses_result) =
             tokio::try_join!(server_handle, process_handle, responses_handle)
-                .inspect_err(|e| eprintln!("Error in task execution: {:?}", e))
+                .inspect_err(|e| eprintln!("Error in task execution: {e:?}"))
                 .map_err(|e| eyre::eyre!("Task execution failed {e}"))?;
 
-        server_result?;
         process_result?;
         responses_result?;
 
@@ -204,13 +201,13 @@ impl Aggregator {
     /// # Returns
     ///
     /// * `eyre::Result<()>` - The result of the operation
-    pub async fn start_server(
+    pub fn start_server(
         port_address: String,
         service_handle: ServiceHandle,
         task_responses: Arc<
             tokio::sync::Mutex<HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>>,
         >,
-    ) -> eyre::Result<(), AggregatorError> {
+    ) -> eyre::Result<JoinHandle<()>, AggregatorError> {
         let mut io = IoHandler::new();
         let method = move |params: Params| {
             let service_handle = service_handle.clone();
@@ -246,11 +243,15 @@ impl Aggregator {
             ]))
             .start_http(&socket)?;
 
-        info!("Server running at {}", socket);
+        let handle = tokio::task::spawn_blocking(move || {
+            // NOTE: this call is blocking
+            // TODO: maybe change to an async server lib
+            server.wait()
+        });
 
-        server.wait();
+        info!("Server running at {socket}");
 
-        Ok(())
+        Ok(handle)
     }
 
     /// Processes the signed task response
