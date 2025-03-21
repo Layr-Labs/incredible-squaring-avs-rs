@@ -32,9 +32,8 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
 use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
-use jsonrpc_core::serde_json;
-use jsonrpc_core::{Error, IoHandler, Params, Value};
-use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
+use jsonrpsee::server::{RpcModule, Server};
+use jsonrpsee::types::ErrorObject;
 pub use rpc_server::SignedTaskResponse;
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -161,7 +160,8 @@ impl Aggregator {
         // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
         // 1) Process signatures
         let server_handle =
-            Self::start_server(port_address, service_handle.clone(), task_responses.clone())?;
+            Self::start_server(port_address, service_handle.clone(), task_responses.clone())
+                .await?;
         // 2) Process tasks
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
@@ -188,58 +188,64 @@ impl Aggregator {
         Ok(())
     }
 
-    /// Starts the RPC server and returns a [`JoinHandle`] to it
-    fn start_server(
+    /// Starts the RPC server and returns a future that ends once the server is stopped
+    async fn start_server(
         port_address: String,
         service_handle: ServiceHandle,
         task_responses: Arc<
             tokio::sync::Mutex<HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>>,
         >,
     ) -> eyre::Result<JoinHandle<()>, AggregatorError> {
-        let mut io = IoHandler::new();
-        let method = move |params: Params| {
-            let service_handle = service_handle.clone();
-            let task_responses = Arc::clone(&task_responses);
-            async move {
-                let signed_task_response: SignedTaskResponse = match params {
-                    Params::Map(map) => serde_json::from_value(map["params"].clone())
-                        .expect("Error in adding method in io handler for start_server function"),
-                    _ => return Err(Error::invalid_params("Expected a map")),
-                };
+        // See https://github.com/paritytech/jsonrpsee/blob/42461391fee47c94d42c4a7303355525291df9f6/examples/examples/cors_server.rs
+        let mut module = RpcModule::new((service_handle, task_responses));
+        module
+            .register_async_method("process_signed_task_response", async |params, ctx, _| {
+                let (service_handle, task_responses) = ctx.as_ref();
+                let signed_task_response: SignedTaskResponse = params
+                    .one()
+                    .map_err(|err| ErrorObject::owned(0, err.to_string(), None::<()>))?;
+
                 // Call the process_signed_task_response function
                 let mut task_responses_lock = task_responses.lock().await;
                 let result = Self::process_signed_task_response(
                     signed_task_response,
-                    &service_handle,
+                    service_handle,
                     &mut task_responses_lock,
                 )
                 .await;
 
                 match result {
-                    Ok(_) => Ok(Value::Bool(true)),
-                    Err(_) => Err(Error::invalid_params("invalid")),
+                    Ok(()) => Ok(true),
+                    Err(err) => Err(ErrorObject::owned(0, err.to_string(), None::<()>)),
                 }
-            }
-        };
-        io.add_method("process_signed_task_response", method);
+            })
+            .expect("method name is unique");
         let socket: SocketAddr = port_address.parse().map_err(|e| {
             AggregatorError::IOError(std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
         })?;
-        let server = ServerBuilder::new(io)
-            .cors(DomainsValidation::AllowOnly(vec![
-                AccessControlAllowOrigin::Any,
-            ]))
-            .start_http(&socket)?;
+        let middleware = tower::ServiceBuilder::new();
+        // let cors = CorsLayer::new()
+        //     // Allow `POST` when accessing the resource
+        //     .allow_methods([Method::POST])
+        //     // Allow requests from any origin
+        //     .allow_origin(Any)
+        //     .allow_headers([hyper::header::CONTENT_TYPE]);
+        // let middleware = middleware.layer(cors);
+        let server = Server::builder()
+            .set_http_middleware(middleware)
+            .build(socket)
+            .await?;
+        // let server = ServerBuilder::new(io)
+        //     .cors(DomainsValidation::AllowOnly(vec![
+        //         AccessControlAllowOrigin::Any,
+        //     ]))
+        //     .start_http(&socket)?;
 
-        let handle = tokio::task::spawn_blocking(move || {
-            // NOTE: this call is blocking
-            // TODO: maybe change to an async server lib
-            server.wait()
-        });
+        let handle = server.start(module);
 
         info!("Server running at {socket}");
 
-        Ok(handle)
+        Ok(tokio::spawn(handle.stopped()))
     }
 
     /// Processes a signed task response received from an operator

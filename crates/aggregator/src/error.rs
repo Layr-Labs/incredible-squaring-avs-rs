@@ -6,7 +6,7 @@ use eigensdk::services_blsaggregation::bls_aggregation_service_error::BlsAggrega
 use eigensdk::services_operatorsinfo::operatorsinfo_inmemory::OperatorInfoServiceError;
 use incredible_chainio::error::ChainIoError;
 use incredible_config::error::ConfigError;
-use jsonrpc_core::serde_json::Error;
+use serde_json::Error;
 use thiserror::Error;
 
 /// Error returned by chainio
