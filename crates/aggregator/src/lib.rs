@@ -2,8 +2,6 @@
 
 /// Aggregator error
 pub mod error;
-#[allow(missing_docs)]
-pub mod fake_aggregator;
 /// RPC server
 pub mod rpc_server;
 use alloy::dyn_abi::SolType;
@@ -34,13 +32,13 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
 use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
-use jsonrpc_core::serde_json;
-use jsonrpc_core::{Error, IoHandler, Params, Value};
-use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
+use jsonrpsee::server::{RpcModule, Server};
+use jsonrpsee::types::ErrorObject;
 pub use rpc_server::SignedTaskResponse;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use tokio::task::JoinHandle;
 use tracing::info;
 
 /// Task Challenge Window Block : 100 blocks
@@ -54,13 +52,15 @@ pub struct Aggregator {
     /// Socket address
     port_address: String,
     /// AVS writer
-    pub avs_writer: AvsWriter,
+    avs_writer: AvsWriter,
     /// HashMap to store tasks
-    pub tasks: HashMap<u32, Task>,
+    tasks: HashMap<u32, Task>,
     /// HashMap to store tasks responses
-    pub tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+    tasks_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
     /// Service handle to interact with the BLS Aggregator Service
-    pub service_handle: ServiceHandle,
+    service_handle: ServiceHandle,
+    /// To receive aggregated responses from the BLS Aggregator Service
+    aggregate_receiver: AggregateReceiver,
 }
 
 impl Aggregator {
@@ -77,9 +77,7 @@ impl Aggregator {
     /// # Errors
     ///
     /// * `AggregatorError` - The error that occurred
-    pub async fn new(
-        config: IncredibleConfig,
-    ) -> Result<(Self, AggregateReceiver), AggregatorError> {
+    pub async fn new(config: IncredibleConfig) -> Result<Self, AggregatorError> {
         let avs_registry_chain_reader = AvsRegistryChainReader::new(
             get_logger(),
             config.registry_coordinator_addr()?,
@@ -119,17 +117,15 @@ impl Aggregator {
         let bls_aggregation_service =
             BlsAggregatorService::new(avs_registry_service_chaincaller, get_logger());
 
-        let (handle, aggregator_response) = bls_aggregation_service.start();
-        Ok((
-            Self {
-                port_address: config.aggregator_ip_addr(),
-                avs_writer,
-                tasks_responses: HashMap::new(),
-                tasks: HashMap::new(),
-                service_handle: handle,
-            },
-            aggregator_response,
-        ))
+        let (handle, aggregate_receiver) = bls_aggregation_service.start();
+        Ok(Self {
+            port_address: config.aggregator_ip_addr(),
+            avs_writer,
+            tasks_responses: HashMap::new(),
+            tasks: HashMap::new(),
+            service_handle: handle,
+            aggregate_receiver,
+        })
     }
 
     /// Starts the aggregator service with three tasks: one for the server,
@@ -146,109 +142,151 @@ impl Aggregator {
     /// # Errors
     ///
     /// * The error that occurred
-    pub async fn start(
-        self,
-        ws_rpc_url: String,
-        aggregator_response: AggregateReceiver,
-    ) -> eyre::Result<()> {
+    pub async fn start(self, ws_rpc_url: String) -> eyre::Result<()> {
         info!("Starting aggregator");
 
-        let aggregator = Arc::new(tokio::sync::Mutex::new(self));
+        let Self {
+            avs_writer,
+            port_address,
+            tasks,
+            tasks_responses,
+            service_handle,
+            aggregate_receiver,
+        } = self;
+
+        let task_responses = Arc::new(tokio::sync::Mutex::new(tasks_responses));
+        let tasks = Arc::new(tokio::sync::Mutex::new(tasks));
 
         // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
         // 1) Process signatures
-        let server_handle = tokio::spawn(Self::start_server(Arc::clone(&aggregator)));
+        let server_handle =
+            Self::start_server(port_address, service_handle.clone(), task_responses.clone())
+                .await?;
         // 2) Process tasks
         let process_handle = tokio::spawn(Self::process_tasks(
             ws_rpc_url.clone(),
-            Arc::clone(&aggregator),
+            Arc::clone(&tasks),
+            service_handle,
         ));
         // 3) Process aggregator responses
         let responses_handle = tokio::spawn(Self::process_aggregator_responses(
-            Arc::clone(&aggregator),
-            aggregator_response,
+            Arc::clone(&tasks),
+            Arc::clone(&task_responses),
+            avs_writer,
+            aggregate_receiver,
         ));
 
         // Wait for the tasks to complete and handle potential errors
-        let (server_result, process_result, responses_result) =
+        let (_server_result, process_result, responses_result) =
             tokio::try_join!(server_handle, process_handle, responses_handle)
-                .inspect_err(|e| eprintln!("Error in task execution: {:?}", e))
+                .inspect_err(|e| eprintln!("Error in task execution: {e:?}"))
                 .map_err(|e| eyre::eyre!("Task execution failed {e}"))?;
 
-        server_result?;
         process_result?;
         responses_result?;
 
         Ok(())
     }
 
-    /// Starts the RPC server
-    ///
-    /// # Arguments
-    ///
-    /// * `aggregator` - The aggregator
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn start_server(
-        aggregator: Arc<tokio::sync::Mutex<Self>>,
-    ) -> eyre::Result<(), AggregatorError> {
-        let mut io = IoHandler::new();
-        io.add_method("process_signed_task_response", {
-            let aggregator = Arc::clone(&aggregator);
-            move |params: Params| {
-                let aggregator = Arc::clone(&aggregator);
-                async move {
-                    let signed_task_response: SignedTaskResponse = match params {
-                        Params::Map(map) => serde_json::from_value(map["params"].clone()).expect(
-                            "Error in adding method in io handler for start_server function",
-                        ),
-                        _ => return Err(Error::invalid_params("Expected a map")),
-                    };
-                    // Call the process_signed_task_response function
-                    let result = aggregator
-                        .lock()
-                        .await
-                        .process_signed_task_response(signed_task_response)
-                        .await;
+    /// Starts the RPC server and returns a future that ends once the server is stopped
+    async fn start_server(
+        port_address: String,
+        service_handle: ServiceHandle,
+        task_responses: Arc<
+            tokio::sync::Mutex<HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>>,
+        >,
+    ) -> eyre::Result<JoinHandle<()>, AggregatorError> {
+        // See https://github.com/paritytech/jsonrpsee/blob/42461391fee47c94d42c4a7303355525291df9f6/examples/examples/cors_server.rs
+        let mut module = RpcModule::new((service_handle, task_responses));
+        module
+            .register_async_method("process_signed_task_response", async |params, ctx, _| {
+                let (service_handle, task_responses) = ctx.as_ref();
+                let signed_task_response: SignedTaskResponse = params
+                    .one()
+                    .map_err(|err| ErrorObject::owned(0, err.to_string(), None::<()>))?;
 
-                    match result {
-                        Ok(_) => Ok(Value::Bool(true)),
-                        Err(_) => Err(Error::invalid_params("invalid")),
-                    }
+                // Call the process_signed_task_response function
+                let mut task_responses_lock = task_responses.lock().await;
+                let result = Self::process_signed_task_response(
+                    signed_task_response,
+                    service_handle,
+                    &mut task_responses_lock,
+                )
+                .await;
+
+                match result {
+                    Ok(()) => Ok(true),
+                    Err(err) => Err(ErrorObject::owned(0, err.to_string(), None::<()>)),
                 }
-            }
-        });
-        let socket: SocketAddr = aggregator.lock().await.port_address.parse().map_err(|e| {
+            })
+            .expect("method name is unique");
+        let socket: SocketAddr = port_address.parse().map_err(|e| {
             AggregatorError::IOError(std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
         })?;
-        let server = ServerBuilder::new(io)
-            .cors(DomainsValidation::AllowOnly(vec![
-                AccessControlAllowOrigin::Any,
-            ]))
-            .start_http(&socket)?;
+        let middleware = tower::ServiceBuilder::new();
+        // let cors = CorsLayer::new()
+        //     // Allow `POST` when accessing the resource
+        //     .allow_methods([Method::POST])
+        //     // Allow requests from any origin
+        //     .allow_origin(Any)
+        //     .allow_headers([hyper::header::CONTENT_TYPE]);
+        // let middleware = middleware.layer(cors);
+        let server = Server::builder()
+            .set_http_middleware(middleware)
+            .build(socket)
+            .await?;
+        // let server = ServerBuilder::new(io)
+        //     .cors(DomainsValidation::AllowOnly(vec![
+        //         AccessControlAllowOrigin::Any,
+        //     ]))
+        //     .start_http(&socket)?;
 
-        info!("Server running at {}", socket);
+        let handle = server.start(module);
 
-        server.wait();
+        info!("Server running at {socket}");
+
+        Ok(tokio::spawn(handle.stopped()))
+    }
+
+    /// Processes a signed task response received from an operator
+    async fn process_signed_task_response(
+        signed_task_response: SignedTaskResponse,
+        service_handle: &ServiceHandle,
+        task_responses: &mut HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
+    ) -> Result<(), AggregatorError> {
+        let task_index = signed_task_response.task_response.referenceTaskIndex;
+
+        let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
+            &signed_task_response.task_response,
+        ));
+
+        let signature = signed_task_response.signature();
+        let operator_id = signed_task_response.operator_id();
+
+        let task_signature =
+            TaskSignature::new(task_index, task_response_digest, signature, operator_id);
+        let result = service_handle.process_signature(task_signature).await;
+
+        if result.is_err() {
+            info!("Response received for task that was already completed");
+            // TODO: Review if we need to return an error here
+            return Ok(());
+        }
+
+        task_responses
+            .entry(task_index)
+            .or_default()
+            .entry(task_response_digest)
+            .or_insert(signed_task_response.task_response);
 
         Ok(())
     }
 
-    /// Processes the tasks
-    ///
-    /// # Arguments
-    ///
-    /// * `ws_rpc_url` - The websocket RPC URL
-    /// * `aggregator` - The aggregator
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn process_tasks(
+    /// Processes new tasks created in the task manager contract
+    async fn process_tasks(
         ws_rpc_url: String,
-        aggregator: Arc<tokio::sync::Mutex<Self>>,
+        tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
+        service_handle: ServiceHandle,
     ) -> eyre::Result<()> {
         let ws = WsConnect::new(ws_rpc_url.clone());
         let provider = ProviderBuilder::new()
@@ -263,11 +301,7 @@ impl Aggregator {
         while let Some(log) = stream.next().await {
             let NewTaskCreated { taskIndex, task } = log.log_decode()?.inner.data;
 
-            aggregator
-                .lock()
-                .await
-                .tasks
-                .insert(taskIndex, task.clone());
+            tasks.lock().await.insert(taskIndex, task.clone());
 
             let mut quorum_nums: Vec<u8> = vec![];
             let mut quorum_threshold_percentages = Vec::with_capacity(task.quorumNumbers.len());
@@ -290,10 +324,7 @@ impl Aggregator {
                 time_to_expiry,
             );
 
-            let _ = aggregator
-                .lock()
-                .await
-                .service_handle
+            let _ = service_handle
                 .initialize_task(task_metadata)
                 .await
                 .map_err(|e: BlsAggregationServiceError| eyre::eyre!(e));
@@ -302,70 +333,13 @@ impl Aggregator {
         Ok(())
     }
 
-    /// Processes the signed task response
-    ///
-    /// # Arguments
-    ///
-    /// * [`SignedTaskResponse`] - The signed task response
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn process_signed_task_response(
-        &mut self,
-        signed_task_response: SignedTaskResponse,
-    ) -> Result<(), AggregatorError> {
-        let task_index = signed_task_response.task_response.referenceTaskIndex;
-
-        let task_response_digest = alloy::primitives::keccak256(TaskResponse::abi_encode(
-            &signed_task_response.task_response,
-        ));
-
-        let signature = signed_task_response.signature();
-        let operator_id = signed_task_response.operator_id();
-
-        let handle = &self.service_handle;
-        let result = handle
-            .process_signature(TaskSignature::new(
-                task_index,
-                task_response_digest,
-                signature,
-                operator_id,
-            ))
-            .await;
-
-        if result.is_err() {
-            info!("Response received for task that was already completed");
-            // TODO: Review if we need to return an error here
-            return Ok(());
-        }
-
-        let should_insert =
-            check_double_mapping(&self.tasks_responses, task_index, task_response_digest).is_none();
-
-        if should_insert {
-            let mut inner_map = HashMap::new();
-            inner_map.insert(
-                task_response_digest,
-                signed_task_response.clone().task_response,
-            );
-            self.tasks_responses.insert(task_index, inner_map);
-        }
-
-        Ok(())
-    }
-
-    /// Processes the aggregator responses
-    ///
-    /// # Arguments
-    ///
-    /// * `aggregator` - The aggregator
-    ///
-    /// # Returns   
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn process_aggregator_responses(
-        aggregator: Arc<tokio::sync::Mutex<Self>>,
+    /// Processes BLS Aggregator Service responses
+    async fn process_aggregator_responses(
+        tasks: Arc<tokio::sync::Mutex<HashMap<u32, Task>>>,
+        task_responses: Arc<
+            tokio::sync::Mutex<HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>>,
+        >,
+        avs_writer: AvsWriter,
         mut aggregate_receiver_channel: AggregateReceiver,
     ) -> eyre::Result<()> {
         loop {
@@ -384,18 +358,22 @@ impl Aggregator {
                 continue;
             };
 
-            if let Some(task_response) = {
-                let lock = aggregator.lock().await;
-                lock.tasks_responses
-                    .get(&service_response.task_index)
-                    .and_then(|map| map.get(&service_response.task_response_digest))
-                    .cloned()
-            } {
-                aggregator
-                    .lock()
-                    .await
-                    .send_aggregated_response_to_contract(service_response, task_response)
-                    .await?;
+            let task_response = task_responses
+                .lock()
+                .await
+                .get(&service_response.task_index)
+                .and_then(|map| map.get(&service_response.task_response_digest))
+                .cloned();
+
+            if let Some(task_response) = task_response {
+                let tasks_lock = tasks.lock().await;
+                send_aggregated_response_to_contract(
+                    &tasks_lock,
+                    &avs_writer,
+                    task_response,
+                    service_response,
+                )
+                .await?;
             } else {
                 info!(
                     "Not found task_response for task_index: {}",
@@ -404,104 +382,54 @@ impl Aggregator {
             }
         }
     }
+}
 
-    /// Sends the aggregated response to the contract
-    ///
-    /// # Arguments
-    ///
-    /// * [`BlsAggregationServiceResponse`] - The aggregated response
-    ///
-    /// # Returns
-    ///
-    /// * `eyre::Result<()>` - The result of the operation
-    pub async fn send_aggregated_response_to_contract(
-        &self,
-        response: BlsAggregationServiceResponse,
-        task_response: TaskResponse,
-    ) -> Result<(), AggregatorError> {
-        let mut non_signer_pub_keys = Vec::<G1Point>::new();
-        for pub_key in response.non_signers_pub_keys_g1.iter() {
-            if pub_key.g1().x().is_some() {
-                let g1 = convert_to_g1_point(pub_key.g1())?;
-                non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
-            } else {
-                info!(
-                    "Zero non_signers for the task index :{:?}",
-                    response.task_index
-                );
-            }
-        }
-
-        let mut quorum_apks = Vec::<G1Point>::new();
-        for pub_key in response.quorum_apks_g1.iter() {
+/// Sends an aggregated task response to the contract
+async fn send_aggregated_response_to_contract(
+    tasks: &HashMap<u32, Task>,
+    avs_writer: &AvsWriter,
+    task_response: TaskResponse,
+    response: BlsAggregationServiceResponse,
+) -> Result<(), AggregatorError> {
+    let mut non_signer_pub_keys = Vec::<G1Point>::new();
+    for pub_key in response.non_signers_pub_keys_g1.iter() {
+        if pub_key.g1().x().is_some() {
             let g1 = convert_to_g1_point(pub_key.g1())?;
-            quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
+            non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
+        } else {
+            info!(
+                "Zero non_signers for the task index :{:?}",
+                response.task_index
+            );
         }
-
-        let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
-            nonSignerPubkeys: non_signer_pub_keys,
-            nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
-            quorumApks: quorum_apks,
-            apkG2: G2Point {
-                X: convert_to_g2_point(response.signers_apk_g2.g2())?.X,
-                Y: convert_to_g2_point(response.signers_apk_g2.g2())?.Y,
-            },
-            sigma: G1Point {
-                X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.X,
-                Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.Y,
-            },
-            quorumApkIndices: response.quorum_apk_indices,
-            totalStakeIndices: response.total_stake_indices,
-            nonSignerStakeIndices: response.non_signer_stake_indices,
-        };
-
-        let task = &self.tasks[&response.task_index];
-        self.avs_writer
-            .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
-            .await?;
-        Ok(())
     }
-}
 
-/// Checks if the task response is already in the map
-///
-/// # Arguments
-///
-/// * `outer_map` - The outer map with the task index as the key and the inner map with the task response digest as the key
-/// * `outer_key` - The outer key with the task index
-/// * `inner_key` - The inner key with the task response digest
-///
-/// # Returns
-///
-/// * `Option<&TaskResponse>` - The task response if it exists
-fn check_double_mapping(
-    outer_map: &HashMap<u32, HashMap<TaskResponseDigest, TaskResponse>>,
-    outer_key: u32,
-    inner_key: TaskResponseDigest,
-) -> Option<&TaskResponse> {
-    outer_map
-        .get(&outer_key)
-        .and_then(|inner_map| inner_map.get(&inner_key))
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_check_double_mapping() {
-        let mut outer_map = HashMap::new();
-        let mut inner_map = HashMap::new();
-        inner_map.insert(
-            TaskResponseDigest::default(),
-            TaskResponse {
-                referenceTaskIndex: "0".parse().unwrap(),
-                numberSquared: "0".parse().unwrap(),
-            },
-        );
-        outer_map.insert(1, inner_map);
-        let result = check_double_mapping(&outer_map, 1, TaskResponseDigest::default());
-        assert!(result.is_some());
+    let mut quorum_apks = Vec::<G1Point>::new();
+    for pub_key in response.quorum_apks_g1.iter() {
+        let g1 = convert_to_g1_point(pub_key.g1())?;
+        quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
     }
+
+    let non_signer_stakes_and_signature = NonSignerStakesAndSignature {
+        nonSignerPubkeys: non_signer_pub_keys,
+        nonSignerQuorumBitmapIndices: response.non_signer_quorum_bitmap_indices,
+        quorumApks: quorum_apks,
+        apkG2: G2Point {
+            X: convert_to_g2_point(response.signers_apk_g2.g2())?.X,
+            Y: convert_to_g2_point(response.signers_apk_g2.g2())?.Y,
+        },
+        sigma: G1Point {
+            X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.X,
+            Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())?.Y,
+        },
+        quorumApkIndices: response.quorum_apk_indices,
+        totalStakeIndices: response.total_stake_indices,
+        nonSignerStakeIndices: response.non_signer_stake_indices,
+    };
+
+    let task = &tasks[&response.task_index];
+    avs_writer
+        .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
+        .await?;
+    Ok(())
 }

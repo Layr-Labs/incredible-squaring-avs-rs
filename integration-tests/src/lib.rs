@@ -159,6 +159,8 @@ mod tests {
         init_logger(LogLevel::Info);
         tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
+        let task_manager_address = get_incredible_squaring_task_manager().await;
+
         let mut incredible_config: IncredibleConfig =
             toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
         incredible_config.set_aggregator_ip_address("127.0.0.1:8081".to_string());
@@ -247,44 +249,18 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let (aggregator, aggregate_receiver) =
-            Aggregator::new(incredible_config.clone()).await.unwrap();
+        let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
 
-        let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
-        let arc_agg_clone = Arc::clone(&arc_agg);
-        let arc_agg_for_server = Arc::clone(&arc_agg);
-
-        // Run process_tasks in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) =
-                    Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
-                        .await
-                {
-                    eprintln!("Process tasks error: {:?}", e);
-                }
-            });
-        });
-
-        // Run the server in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg_for_server)).await {
-                    eprintln!("Server error: {:?}", e);
-                }
-            });
-        });
-
-        tokio::spawn(async move {
-            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
-                .await
-                .unwrap();
-        });
+        let config_clone = incredible_config.clone();
+        let aggregator_handle =
+            tokio::spawn(
+                async move { Aggregator::new(config_clone).await?.start(ws_rpc_url).await },
+            );
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
         let task_generator = incredible_task_generator::TaskManager::new(
-            get_incredible_squaring_task_manager().await,
+            task_manager_address,
             "http://localhost:8545".to_string(),
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
             incredible_config.quorum_number().unwrap().to_string(),
@@ -296,7 +272,7 @@ mod tests {
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
         let task_manager_contract = IncredibleSquaringTaskManager::new(
-            get_incredible_squaring_task_manager().await,
+            task_manager_address,
             get_provider("http://localhost:8545"),
         );
         let latest_task_num = task_manager_contract
@@ -332,11 +308,16 @@ mod tests {
             ._0;
 
         assert!(!is_challenge_success);
+
+        assert!(!aggregator_handle.is_finished());
+        aggregator_handle.abort();
     }
 
     async fn test_incredible_squaring_with_challenger() {
         init_logger(LogLevel::Info);
         tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+
+        let task_manager_address = get_incredible_squaring_task_manager().await;
 
         let mut incredible_config: IncredibleConfig =
             toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
@@ -442,39 +423,13 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let (aggregator, aggregate_receiver) =
-            Aggregator::new(incredible_config.clone()).await.unwrap();
+        let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
 
-        let arc_agg = Arc::new(tokio::sync::Mutex::new(aggregator));
-        let arc_agg_clone = Arc::clone(&arc_agg);
-        let arc_agg_for_server = Arc::clone(&arc_agg);
-
-        // Run process_tasks in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) =
-                    Aggregator::process_tasks("ws://localhost:8545".to_string(), arc_agg_clone)
-                        .await
-                {
-                    eprintln!("Process tasks error: {:?}", e);
-                }
-            });
-        });
-
-        // Run the server in a separate thread
-        std::thread::spawn(move || {
-            tokio::runtime::Runtime::new().unwrap().block_on(async {
-                if let Err(e) = Aggregator::start_server(Arc::clone(&arc_agg_for_server)).await {
-                    eprintln!("Server error: {:?}", e);
-                }
-            });
-        });
-
-        tokio::spawn(async move {
-            Aggregator::process_aggregator_responses(Arc::clone(&arc_agg), aggregate_receiver)
-                .await
-                .unwrap();
-        });
+        let config_clone = incredible_config.clone();
+        let aggregator_handle =
+            tokio::spawn(
+                async move { Aggregator::new(config_clone).await?.start(ws_rpc_url).await },
+            );
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
@@ -484,7 +439,7 @@ mod tests {
         });
 
         let task_generator = incredible_task_generator::TaskManager::new(
-            get_incredible_squaring_task_manager().await,
+            task_manager_address,
             "http://localhost:8545".to_string(),
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
             incredible_config.quorum_number().unwrap().to_string(),
@@ -496,7 +451,7 @@ mod tests {
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
         let task_manager_contract = IncredibleSquaringTaskManager::new(
-            get_incredible_squaring_task_manager().await,
+            task_manager_address,
             get_provider("http://localhost:8545"),
         );
         let latest_task_num = task_manager_contract
@@ -532,6 +487,9 @@ mod tests {
             ._0;
 
         assert!(is_challenge_success);
+
+        assert!(!aggregator_handle.is_finished());
+        aggregator_handle.abort();
     }
 
     #[tokio::test]
