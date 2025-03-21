@@ -31,23 +31,21 @@ cp contracts/.env.example contracts/.env
 make deploy-el-and-avs-contracts
 ```
 
-- Single command AVS start using the following command (default values)(without simulating slashing)
-```sh
+- Starting the services with default values
+
+```bash
 cargo run --bin incredible-squaring-avs  start
 ```
+The above command is with the following config w.r.t slashing:-
+  - `incorrect answer : correct answer` ratio for `operator1` is `90:10`.
+  - `incorrect answer : correct answer` ratio for `operator2` is `10:90`.
 
-- To change the parameters, provide path to a toml config file 
+- To change the parameters using a config file, provide path to a toml config file 
 ```
 cargo run --bin incredible-squaring-avs  start --config-path <PATH>
 ```
-- Simulate slashing
-Run this command. Edit the `operator_1_times_failing` and `operator_2_times_failing` variables in config file based on your preference of they submitting incorrect answer(thereby getting slashed) from 0 to 100.
 
-```
-cargo run --bin incredible-squaring-avs  start
-```
-
-We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rust/tree/master/incredible_config.toml) for reference.
+We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/dev/incredible_config.toml) for reference.
 
 This command launches 5 services(crates) together:
 
