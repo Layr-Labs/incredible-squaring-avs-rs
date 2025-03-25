@@ -321,7 +321,7 @@ mod tests {
 
         let mut incredible_config: IncredibleConfig =
             toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
-        incredible_config.set_aggregator_ip_address("127.0.0.1:8081".to_string());
+        incredible_config.set_aggregator_ip_address("127.0.0.1:8082".to_string());
         incredible_config.set_registry_coordinator_addr(
             get_incredible_squaring_registry_coordinator()
                 .await
