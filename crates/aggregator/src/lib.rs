@@ -229,22 +229,10 @@ impl Aggregator {
             AggregatorError::IOError(std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
         })?;
         let middleware = tower::ServiceBuilder::new();
-        // let cors = CorsLayer::new()
-        //     // Allow `POST` when accessing the resource
-        //     .allow_methods([Method::POST])
-        //     // Allow requests from any origin
-        //     .allow_origin(Any)
-        //     .allow_headers([hyper::header::CONTENT_TYPE]);
-        // let middleware = middleware.layer(cors);
         let server = Server::builder()
             .set_http_middleware(middleware)
             .build(socket)
             .await?;
-        // let server = ServerBuilder::new(io)
-        //     .cors(DomainsValidation::AllowOnly(vec![
-        //         AccessControlAllowOrigin::Any,
-        //     ]))
-        //     .start_http(&socket)?;
 
         let handle = server.start(module);
 
