@@ -10,53 +10,56 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 
 ## To run
 
-- Start anvil in a separate terminal
+### Deploy the contracts
+
+First, start anvil in a separate terminal
 
 ```sh
 anvil
 ```
 
-- git submodule and copy env
+Second, update git submodules and copy `.env` file
 
 ```sh
 git submodule update --init --recursive
 cp contracts/.env.example contracts/.env
 ```
 
-- Deploy eigenlayer and avs contracts and setup payments
+Finally, deploy EigenLayer and the AVS contracts
 
 ```sh
 make deploy-el-and-avs-contracts
 ```
 
-- Single command AVS start using the following command (default values)(without simulating slashing)
+### Start the example
+
+To start the whole example, run the following command
 
 ```sh
-cargo run --bin incredible-squaring-avs  start
+cargo run --bin incredible-squaring-avs start
 ```
 
-- To change the parameters, provide path to a toml config file
+This command launches 5 services:
 
-```sh
-cargo run --bin incredible-squaring-avs  start --config-path <PATH>
-```
+- Aggregator: receives signed task responses from operators via a JSON-RPC server, aggregates the signatures, and calls the `TaskManager` contract's `respondToTask` function once quorum is reached.
+- 2 operators: they wait for new tasks, respond to them and sign with their BLS keys, and then send the signed response to the aggregator.
+- 1 challenger: it listens for task creations and responses, verifies the responses are correct and, if wrong, raises a challenge by calling the `raiseAndResolveChallenge` function in the `TaskManager` contract.
+- 1 task generator: it periodically creates new tasks by calling the `createNewTask` function of the `TaskManager` contract.
 
-- Simulate slashing
-Run this command. Edit the `operator_1_times_failing` and `operator_2_times_failing` variables in config file based on your preference of they submitting incorrect answer(thereby getting slashed) from 0 to 100.
+> [!NOTE]
+> All services are started with the default parameters.
+> To specify custom values, provide a path to a toml config file with the `--config-path` flag like so:
+>
+> ```sh
+> cargo run --bin incredible-squaring-avs start --config-path <PATH>
+> ```
+>
+> We have an example file [incredible_config.toml](./incredible_config.toml) for reference.
 
-```sh
-cargo run --bin incredible-squaring-avs  start
-```
+### Simulating Slashing
 
-We have an example file [incredible_config.toml](https://github.com/Layr-Labs/incredible-squaring-avs-rust/tree/master/incredible_config.toml) for reference.
-
-This command launches 5 services(crates) together:
-
-- Operator1 : It listens for new tasks , responds them by signing with their bls key and send the signed response to the aggregator. Stake in strategy: 5000 tokens
-- Operator2: Same task as operator 1. Stake in strategy: 7000 tokens
-- Aggregator: Sets up an Rpc client to receive signed task responses from operators, aggregates the signatures, if quorums is met (i.e both operators sign the response), it calls the respondToTask function in the TaskManager contract.
-- Challenger : It listens for new tasks , checks the operators response, if found wrong, it raises a challenge by calling the `raiseAndResolveChallenge` function in the task manager contract.
-- Task Spam : It creates a new task every 10 seconds by calling the `createNewTask` function in the task manager contract.
+The `operator_1_times_failing` and `operator_2_times_failing` config fields specify the probability percentage for the respective operator to produce an incorrect result.
+Each of these failures will result in a slashing once a challenge is raised by the challenger.
 
 ## Creating and Claiming Distributions
 
