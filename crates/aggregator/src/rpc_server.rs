@@ -15,8 +15,6 @@ pub struct SignedTaskResponse {
 /// RPC Request is used to parse the request from the RPC server
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RpcRequest {
-    id: u64,
-    jsonrpc: String,
     /// Params of the request
     pub params: SignedTaskResponse,
 }
