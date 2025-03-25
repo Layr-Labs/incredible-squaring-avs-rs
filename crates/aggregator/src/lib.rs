@@ -34,6 +34,7 @@ use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use jsonrpsee::server::{RpcModule, Server};
 use jsonrpsee::types::ErrorObject;
+use rpc_server::RpcRequest;
 pub use rpc_server::SignedTaskResponse;
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -199,26 +200,30 @@ impl Aggregator {
         // See https://github.com/paritytech/jsonrpsee/blob/42461391fee47c94d42c4a7303355525291df9f6/examples/examples/cors_server.rs
         let mut module = RpcModule::new((service_handle, task_responses));
         module
-            .register_async_method("process_signed_task_response", async |params, ctx, _| {
-                let (service_handle, task_responses) = ctx.as_ref();
-                let signed_task_response: SignedTaskResponse = params
-                    .one()
-                    .map_err(|err| ErrorObject::owned(0, err.to_string(), None::<()>))?;
+            .register_async_method(
+                "process_signed_task_response",
+                |params, ctx, _| async move {
+                    let (service_handle, task_responses) = ctx.as_ref();
+                    let signed_task_response = params
+                        .parse::<RpcRequest>()
+                        .map_err(|err| ErrorObject::owned(0, err.to_string(), None::<()>))?
+                        .params;
 
-                // Call the process_signed_task_response function
-                let mut task_responses_lock = task_responses.lock().await;
-                let result = Self::process_signed_task_response(
-                    signed_task_response,
-                    service_handle,
-                    &mut task_responses_lock,
-                )
-                .await;
+                    // Call the process_signed_task_response function
+                    let mut task_responses_lock = task_responses.lock().await;
+                    let result = Self::process_signed_task_response(
+                        signed_task_response,
+                        service_handle,
+                        &mut task_responses_lock,
+                    )
+                    .await;
 
-                match result {
-                    Ok(()) => Ok(true),
-                    Err(err) => Err(ErrorObject::owned(0, err.to_string(), None::<()>)),
-                }
-            })
+                    match result {
+                        Ok(()) => Ok(true),
+                        Err(err) => Err(ErrorObject::owned(0, err.to_string(), None::<()>)),
+                    }
+                },
+            )
             .expect("method name is unique");
         let socket: SocketAddr = port_address.parse().map_err(|e| {
             AggregatorError::IOError(std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
