@@ -1,6 +1,6 @@
 # Incredible Squaring Avs
 
-Basic repo demoing a simple AVS middleware with full eigenlayer integration, in rust.
+Basic repo demoing a simple AVS middleware with full EigenLayer integration, in Rust.
 
 ## Dependencies
 
@@ -8,7 +8,7 @@ Basic repo demoing a simple AVS middleware with full eigenlayer integration, in 
 - [Docker](https://www.docker.com/) - for tests
 - [jq](https://jqlang.org/download/) - for rewards examples
 
-## To run
+## Running the example
 
 ### Deploy the contracts
 
@@ -73,7 +73,7 @@ This leads to 2 possible workflows, distributing equally across all operators an
 
 ### Distributing equally across all operators
 
-First, start anvil in a separate terminal and deploy the contracts. To do that follow the instructions in [To run section](#to-run)
+First, start anvil in a separate terminal and deploy the contracts following the instructions in ["Deploy the contracts"](#deploy-the-contracts).
 
 Then, run the command:
 
@@ -99,7 +99,7 @@ Note that the claimer address is not passed by parameter, because in the script 
 
 ### Using custom distribution for each operator
 
-First, start anvil in a separate terminal and deploy the contracts. To do that follow the instructions in [To run section](#to-run)
+First, start anvil in a separate terminal and deploy the contracts following the instructions in ["Deploy the contracts"](#deploy-the-contracts).
 
 Then, run the command:
 
