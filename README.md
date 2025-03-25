@@ -1,49 +1,54 @@
-# Incredible Squaring Avs 
+# Incredible Squaring Avs
 
 Basic repo demoing a simple AVS middleware with full eigenlayer integration, in rust.
 
 ## Dependencies
 
 - [Foundry](https://github.com/foundry-rs/foundry)
-- [Docker](https://www.docker.com/) 
+- [Docker](https://www.docker.com/)
 
 ## Required tools
 
 - [jq]: required to parse token address.
-  * To install, follow the instructions [here](https://jqlang.org/download/)
+  - To install, follow the instructions [here](https://jqlang.org/download/)
 
-## To run 
+## To run
 
-- Start anvil in a separate terminal 
+- Start anvil in a separate terminal
+
 ```sh
 anvil
 ```
 
-- git submodule and copy env 
+- git submodule and copy env
+
 ```sh
 git submodule update --init --recursive
 cp contracts/.env.example contracts/.env
 ```
 
-
 - Deploy eigenlayer and avs contracts and setup payments
+
 ```sh
 make deploy-el-and-avs-contracts
 ```
 
 - Single command AVS start using the following command (default values)(without simulating slashing)
+
 ```sh
 cargo run --bin incredible-squaring-avs  start
 ```
 
-- To change the parameters, provide path to a toml config file 
-```
+- To change the parameters, provide path to a toml config file
+
+```sh
 cargo run --bin incredible-squaring-avs  start --config-path <PATH>
 ```
+
 - Simulate slashing
 Run this command. Edit the `operator_1_times_failing` and `operator_2_times_failing` variables in config file based on your preference of they submitting incorrect answer(thereby getting slashed) from 0 to 100.
 
-```
+```sh
 cargo run --bin incredible-squaring-avs  start
 ```
 
@@ -60,6 +65,7 @@ This command launches 5 services(crates) together:
 ## Creating and Claiming Distributions
 
 The example exposes 3 scripts in the Makefile interface:
+
 - Creating a distribution root, that implies creating an AVS rewards submission and submitting a payment root.
 - Creating an operator directed distribution root, similar to previous one but with rewards to operators involved in the claim generation. Note: operators in this case are hardcoded in the script file.
 - Claiming the created distribution, giving the rewards to an specific receiver account. Note: The receiver in this case is harcoded in the script file (address 0x01).
@@ -72,21 +78,24 @@ First, start anvil in a separate terminal and deploy the contracts. To do that f
 
 Then, run the command:
 
-``` bash
+``` sh
 make create-avs-distributions-root
 ```
 
 This creates a claimable root, a root of the merkle tree that stores cumulative earnings per ERC20 reward token for each earner.
 
 To claim against the root, use:
-``` bash
+
+```sh
 make claim-distributions
 ```
 
 If you want to check the balance of the claimer, you can run the following command:
-``` bash
+
+```sh
 make claimer-account-token-balance
 ```
+
 Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
 ### Using custom distribution for each operator
@@ -95,7 +104,7 @@ First, start anvil in a separate terminal and deploy the contracts. To do that f
 
 Then, run the command:
 
-``` bash
+```sh
 make create-operator-directed-distributions-root
 ```
 
@@ -105,24 +114,28 @@ The payment leaves are available in `contracts/payments.json`. The payment leave
 
 To claim against the root, use:
 
-``` bash
+```sh
 make claim-distributions
 ```
 
 If you want to check the balance of the claimer, you can run the following command:
-``` bash
+
+```sh
 make claimer-account-token-balance
 ```
+
 Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
-## Testing 
+## Testing
 
 - To run unit tests(start anvil in a separate terminal)
+
 ```sh
 make pr
 ```
 
-- To run integration tests(start anvil in a separate terminal) 
+- To run integration tests(start anvil in a separate terminal)
+
 ```sh
 make integration-tests
 ```
@@ -145,18 +158,14 @@ The architecture of the AVS contains:
 - Operators
   - Square the number sent to the task manager by the task generator, sign it, and send it to the aggregator
 
-
-
 ## Default Configuration
+
 - Metrics http endpoint - `http://localhost:9001/metrics`
 - Aggregator Rpc endpoint - `127.0.0.1:8080`
 - Operator1 - `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` (anvil's 0 index key)
-- Operator2 - `0x0b065a0423f076a340f37e16e1ce22e23d66caf2` 
+- Operator2 - `0x0b065a0423f076a340f37e16e1ce22e23d66caf2`
 
+## Related Projects
 
-## Dependencies 
-- [eigensdk-rs](https://github.com/Layr-Labs/eigensdk-rs)
-- [rust-bls-bn254](https://github.com/Layr-Labs/rust-bls-bn254/tree/main) 
-
-
-
+- [eigensdk-rs](https://github.com/Layr-Labs/eigensdk-rs) - Official EigenLayer Rust SDK
+- [rust-bls-bn254](https://github.com/Layr-Labs/bn254-bls-keystore-rs) - EIP 2335 Compatible Keystore using BN254
