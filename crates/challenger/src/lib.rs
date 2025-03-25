@@ -165,7 +165,7 @@ impl Challenger {
                         .unwrap()
                         .shares;
                     info!(
-                        "operator_1 shares before slashing{:?}",
+                        "operator_1 shares before slashing: {:?}",
                         operator_1_shares_before_slashing
                     );
 
@@ -176,7 +176,7 @@ impl Challenger {
                         .unwrap()
                         .shares;
                     info!(
-                        "operator_2 shares before slashing{:?}",
+                        "operator_2 shares before slashing: {:?}",
                         operator_2_shares_before_slashing
                     );
 
@@ -189,7 +189,7 @@ impl Challenger {
                         .unwrap()
                         .shares;
                     info!(
-                        "operator_1 shares after slashing{:?}",
+                        "operator_1 shares after slashing: {:?}",
                         operator_1_shares_after_slashing
                     );
                     let operator_2_shares_after_slashing = delegation_manager_contract
@@ -199,7 +199,7 @@ impl Challenger {
                         .unwrap()
                         .shares;
                     info!(
-                        "operator_2 shares after slashing{:?}",
+                        "operator_2 shares after slashing: {:?}",
                         operator_2_shares_after_slashing
                     );
                     return Ok(());

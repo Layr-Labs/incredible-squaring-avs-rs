@@ -168,7 +168,7 @@ impl AvsWriter {
             .await?
             .get_receipt()
             .await?;
-        info!("receipt for response{:?}", receipt.transaction_hash);
+        info!("receipt for response: {:?}", receipt.transaction_hash);
 
         Ok(())
     }
