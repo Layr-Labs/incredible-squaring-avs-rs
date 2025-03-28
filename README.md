@@ -157,6 +157,17 @@ The architecture of the AVS contains:
 - Operators
   - Square the number sent to the task manager by the task generator, sign it, and send it to the aggregator
 
+## Structure Documentation
+
+### Aggregator
+
+Aggregator spawns three tokio tasks for doing different thigs:
+
+- [start_server](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L193-L199), starts the server and maps the server endpoint to the [process_signed_task_response method](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L214-L219), which [sends the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L261) to be processed by the BLS Aggregation Service process_signature method, and [adds the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L269-L273) to its map of task responses.
+- [process_tasks](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L279-L283), listens to NewTaskCreated events, and if one is received, saves that task and [sends it](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L320-L323) to the BLS aggregation service initialize_task method.
+- [process_aggregator_responses](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L330-L337),  [receives aggregated responses](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L340-L352) from the BLS aggregation service, and, in case it has the associated task response, [sends the aggregated response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L362-L369) to the Task Manager contract.
+
+
 ## Default Configuration
 
 - Metrics http endpoint - `http://localhost:9001/metrics`
