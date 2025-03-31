@@ -178,6 +178,10 @@ Challenger subscribe to 2 events, [TaskResponded](https://github.com/Layr-Labs/i
 
 Operator subscribes to [NewTaskCreated events](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L136-L138) and listens to them. If one is received, processes the new task in process_new_task method, that [process the task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L93) and [returns the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L106-L109). After that, [signs the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L156C53-L156C71) and [sends it](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L157-L159) to the BLS aggregation service.
 
+### Task Generator
+
+Task Generator [sends a new task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L66-L77) to Task Manager [every 10 seconds](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L85).
+
 ## Default Configuration
 
 - Metrics http endpoint - `http://localhost:9001/metrics`
