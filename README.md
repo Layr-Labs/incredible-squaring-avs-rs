@@ -394,7 +394,36 @@ After that, [signs the response](https://github.com/Layr-Labs/incredible-squarin
 
 ### Task Generator
 
-Task Generator [sends a new task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L66-L77) to Task Manager [every 10 seconds](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L85).
+Task Generator code is the following:
+``` Rust
+pub async fn start(&self) -> eyre::Result<()> {
+  sleep(Duration::from_secs(10)).await; // wait for 10 seconds first
+
+  // url, signer, wallet, pr, task_manager_contract and task_num definition
+
+  loop {
+    let number_to_be_squared = task_num;
+    let quorum_threshold_percentage = 40;
+    let quorum_numbers = Bytes::from_str(&self.quorum_numbers)?;
+
+    let _ = task_manager_contract
+      .createNewTask(
+        number_to_be_squared,
+        quorum_threshold_percentage,
+        quorum_numbers.clone(),
+      )
+      .send()
+      .await?;
+
+    // // Increment the task number for the next iteration
+    task_num += *TASK_NUMBER_INCREMENT_VALUE;
+
+    // // Wait for 10 seconds before the next iteration
+    sleep(Duration::from_secs(10)).await;
+  }
+}
+```
+This code [sends a new task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L66-L77) to Task Manager [every 10 seconds](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L85).
 
 ## Default Configuration
 
