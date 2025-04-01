@@ -77,4 +77,4 @@ incredible-task-generator = { path = "crates/task_generator/" }
 incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 
 # eigensdk-rs 
-eigensdk = { version = "0.5.0", features = ["full"] }
+eigensdk = { path = "../eigensdk-rs/crates/eigensdk", package = "eigensdk", features = ["full"] }
