@@ -1,9 +1,10 @@
 //! Aggregator crate
-
 /// Aggregator error
 pub mod error;
 /// RPC server
 pub mod rpc_server;
+/// Task processor
+pub mod task_processor;
 use alloy::dyn_abi::SolType;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};
