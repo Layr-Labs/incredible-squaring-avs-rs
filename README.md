@@ -223,6 +223,7 @@ async fn process_signed_task_response(
 [This code](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L245-L276) obtains the task_signature, and sends it to the BLS Aggregation service to process it.
 
 The second process runs `process_tasks()` method on a separate task:
+
 ``` Rust
 async fn process_tasks(
   ws_rpc_url: String,
@@ -265,6 +266,7 @@ async fn process_tasks(
 3. Calls BLS Aggregation service `initialize_task()` method, with the metadata of the new task as parameter
 
 The third process runs a new task with this code:
+
 ``` Rust
 loop {
   // Wait for the next aggregated response received from BLS aggregator service
@@ -297,6 +299,7 @@ In a simple way, [listens to aggregated responses](https://github.com/Layr-Labs/
 ### Challenger
 
 The challenger logic is placed in [this loop](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L105-L135) on `start_challenger()` method:
+
 ``` Rust
 loop {
   tokio::select! {
@@ -327,6 +330,7 @@ loop {
 }
 ```
 We are covering first the case where we receive a NewTaskCreated event. In that case, we create a NewTaskCreated struct, and send it as parameter of the [`process_new_task_created_log()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L141-L146), that adds the task to the tasks HashMap, indexed by the task index. If we receive a TaskResponded event, then we process that event obtaining the index of that task, [to verify that index matches](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L110) a task in the tasks HashMap. If matches a task, we will call to [`call_challenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L149):
+
 ``` Rust
 pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
   if let Some(task) = self.tasks.get(&task_index) {
@@ -377,6 +381,7 @@ while let Some(log) = stream.next().await {
 ```
 Here, operator 
 Operator subscribes to [NewTaskCreated events](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L136-L138) and listens to them. If one is received, processes the new task in process_new_task method:
+
 ``` Rust
 pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
   let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
@@ -398,6 +403,7 @@ After that, [signs the response](https://github.com/Layr-Labs/incredible-squarin
 ### Task Generator
 
 Task Generator code is the following:
+
 ``` Rust
 pub async fn start(&self) -> eyre::Result<()> {
   sleep(Duration::from_secs(10)).await; // wait for 10 seconds first
