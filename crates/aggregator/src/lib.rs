@@ -5,6 +5,9 @@ pub mod error;
 pub mod rpc_server;
 /// Task processor
 pub mod task_processor;
+/// Task response
+pub mod task_response;
+
 use alloy::dyn_abi::SolType;
 use alloy::providers::Provider;
 use alloy::providers::{ProviderBuilder, WsConnect};

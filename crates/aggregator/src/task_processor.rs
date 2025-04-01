@@ -1,37 +1,20 @@
 use alloy::primitives::B256;
-use alloy::sol_types::SolValue;
 use eigensdk::aggregator::traits::task_processor::{TaskProcessor, TaskProcessorError};
 use eigensdk::aggregator::traits::task_response::TaskResponse;
+use eigensdk::services_blsaggregation::bls_agg::TaskMetadata;
 use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
-use eigensdk::{services_blsaggregation::bls_agg::TaskMetadata, types::avs::TaskIndex};
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse as TaskResponseContract;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::NewTaskCreated;
-use serde::{Deserialize, Serialize};
 use tracing::info;
+
+use crate::task_response::IncredibleTaskResponse;
 
 #[derive(Debug, Clone)]
 /// Task processor implementation
 pub struct TaskProcessorImpl;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-/// Task response implementation
-pub struct TaskResponseImpl {
-    task_response: TaskResponseContract,
-}
-
-impl TaskResponse for TaskResponseImpl {
-    fn digest(&self) -> B256 {
-        alloy::primitives::keccak256(TaskResponseContract::abi_encode(&self.task_response))
-    }
-
-    fn task_index(&self) -> TaskIndex {
-        self.task_response.referenceTaskIndex
-    }
-}
-
 impl TaskProcessor for TaskProcessorImpl {
     type NewTaskEvent = NewTaskCreated;
-    type TaskResponse = TaskResponseImpl;
+    type TaskResponse = IncredibleTaskResponse;
 
     async fn process_new_task(
         &self,
