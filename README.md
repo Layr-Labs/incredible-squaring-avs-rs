@@ -169,6 +169,7 @@ This PR has 4 main participants:
 - Task Generator: the task generator [sends a new task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L66-L77) to Task Manager contract [every 10 seconds](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L85).
 
 Now we are showing each one in a more detailed way:
+
 ### Aggregator
 
 The aggregator logic is exposed on this segment of code in [`start()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L146):
