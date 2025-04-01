@@ -346,7 +346,51 @@ This code is simplified to be shown here, but in a simplified way [gets the task
 
 ### Operator
 
-Operator subscribes to [NewTaskCreated events](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L136-L138) and listens to them. If one is received, processes the new task in process_new_task method, that [process the task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L93) and [returns the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L106-L109). After that, [signs the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L156C53-L156C71) and [sends it](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L157-L159) to the BLS aggregation service.
+The operator logic is in this code:
+```Rust
+let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
+let sub = provider.subscribe_logs(&filter).await?;
+let mut stream = sub.into_stream();
+
+while let Some(log) = stream.next().await {
+  let task_option = log
+    .log_decode::<IncredibleSquaringTaskManager::NewTaskCreated>()
+    .ok();
+  if let Some(task) = task_option {
+    let data = task.data();
+    let new_task_created = NewTaskCreated {
+      task: data.task.clone(),
+      taskIndex: data.taskIndex,
+    };
+
+    incredible_metrics::increment_num_tasks_received();
+    let task_response = self.process_new_task(new_task_created);
+    let signed_task_response = self.sign_task_response(task_response)?;
+    let _ = arc_client
+      .send_signed_task_response(signed_task_response)
+      .await;
+  }
+}
+```
+Here, operator 
+Operator subscribes to [NewTaskCreated events](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L136-L138) and listens to them. If one is received, processes the new task in process_new_task method:
+``` Rust
+pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
+  let mut number_to_be_squared = new_task_created.task.numberToBeSquared;
+
+  // Random fail logic
+
+  let num_squared = number_to_be_squared * number_to_be_squared;
+
+  TaskResponse {
+      referenceTaskIndex: new_task_created.taskIndex,
+      numberSquared: num_squared,
+  }
+}
+```
+This method [processes the task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L93) and [returns the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L106-L109). 
+
+After that, [signs the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L156C53-L156C71) and [sends it](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L157-L159) to the BLS aggregation service.
 
 ### Task Generator
 
