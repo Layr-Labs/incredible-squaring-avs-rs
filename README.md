@@ -160,6 +160,7 @@ The architecture of the AVS contains:
 ## Structure Documentation
 
 This PR has 4 main participants:
+
 - Aggregator: The aggregator does 3 things in parallel:
   - [Listens to operators responses](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L206-L210) for created tasks to [send them](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L261) to the BLS Aggregation service.
   - [Listens to NewTaskCreated events](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L290-L292), and if one is received, saves that task and [sends it](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L320-L323) to the BLS aggregation service initialize_task method.
@@ -220,6 +221,7 @@ async fn process_signed_task_response(
   Ok(())
 }
 ```
+
 [This code](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L245-L276) obtains the task_signature, and sends it to the BLS Aggregation service to process it.
 
 The second process runs `process_tasks()` method on a separate task:
@@ -260,7 +262,9 @@ async fn process_tasks(
   Ok(())
 }
 ```
+
 [This code](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L279-L327) listens to new NewTaskCreated events, and in case it receives a new one:
+
 1. Parses task metadata parameters from task
 2. Creates the task metadata from that parameters
 3. Calls BLS Aggregation service `initialize_task()` method, with the metadata of the new task as parameter
@@ -294,6 +298,7 @@ loop {
   }
 }
 ```
+
 In a simple way, [listens to aggregated responses](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L340-L352) from BLS aggregation service, and when receives one sends it to the Task Manager contract with [`send_aggregated_response_to_contract()` method](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L381-L386).
 
 ### Challenger
@@ -329,6 +334,7 @@ loop {
   };
 }
 ```
+
 We are covering first the case where we receive a NewTaskCreated event. In that case, we create a NewTaskCreated struct, and send it as parameter of the [`process_new_task_created_log()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L141-L146), that adds the task to the tasks HashMap, indexed by the task index. If we receive a TaskResponded event, then we process that event obtaining the index of that task, [to verify that index matches](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L110) a task in the tasks HashMap. If matches a task, we will call to [`call_challenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L149):
 
 ``` Rust
@@ -348,12 +354,13 @@ pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerErro
   }
 }
 ```
-This code is simplified to be shown here, but in a simplified way [gets the task](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L150) from the tasks HashMap, and [if the response calculated by the challenger differs from the one from the Task](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L154-L155), then a challenge will be raise calling [`raise_challenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L218-L221), that ends up calling [`raiseAndResolveChallenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/contracts/src/IncredibleSquaringTaskManager.sol#L170-L175) from Task Manager contract.
 
+This code is simplified to be shown here, but in a simplified way [gets the task](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L150) from the tasks HashMap, and [if the response calculated by the challenger differs from the one from the Task](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L154-L155), then a challenge will be raise calling [`raise_challenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L218-L221), that ends up calling [`raiseAndResolveChallenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/contracts/src/IncredibleSquaringTaskManager.sol#L170-L175) from Task Manager contract.
 
 ### Operator
 
 The operator logic is in this code:
+
 ```Rust
 let filter = Filter::new().event_signature(NewTaskCreated::SIGNATURE_HASH);
 let sub = provider.subscribe_logs(&filter).await?;
@@ -379,8 +386,8 @@ while let Some(log) = stream.next().await {
   }
 }
 ```
-Here, operator 
-Operator subscribes to [NewTaskCreated events](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L136-L138) and listens to them. If one is received, processes the new task in process_new_task method:
+
+Here, operator subscribes to [NewTaskCreated events](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L136-L138) and listens to them. If one is received, processes the new task in process_new_task method:
 
 ``` Rust
 pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse {
@@ -396,7 +403,8 @@ pub fn process_new_task(&self, new_task_created: NewTaskCreated) -> TaskResponse
   }
 }
 ```
-This method [processes the task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L93) and [returns the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L106-L109). 
+
+This method [processes the task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L93) and [returns the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L106-L109).
 
 After that, [signs the response](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L156C53-L156C71) and [sends it](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/operator/src/builder.rs#L157-L159) to the BLS aggregation service.
 
@@ -432,6 +440,7 @@ pub async fn start(&self) -> eyre::Result<()> {
   }
 }
 ```
+
 This code [sends a new task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L66-L77) to Task Manager [every 10 seconds](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L85).
 
 ## Default Configuration
