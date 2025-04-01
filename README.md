@@ -198,6 +198,7 @@ let responses_handle = tokio::spawn(Self::process_aggregator_responses(
 ```
 
 The first process starts a server with an async function that [receives parameters](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L206-L210) and [calls `process_signed_task_response()` method](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/aggregator/src/lib.rs#L214-L219), which code is the following:
+
 ``` Rust
 async fn process_signed_task_response(
   signed_task_response: SignedTaskResponse,
