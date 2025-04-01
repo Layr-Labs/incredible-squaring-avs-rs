@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// Task response implementation
 pub struct IncredibleTaskResponse {
-    task_response: TaskResponseContract,
+    pub task_response: TaskResponseContract,
 }
 
 impl TaskResponse for IncredibleTaskResponse {
