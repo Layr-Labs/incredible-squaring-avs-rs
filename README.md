@@ -173,6 +173,7 @@ Now we are showing each one in a more detailed way:
 ### Aggregator
 
 The aggregator logic is exposed on this segment of code in [`start()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L146):
+
 ``` Rust
 // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
 // 1) Process signatures
