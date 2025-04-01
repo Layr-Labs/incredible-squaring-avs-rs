@@ -171,7 +171,7 @@ This PR has 4 main participants:
 Now we are showing each one in a more detailed way:
 ### Aggregator
 
-The aggregator logic is exposed on this segment of code in `start()` method:
+The aggregator logic is exposed on this segment of code in [`start()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L146):
 ``` Rust
 // Spawn three tasks: one for the server, one for processing tasks and one for processing aggregator responses
 // 1) Process signatures
@@ -217,9 +217,9 @@ async fn process_signed_task_response(
   Ok(())
 }
 ```
-This code obtains the task_signature, and sends it to the BLS Aggregation service to process it.
+[This code](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L245-L276) obtains the task_signature, and sends it to the BLS Aggregation service to process it.
 
-The second process runs this code on a separate task:
+The second process runs `process_tasks()` method on a separate task:
 ``` Rust
 async fn process_tasks(
   ws_rpc_url: String,
@@ -256,7 +256,7 @@ async fn process_tasks(
   Ok(())
 }
 ```
-This code listens to new NewTaskCreated events, and in case it receives a new one:
+[This code](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/aggregator/src/lib.rs#L279-L327) listens to new NewTaskCreated events, and in case it receives a new one:
 1. Parses task metadata parameters from task
 2. Creates the task metadata from that parameters
 3. Calls BLS Aggregation service `initialize_task()` method, with the metadata of the new task as parameter
@@ -293,10 +293,56 @@ In a simple way, [listens to aggregated responses](https://github.com/Layr-Labs/
 
 ### Challenger
 
-Challenger subscribe to 2 events, [TaskResponded](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L107-L113) and [NewTaskCreated](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L114-L127):
+The challenger logic is placed in [this loop](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L105-L135) on `start_challenger()` method:
+``` Rust
+loop {
+  tokio::select! {
+    Some(log) = task_responded_stream.next() => {
+      let task_index = self.process_task_response_log(log).await?;
+      if self.tasks.contains_key(&task_index) {
+        self.call_challenge(task_index).await?;
+      }
+    },
+    Some(log) = new_task_created_stream.next() => {
+      let new_task_created_option = log.log_decode::<NewTaskCreated>().ok();
 
-- If receives a TaskResponded event, processes the task response with the [process_task_response_log method](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L245-L248), that saves the task response in a hashMap and returns the key that matches the data value. If the [task has been initialized](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L110), then calls [call_challenge method](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L149). That method [calculates the response and compares it](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L151-L155) to the task response, [raising a challenge](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L183C34-L183C49) (that means to [call the Task Manager contract](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/chainio/src/lib.rs#L124-L129)) if they are different.
-- If receives a NewTaskCreated event, the processes it calling the [process_new_task_created_log method](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L141), that [adds the task to the tasks hashMap](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/challenger/src/lib.rs#L142-L143).
+      if let Some(data) = new_task_created_option {
+        let m = data.data();
+        let new_task_cr = NewTaskCreated {
+          taskIndex: m.taskIndex,
+          task: m.task.clone(),
+        };
+
+        let _ = self.process_new_task_created_log(new_task_cr);
+      }
+    },
+    else => {
+      // If both streams are exhausted, break the loop.
+      break;
+    }
+  };
+}
+```
+We are covering first the case where we receive a NewTaskCreated event. In that case, we create a NewTaskCreated struct, and send it as parameter of the [`process_new_task_created_log()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L141-L146), that adds the task to the tasks HashMap, indexed by the task index. If we receive a TaskResponded event, then we process that event obtaining the index of that task, [to verify that index matches](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L110) a task in the tasks HashMap. If matches a task, we will call to [`call_challenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L149):
+``` Rust
+pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
+  if let Some(task) = self.tasks.get(&task_index) {
+    let num_to_square = task.numberToBeSquared;
+
+    if let Some(answer_in_response) = self.task_responses.get(&task_index) {
+      let answer = answer_in_response.task_response.numberSquared;
+      if answer != (num_to_square * num_to_square) {
+        let _ = self.raise_challenge(task_index).await;
+
+        return Ok(());
+      }
+      Ok(())
+    }
+  }
+}
+```
+This code is simplified to be shown here, but in a simplified way [gets the task](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L150) from the tasks HashMap, and [if the response calculated by the challenger differs from the one from the Task](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L154-L155), then a challenge will be raise calling [`raise_challenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/crates/challenger/src/lib.rs#L218-L221), that ends up calling [`raiseAndResolveChallenge()` method](https://github.com/maximopalopoli/incredible-squaring-avs-rs/blob/484e6968da4a9a0ee4e22effb0da807306fe76b7/contracts/src/IncredibleSquaringTaskManager.sol#L170-L175) from Task Manager contract.
+
 
 ### Operator
 
