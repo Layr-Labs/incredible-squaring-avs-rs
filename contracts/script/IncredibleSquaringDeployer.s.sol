@@ -113,7 +113,6 @@ contract IncredibleSquaringDeployer is Script {
 
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
         require(address(incredibleSquaringStrategy) != address(0));
-        require(address(incredibleSquaringStrategy) != address(0));
         incrediblSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, configData, address(incredibleSquaringStrategy), isConfig, msg.sender
         );
