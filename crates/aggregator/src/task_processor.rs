@@ -1,6 +1,6 @@
 use alloy::primitives::B256;
 use ark_ec::AffineRepr;
-use eigensdk::aggregator::traits::task_processor::{TaskProcessor, TaskProcessorError};
+use eigensdk::aggregator::traits::task_processor::{box_error, TaskProcessor, TaskProcessorError};
 use eigensdk::aggregator::traits::task_response::TaskResponse;
 use eigensdk::aggregator::AggregatorError;
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
@@ -35,20 +35,20 @@ pub struct IncredibleTaskProcessor {
 
 impl IncredibleTaskProcessor {
     /// Create a new task processor
-    pub async fn new(config: IncredibleConfig) -> Self {
+    pub async fn new(config: IncredibleConfig) -> Result<Self, TaskProcessorError> {
         let avs_writer = AvsWriter::new(
             config.service_manager_addr().unwrap(),
             config.http_rpc_url(),
             config.get_signer(),
         )
         .await
-        .unwrap();
+        .map_err(box_error)?;
 
-        Self {
+        Ok(Self {
             tasks: HashMap::new(),
             task_responses: HashMap::new(),
             avs_writer,
-        }
+        })
     }
 }
 
@@ -99,9 +99,7 @@ impl TaskProcessor for IncredibleTaskProcessor {
             response.task_index, response.task_response_digest
         );
 
-        self.send_aggregated_response_to_contract(response)
-            .await
-            .unwrap();
+        self.send_aggregated_response_to_contract(response).await?;
 
         info!("Aggregated response sent to contract");
         Ok(())
@@ -112,11 +110,11 @@ impl IncredibleTaskProcessor {
     async fn send_aggregated_response_to_contract(
         &self,
         response: BlsAggregationServiceResponse,
-    ) -> Result<(), AggregatorError> {
+    ) -> Result<(), TaskProcessorError> {
         let mut non_signer_pub_keys = Vec::<G1Point>::new();
         for pub_key in response.non_signers_pub_keys_g1.iter() {
             if pub_key.g1().x().is_some() {
-                let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+                let g1 = convert_to_g1_point(pub_key.g1()).map_err(box_error)?;
                 non_signer_pub_keys.push(G1Point { X: g1.X, Y: g1.Y })
             } else {
                 info!(
@@ -128,7 +126,7 @@ impl IncredibleTaskProcessor {
 
         let mut quorum_apks = Vec::<G1Point>::new();
         for pub_key in response.quorum_apks_g1.iter() {
-            let g1 = convert_to_g1_point(pub_key.g1()).unwrap();
+            let g1 = convert_to_g1_point(pub_key.g1()).map_err(box_error)?;
             quorum_apks.push(G1Point { X: g1.X, Y: g1.Y })
         }
 
@@ -142,10 +140,10 @@ impl IncredibleTaskProcessor {
             },
             sigma: G1Point {
                 X: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                    .unwrap()
+                    .map_err(box_error)?
                     .X,
                 Y: convert_to_g1_point(response.signers_agg_sig_g1.g1_point().g1())
-                    .unwrap()
+                    .map_err(box_error)?
                     .Y,
             },
             quorumApkIndices: response.quorum_apk_indices,
@@ -165,7 +163,7 @@ impl IncredibleTaskProcessor {
         self.avs_writer
             .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
             .await
-            .unwrap();
+            .map_err(box_error)?;
         Ok(())
     }
 }
