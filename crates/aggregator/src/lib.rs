@@ -11,7 +11,7 @@ use eigensdk::aggregator::AggregatorError;
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigensdk::services_blsaggregation::bls_agg::TaskMetadata;
 use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
-use eigensdk::types::avs::TaskIndex;
+use eigensdk::types::avs::{TaskIndex, TaskResponseDigest};
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureCheckerTypes::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
     Task, TaskResponse as TaskResponseContract,
@@ -33,7 +33,7 @@ const BLOCK_TIME_SECONDS: u32 = 12;
 /// Task processor implementation
 pub struct IncredibleTaskProcessor {
     tasks: HashMap<u32, Task>,
-    task_responses: HashMap<u32, TaskResponseContract>,
+    task_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponseContract>>,
     avs_writer: AvsWriter,
 }
 
@@ -77,18 +77,18 @@ impl TaskProcessor for IncredibleTaskProcessor {
             // TODO: Handle this correctly -> u32 to u8
             vec![event.task.quorumThresholdPercentage as u8],
             time_to_expiry,
-        )
-        .with_window_duration(tokio::time::Duration::from_secs(5)))
+        ))
     }
 
     async fn process_task_response(
         &mut self,
         response: Self::TaskResponse,
     ) -> Result<B256, TaskProcessorError> {
-        if self.tasks.contains_key(&response.task_index()) {
-            self.task_responses
-                .insert(response.task_index(), response.clone().task_response);
-        }
+        self.task_responses
+            .entry(response.task_index())
+            .or_default()
+            .entry(response.digest())
+            .or_insert(response.task_response.clone());
 
         Ok(response.digest())
     }
@@ -157,13 +157,16 @@ impl IncredibleTaskProcessor {
         };
 
         let task = &self.tasks[&response.task_index];
-        let task_response = &self.task_responses[&response.task_index];
+
+        let task_response = self
+            .task_responses
+            .get(&response.task_index)
+            .and_then(|map| map.get(&response.task_response_digest))
+            .cloned()
+            .unwrap();
+
         self.avs_writer
-            .send_aggregated_response(
-                task.clone(),
-                task_response.clone(),
-                non_signer_stakes_and_signature,
-            )
+            .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
             .await
             .unwrap();
         Ok(())
