@@ -12,6 +12,7 @@ use rand::Rng;
 
 use alloy::primitives::U256;
 use alloy::providers::{Provider, ProviderBuilder};
+use eigensdk::aggregator::SignedTaskResponse;
 use eigensdk::client_avsregistry::reader::AvsRegistryChainReader;
 use eigensdk::client_eth::instrumented_client::InstrumentedClient;
 use eigensdk::crypto_bls::BlsKeyPair;
@@ -19,7 +20,7 @@ use eigensdk::logging::get_logger;
 use eigensdk::types::operator::OperatorId;
 use eyre::Result;
 use futures_util::StreamExt;
-use incredible_aggregator::rpc_server::SignedTaskResponse;
+use incredible_aggregator::IncredibleTaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
     self, NewTaskCreated,
@@ -97,9 +98,11 @@ impl OperatorBuilder {
 
         let num_squared = if should_fail {
             info!("operator1 : incorrect answer");
+            dbg!(U256::from(28));
             U256::from(28) // Incorrect answer
         } else {
             info!("operator1 : correct answer");
+            dbg!(number_to_be_squared * number_to_be_squared);
             number_to_be_squared * number_to_be_squared // Correct answer
         };
 
@@ -167,13 +170,16 @@ impl OperatorBuilder {
     pub fn sign_task_response(
         &self,
         task_response: TaskResponse,
-    ) -> Result<SignedTaskResponse, OperatorError> {
+    ) -> Result<SignedTaskResponse<IncredibleTaskResponse>, OperatorError> {
         let encoded_response = TaskResponse::abi_encode(&task_response);
         let hash_msg = keccak256(encoded_response);
 
         let signed_msg = self.key_pair.sign_message(&hash_msg);
-        let signed_task_response =
-            SignedTaskResponse::new(task_response, signed_msg, self.operator_id);
+        let signed_task_response = SignedTaskResponse::new(
+            IncredibleTaskResponse { task_response },
+            signed_msg,
+            self.operator_id,
+        );
         Ok(signed_task_response)
     }
 }
@@ -314,7 +320,7 @@ mod tests {
         assert!(verify_message(
             bls_key_pair.public_key_g2().g2(),
             &hash_msg,
-            signed_task_response.signature().g1_point().g1()
+            signed_task_response.signature.g1_point().g1()
         ));
     }
 }

@@ -1,6 +1,7 @@
 use alloy::rpc::client::{ReqwestClient, RpcClient};
+use eigensdk::aggregator::SignedTaskResponse;
 use eyre::Result;
-pub use incredible_aggregator::rpc_server::SignedTaskResponse;
+use incredible_aggregator::IncredibleTaskResponse;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
 use tracing::{debug, info};
@@ -34,7 +35,7 @@ impl ClientAggregator {
     /// Send signed task response
     pub async fn send_signed_task_response(
         &self,
-        signed_task_response: SignedTaskResponse,
+        signed_task_response: SignedTaskResponse<IncredibleTaskResponse>,
     ) -> Result<()> {
         #[allow(unused_mut)]
         let mut delay = Duration::from_secs(1);

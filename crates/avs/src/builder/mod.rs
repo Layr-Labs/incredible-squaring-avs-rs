@@ -1,7 +1,9 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
+use eigensdk::aggregator::config::AggregatorConfig;
+use eigensdk::aggregator::Aggregator;
 use eigensdk::nodeapi::{NodeApi, NodeInfo};
 use futures::TryFutureExt;
-use incredible_aggregator::Aggregator;
+use incredible_aggregator::IncredibleTaskProcessor;
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
@@ -70,10 +72,22 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-        let aggregator = Aggregator::new(avs.config.clone()).await?;
-        let aggregator_service_with_rpc_client = aggregator
-            .start(avs.config.ws_rpc_url().clone())
-            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+
+        let aggregator_config = AggregatorConfig {
+            server_address: avs.config.aggregator_ip_addr(),
+            registry_coordinator: avs.config.registry_coordinator_addr().unwrap(),
+            operator_state_retriever: avs.config.operator_state_retriever_addr().unwrap(),
+            http_rpc_url: avs.config.http_rpc_url(),
+            ws_rpc_url: avs.config.ws_rpc_url(),
+        };
+        let task_processor = IncredibleTaskProcessor::new(avs.config.clone()).await;
+        let aggregator_service = Aggregator::new(aggregator_config, task_processor)
+            .await
+            .unwrap();
+        let ws_rpc_url = avs.config.ws_rpc_url().clone();
+        tokio::spawn(async move {
+            aggregator_service.start(ws_rpc_url).await.unwrap();
+        });
 
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
@@ -96,11 +110,10 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             });
         });
 
-        let _ = futures::future::try_join5(
+        let _ = futures::future::try_join4(
             operator_service,
             operator2_service,
             challenger_service,
-            aggregator_service_with_rpc_client,
             task_spam_service,
         )
         .await?;
