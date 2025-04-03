@@ -41,7 +41,7 @@ cargo run --bin incredible-squaring-avs start
 
 This command launches 5 services:
 
-- Aggregator: receives signed task responses from operators via a JSON-RPC server, aggregates the signatures, and calls the `TaskManager` contract's `respondToTask` function once quorum is reached.
+- Aggregator: use the `aggregator` provided by [eigensdk](https://github.com/Layr-Labs/eigensdk-rs). It only implements the `TaskProcessor` and `TaskResponse` traits, and initialize and start the aggregator.
 - 2 operators: they wait for new tasks, respond to them and sign with their BLS keys, and then send the signed response to the aggregator.
 - 1 challenger: it listens for task creations and responses, verifies the responses are correct and, if wrong, raises a challenge by calling the `raiseAndResolveChallenge` function in the `TaskManager` contract.
 - 1 task generator: it periodically creates new tasks by calling the `createNewTask` function of the `TaskManager` contract.
