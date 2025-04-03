@@ -3,9 +3,9 @@ use ark_ec::AffineRepr;
 use eigensdk::aggregator::traits::task_processor::{TaskProcessor, TaskProcessorError};
 use eigensdk::aggregator::traits::task_response::TaskResponse;
 use eigensdk::aggregator::AggregatorError;
+use eigensdk::aggregator::BlsAggregationServiceResponse;
+use eigensdk::aggregator::TaskMetadata;
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
-use eigensdk::services_blsaggregation::bls_agg::TaskMetadata;
-use eigensdk::services_blsaggregation::bls_aggregation_service_response::BlsAggregationServiceResponse;
 use eigensdk::types::avs::TaskResponseDigest;
 use incredible_bindings::incrediblesquaringtaskmanager::IBLSSignatureCheckerTypes::NonSignerStakesAndSignature;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
