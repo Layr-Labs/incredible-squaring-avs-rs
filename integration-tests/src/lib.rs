@@ -437,12 +437,6 @@ mod tests {
 
         let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
 
-        // let config_clone = incredible_config.clone();
-        // let aggregator_handle =
-        //     tokio::spawn(
-        //         async move { Aggregator::new(config_clone).await?.start(ws_rpc_url).await },
-        //     );
-
         let aggregator_config = AggregatorConfig {
             server_address: incredible_config.aggregator_ip_addr(),
             registry_coordinator: incredible_config.registry_coordinator_addr().unwrap(),

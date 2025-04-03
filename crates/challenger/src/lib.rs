@@ -151,7 +151,6 @@ impl Challenger {
             let num_to_square = task.numberToBeSquared;
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
-
                 if answer != (num_to_square * num_to_square) {
                     info!("raising challenge for task index {:?} to slash the signatories for this task." ,task_index);
                     let delegation_manager_contract = DelegationManager::new(
