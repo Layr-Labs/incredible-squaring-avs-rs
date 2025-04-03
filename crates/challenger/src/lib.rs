@@ -149,10 +149,8 @@ impl Challenger {
     pub async fn call_challenge(&self, task_index: u32) -> Result<(), ChallengerError> {
         if let Some(task) = self.tasks.get(&task_index) {
             let num_to_square = task.numberToBeSquared;
-            dbg!(num_to_square);
             if let Some(answer_in_response) = self.task_responses.get(&task_index) {
                 let answer = answer_in_response.task_response.numberSquared;
-                dbg!(answer);
 
                 if answer != (num_to_square * num_to_square) {
                     info!("raising challenge for task index {:?} to slash the signatories for this task." ,task_index);

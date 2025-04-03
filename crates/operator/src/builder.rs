@@ -98,11 +98,9 @@ impl OperatorBuilder {
 
         let num_squared = if should_fail {
             info!("operator1 : incorrect answer");
-            dbg!(U256::from(28));
             U256::from(28) // Incorrect answer
         } else {
             info!("operator1 : correct answer");
-            dbg!(number_to_be_squared * number_to_be_squared);
             number_to_be_squared * number_to_be_squared // Correct answer
         };
 

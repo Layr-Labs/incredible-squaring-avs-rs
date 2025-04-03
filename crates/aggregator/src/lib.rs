@@ -78,7 +78,7 @@ impl TaskProcessor for IncredibleTaskProcessor {
             vec![event.task.quorumThresholdPercentage as u8],
             time_to_expiry,
         )
-        .with_window_duration(tokio::time::Duration::from_secs(1)))
+        .with_window_duration(tokio::time::Duration::from_secs(5)))
     }
 
     async fn process_task_response(
