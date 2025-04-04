@@ -79,13 +79,18 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             http_rpc_url: avs.config.http_rpc_url(),
             ws_rpc_url: avs.config.ws_rpc_url(),
         };
-        let task_processor = IncredibleTaskProcessor::new(avs.config.clone()).await;
+        let task_processor = IncredibleTaskProcessor::new(avs.config.clone())
+            .await
+            .map_err(|e| eyre::eyre!("Task processor error: {:?}", e))?;
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
-            .unwrap();
+            .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
         let ws_rpc_url = avs.config.ws_rpc_url().clone();
         tokio::spawn(async move {
-            aggregator_service.start(ws_rpc_url).await.unwrap();
+            let _ = aggregator_service
+                .start(ws_rpc_url)
+                .await
+                .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
         });
 
         let task_manager = TaskManager::new(

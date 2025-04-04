@@ -260,7 +260,9 @@ mod tests {
             http_rpc_url: incredible_config.http_rpc_url(),
             ws_rpc_url: incredible_config.ws_rpc_url(),
         };
-        let task_processor = IncredibleTaskProcessor::new(incredible_config.clone()).await;
+        let task_processor = IncredibleTaskProcessor::new(incredible_config.clone())
+            .await
+            .unwrap();
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
             .unwrap();
@@ -444,7 +446,9 @@ mod tests {
             http_rpc_url: incredible_config.http_rpc_url(),
             ws_rpc_url: incredible_config.ws_rpc_url(),
         };
-        let task_processor = IncredibleTaskProcessor::new(incredible_config.clone()).await;
+        let task_processor = IncredibleTaskProcessor::new(incredible_config.clone())
+            .await
+            .unwrap();
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
             .unwrap();
