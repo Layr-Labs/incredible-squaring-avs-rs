@@ -1,5 +1,6 @@
 use alloy::primitives::B256;
 use ark_ec::AffineRepr;
+use eigensdk::aggregator::traits::task_processor::box_error;
 use eigensdk::aggregator::{
     AggregatorError, BlsAggregationServiceResponse, TaskMetadata, TaskProcessor,
     TaskProcessorError, TaskResponse,
@@ -71,7 +72,11 @@ impl TaskProcessor for IncredibleTaskProcessor {
             u64::from(event.task.taskCreatedBlock),
             event.task.quorumNumbers.to_vec(),
             // TODO: Handle this correctly -> u32 to u8
-            vec![event.task.quorumThresholdPercentage as u8],
+            vec![event
+                .task
+                .quorumThresholdPercentage
+                .try_into()
+                .map_err(box_error)?],
             time_to_expiry,
         ))
     }
