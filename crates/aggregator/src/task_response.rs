@@ -1,6 +1,6 @@
 use alloy::primitives::B256;
 use alloy::sol_types::SolValue;
-use eigensdk::aggregator::traits::task_response::TaskResponse;
+use eigensdk::aggregator::TaskResponse;
 use eigensdk::types::avs::TaskIndex;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse as TaskResponseContract;
 use serde::{Deserialize, Serialize};
