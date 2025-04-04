@@ -7,17 +7,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// Task response implementation
-pub struct IncredibleTaskResponse {
-    /// Task response
-    pub task_response: TaskResponseContract,
-}
+pub struct IncredibleTaskResponse(pub TaskResponseContract);
 
 impl TaskResponse for IncredibleTaskResponse {
     fn digest(&self) -> B256 {
-        alloy::primitives::keccak256(TaskResponseContract::abi_encode(&self.task_response))
+        alloy::primitives::keccak256(TaskResponseContract::abi_encode(&self.0))
     }
 
     fn task_index(&self) -> TaskIndex {
-        self.task_response.referenceTaskIndex
+        self.0.referenceTaskIndex
     }
 }

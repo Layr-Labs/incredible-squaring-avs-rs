@@ -171,7 +171,7 @@ impl OperatorBuilder {
 
         let signed_msg = self.key_pair.sign_message(&hash_msg);
         let signed_task_response = SignedTaskResponse::new(
-            IncredibleTaskResponse { task_response },
+            IncredibleTaskResponse(task_response),
             signed_msg,
             self.operator_id,
         );
