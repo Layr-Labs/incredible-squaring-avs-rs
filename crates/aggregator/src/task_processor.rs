@@ -2,8 +2,7 @@ use alloy::primitives::B256;
 use ark_ec::AffineRepr;
 use eigensdk::aggregator::traits::task_processor::box_error;
 use eigensdk::aggregator::{
-    AggregatorError, BlsAggregationServiceResponse, TaskMetadata, TaskProcessor,
-    TaskProcessorError, TaskResponse,
+    BlsAggregationServiceResponse, TaskMetadata, TaskProcessor, TaskProcessorError, TaskResponse,
 };
 use eigensdk::crypto_bls::{convert_to_g1_point, convert_to_g2_point};
 use eigensdk::types::avs::TaskResponseDigest;
