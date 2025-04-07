@@ -24,7 +24,7 @@ const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
 /// Block Time Seconds : 12 seconds
 const BLOCK_TIME_SECONDS: u32 = 12;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Task processor implementation
 pub struct IncredibleTaskProcessor {
     tasks: HashMap<u32, Task>,

@@ -28,7 +28,7 @@ use incredible_bindings::{
 use tracing::info;
 
 /// AvsWriter struct
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AvsWriter {
     task_manager_addr: Address,
     signer: String,

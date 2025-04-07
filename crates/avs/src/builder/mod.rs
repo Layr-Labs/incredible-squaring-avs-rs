@@ -9,6 +9,7 @@ use incredible_operator::builder::OperatorBuilder;
 use incredible_operator_2::builder::OperatorBuilder as OperatorBuilder2;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
+use std::time::Duration;
 use std::{future::Future, sync::Arc};
 use tracing::info;
 /// Launch Avs trait
@@ -51,6 +52,27 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
     async fn launch_avs(self, avs: AvsBuilder) -> eyre::Result<()> {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
+
+        let aggregator_config = AggregatorConfig {
+            server_address: avs.config.aggregator_ip_addr(),
+            registry_coordinator: avs.config.registry_coordinator_addr()?,
+            operator_state_retriever: avs.config.operator_state_retriever_addr()?,
+            http_rpc_url: avs.config.http_rpc_url(),
+            ws_rpc_url: avs.config.ws_rpc_url(),
+        };
+        let task_processor = IncredibleTaskProcessor::new(avs.config.clone())
+            .await
+            .map_err(|e| eyre::eyre!("Task processor error: {:?}", e))?;
+        let aggregator = Aggregator::new(aggregator_config, task_processor)
+            .await
+            .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
+        let aggregator_service_with_rpc_client = aggregator
+            .start(avs.config.ws_rpc_url().clone())
+            .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
+
+        // Wait until the aggregator is running
+        tokio::time::sleep(Duration::from_secs(30)).await;
+
         // start operator
         let mut operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
         let mut operator_builder2 = OperatorBuilder2::build(
@@ -71,29 +93,6 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-
-        let aggregator_config = AggregatorConfig {
-            server_address: avs.config.aggregator_ip_addr(),
-            registry_coordinator: avs
-                .config
-                .registry_coordinator_addr()
-                .map_err(|e| eyre::eyre!("Registry coordinator error: {:?}", e))?,
-            operator_state_retriever: avs
-                .config
-                .operator_state_retriever_addr()
-                .map_err(|e| eyre::eyre!("Operator state retriever error: {:?}", e))?,
-            http_rpc_url: avs.config.http_rpc_url(),
-            ws_rpc_url: avs.config.ws_rpc_url(),
-        };
-        let task_processor = IncredibleTaskProcessor::new(avs.config.clone())
-            .await
-            .map_err(|e| eyre::eyre!("Task processor error: {:?}", e))?;
-        let aggregator = Aggregator::new(aggregator_config, task_processor)
-            .await
-            .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
-        let aggregator_service_with_rpc_client = aggregator
-            .start(avs.config.ws_rpc_url().clone())
-            .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
             avs.config.http_rpc_url(),
