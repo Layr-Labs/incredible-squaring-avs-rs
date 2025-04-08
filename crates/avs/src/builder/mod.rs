@@ -9,7 +9,6 @@ use incredible_operator::builder::OperatorBuilder;
 use incredible_operator_2::builder::OperatorBuilder as OperatorBuilder2;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use std::time::Duration;
 use std::{future::Future, sync::Arc};
 use tracing::info;
 /// Launch Avs trait
@@ -93,7 +92,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
         let aggregator_service_with_rpc_client = aggregator
             .start(avs.config.ws_rpc_url().clone())
-            .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
+            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
             avs.config.http_rpc_url(),
