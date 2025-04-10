@@ -11,24 +11,22 @@ description = "incredible avs builder "
 workspace = true
 
 [dependencies]
-alloy.workspace = true
-serde.workspace = true
 eyre.workspace = true
-tracing.workspace = true
 metrics.workspace = true
 metrics-util.workspace = true
 rust-bls-bn254.workspace = true
+tracing.workspace = true
 
 # eigensdk-rs
 eigensdk.workspace = true
 
 #incredible
-incredible-config.workspace = true
-incredible-operator.workspace = true
-incredible-challenger.workspace = true
 incredible-aggregator.workspace = true
-incredible-task-generator.workspace = true
+incredible-challenger.workspace = true
+incredible-config.workspace = true
 incredible-metrics.workspace = true
+incredible-operator.workspace = true
+incredible-task-generator.workspace = true
 
 #tokio
 tokio.workspace = true
@@ -39,5 +37,4 @@ futures = "0.3.30"
 #thiserror
 thiserror.workspace = true
 
-clap.workspace = true
 ntex = { version = "2.0", features = ["tokio"] }

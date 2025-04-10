@@ -4305,8 +4305,6 @@ dependencies = [
 name = "incredible-avs"
 version = "0.0.1-alpha"
 dependencies = [
- "alloy",
- "clap",
  "eigensdk",
  "eyre",
  "futures",
@@ -4320,7 +4318,6 @@ dependencies = [
  "metrics-util",
  "ntex",
  "rust-bls-bn254 0.1.0",
- "serde",
  "thiserror 2.0.7",
  "tokio",
  "tracing",
