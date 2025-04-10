@@ -24,7 +24,8 @@ impl OperatorTaskProcessor for OperatorTaskProcessorImpl {
         let number_to_be_squared = new_task_created.task.numberToBeSquared;
 
         let mut rng = rand::rng();
-        // Use times_failing from config
+
+        // TODO: Use times_failing from config
         let should_fail = rng.random_bool(50_f64 / 100.0);
 
         let num_squared = if should_fail {

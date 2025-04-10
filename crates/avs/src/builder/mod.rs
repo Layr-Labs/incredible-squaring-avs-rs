@@ -64,14 +64,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         // Start the aggregator
         let aggregator_config = AggregatorConfig {
             server_address: avs.config.aggregator_ip_addr(),
-            registry_coordinator: avs
-                .config
-                .registry_coordinator_addr()
-                .map_err(|e| eyre::eyre!("Registry coordinator error: {:?}", e))?,
-            operator_state_retriever: avs
-                .config
-                .operator_state_retriever_addr()
-                .map_err(|e| eyre::eyre!("Operator state retriever error: {:?}", e))?,
+            registry_coordinator: avs.config.registry_coordinator_addr()?,
+            operator_state_retriever: avs.config.operator_state_retriever_addr()?,
             http_rpc_url: avs.config.http_rpc_url(),
             ws_rpc_url: avs.config.ws_rpc_url(),
         };
