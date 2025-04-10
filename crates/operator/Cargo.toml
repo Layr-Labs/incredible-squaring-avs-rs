@@ -19,9 +19,9 @@ tracing.workspace = true
 eigensdk.workspace = true
 
 #incredible
+incredible-aggregator.workspace = true
 incredible-bindings.workspace = true
 incredible-metrics.workspace = true
-incredible-aggregator.workspace = true
 
 [features]
 default = []
