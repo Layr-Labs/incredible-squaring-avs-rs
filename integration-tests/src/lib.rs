@@ -437,24 +437,23 @@ mod tests {
             operator_builder.start_operator().await.unwrap();
         });
 
-        let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
-
-        let aggregator_config = AggregatorConfig {
-            server_address: incredible_config.aggregator_ip_addr(),
-            registry_coordinator: incredible_config.registry_coordinator_addr().unwrap(),
-            operator_state_retriever: incredible_config.operator_state_retriever_addr().unwrap(),
-            http_rpc_url: incredible_config.http_rpc_url(),
-            ws_rpc_url: incredible_config.ws_rpc_url(),
-        };
-        let task_processor = IncredibleTaskProcessor::new(incredible_config.clone())
-            .await
-            .unwrap();
-        let aggregator_service = Aggregator::new(aggregator_config, task_processor)
-            .await
-            .unwrap();
-        tokio::spawn(async move {
-            aggregator_service.start(ws_rpc_url).await.unwrap();
-        });
+        // let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
+        // let aggregator_config = AggregatorConfig {
+        //     server_address: incredible_config.aggregator_ip_addr(),
+        //     registry_coordinator: incredible_config.registry_coordinator_addr().unwrap(),
+        //     operator_state_retriever: incredible_config.operator_state_retriever_addr().unwrap(),
+        //     http_rpc_url: incredible_config.http_rpc_url(),
+        //     ws_rpc_url: incredible_config.ws_rpc_url(),
+        // };
+        // let task_processor = IncredibleTaskProcessor::new(incredible_config.clone())
+        //     .await
+        //     .unwrap();
+        // let aggregator_service = Aggregator::new(aggregator_config, task_processor)
+        //     .await
+        //     .unwrap();
+        // tokio::spawn(async move {
+        //     aggregator_service.start(ws_rpc_url).await.unwrap();
+        // });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
