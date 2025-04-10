@@ -10,7 +10,8 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
 use rand::Rng;
 use tracing::info;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+/// Operator task processor implementation for squaring task
 pub struct OperatorTaskProcessorImpl;
 
 impl OperatorTaskProcessor for OperatorTaskProcessorImpl {

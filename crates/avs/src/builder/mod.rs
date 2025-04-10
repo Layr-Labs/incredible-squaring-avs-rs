@@ -98,11 +98,12 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .unwrap();
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let bls_key_pair = BlsKeyPair::new(fr_key)?;
-
         let operator_task_processor = OperatorTaskProcessorImpl;
+        let operator_1_address = avs.config.operator_address()?;
+
         let operator = Operator::new(
             &bls_key_pair,
-            FIRST_ADDRESS,
+            operator_1_address,
             "FIRST OPERATOR",
             get_logger(),
             &ws_rpc_url,
@@ -110,7 +111,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             registry_coordinator,
             operator_state_retriever,
             server_address.clone(),
-            operator_task_processor,
+            operator_task_processor.clone(),
         )
         .await
         .unwrap();
@@ -124,10 +125,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .unwrap();
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let bls_key_pair = BlsKeyPair::new(fr_key)?;
-
         let operator_2_address = avs.config.operator_2_address()?;
 
-        let operator_task_processor = OperatorTaskProcessorImpl;
         let operator_2 = Operator::new(
             &bls_key_pair,
             operator_2_address,

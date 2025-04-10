@@ -15,6 +15,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
 use std::collections::HashMap;
+use std::time::Duration;
 use tracing::info;
 
 use crate::task_response::IncredibleTaskResponse;
@@ -77,7 +78,8 @@ impl TaskProcessor for IncredibleTaskProcessor {
                 .try_into()
                 .map_err(box_error)?],
             time_to_expiry,
-        ))
+        )
+        .with_window_duration(Duration::from_secs(5)))
     }
 
     async fn process_task_response(

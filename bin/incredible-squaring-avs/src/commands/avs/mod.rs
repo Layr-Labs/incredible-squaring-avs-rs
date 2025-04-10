@@ -38,6 +38,8 @@ use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{debug, info};
 
+use tracing_subscriber::{filter, Layer};
+
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
 #[non_exhaustive]
@@ -339,6 +341,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     /// Execute function
     pub async fn execute(self: Box<Self>) -> eyre::Result<()> {
         init_logger(LogLevel::Info);
+
         let registry_coordinator_address_anvil =
             get_incredible_squaring_registry_coordinator().await;
 
