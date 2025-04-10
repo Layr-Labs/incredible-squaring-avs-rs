@@ -54,13 +54,14 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
     async fn launch_avs(self, avs: AvsBuilder) -> eyre::Result<()> {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
-        // start operator
 
+        // Start the challenger
         let mut challenge = Challenger::build(avs.config.clone()).await?;
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-        let ws_rpc_url = avs.config.ws_rpc_url();
+
+        // Start the aggregator
         let aggregator_config = AggregatorConfig {
             server_address: avs.config.aggregator_ip_addr(),
             registry_coordinator: avs
@@ -72,7 +73,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
                 .operator_state_retriever_addr()
                 .map_err(|e| eyre::eyre!("Operator state retriever error: {:?}", e))?,
             http_rpc_url: avs.config.http_rpc_url(),
-            ws_rpc_url: ws_rpc_url.clone(),
+            ws_rpc_url: avs.config.ws_rpc_url(),
         };
         let task_processor = IncredibleTaskProcessor::new(avs.config.clone())
             .await
@@ -80,18 +81,16 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let aggregator = Aggregator::new(aggregator_config, task_processor)
             .await
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
+
+        let ws_rpc_url = avs.config.ws_rpc_url();
         tokio::spawn(async move {
-            aggregator.start(ws_rpc_url.clone()).await.unwrap();
+            aggregator.start(ws_rpc_url).await.unwrap();
         });
 
-        dbg!("WAITING TO AGGREGATOR");
+        // Wait for the aggregator to start
         tokio::time::sleep(std::time::Duration::from_secs(10)).await;
 
-        let server_address = avs.config.aggregator_ip_addr();
-        let ws_rpc_url = avs.config.ws_rpc_url();
-        let http_rpc_url = avs.config.http_rpc_url();
-        let registry_coordinator = avs.config.registry_coordinator_addr()?;
-        let operator_state_retriever = avs.config.operator_state_retriever_addr()?;
+        // Register and start both operators
         let keystore = Keystore::from_file(&avs.config.bls_keystore_path())?
             .decrypt(&avs.config.bls_keystore_password())
             .unwrap();
@@ -105,11 +104,11 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             operator_1_address,
             "FIRST OPERATOR",
             get_logger(),
-            &ws_rpc_url,
-            &http_rpc_url,
-            registry_coordinator,
-            operator_state_retriever,
-            server_address.clone(),
+            &avs.config.ws_rpc_url(),
+            &avs.config.http_rpc_url(),
+            avs.config.registry_coordinator_addr()?,
+            avs.config.operator_state_retriever_addr()?,
+            avs.config.aggregator_ip_addr(),
             operator_task_processor.clone(),
         )
         .await
@@ -131,11 +130,11 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             operator_2_address,
             "SECOND OPERATOR",
             get_logger(),
-            &ws_rpc_url,
-            &http_rpc_url,
-            registry_coordinator,
-            operator_state_retriever,
-            server_address,
+            &avs.config.ws_rpc_url(),
+            &avs.config.http_rpc_url(),
+            avs.config.registry_coordinator_addr()?,
+            avs.config.operator_state_retriever_addr()?,
+            avs.config.aggregator_ip_addr(),
             operator_task_processor,
         )
         .await
@@ -145,6 +144,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             operator_2.start().await.unwrap();
         });
 
+        // Start the task manager
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
             avs.config.http_rpc_url(),
@@ -154,10 +154,12 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let task_spam_service = task_manager
             .start()
             .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
+
+        // Start the node api
         let node_info = NodeInfo::new("incredible-squaring", "v0.0.1");
         let node_api = NodeApi::new(node_info);
         let node_api_address = avs.config.node_api_port_address();
-        info!("node_api_address{:?}", node_api_address);
+        info!("Node API running on {:?}", node_api_address);
 
         std::thread::spawn(move || {
             let _ = System::new("node_api_system").block_on(async move {
