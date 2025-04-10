@@ -7,6 +7,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
     IIncredibleSquaringTaskManager::TaskResponse as TaskResponseContract,
     IncredibleSquaringTaskManager::NewTaskCreated,
 };
+use incredible_metrics::increment_num_tasks_received;
 use rand::Rng;
 use tracing::info;
 
@@ -19,6 +20,7 @@ impl OperatorTaskProcessor for OperatorTaskProcessorImpl {
     type TaskResponse = IncredibleTaskResponse;
 
     fn process_new_task(&self, new_task_created: Self::NewTaskEvent) -> Self::TaskResponse {
+        increment_num_tasks_received();
         let number_to_be_squared = new_task_created.task.numberToBeSquared;
 
         let mut rng = rand::rng();

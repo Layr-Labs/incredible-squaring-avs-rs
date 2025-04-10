@@ -420,7 +420,7 @@ mod tests {
             .call()
             .await;
 
-        // Depends the order of who responds first, so this is not deterministic.
+        // If challenge is successful, depends on the order of who responds first, so this is not deterministic.
         // assert!(challenge_result.unwrap()._0);
         assert!(challenge_result.is_ok());
     }

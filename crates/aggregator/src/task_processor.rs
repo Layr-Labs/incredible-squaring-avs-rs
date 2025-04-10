@@ -14,6 +14,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
 use incredible_bindings::incrediblesquaringtaskmanager::BN254::{G1Point, G2Point};
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
+use incredible_metrics::inc_num_tasks_accepted_by_aggregator;
 use std::collections::HashMap;
 use std::time::Duration;
 use tracing::info;
@@ -86,6 +87,8 @@ impl TaskProcessor for IncredibleTaskProcessor {
         &mut self,
         response: Self::TaskResponse,
     ) -> Result<B256, TaskProcessorError> {
+        inc_num_tasks_accepted_by_aggregator();
+
         self.task_responses
             .entry(response.task_index())
             .or_default()
