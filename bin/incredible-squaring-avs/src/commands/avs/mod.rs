@@ -38,8 +38,6 @@ use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{debug, info};
 
-use tracing_subscriber::{filter, Layer};
-
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
 #[non_exhaustive]

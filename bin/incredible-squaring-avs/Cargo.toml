@@ -24,7 +24,6 @@ eyre.workspace = true
 alloy.workspace = true
 tracing.workspace = true
 hex = "0.4"
-tracing-subscriber = "0.3.19"
 metrics-exporter-prometheus = "0.16"
 rust-bls-bn254.workspace = true
 metrics-util.workspace = true

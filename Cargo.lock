@@ -4489,7 +4489,6 @@ dependencies = [
  "rust-bls-bn254 0.1.0",
  "tokio",
  "tracing",
- "tracing-subscriber 0.3.19",
 ]
 
 [[package]]

@@ -4,7 +4,6 @@ use eigensdk::crypto_bls::BlsKeyPair;
 use eigensdk::logging::get_logger;
 use eigensdk::nodeapi::{NodeApi, NodeInfo};
 use eigensdk::operator::Operator;
-use eigensdk::testing_utils::anvil_constants::{FIRST_ADDRESS, OPERATOR_BLS_KEY, SECOND_ADDRESS};
 use futures::TryFutureExt;
 use incredible_aggregator::IncredibleTaskProcessor;
 use incredible_challenger::Challenger;
@@ -13,7 +12,7 @@ use incredible_operator::OperatorTaskProcessorImpl;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
-use std::{future::Future, sync::Arc};
+use std::future::Future;
 use tracing::info;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
