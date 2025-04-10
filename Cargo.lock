@@ -2580,7 +2580,6 @@ dependencies = [
 [[package]]
 name = "eigen-aggregator"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2605,7 +2604,6 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "ark-ff 0.5.0",
@@ -2624,7 +2622,6 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "eigen-common",
@@ -2639,7 +2636,6 @@ dependencies = [
 [[package]]
 name = "eigen-client-eth"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2653,7 +2649,6 @@ dependencies = [
 [[package]]
 name = "eigen-client-fireblocks"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "chrono",
@@ -2673,7 +2668,6 @@ dependencies = [
 [[package]]
 name = "eigen-common"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "url",
@@ -2682,7 +2676,6 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2699,7 +2692,6 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
@@ -2710,7 +2702,6 @@ dependencies = [
 [[package]]
 name = "eigen-logging"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "ctor",
  "once_cell",
@@ -2721,7 +2712,6 @@ dependencies = [
 [[package]]
 name = "eigen-metrics"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2732,7 +2722,6 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-economic"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2747,7 +2736,6 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2756,7 +2744,6 @@ dependencies = [
 [[package]]
 name = "eigen-nodeapi"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "ntex",
  "serde",
@@ -2768,7 +2755,6 @@ dependencies = [
 [[package]]
 name = "eigen-operator"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "eigen-aggregator",
@@ -2795,7 +2781,6 @@ dependencies = [
 [[package]]
 name = "eigen-services-avsregistry"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2811,7 +2796,6 @@ dependencies = [
 [[package]]
 name = "eigen-services-blsaggregation"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2833,7 +2817,6 @@ dependencies = [
 [[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2854,7 +2837,6 @@ dependencies = [
 [[package]]
 name = "eigen-signer"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2868,7 +2850,6 @@ dependencies = [
 [[package]]
 name = "eigen-testing-utils"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2886,7 +2867,6 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "ark-ff 0.5.0",
@@ -2905,7 +2885,6 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "alloy",
  "regex",
@@ -2915,7 +2894,6 @@ dependencies = [
 [[package]]
 name = "eigensdk"
 version = "0.5.0"
-source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#0f28c98b13c165360538412c1de3a054412e9646"
 dependencies = [
  "eigen-aggregator",
  "eigen-client-avsregistry",
@@ -4362,11 +4340,11 @@ dependencies = [
  "incredible-config",
  "incredible-metrics",
  "incredible-operator",
- "incredible-operator-2",
  "incredible-task-generator",
  "metrics",
  "metrics-util",
  "ntex",
+ "rust-bls-bn254 0.1.0",
  "serde",
  "thiserror 2.0.7",
  "tokio",
@@ -4490,35 +4468,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "incredible-operator-2"
-version = "0.0.1-alpha"
-dependencies = [
- "alloy",
- "ark-ec 0.5.0",
- "ark-ff 0.5.0",
- "eigensdk",
- "eyre",
- "futures-util",
- "hex",
- "incredible-aggregator",
- "incredible-bindings",
- "incredible-config",
- "incredible-metrics",
- "incredible-operator",
- "incredible-testing-utils",
- "rand 0.9.0",
- "rand_core 0.6.4",
- "reqwest 0.12.9",
- "rust-bls-bn254 0.1.0",
- "serde_json",
- "tempfile",
- "thiserror 2.0.7",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
 name = "incredible-squaring-avs"
 version = "0.0.1-alpha"
 dependencies = [
@@ -4626,7 +4575,6 @@ dependencies = [
  "incredible-challenger",
  "incredible-config",
  "incredible-operator",
- "incredible-operator-2",
  "incredible-squaring-avs",
  "incredible-task-generator",
  "incredible-testing-utils",
