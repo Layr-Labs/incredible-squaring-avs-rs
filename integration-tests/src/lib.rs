@@ -340,9 +340,6 @@ mod tests {
             ._0;
 
         assert!(!is_challenge_success);
-
-        // assert!(!aggregator_handle.is_finished());
-        // aggregator_handle.abort();
     }
 
     async fn test_incredible_squaring_with_challenger() {
