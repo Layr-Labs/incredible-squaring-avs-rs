@@ -169,7 +169,7 @@ impl OperatorBuilder {
         &self,
         task_response: TaskResponse,
     ) -> Result<SignedTaskResponse<IncredibleTaskResponse>, OperatorError> {
-        let encoded_response: Vec<u8> = TaskResponse::abi_encode(&task_response);
+        let encoded_response = TaskResponse::abi_encode(&task_response);
         let hash_msg = keccak256(encoded_response);
 
         let signed_msg = self.key_pair.sign_message(&hash_msg);
