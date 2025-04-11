@@ -8,7 +8,6 @@ mod tests {
     use alloy::signers::local::PrivateKeySigner;
     use alloy::transports::http::reqwest::Url;
     use eigensdk::aggregator::{Aggregator, AggregatorConfig};
-    use eigensdk::common::get_provider;
     use eigensdk::crypto_bls::BlsKeyPair;
     use eigensdk::logging::get_logger;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
@@ -299,7 +298,11 @@ mod tests {
 
         // Start the task generator service
         let url = Url::parse(&incredible_config.http_rpc_url()).unwrap();
-        let signer = PrivateKeySigner::from_str(&incredible_config.task_manager_signer()).unwrap();
+        // TODO: REMOVE KEY
+        let signer = PrivateKeySigner::from_str(
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+        )
+        .unwrap();
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
         let task_manager_contract =
@@ -369,9 +372,6 @@ mod tests {
             ._0;
 
         assert!(!is_challenge_success);
-
-        // assert!(!aggregator_handle.is_finished());
-        // aggregator_handle.abort();
     }
 
     async fn test_incredible_squaring_with_challenger() {
@@ -534,7 +534,11 @@ mod tests {
 
         // Start the task generator service
         let url = Url::parse(&incredible_config.http_rpc_url()).unwrap();
-        let signer = PrivateKeySigner::from_str(&incredible_config.task_manager_signer()).unwrap();
+        // TODO: REMOVE KEY
+        let signer = PrivateKeySigner::from_str(
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+        )
+        .unwrap();
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
         let task_manager_contract =

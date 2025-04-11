@@ -2606,6 +2606,7 @@ name = "eigen-challenger"
 version = "0.5.0"
 dependencies = [
  "alloy",
+ "async-trait",
  "eigen-aggregator",
  "eigen-client-avsregistry",
  "eigen-common",

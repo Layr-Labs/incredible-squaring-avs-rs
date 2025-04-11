@@ -148,6 +148,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
 
         // Start the task generator service
         let url = Url::parse(&avs.config.http_rpc_url())?;
+        dbg!(&avs.config.task_manager_signer());
         let signer = PrivateKeySigner::from_str(&avs.config.task_manager_signer())?;
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
@@ -162,7 +163,6 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
                 .with_quorum(70, vec![0])
                 .with_interval(Duration::from_secs(10))
                 .run(move |i, quorum_threshold, quorums| {
-                    dbg!("Creating task {}", i);
                     let contract = Arc::clone(&contract);
                     async move {
                         let number_to_be_squared = U256::from(i * i);
