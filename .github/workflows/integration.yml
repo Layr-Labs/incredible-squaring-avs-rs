@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.81
+        uses: dtolnay/rust-toolchain@1.86
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.81
+        uses: dtolnay/rust-toolchain@1.86
         with:
             components: rustfmt, clippy
 
@@ -54,7 +54,7 @@ jobs:
           submodules: recursive
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@1.86
         with:
           toolchain: stable
 
