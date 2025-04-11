@@ -267,7 +267,11 @@ mod tests {
         let operator_state_retriever = incredible_config.operator_state_retriever_addr().unwrap();
         let operator_1_address = incredible_config.operator_address().unwrap();
 
-        let operator_task_processor = OperatorTaskProcessorImpl;
+        let operator_task_processor = OperatorTaskProcessorImpl::new(
+            incredible_config
+                .operator_1_times_failing()
+                .unwrap_or_default(),
+        );
 
         let operator = Operator::new(
             &key_pair,
@@ -472,7 +476,11 @@ mod tests {
         let operator_state_retriever = incredible_config.operator_state_retriever_addr().unwrap();
         let operator_2_address = incredible_config.operator_2_address().unwrap();
 
-        let operator_task_processor = OperatorTaskProcessorImpl;
+        let operator_task_processor = OperatorTaskProcessorImpl::new(
+            incredible_config
+                .operator_2_times_failing()
+                .unwrap_or_default(),
+        );
 
         let operator_2 = Operator::new(
             &key_pair,
