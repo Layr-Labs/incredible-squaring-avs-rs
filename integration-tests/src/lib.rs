@@ -8,7 +8,7 @@ mod tests {
     use alloy::signers::local::PrivateKeySigner;
     use alloy::transports::http::reqwest::Url;
     use eigensdk::aggregator::{Aggregator, AggregatorConfig};
-    use eigensdk::common::get_provider;
+    use eigensdk::challenger::Challenger;
     use eigensdk::crypto_bls::BlsKeyPair;
     use eigensdk::logging::get_logger;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
@@ -21,7 +21,7 @@ mod tests {
     };
     use incredible_aggregator::IncredibleTaskProcessor;
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
-    use incredible_challenger::Challenger;
+    use incredible_challenger::ChallengerTaskProcessorImpl;
     use incredible_config::IncredibleConfig;
     use incredible_operator::OperatorTaskProcessorImpl;
     use incredible_squaring_avs::commands::avs::{
@@ -527,8 +527,16 @@ mod tests {
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
-        let mut challenger = Challenger::build(incredible_config.clone()).await.unwrap();
+        let challenger_task_processor = ChallengerTaskProcessorImpl::new(
+            incredible_config.http_rpc_url(),
+            incredible_config.service_manager_addr().unwrap(),
+            incredible_config.task_manager_signer(),
+        )
+        .await;
+
+        let ws_rpc_url = incredible_config.ws_rpc_url();
         tokio::spawn(async move {
+            let mut challenger = Challenger::new(ws_rpc_url, challenger_task_processor);
             challenger.start_challenger().await.unwrap();
         });
 

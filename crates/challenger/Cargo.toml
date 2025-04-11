@@ -23,6 +23,9 @@ toml.workspace = true
 #incredible
 incredible-testing-utils.workspace = true
 incredible-chainio.workspace = true
+incredible-aggregator.workspace = true
+
+async-trait = "0.1.83"
 
 #eigensdk-rs
 eigensdk.workspace = true

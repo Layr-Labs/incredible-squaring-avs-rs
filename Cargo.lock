@@ -2606,6 +2606,7 @@ name = "eigen-challenger"
 version = "0.5.0"
 dependencies = [
  "alloy",
+ "async-trait",
  "eigen-aggregator",
  "eigen-client-avsregistry",
  "eigen-common",
@@ -4393,9 +4394,11 @@ name = "incredible-challenger"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
+ "async-trait",
  "eigensdk",
  "eyre",
  "futures-util",
+ "incredible-aggregator",
  "incredible-bindings",
  "incredible-chainio",
  "incredible-config",

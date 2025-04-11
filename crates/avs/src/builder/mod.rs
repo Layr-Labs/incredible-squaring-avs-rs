@@ -5,6 +5,7 @@ use alloy::{
 };
 use eigensdk::{
     aggregator::{Aggregator, AggregatorConfig},
+    challenger::Challenger,
     common::get_provider,
     crypto_bls::BlsKeyPair,
     logging::get_logger,
@@ -15,7 +16,7 @@ use eigensdk::{
 use futures::TryFutureExt;
 use incredible_aggregator::IncredibleTaskProcessor;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
-use incredible_challenger::Challenger;
+use incredible_challenger::ChallengerTaskProcessorImpl;
 use incredible_config::IncredibleConfig;
 use incredible_operator::OperatorTaskProcessorImpl;
 use incredible_task_generator::TaskManager;
@@ -64,10 +65,18 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
 
-        let mut challenge = Challenger::build(avs.config.clone()).await?;
-        let challenger_service = challenge
-            .start_challenger()
-            .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
+        let challenger_task_processor = ChallengerTaskProcessorImpl::new(
+            avs.config.http_rpc_url(),
+            avs.config.service_manager_addr()?,
+            avs.config.task_manager_signer(),
+        )
+        .await;
+
+        let ws_rpc_url = avs.config.ws_rpc_url();
+        tokio::spawn(async move {
+            let mut challenger = Challenger::new(ws_rpc_url, challenger_task_processor);
+            challenger.start_challenger().await.unwrap();
+        });
 
         // Start the aggregator
         let aggregator_config = AggregatorConfig {
