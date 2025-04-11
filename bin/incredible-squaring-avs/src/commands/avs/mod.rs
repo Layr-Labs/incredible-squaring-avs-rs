@@ -11,6 +11,11 @@ use eigensdk::common::{get_provider, get_signer};
 use eigensdk::crypto_bls::BlsKeyPair;
 use eigensdk::logging::{get_logger, init_logger, log_level::LogLevel};
 use eigensdk::metrics::prometheus::init_registry;
+use eigensdk::testing_utils::anvil_constants::{
+    get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
+    get_permission_controller_address, get_rewards_coordinator_address,
+    get_strategy_manager_address, ANVIL_HTTP_URL,
+};
 use eigensdk::types::operator::Operator;
 use eigensdk::utils::slashing::core::allocationmanager::AllocationManager::{self, OperatorSet};
 use eigensdk::utils::slashing::core::allocationmanager::IAllocationManagerTypes::AllocateParams;
@@ -19,13 +24,19 @@ use eigensdk::utils::slashing::middleware::registrycoordinator::IStakeRegistryTy
 use eigensdk::utils::slashing::middleware::registrycoordinator::RegistryCoordinator;
 use incredible_avs::builder::{AvsBuilder, DefaultAvsLauncher, LaunchAvs};
 use incredible_config::IncredibleConfig;
+use incredible_testing_utils::{
+    get_incredible_squaring_operator_state_retriever, get_incredible_squaring_registry_coordinator,
+    get_incredible_squaring_service_manager, get_incredible_squaring_strategy_address,
+    get_incredible_squaring_task_manager,
+};
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::ffi::OsString;
 use std::fmt;
 use std::net::SocketAddr;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
-use tracing::info;
+use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::{debug, info};
 
 /// No Additional arguments
 #[derive(Debug, Clone, Copy, Default, Args)]
@@ -291,6 +302,23 @@ pub struct AvsCommand<Ext: Args + fmt::Debug = NoArgs> {
     pub ext: Ext,
 }
 
+/// Default Anvil configuration
+#[derive(Debug)]
+pub struct AnvilValues {
+    registry_coordinator_address: Address,
+    operator_state_retriever_address: Address,
+}
+
+impl AnvilValues {
+    /// new
+    pub fn new(registry_coordinator: Address, operator_state_retriever_address: Address) -> Self {
+        Self {
+            registry_coordinator_address: registry_coordinator,
+            operator_state_retriever_address,
+        }
+    }
+}
+
 impl AvsCommand {
     /// Parsers only the default CLI arguments
     pub fn parse_args() -> Self {
@@ -311,12 +339,184 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
     /// Execute function
     pub async fn execute(self: Box<Self>) -> eyre::Result<()> {
         init_logger(LogLevel::Info);
+        let registry_coordinator_address_anvil =
+            get_incredible_squaring_registry_coordinator().await;
 
-        let Some(config_path) = self.config_path else {
-            return Err(eyre::eyre!("NO CONFIG PATH PROVIDED"));
-        };
+        let operator_state_retriever_address_anvil =
+            get_incredible_squaring_operator_state_retriever().await;
+        let delegation_manager_address_anvil =
+            get_delegation_manager_address(ANVIL_HTTP_URL.to_string()).await;
+        let avs_directory_address_anvil =
+            get_avs_directory_address(ANVIL_HTTP_URL.to_string()).await;
+        let rewards_coordinator_address_anvil =
+            get_rewards_coordinator_address(ANVIL_HTTP_URL.to_string()).await;
+        let strategy_manager_address_anvil =
+            get_strategy_manager_address(ANVIL_HTTP_URL.to_string()).await;
+        let erc20_mock_strategy_address_anvil = get_incredible_squaring_strategy_address().await;
+        let incredible_squaring_task_manager_address_anvil =
+            get_incredible_squaring_task_manager().await;
+        let allocation_manager_address_anvil =
+            get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await;
+        let permission_controller_address_anvil =
+            get_permission_controller_address(ANVIL_HTTP_URL.to_string()).await;
+        let service_manager_address_anvil = get_incredible_squaring_service_manager().await;
+        let default_anvil = AnvilValues::new(
+            registry_coordinator_address_anvil,
+            operator_state_retriever_address_anvil,
+        );
 
-        let mut config = IncredibleConfig::load(&config_path)?;
+        debug!("Executing AVS command");
+        debug!("chain id : {:?}", self.chain_id);
+        debug!("rpc url : {:?}", self.rpc_url);
+        debug!("ecdsa key store path {:?}", self.ecdsa_keystore_path);
+        debug!("ecdsa key password:{:?}", self.ecdsa_keystore_password);
+        debug!("bls keystore path : {:?}", self.bls_keystore_path);
+        debug!("bls keystore password : {:?}", self.bls_keystore_password);
+        let mut config = IncredibleConfig::default();
+
+        let Self {
+            ws_rpc_url,
+            chain_id,
+            rpc_url,
+            ecdsa_keystore_path,
+            ecdsa_keystore_password,
+            registry_coordinator_address,
+            delegation_manager_address,
+            aggregator_ip_address,
+            bls_keystore_path,
+            bls_keystore_password,
+            operator_id,
+            operator_state_retriever_addr,
+            avs_directory_addr,
+            strategy_manager_addr,
+            operator_address,
+            register_operator,
+            operator_to_avs_registration_sig_salt,
+            operator_2_to_avs_registration_sig_salt,
+            socket,
+            quorum_number,
+            sig_expiry,
+            task_manager_addr,
+            signer,
+            erc20_mock_strategy_address,
+            task_manager_signer,
+            operator_pvt_key,
+            metrics_address,
+            node_api_address,
+            config_path,
+            ecdsa_keystore_2_path,
+            ecdsa_keystore_2_password,
+            bls_keystore_2_path,
+            bls_keystore_2_password,
+            operator_2_pvt_key,
+            operator_2_sig_expiry,
+            operator_2_address,
+            operator_2_id,
+            operator_set_id,
+            operator_1_token_amount,
+            operator_2_token_amount,
+            allocation_delay,
+            metadata_uri,
+            allocation_manager_address,
+            times_failing_operator_1,
+            times_failing_operator_2,
+            ..
+        } = *self;
+        if let Some(config_path) = config_path {
+            config = IncredibleConfig::load(&config_path)?;
+        } else {
+            config.set_service_manager_address(service_manager_address_anvil.to_string());
+            config.set_node_api_port_address(node_api_address);
+            config.set_metrics_port_address(metrics_address);
+            config.set_operator_1_times_failing(times_failing_operator_1);
+            config.set_operator_2_times_failing(times_failing_operator_2);
+            // there's a default value ,so using unwrap is no issue
+            config.set_task_manager_signer(task_manager_signer);
+            config.set_signer(signer); // there's a default value ,so using unwrap is no issue
+            config.set_operator_set_id(operator_set_id);
+            config.set_chain_id(chain_id);
+            config.set_http_rpc_url(rpc_url.clone());
+            config.set_ws_rpc_url(ws_rpc_url);
+            config.set_ecdsa_keystore_path(ecdsa_keystore_path.clone());
+            config.set_ecdsa_keystore_pasword(ecdsa_keystore_password.clone());
+            config.set_aggregator_ip_address(aggregator_ip_address);
+            config.set_bls_keystore_path(bls_keystore_path.clone());
+            config.set_bls_keystore_password(bls_keystore_password.clone());
+            config.set_allocation_delay(allocation_delay);
+            config.set_operator_registration_sig_salt(operator_to_avs_registration_sig_salt);
+            config.set_socket(socket);
+            config.set_quorum_number(quorum_number.clone());
+            config.set_operator_id(operator_id);
+            config.set_operator_address(operator_address);
+            config.set_operator_2_address(operator_2_address);
+            config.set_operator_2_id(operator_2_id);
+            config.set_allocation_manager_address(
+                allocation_manager_address.unwrap_or(allocation_manager_address_anvil.to_string()),
+            );
+            config.set_erc20_mock_strategy_address(
+                erc20_mock_strategy_address
+                    .unwrap_or(erc20_mock_strategy_address_anvil.to_string()),
+            );
+            config.set_delegation_manager_addr(
+                delegation_manager_address
+                    .clone()
+                    .unwrap_or(delegation_manager_address_anvil.to_string()),
+            );
+            config.set_operator_2_quorum_number(quorum_number);
+            config.set_avs_directory_address(
+                avs_directory_addr.unwrap_or(avs_directory_address_anvil.to_string()),
+            );
+            config.set_operator_signing_key(operator_pvt_key);
+            config.set_operator_2_signing_key(operator_2_pvt_key);
+            // use value from config , if None , then use anvil
+            config.set_registry_coordinator_addr(
+                registry_coordinator_address
+                    .unwrap_or(default_anvil.registry_coordinator_address.to_string()),
+            );
+            config.set_operator_state_retriever(
+                operator_state_retriever_addr
+                    .unwrap_or(default_anvil.operator_state_retriever_address.to_string()),
+            );
+            config.set_delegation_manager_addr(
+                delegation_manager_address.unwrap_or(delegation_manager_address_anvil.to_string()),
+            );
+            config.set_strategy_manager_addr(
+                strategy_manager_addr.unwrap_or(strategy_manager_address_anvil.to_string()),
+            );
+            config.set_task_manager_address(
+                task_manager_addr
+                    .unwrap_or(incredible_squaring_task_manager_address_anvil.to_string()),
+            );
+            config.set_rewards_coordinator_address(rewards_coordinator_address_anvil.to_string());
+            config
+                .set_permission_controller_address(permission_controller_address_anvil.to_string());
+            config.set_ecdsa_keystore_2_path(ecdsa_keystore_2_path.clone());
+            config.set_ecdsa_keystore_2_pasword(ecdsa_keystore_2_password.clone());
+            config.set_operator_2_registration_sig_salt(
+                operator_2_to_avs_registration_sig_salt.clone(),
+            );
+            let now = SystemTime::now();
+            let mut expiry: U256 = U256::from(0);
+            if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
+                let seconds = duration_since_epoch.as_secs(); // Returns a u64
+
+                // Signature expiry is at 10000 seconds
+                expiry = U256::from(seconds) + U256::from(10000);
+            } else {
+                debug!("System time seems to be before the UNIX epoch.");
+            }
+            // provided expiry , if not , use default expiry : 10000 seconds
+            config.set_sig_expiry(sig_expiry.unwrap_or(expiry.to_string()).to_string());
+            config.set_bls_keystore_2_path(bls_keystore_2_path.clone());
+            config.set_bls_keystore_2_password(bls_keystore_2_password.clone());
+            config.set_operator_2_sig_expiry(
+                operator_2_sig_expiry
+                    .unwrap_or(expiry.to_string())
+                    .to_string(),
+            );
+            config.set_operator_1_token_amount(operator_1_token_amount);
+            config.set_operator_2_token_amount(operator_2_token_amount);
+        }
 
         let socket_addr_metrics: SocketAddr = SocketAddr::from_str(&config.metrics_port_address())?;
         init_registry(socket_addr_metrics);
@@ -327,22 +527,22 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             config.operator_pvt_key(),
             config.ecdsa_keystore_path(),
             config.ecdsa_keystore_password(),
-            &config.http_rpc_url(),
+            &rpc_url,
         )
         .await?;
         info!(tx_hash = %total_delegated_quorum_create_tx_hash,"total delegated stake quorum create tx_hash");
 
-        if self.register_operator {
+        if register_operator {
             let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
-                self.metadata_uri.clone(),
+                metadata_uri.clone(),
                 config.allocation_delay()?,
                 config.operator_pvt_key(),
-                config.http_rpc_url(),
-                config.ecdsa_keystore_path(),
-                config.ecdsa_keystore_password(),
+                rpc_url.clone(),
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
                 config.permission_controller_address()?,
                 config.rewards_coordinator_address()?,
-                config.allocation_manager_addr()?,
+                allocation_manager_address_anvil,
                 config.registry_coordinator_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
@@ -352,15 +552,15 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
             )
             .await;
             let _ = register_operator_with_el_and_deposit_tokens_in_strategy(
-                self.metadata_uri.clone(),
+                metadata_uri,
                 config.allocation_delay()?,
                 config.operator_2_pvt_key(),
-                config.http_rpc_url(),
-                config.ecdsa_keystore_2_path(),
-                config.ecdsa_keystore_2_password(),
+                rpc_url.clone(),
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
                 config.permission_controller_address()?,
                 config.rewards_coordinator_address()?,
-                config.allocation_manager_addr()?,
+                allocation_manager_address_anvil,
                 config.registry_coordinator_addr()?,
                 config.delegation_manager_addr()?,
                 config.avs_directory_addr()?,
@@ -372,11 +572,11 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
             let allocation_delay_set_tx_hash = set_allocation_delay(
                 config.allocation_delay()?,
-                config.allocation_manager_addr()?,
+                allocation_manager_address_anvil,
                 config.operator_pvt_key(),
                 config.ecdsa_keystore_path(),
                 config.ecdsa_keystore_password(),
-                &config.http_rpc_url(),
+                &rpc_url,
             )
             .await?;
             info!(
@@ -386,12 +586,12 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
             let modify_allocation_for_operator1_tx_hash = modify_allocation_for_operator(
                 config.operator_set_id()?,
-                config.allocation_manager_addr()?,
+                allocation_manager_address_anvil,
                 config.operator_pvt_key(),
-                config.ecdsa_keystore_path(),
-                config.ecdsa_keystore_password(),
-                &config.http_rpc_url(),
-                config.service_manager_addr()?,
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
                 vec![config.erc20_mock_strategy_addr()?],
                 vec![1000000000000000000],
             )
@@ -401,12 +601,12 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
 
             let modify_allocation_for_operator2_tx_hash = modify_allocation_for_operator(
                 config.operator_set_id()?,
-                config.allocation_manager_addr()?,
+                allocation_manager_address_anvil,
                 config.operator_2_pvt_key(),
-                config.ecdsa_keystore_2_path(),
-                config.ecdsa_keystore_2_password(),
-                &config.http_rpc_url(),
-                config.service_manager_addr()?,
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
                 vec![config.erc20_mock_strategy_addr()?],
                 vec![1000000000000000000],
             )
@@ -422,12 +622,12 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 key_pair,
                 config.permission_controller_address()?,
                 config.registry_coordinator_addr()?,
-                config.allocation_manager_addr()?,
+                allocation_manager_address_anvil,
                 config.operator_pvt_key(),
-                config.ecdsa_keystore_path(),
-                config.ecdsa_keystore_password(),
-                &config.http_rpc_url(),
-                config.service_manager_addr()?,
+                ecdsa_keystore_path.clone(),
+                ecdsa_keystore_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
                 config.socket().to_string(),
             )
             .await?;
@@ -444,18 +644,16 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 config.registry_coordinator_addr()?,
                 config.allocation_manager_addr()?,
                 config.operator_2_pvt_key(),
-                config.ecdsa_keystore_2_path(),
-                config.ecdsa_keystore_2_password(),
-                &config.http_rpc_url(),
-                config.service_manager_addr()?,
+                ecdsa_keystore_2_path.clone(),
+                ecdsa_keystore_2_password.clone(),
+                &rpc_url,
+                service_manager_address_anvil,
                 config.operator_2_socket().to_string(),
             )
             .await?;
             info!(tx_hash = %register_for_operator_sets_by_operator2_txhash,"register for operator sets by operator2");
 
-            let current_block_number = get_provider(&config.http_rpc_url())
-                .get_block_number()
-                .await?;
+            let current_block_number = get_provider(&rpc_url).get_block_number().await?;
 
             fn mine_anvil_block(rpc_url: &str, blocks: u64) {
                 Command::new("cast")
@@ -470,7 +668,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                     .output()
                     .expect("Failed to execute command");
             }
-            mine_anvil_block(&config.http_rpc_url(), current_block_number);
+            mine_anvil_block(&rpc_url, current_block_number);
         }
 
         let avs_launcher = DefaultAvsLauncher::new();
