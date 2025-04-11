@@ -27,15 +27,26 @@ const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
 const BLOCK_TIME_SECONDS: u32 = 12;
 
 #[derive(Debug, Clone)]
-/// Task processor implementation
+/// Task processor implementation for the Aggregator
 pub struct IncredibleTaskProcessor {
+    /// Hashmap to store the created tasks
     tasks: HashMap<u32, Task>,
+    /// Hashmap to store the task responses
     task_responses: HashMap<u32, HashMap<TaskResponseDigest, TaskResponseContract>>,
+    /// Avs writer
     avs_writer: AvsWriter,
 }
 
 impl IncredibleTaskProcessor {
     /// Create a new task processor
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The configuration for the task processor
+    ///
+    /// # Returns
+    ///
+    /// A new task processor
     pub async fn new(config: IncredibleConfig) -> Result<Self, TaskProcessorError> {
         let avs_writer = AvsWriter::new(
             config.service_manager_addr().map_err(box_error)?,
@@ -51,70 +62,16 @@ impl IncredibleTaskProcessor {
             avs_writer,
         })
     }
-}
 
-impl TaskProcessor for IncredibleTaskProcessor {
-    type NewTaskEvent = NewTaskCreated;
-    type TaskResponse = IncredibleTaskResponse;
-
-    async fn process_new_task(
-        &mut self,
-        event: NewTaskCreated,
-    ) -> Result<TaskMetadata, TaskProcessorError> {
-        self.tasks.insert(event.taskIndex, event.task.clone());
-
-        let time_to_expiry = tokio::time::Duration::from_secs(
-            (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
-        );
-
-        // REVIEW: window_duration?
-        Ok(TaskMetadata::new(
-            event.taskIndex,
-            u64::from(event.task.taskCreatedBlock),
-            event.task.quorumNumbers.to_vec(),
-            // TODO: Handle this correctly -> u32 to u8
-            vec![event
-                .task
-                .quorumThresholdPercentage
-                .try_into()
-                .map_err(box_error)?],
-            time_to_expiry,
-        )
-        .with_window_duration(Duration::from_secs(5)))
-    }
-
-    async fn process_task_response(
-        &mut self,
-        response: Self::TaskResponse,
-    ) -> Result<B256, TaskProcessorError> {
-        inc_num_tasks_accepted_by_aggregator();
-
-        self.task_responses
-            .entry(response.task_index())
-            .or_default()
-            .entry(response.digest())
-            .or_insert(response.0.clone());
-
-        Ok(response.digest())
-    }
-
-    async fn process_aggregated_response(
-        &self,
-        response: BlsAggregationServiceResponse,
-    ) -> Result<(), TaskProcessorError> {
-        info!(
-            "Aggregated response received for task {}: {:?}",
-            response.task_index, response.task_response_digest
-        );
-
-        self.send_aggregated_response_to_contract(response).await?;
-
-        info!("Aggregated response sent to contract");
-        Ok(())
-    }
-}
-
-impl IncredibleTaskProcessor {
+    /// Send the BLS Aggregated Response to the contract
+    ///
+    /// # Arguments
+    ///
+    /// * `response` - The BLS Aggregated Response
+    ///
+    /// # Returns
+    ///
+    /// The result of the operation
     async fn send_aggregated_response_to_contract(
         &self,
         response: BlsAggregationServiceResponse,
@@ -176,6 +133,69 @@ impl IncredibleTaskProcessor {
             .send_aggregated_response(task.clone(), task_response, non_signer_stakes_and_signature)
             .await
             .map_err(box_error)?;
+        Ok(())
+    }
+}
+
+impl TaskProcessor for IncredibleTaskProcessor {
+    /// Event type for the new task
+    type NewTaskEvent = NewTaskCreated;
+    /// Task response type
+    type TaskResponse = IncredibleTaskResponse;
+
+    async fn process_new_task(
+        &mut self,
+        event: NewTaskCreated,
+    ) -> Result<TaskMetadata, TaskProcessorError> {
+        self.tasks.insert(event.taskIndex, event.task.clone());
+
+        let time_to_expiry = tokio::time::Duration::from_secs(
+            (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
+        );
+
+        // REVIEW: window_duration?
+        Ok(TaskMetadata::new(
+            event.taskIndex,
+            u64::from(event.task.taskCreatedBlock),
+            event.task.quorumNumbers.to_vec(),
+            // TODO: Handle this correctly -> u32 to u8
+            vec![event
+                .task
+                .quorumThresholdPercentage
+                .try_into()
+                .map_err(box_error)?],
+            time_to_expiry,
+        )
+        .with_window_duration(Duration::from_secs(5)))
+    }
+
+    async fn process_task_response(
+        &mut self,
+        response: Self::TaskResponse,
+    ) -> Result<B256, TaskProcessorError> {
+        inc_num_tasks_accepted_by_aggregator();
+
+        self.task_responses
+            .entry(response.task_index())
+            .or_default()
+            .entry(response.digest())
+            .or_insert(response.0.clone());
+
+        Ok(response.digest())
+    }
+
+    async fn process_aggregated_response(
+        &self,
+        response: BlsAggregationServiceResponse,
+    ) -> Result<(), TaskProcessorError> {
+        info!(
+            "Aggregated response received for task {}: {:?}",
+            response.task_index, response.task_response_digest
+        );
+
+        self.send_aggregated_response_to_contract(response).await?;
+
+        info!("Aggregated response sent to contract");
         Ok(())
     }
 }
