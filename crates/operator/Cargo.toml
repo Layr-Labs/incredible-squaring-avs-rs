@@ -36,6 +36,9 @@ toml.workspace = true
 tracing.workspace = true
 rand_core.workspace = true
 
+tarpc = { version = "0.36", features = ["full"] }
+tokio-util = "0.7.11"
+
 [dev-dependencies]
 incredible-testing-utils.workspace = true
 tempfile.workspace = true

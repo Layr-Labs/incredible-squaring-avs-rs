@@ -67,8 +67,7 @@ impl OperatorBuilder {
         let registry_coordinator_addr = config.registry_coordinator_addr()?;
         let operator_statr_retriever_addr = config.operator_state_retriever_addr()?;
         let operator_address = config.operator_address()?;
-        let mut client = ClientAggregator::new(config.aggregator_ip_addr());
-        let _ = client.dial_aggregator_rpc_client();
+        let client = ClientAggregator::new(config.aggregator_ip_addr());
 
         Ok(Self {
             http_rpc_url: config.http_rpc_url(),
