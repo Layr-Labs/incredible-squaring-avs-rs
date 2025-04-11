@@ -29,10 +29,10 @@ impl OperatorTaskProcessor for OperatorTaskProcessorImpl {
         let should_fail = rng.random_bool(50_f64 / 100.0);
 
         let num_squared = if should_fail {
-            info!("operator1 : incorrect answer");
+            info!("Operator Response : incorrect answer");
             U256::from(28) // Incorrect answer
         } else {
-            info!("operator1 : correct answer");
+            info!("Operator Response : correct answer");
             number_to_be_squared * number_to_be_squared // Correct answer
         };
 
