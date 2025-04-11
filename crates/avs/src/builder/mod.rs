@@ -1,17 +1,20 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
 use eigensdk::{
     aggregator::{Aggregator, AggregatorConfig},
+    crypto_bls::BlsKeyPair,
+    logging::get_logger,
     nodeapi::{NodeApi, NodeInfo},
+    operator::Operator,
 };
 use futures::TryFutureExt;
 use incredible_aggregator::IncredibleTaskProcessor;
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
-use incredible_operator::builder::OperatorBuilder;
-use incredible_operator_2::builder::OperatorBuilder as OperatorBuilder2;
+use incredible_operator::OperatorTaskProcessorImpl;
 use incredible_task_generator::TaskManager;
 use ntex::rt::System;
-use std::{future::Future, sync::Arc};
+use rust_bls_bn254::keystores::base_keystore::Keystore;
+use std::{future::Future, time::Duration};
 use tracing::info;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
@@ -53,23 +56,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
     async fn launch_avs(self, avs: AvsBuilder) -> eyre::Result<()> {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
-        // start operator
-        let mut operator_builder = OperatorBuilder::build(avs.config.clone()).await?;
-        let mut operator_builder2 = OperatorBuilder2::build(
-            avs.config.clone(),
-            Some(Arc::new(operator_builder.client.clone())),
-        )
-        .await?;
 
         let mut challenge = Challenger::build(avs.config.clone()).await?;
-        let operator_service = operator_builder
-            .start_operator()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
-
-        let operator2_service = operator_builder2
-            .start_operator()
-            .map_err(|e| eyre::eyre!("Operator error: {:?}", e));
-
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
@@ -94,6 +82,63 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             aggregator.start(ws_rpc_url).await.unwrap();
         });
 
+        // Sleep for 10 seconds to ensure the aggregator is started
+        tokio::time::sleep(Duration::from_secs(10)).await;
+
+        // Register and start both operators
+        let keystore = Keystore::from_file(&avs.config.bls_keystore_path())?
+            .decrypt(&avs.config.bls_keystore_password())
+            .unwrap();
+        let fr_key: String = keystore.iter().map(|&value| value as char).collect();
+        let bls_key_pair = BlsKeyPair::new(fr_key)?;
+        let operator_task_processor = OperatorTaskProcessorImpl;
+        let operator_1_address = avs.config.operator_address()?;
+
+        let operator = Operator::new(
+            &bls_key_pair,
+            operator_1_address,
+            "FIRST OPERATOR",
+            get_logger(),
+            &avs.config.ws_rpc_url(),
+            &avs.config.http_rpc_url(),
+            avs.config.registry_coordinator_addr()?,
+            avs.config.operator_state_retriever_addr()?,
+            avs.config.aggregator_ip_addr(),
+            operator_task_processor.clone(),
+        )
+        .await
+        .unwrap();
+
+        tokio::spawn(async move {
+            operator.start().await.unwrap();
+        });
+
+        let keystore = Keystore::from_file(&avs.config.bls_keystore_2_path())?
+            .decrypt(&avs.config.bls_keystore_2_password())
+            .unwrap();
+        let fr_key: String = keystore.iter().map(|&value| value as char).collect();
+        let bls_key_pair = BlsKeyPair::new(fr_key)?;
+        let operator_2_address = avs.config.operator_2_address()?;
+
+        let operator_2 = Operator::new(
+            &bls_key_pair,
+            operator_2_address,
+            "SECOND OPERATOR",
+            get_logger(),
+            &avs.config.ws_rpc_url(),
+            &avs.config.http_rpc_url(),
+            avs.config.registry_coordinator_addr()?,
+            avs.config.operator_state_retriever_addr()?,
+            avs.config.aggregator_ip_addr(),
+            operator_task_processor,
+        )
+        .await
+        .unwrap();
+
+        tokio::spawn(async move {
+            operator_2.start().await.unwrap();
+        });
+
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
             avs.config.http_rpc_url(),
@@ -115,13 +160,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             });
         });
 
-        let _ = futures::future::try_join4(
-            operator_service,
-            operator2_service,
-            challenger_service,
-            task_spam_service,
-        )
-        .await?;
+        let _ = futures::future::try_join(challenger_service, task_spam_service).await?;
 
         Ok(())
     }

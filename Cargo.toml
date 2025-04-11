@@ -11,7 +11,6 @@ members = [
   "crates/chainio",
   "crates/testing-utils",
   "crates/task_generator",
-  "crates/operator_2",
   "integration-tests",
 ]
 
@@ -74,7 +73,6 @@ incredible-challenger = { path = "crates/challenger/" }
 incredible-chainio = { path = "crates/chainio/" }
 incredible-testing-utils = { path = "crates/testing-utils/" }
 incredible-task-generator = { path = "crates/task_generator/" }
-incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 
 # eigensdk-rs - For local development - Using testing-is-local branch
 eigensdk = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "v2" , features = ["full"] }
