@@ -75,4 +75,4 @@ incredible-testing-utils = { path = "crates/testing-utils/" }
 incredible-task-generator = { path = "crates/task_generator/" }
 
 # eigensdk-rs - For local development - Using testing-is-local branch
-eigensdk = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "v2" , features = ["full"] }
+eigensdk = { path = "../eigensdk-rs/crates/eigensdk" , features = ["full"] }
