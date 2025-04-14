@@ -77,12 +77,10 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .await
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
 
-        let ws_rpc_url = avs.config.ws_rpc_url();
-
         // Need to start the aggregator here since it needs to be started before the operators
         tokio::spawn(async move {
             let _ = aggregator
-                .start(ws_rpc_url)
+                .start()
                 .map_err(|e| eyre::eyre!("Aggregator start error: {e:?}"))
                 .await;
         });
