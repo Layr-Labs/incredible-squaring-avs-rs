@@ -90,9 +90,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
 
         let ws_rpc_url = avs.config.ws_rpc_url();
-        tokio::spawn(async move {
-            aggregator.start(ws_rpc_url).await.unwrap();
-        });
+        let aggregator_service_with_rpc_client = aggregator
+            .start(ws_rpc_url)
+            .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
 
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
@@ -115,10 +115,11 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             });
         });
 
-        let _ = futures::future::try_join4(
+        let _ = futures::future::try_join5(
             operator_service,
             operator2_service,
             challenger_service,
+            aggregator_service_with_rpc_client,
             task_spam_service,
         )
         .await?;
