@@ -162,7 +162,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
 
         let task_spam_service = TaskGenerator::builder()
             .with_iter(0..)
-            .with_quorum(70, vec![0])
+            .with_quorum(40, vec![0])
             .with_interval(Duration::from_secs(10))
             .run(move |i, quorum_threshold, quorums| {
                 let contract = contract.clone();
