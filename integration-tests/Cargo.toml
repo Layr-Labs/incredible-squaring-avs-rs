@@ -9,7 +9,7 @@ license = "Business Source License 1.1"
 description = "integration tests for incredible avs"
 
 [dependencies]
-alloy = { version = "0.9", features = ["full","signer-keystore","node-bindings"] }
+alloy = { version = "0.13", features = ["full","signer-keystore","node-bindings"] }
 incredible-config = {path = "../crates/config/"}
 incredible-challenger = {path = "../crates/challenger/"}
 incredible-bindings = {path = "../crates/bindings/"}

@@ -1,7 +1,10 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
-use eigensdk::nodeapi::{create_server, NodeApi};
+use eigensdk::{
+    aggregator::{Aggregator, AggregatorConfig},
+    nodeapi::{NodeApi, NodeInfo},
+};
 use futures::TryFutureExt;
-use incredible_aggregator::Aggregator;
+use incredible_aggregator::IncredibleTaskProcessor;
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::builder::OperatorBuilder;
@@ -70,10 +73,25 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let challenger_service = challenge
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
-        let aggregator = Aggregator::new(avs.config.clone()).await?;
+
+        // Start the aggregator
+        let aggregator_config = AggregatorConfig {
+            server_address: avs.config.aggregator_ip_addr(),
+            registry_coordinator: avs.config.registry_coordinator_addr()?,
+            operator_state_retriever: avs.config.operator_state_retriever_addr()?,
+            http_rpc_url: avs.config.http_rpc_url(),
+            ws_rpc_url: avs.config.ws_rpc_url(),
+        };
+        let task_processor = IncredibleTaskProcessor::new(avs.config.clone())
+            .await
+            .map_err(|e| eyre::eyre!("Task processor error: {:?}", e))?;
+        let aggregator = Aggregator::new(aggregator_config, task_processor)
+            .await
+            .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
+
         let aggregator_service_with_rpc_client = aggregator
-            .start(avs.config.ws_rpc_url().clone())
-            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+            .start(avs.config.ws_rpc_url())
+            .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
 
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
@@ -84,13 +102,14 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let task_spam_service = task_manager
             .start()
             .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
-        let node_api = NodeApi::new("incredible-squaring", "v0.0.1");
+        let node_info = NodeInfo::new("incredible-squaring", "v0.0.1");
+        let node_api = NodeApi::new(node_info);
         let node_api_address = avs.config.node_api_port_address();
         info!("node_api_address{:?}", node_api_address);
 
         std::thread::spawn(move || {
             let _ = System::new("node_api_system").block_on(async move {
-                let node_api_server = create_server(node_api, node_api_address).unwrap();
+                let node_api_server = node_api.start_server(&node_api_address).unwrap();
                 node_api_server.await
             });
         });
