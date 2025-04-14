@@ -2580,6 +2580,7 @@ dependencies = [
 [[package]]
 name = "eigen-aggregator"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2604,9 +2605,9 @@ dependencies = [
 [[package]]
 name = "eigen-challenger"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
- "async-trait",
  "eigen-aggregator",
  "eigen-client-avsregistry",
  "eigen-common",
@@ -2628,6 +2629,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-avsregistry"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "ark-ff 0.5.0",
@@ -2646,6 +2648,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-elcontracts"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "eigen-common",
@@ -2660,6 +2663,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-eth"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2673,6 +2677,7 @@ dependencies = [
 [[package]]
 name = "eigen-client-fireblocks"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "chrono",
@@ -2692,6 +2697,7 @@ dependencies = [
 [[package]]
 name = "eigen-common"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "url",
@@ -2700,6 +2706,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bls"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2716,6 +2723,7 @@ dependencies = [
 [[package]]
 name = "eigen-crypto-bn254"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
@@ -2726,6 +2734,7 @@ dependencies = [
 [[package]]
 name = "eigen-logging"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "ctor",
  "once_cell",
@@ -2736,6 +2745,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2746,6 +2756,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-economic"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2760,6 +2771,7 @@ dependencies = [
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2768,6 +2780,7 @@ dependencies = [
 [[package]]
 name = "eigen-nodeapi"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "ntex",
  "serde",
@@ -2779,6 +2792,7 @@ dependencies = [
 [[package]]
 name = "eigen-operator"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "eigen-aggregator",
@@ -2805,6 +2819,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-avsregistry"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2820,6 +2835,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-blsaggregation"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2841,6 +2857,7 @@ dependencies = [
 [[package]]
 name = "eigen-services-operatorsinfo"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2861,6 +2878,7 @@ dependencies = [
 [[package]]
 name = "eigen-signer"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2874,6 +2892,7 @@ dependencies = [
 [[package]]
 name = "eigen-task-generator"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "eigen-types",
@@ -2886,6 +2905,7 @@ dependencies = [
 [[package]]
 name = "eigen-testing-utils"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2903,6 +2923,7 @@ dependencies = [
 [[package]]
 name = "eigen-types"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "ark-ff 0.5.0",
@@ -2921,6 +2942,7 @@ dependencies = [
 [[package]]
 name = "eigen-utils"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "alloy",
  "regex",
@@ -2930,6 +2952,7 @@ dependencies = [
 [[package]]
 name = "eigensdk"
 version = "0.5.0"
+source = "git+https://github.com/Layr-Labs/eigensdk-rs?branch=v2#d0ca144ea0bca580f78a882dedfa02fa90438021"
 dependencies = [
  "eigen-aggregator",
  "eigen-challenger",

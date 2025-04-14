@@ -207,9 +207,8 @@ mod tests {
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
             .unwrap();
-        let ws_rpc_url = incredible_config.ws_rpc_url();
         tokio::spawn(async move {
-            aggregator_service.start(ws_rpc_url).await.unwrap();
+            aggregator_service.start().await.unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -436,9 +435,8 @@ mod tests {
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
             .unwrap();
-        let ws_rpc_url_clone = ws_rpc_url.clone();
         tokio::spawn(async move {
-            aggregator_service.start(ws_rpc_url_clone).await.unwrap();
+            aggregator_service.start().await.unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;

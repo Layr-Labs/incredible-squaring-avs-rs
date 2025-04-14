@@ -5,7 +5,6 @@ use alloy::{
 };
 use eigensdk::{
     aggregator::{Aggregator, AggregatorConfig},
-    common::get_provider,
     crypto_bls::BlsKeyPair,
     logging::get_logger,
     nodeapi::{NodeApi, NodeInfo},
@@ -18,7 +17,6 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::OperatorTaskProcessorImpl;
-use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::{future::Future, str::FromStr, sync::Arc, time::Duration};
@@ -84,9 +82,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .await
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
 
-        let ws_rpc_url = avs.config.ws_rpc_url();
         tokio::spawn(async move {
-            aggregator.start(ws_rpc_url).await.unwrap();
+            aggregator.start().await.unwrap();
         });
 
         // Sleep for 10 seconds to ensure the aggregator is started
