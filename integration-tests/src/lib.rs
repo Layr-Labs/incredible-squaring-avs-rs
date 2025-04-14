@@ -272,7 +272,11 @@ mod tests {
         let operator_state_retriever = incredible_config.operator_state_retriever_addr().unwrap();
         let operator_1_address = incredible_config.operator_address().unwrap();
 
-        let operator_task_processor = OperatorTaskProcessorImpl;
+        let operator_task_processor = OperatorTaskProcessorImpl::new(
+            incredible_config
+                .operator_1_times_failing()
+                .unwrap_or_default(),
+        );
 
         let operator = Operator::new(
             &key_pair,
@@ -430,8 +434,6 @@ mod tests {
             .await
             .unwrap();
 
-        // Here we are spawning another aggregator service, because the first one is already running in the test_incredible_squaring_without_challenger test
-        // Maybe we could unify the tests. Let's discuss it.
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
             .unwrap();
@@ -502,7 +504,11 @@ mod tests {
         let operator_state_retriever = incredible_config.operator_state_retriever_addr().unwrap();
         let operator_2_address = incredible_config.operator_2_address().unwrap();
 
-        let operator_task_processor = OperatorTaskProcessorImpl;
+        let operator_task_processor = OperatorTaskProcessorImpl::new(
+            incredible_config
+                .operator_2_times_failing()
+                .unwrap_or_default(),
+        );
 
         let operator_2 = Operator::new(
             &key_pair,
@@ -601,13 +607,11 @@ mod tests {
         let is_challenge_success = task_manager_contract
             .taskSuccesfullyChallenged(latest_task_num - 1)
             .call()
-            .await;
+            .await
+            .unwrap()
+            ._0;
 
-        // This assert is wrong, because the result is not deterministic
-        // It depends on the order of the responses. If the last response is correct, the challenge will fail
-        // We could have one test both operators respond correctly, and another test both operators respond incorrectly
-        // assert!(is_challenge_success);
-        assert!(is_challenge_success.is_ok());
+        assert!(is_challenge_success);
     }
 
     #[tokio::test]
