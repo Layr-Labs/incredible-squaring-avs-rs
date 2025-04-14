@@ -19,7 +19,7 @@ use incredible_config::IncredibleConfig;
 use incredible_operator::OperatorTaskProcessorImpl;
 use ntex::rt::System;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
-use std::{future::Future, str::FromStr, sync::Arc, time::Duration};
+use std::{future::Future, str::FromStr, time::Duration};
 use tracing::info;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
@@ -158,17 +158,14 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let signer = PrivateKeySigner::from_str(&avs.config.task_manager_signer())?;
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
-        let contract = Arc::new(IncredibleSquaringTaskManager::new(
-            avs.config.task_manager_addr()?,
-            pr,
-        ));
+        let contract = IncredibleSquaringTaskManager::new(avs.config.task_manager_addr()?, pr);
 
         let task_spam_service = TaskGenerator::builder()
             .with_iter(0..)
             .with_quorum(70, vec![0])
             .with_interval(Duration::from_secs(10))
             .run(move |i, quorum_threshold, quorums| {
-                let contract = Arc::clone(&contract);
+                let contract = contract.clone();
                 async move {
                     info!("Creating task with index {i}");
                     let number_to_be_squared = U256::from(i * i);
