@@ -89,9 +89,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .await
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
 
-        let ws_rpc_url = avs.config.ws_rpc_url();
         let aggregator_service_with_rpc_client = aggregator
-            .start(ws_rpc_url)
+            .start(avs.config.ws_rpc_url())
             .map_err(|e| eyre::eyre!("Aggregator start error {e:?}"));
 
         let task_manager = TaskManager::new(
