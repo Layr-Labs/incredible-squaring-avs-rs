@@ -19,10 +19,9 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
 use incredible_challenger::ChallengerTaskProcessorImpl;
 use incredible_config::IncredibleConfig;
 use incredible_operator::OperatorTaskProcessorImpl;
-use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
-use std::{future::Future, str::FromStr, sync::Arc, time::Duration};
+use std::{future::Future, str::FromStr, time::Duration};
 use tracing::info;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
@@ -73,10 +72,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         .await;
 
         let ws_rpc_url = avs.config.ws_rpc_url();
-        tokio::spawn(async move {
-            let mut challenger = Challenger::new(ws_rpc_url, challenger_task_processor);
-            challenger.start_challenger().await.unwrap();
-        });
+        let challenger_service = challenger_task_processor
+            .start_challenger()
+            .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
 
         // Start the aggregator
         let aggregator_config = AggregatorConfig {
@@ -93,9 +91,12 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .await
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
 
-        let ws_rpc_url = avs.config.ws_rpc_url();
+        // Need to start the aggregator here since it needs to be started before the operators
         tokio::spawn(async move {
-            aggregator.start(ws_rpc_url).await.unwrap();
+            let _ = aggregator
+                .start()
+                .map_err(|e| eyre::eyre!("Aggregator start error: {e:?}"))
+                .await;
         });
 
         // Sleep for 10 seconds to ensure the aggregator is started
@@ -107,7 +108,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .unwrap();
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let bls_key_pair = BlsKeyPair::new(fr_key)?;
-        let operator_task_processor = OperatorTaskProcessorImpl;
+        let operator_task_processor = OperatorTaskProcessorImpl::new(
+            avs.config.operator_1_times_failing().unwrap_or_default(),
+        );
         let operator_1_address = avs.config.operator_address()?;
 
         let operator = Operator::new(
@@ -125,15 +128,18 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         .await
         .unwrap();
 
-        tokio::spawn(async move {
-            operator.start().await.unwrap();
-        });
+        let operator_1_service = operator
+            .start()
+            .map_err(|e| eyre::eyre!("Operator 1 start error {e:?}"));
 
         let keystore = Keystore::from_file(&avs.config.bls_keystore_2_path())?
             .decrypt(&avs.config.bls_keystore_2_password())
             .unwrap();
         let fr_key: String = keystore.iter().map(|&value| value as char).collect();
         let bls_key_pair = BlsKeyPair::new(fr_key)?;
+        let operator_2_task_processor = OperatorTaskProcessorImpl::new(
+            avs.config.operator_2_times_failing().unwrap_or_default(),
+        );
         let operator_2_address = avs.config.operator_2_address()?;
 
         let operator_2 = Operator::new(
@@ -146,14 +152,14 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             avs.config.registry_coordinator_addr()?,
             avs.config.operator_state_retriever_addr()?,
             avs.config.aggregator_ip_addr(),
-            operator_task_processor,
+            operator_2_task_processor,
         )
         .await
         .unwrap();
 
-        tokio::spawn(async move {
-            operator_2.start().await.unwrap();
-        });
+        let operator_2_service = operator_2
+            .start()
+            .map_err(|e| eyre::eyre!("Operator 2 start error {e:?}"));
 
         // Start the task generator service
         let url = Url::parse(&avs.config.http_rpc_url())?;
@@ -161,40 +167,35 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let signer = PrivateKeySigner::from_str(&avs.config.task_manager_signer())?;
         let wallet = EthereumWallet::new(signer);
         let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
-        let contract = Arc::new(IncredibleSquaringTaskManager::new(
-            avs.config.task_manager_addr()?,
-            pr,
-        ));
+        let contract = IncredibleSquaringTaskManager::new(avs.config.task_manager_addr()?, pr);
 
-        let task_generator_future = tokio::spawn(async move {
-            TaskGenerator::builder()
-                .with_iter(0..)
-                .with_quorum(70, vec![0])
-                .with_interval(Duration::from_secs(10))
-                .run(move |i, quorum_threshold, quorums| {
-                    let contract = Arc::clone(&contract);
-                    async move {
-                        let number_to_be_squared = U256::from(i * i);
-                        contract
-                            .createNewTask(
-                                number_to_be_squared,
-                                quorum_threshold.into(),
-                                quorums.into(),
-                            )
-                            .send()
-                            .await
-                            .unwrap()
-                            .get_receipt()
-                            .await
-                            .unwrap();
+        let task_spam_service = TaskGenerator::builder()
+            .with_iter(0..)
+            .with_quorum(40, vec![0])
+            .with_interval(Duration::from_secs(10))
+            .run(move |i, quorum_threshold, quorums| {
+                let contract = contract.clone();
+                async move {
+                    info!("Creating task with index {i}");
+                    let number_to_be_squared = U256::from(i * i);
+                    contract
+                        .createNewTask(
+                            number_to_be_squared,
+                            quorum_threshold.into(),
+                            quorums.into(),
+                        )
+                        .send()
+                        .await
+                        .unwrap()
+                        .get_receipt()
+                        .await
+                        .unwrap();
 
-                        info!("Task {} created", i);
-                        Ok(())
-                    }
-                })
-                .await
-                .unwrap();
-        });
+                    info!("Task {} created", i);
+                    Ok(())
+                }
+            })
+            .map_err(|e| eyre::eyre!("Task spam service error: {:?}", e));
 
         let node_info = NodeInfo::new("incredible-squaring", "v0.0.1");
         let node_api = NodeApi::new(node_info);
@@ -208,8 +209,13 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             });
         });
 
-        // Wait for the task generator to finish
-        task_generator_future.await?;
+        let _ = futures::future::try_join4(
+            challenger_service,
+            operator_1_service,
+            operator_2_service,
+            task_spam_service,
+        )
+        .await?;
 
         Ok(())
     }
