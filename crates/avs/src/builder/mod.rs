@@ -78,8 +78,13 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .map_err(|e| eyre::eyre!("Aggregator new error {e:?}"))?;
 
         let ws_rpc_url = avs.config.ws_rpc_url();
+
+        // Need to start the aggregator here since it needs to be started before the operators
         tokio::spawn(async move {
-            aggregator.start(ws_rpc_url).await.unwrap();
+            let _ = aggregator
+                .start(ws_rpc_url)
+                .map_err(|e| eyre::eyre!("Aggregator start error: {e:?}"))
+                .await;
         });
 
         // Sleep for 10 seconds to ensure the aggregator is started
@@ -111,9 +116,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         .await
         .unwrap();
 
-        tokio::spawn(async move {
-            operator.start().await.unwrap();
-        });
+        let operator_1_service = operator
+            .start()
+            .map_err(|e| eyre::eyre!("Operator 1 start error {e:?}"));
 
         let keystore = Keystore::from_file(&avs.config.bls_keystore_2_path())?
             .decrypt(&avs.config.bls_keystore_2_password())
@@ -140,9 +145,9 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         .await
         .unwrap();
 
-        tokio::spawn(async move {
-            operator_2.start().await.unwrap();
-        });
+        let operator_2_service = operator_2
+            .start()
+            .map_err(|e| eyre::eyre!("Operator 2 start error {e:?}"));
 
         let task_manager = TaskManager::new(
             avs.config.task_manager_addr()?,
@@ -165,7 +170,13 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             });
         });
 
-        let _ = futures::future::try_join(challenger_service, task_spam_service).await?;
+        let _ = futures::future::try_join4(
+            challenger_service,
+            operator_1_service,
+            operator_2_service,
+            task_spam_service,
+        )
+        .await?;
 
         Ok(())
     }
