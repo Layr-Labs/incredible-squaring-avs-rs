@@ -29,7 +29,6 @@ toml.workspace = true
 hex = "0.4.3"
 ruint = "1.12.3"
 
-
 #eigensdk-rs
 eigensdk.workspace = true
 

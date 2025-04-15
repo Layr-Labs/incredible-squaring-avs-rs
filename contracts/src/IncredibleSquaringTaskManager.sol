@@ -48,12 +48,16 @@ contract IncredibleSquaringTaskManager is
     mapping(uint32 => bytes32) public allTaskResponses;
 
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
+<<<<<<< HEAD
 
     address public serviceManager;
     address public aggregator;
     address public generator;
     address public instantSlasher;
     address public allocationManager;
+=======
+    address public aggregator;
+>>>>>>> master
 
     /* MODIFIERS */
     modifier onlyAggregator() {
@@ -61,6 +65,7 @@ contract IncredibleSquaringTaskManager is
         _;
     }
 
+<<<<<<< HEAD
     // onlyTaskGenerator is used to restrict createNewTask from only being called by a permissioned entity
     // in a real world scenario, this would be removed by instead making createNewTask a payable function
     modifier onlyTaskGenerator() {
@@ -90,13 +95,27 @@ contract IncredibleSquaringTaskManager is
         allocationManager = _allocationManager;
         instantSlasher = _slasher;
         serviceManager = _serviceManager;
+=======
+    constructor(IRegistryCoordinator _registryCoordinator, uint32 _taskResponseWindowBlock)
+        BLSSignatureChecker(_registryCoordinator)
+    {
+        TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
+    }
+
+    function initialize(IPauserRegistry _pauserRegistry, address initialOwner, address _aggregator)
+        public
+        initializer
+    {
+        _initializePauser(_pauserRegistry, UNPAUSE_ALL);
+        _transferOwnership(initialOwner);
+        aggregator = _aggregator;
+>>>>>>> master
     }
 
     /* FUNCTIONS */
     // NOTE: this function creates new task, assigns it a taskId
     function createNewTask(uint256 numberToBeSquared, uint32 quorumThresholdPercentage, bytes calldata quorumNumbers)
         external
-        onlyTaskGenerator
     {
         // create a new task struct
         Task memory newTask;
@@ -116,7 +135,7 @@ contract IncredibleSquaringTaskManager is
         Task calldata task,
         TaskResponse calldata taskResponse,
         NonSignerStakesAndSignature memory nonSignerStakesAndSignature
-    ) external onlyAggregator {
+    ) external {
         uint32 taskCreatedBlock = task.taskCreatedBlock;
         bytes calldata quorumNumbers = task.quorumNumbers;
         uint32 quorumThresholdPercentage = task.quorumThresholdPercentage;

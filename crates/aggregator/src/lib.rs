@@ -305,7 +305,6 @@ impl Aggregator {
             for val in task.quorumNumbers.iter() {
                 quorum_nums.push(*val);
             }
-
             let time_to_expiry = tokio::time::Duration::from_secs(
                 (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
             );

@@ -11,6 +11,7 @@ members = [
   "crates/chainio",
   "crates/testing-utils",
   "crates/task_generator",
+  "crates/operator",
   "crates/operator_2",
   "integration-tests",
 ]

@@ -41,7 +41,7 @@ impl ClientAggregator {
 
         for _ in 0..5 {
             let params = &json!({
-                "params": signed_task_response,
+                "params": &signed_task_response,
                 "id": 1,
                 "jsonrpc": "2.0"
             });

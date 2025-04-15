@@ -14,6 +14,9 @@ deploy-uam-permissions:
 
 deploy-el-and-avs-contracts: deploy-eigenlayer deploy-avs deploy-uam-permissions
 
+simulate-avs-mainnet-deployment:
+	./contracts/anvil/deploy-avs-mainnet.sh
+
 __TESTING__: ##
 
 reset_anvil:

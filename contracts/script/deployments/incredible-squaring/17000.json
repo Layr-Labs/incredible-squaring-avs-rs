@@ -1,0 +1,16 @@
+{
+  "lastUpdate": { "timestamp": "1736948904", "block_number": "3150654" },
+  "addresses": {
+    "proxyAdmin": "0x198aa4ebf55a4bbc96469abedce88a0abfd11cf1",
+    "IncredibleSquaringServiceManager": "0x16901741873fb705905636e1805e32b0604f9052",
+    "incredibleSquaringServiceManagerImpl": "0xf4677fa15e39caa494350b32e3d430702631c950",
+    "IncredibleSquaringTaskManager": "0xabd88929384d1c2f9880f6207c3facd4320b2e2d",
+    "registryCoordinator": "0x32210d13de63b9309aa0ecbac7d60535a8d9dd21",
+    "blsapkRegistry": "0x666d6cd44c0d8de604c21fc5bcc277984679404d",
+    "indexRegistry": "0x03fef6a01d939dc9425b3e582247ce9f25f5b392",
+    "stakeRegistry": "0x35e53a2087b31f91a60a62ecd09c79388bb70cf9",
+    "operatorStateRetriever": "0x82a7328a484f85f06f318d9cda105bb1bdb266f8",
+    "strategy": "0xda123ccbb124750c3306e7837d9d707cffbcbe78",
+    "token": "0x0000000000000000000000000000000000000000"
+  }
+}
