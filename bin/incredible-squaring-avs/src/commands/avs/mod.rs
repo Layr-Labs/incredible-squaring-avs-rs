@@ -424,6 +424,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         } = *self;
         if let Some(config_path) = config_path {
             config = IncredibleConfig::load(&config_path)?;
+            info!("chain_id{:?}", config.chain_id());
         } else {
             config.set_service_manager_address(service_manager_address_anvil.to_string());
             config.set_node_api_port_address(node_api_address);
@@ -537,7 +538,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 metadata_uri.clone(),
                 config.allocation_delay()?,
                 config.operator_pvt_key(),
-                rpc_url.clone(),
+                config.http_rpc_url().clone(),
                 ecdsa_keystore_path.clone(),
                 ecdsa_keystore_password.clone(),
                 config.permission_controller_address()?,
@@ -555,7 +556,7 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
                 metadata_uri,
                 config.allocation_delay()?,
                 config.operator_2_pvt_key(),
-                rpc_url.clone(),
+                config.http_rpc_url().clone(),
                 ecdsa_keystore_2_path.clone(),
                 ecdsa_keystore_2_password.clone(),
                 config.permission_controller_address()?,
@@ -672,7 +673,8 @@ impl<Ext: clap::Args + fmt::Debug + Send + Sync + 'static> AvsCommand<Ext> {
         }
 
         let avs_launcher = DefaultAvsLauncher::new();
-        let avs_builder = AvsBuilder::new(config);
+        let avs_builder = AvsBuilder::new(config.clone());
+
         let _ = avs_launcher.launch_avs(avs_builder).await;
 
         Ok(())

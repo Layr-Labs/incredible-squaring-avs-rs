@@ -60,10 +60,14 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         IStrategy strategy = addStrategy(address(mockToken));
         quorum.strategies.push(IECDSAStakeRegistryTypes.StrategyParams({strategy: strategy, multiplier: 10_000}));
 
+        IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig memory isConfig;
+        isConfig.aggregator_addr = AGGREGATOR_ADDR.addr;
+        isConfig.task_generator_addr = TASK_GENERATOR_ADDR.addr;
+
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, coreDeployment, address(strategy), iSquaringConfig, ADMIN.addr
         );
-        labelContracts(coreDeployment, incredibleSquaringDeployment);
+        labelContracts();
     }
 
     function addStrategy(address token) public returns (IStrategy) {

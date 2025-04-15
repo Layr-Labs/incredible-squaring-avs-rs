@@ -22,7 +22,7 @@ pub struct IncredibleConfig {
 
     aggregator_config: AggregatorConfig,
 
-    el_config: ELConfig,
+    el_config: ElConfig,
 
     operator_registration_config: OperatorRegistrationConfig,
 
@@ -128,7 +128,7 @@ pub struct OperatorConfig {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
-pub struct ELConfig {
+pub struct ElConfig {
     pub registry_coordinator_addr: String,
 
     pub operator_state_retriever_addr: String,
@@ -251,6 +251,14 @@ impl IncredibleConfig {
         self.bls_config.keystore_2_password = password;
     }
 
+    pub fn set_operator_1_token_amount(&mut self, amount: String) {
+        self.operator_config.operator_1_token_amount = amount;
+    }
+
+    pub fn set_operator_2_token_amount(&mut self, amount: String) {
+        self.operator_config.operator_2_token_amount = amount;
+    }
+
     pub fn set_registry_coordinator_addr(&mut self, address: String) {
         self.el_config.registry_coordinator_addr = address;
     }
@@ -312,20 +320,16 @@ impl IncredibleConfig {
         self.operator_2_registration_config.socket = socket;
     }
 
+    pub fn set_rewards_coordinator_address(&mut self, address: String) {
+        self.el_config.rewards_coordinator_addr = address;
+    }
+
     pub fn set_operator_2_sig_expiry(&mut self, expiry: String) {
         self.operator_2_registration_config.sig_expiry = expiry;
     }
 
     pub fn set_operator_2_signing_key(&mut self, pvt_key: String) {
         self.operator_2_registration_config.operator_pvt_key = Some(pvt_key);
-    }
-
-    pub fn set_operator_1_token_amount(&mut self, amount: String) {
-        self.operator_config.operator_1_token_amount = amount;
-    }
-
-    pub fn set_operator_2_token_amount(&mut self, amount: String) {
-        self.operator_config.operator_2_token_amount = amount;
     }
 
     pub fn set_avs_directory_address(&mut self, address: String) {
@@ -350,10 +354,6 @@ impl IncredibleConfig {
 
     pub fn set_node_api_port_address(&mut self, port: String) {
         self.node_config.node_port_address = port;
-    }
-
-    pub fn set_rewards_coordinator_address(&mut self, address: String) {
-        self.el_config.rewards_coordinator_addr = address;
     }
 
     pub fn set_allocation_manager_address(&mut self, address: String) {
@@ -513,6 +513,11 @@ impl IncredibleConfig {
             .map_err(ConfigError::HexParse)
     }
 
+    pub fn rewards_coordinator_addr(&self) -> Result<Address, ConfigError> {
+        Address::from_hex(self.el_config.rewards_coordinator_addr.as_bytes())
+            .map_err(ConfigError::HexParse)
+    }
+
     pub fn operator_to_avs_registration_sig_salt(&self) -> Result<FixedBytes<32>, ConfigError> {
         FixedBytes::<32>::from_str(
             &self
@@ -620,8 +625,8 @@ mod tests {
     use super::BlsConfig;
     use super::PathBuf;
     use crate::AggregatorConfig;
-    use crate::ELConfig;
     use crate::EcdsaConfig;
+    use crate::ElConfig;
     use crate::IncredibleConfig;
     use crate::OperatorConfig;
     use crate::OperatorRegistrationConfig;
@@ -768,7 +773,7 @@ mod tests {
         allocation_manager_addr = "0x8a791620dd6260079bf849dc5567adc3f2fdc318"
         "#;
 
-        let _config: ELConfig = toml::from_str(config_file).unwrap();
+        let _config: ElConfig = toml::from_str(config_file).unwrap();
 
         assert_eq!(
             _config.registry_coordinator_addr,

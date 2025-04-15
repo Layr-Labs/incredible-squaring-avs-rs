@@ -10,9 +10,13 @@ Basic repo demoing a simple AVS middleware with full EigenLayer integration, in 
 
 ## Running the example
 
+<<<<<<< HEAD
 ### Deploy the contracts
 
 First, start anvil in a separate terminal
+=======
+## Anvil 
+>>>>>>> master
 
 ```sh
 anvil
@@ -95,6 +99,7 @@ If you want to check the balance of the claimer, you can run the following comma
 make claimer-account-token-balance
 ```
 
+<<<<<<< HEAD
 Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
 ### Using custom distribution for each operator
@@ -126,6 +131,33 @@ make claimer-account-token-balance
 Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
 ## Testing
+=======
+## Mainnet 
+We support mainnet deployment simulation of AVS contracts 
+
+1)  git submodule and copy env 
+    ```sh
+    git submodule update --init --recursive
+    cp contracts/.env.example contracts/.env
+    ```
+
+2) Paste your .env variables 
+  - `MAINNET_DEPLOYER_KEY` , `MAINNET_RPC_URL` , `ETHERSCAN_API_KEY`
+
+3) Run this to simulate
+   ```sh
+    make simulate-avs-mainnet-deployment
+   ```
+4) To actually deploy(Optional)
+   Add --broadcast in the forge script [command]()
+   Update the `mainnet_incredible_config.toml` file with correct addresses to run the avs 
+   Then run 
+   ```sh
+   cargo run --bin incredible-squaring-avs  start --config-path <mainnet config path>
+   ```
+   
+## Testing 
+>>>>>>> master
 
 - To run unit tests(start anvil in a separate terminal)
 
@@ -138,6 +170,10 @@ make pr
 ```sh
 make integration-tests
 ```
+
+## Branches
+- master - Tracks latest middleware mainnet contracts
+- dev - Tracks middleware's dev branch(a.k.a slashing!) 
 
 ## Architecture
 
@@ -157,6 +193,7 @@ The architecture of the AVS contains:
 - Operators
   - Square the number sent to the task manager by the task generator, sign it, and send it to the aggregator
 
+<<<<<<< HEAD
 ## Structure Documentation
 
 This PR has four main participants:
@@ -442,6 +479,8 @@ pub async fn start(&self) -> eyre::Result<()> {
 ```
 
 This code [sends a new task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L66-L77) to `TaskManager` [every 10 seconds](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L85).
+=======
+>>>>>>> master
 
 ## Default Configuration
 

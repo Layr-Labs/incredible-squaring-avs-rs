@@ -96,7 +96,6 @@ contract IncredibleSquaringTaskManager is
     // NOTE: this function creates new task, assigns it a taskId
     function createNewTask(uint256 numberToBeSquared, uint32 quorumThresholdPercentage, bytes calldata quorumNumbers)
         external
-        onlyTaskGenerator
     {
         // create a new task struct
         Task memory newTask;
@@ -116,7 +115,7 @@ contract IncredibleSquaringTaskManager is
         Task calldata task,
         TaskResponse calldata taskResponse,
         NonSignerStakesAndSignature memory nonSignerStakesAndSignature
-    ) external onlyAggregator {
+    ) external {
         uint32 taskCreatedBlock = task.taskCreatedBlock;
         bytes calldata quorumNumbers = task.quorumNumbers;
         uint32 quorumThresholdPercentage = task.quorumThresholdPercentage;

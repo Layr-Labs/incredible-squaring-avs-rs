@@ -107,7 +107,8 @@ library IncredibleSquaringDeploymentLib {
         result.slasher = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         OperatorStateRetriever operatorStateRetriever = new OperatorStateRetriever();
         result.strategy = strategy;
-        result.operatorStateRetriever = address(operatorStateRetriever);
+        result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
+        result.operatorStateRetriever = address(new OperatorStateRetriever());
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
@@ -117,6 +118,7 @@ library IncredibleSquaringDeploymentLib {
                 IAllocationManager(core.allocationManager)
             )
         );
+        UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
 
         address blsApkRegistryImpl =
             address(new BLSApkRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
@@ -231,7 +233,9 @@ library IncredibleSquaringDeploymentLib {
             )
         );
         UpgradeableProxyLib.upgradeAndCall(
-            result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
+            result.incredibleSquaringTaskManager,
+            address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
+            (taskmanagerupgradecall)
         );
 
         UpgradeableProxyLib.upgrade(result.slasher, instantSlasherImpl);

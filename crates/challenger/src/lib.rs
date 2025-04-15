@@ -1,29 +1,31 @@
 //! Challenger crate
 use alloy::consensus::Transaction;
 use alloy::primitives::Address;
-use eigensdk::common::{get_provider, get_ws_provider};
-use eigensdk::utils::slashing::core::delegationmanager::DelegationManager;
-use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
-    Task, TaskResponse, TaskResponseMetadata,
-};
-use incredible_bindings::incrediblesquaringtaskmanager::BN254::G1Point;
-use std::collections::HashMap;
-/// Challenger Error
-pub mod error;
-mod fake_challenger;
 use alloy::providers::Provider;
 use alloy::rpc::types::{BlockNumberOrTag, Filter};
 use alloy::rpc::types::{Log, TransactionReceipt};
 use alloy::sol_types::SolCall;
+use eigensdk::common::{get_provider, get_ws_provider};
+use eigensdk::utils::slashing::core::delegationmanager::DelegationManager;
 use error::ChallengerError;
 use eyre::Result;
 use futures_util::stream::StreamExt;
+use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::{
+    Task, TaskResponse, TaskResponseMetadata,
+};
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::{
     respondToTaskCall, NewTaskCreated, TaskResponded,
 };
+use incredible_bindings::incrediblesquaringtaskmanager::BN254::G1Point;
 use incredible_chainio::AvsWriter;
 use incredible_config::IncredibleConfig;
+use std::collections::HashMap;
 use tracing::info;
+
+/// Challenger Error
+pub mod error;
+/// Fake Challenger
+pub mod fake_challenger;
 
 /// Task Response Data
 #[derive(Debug)]
