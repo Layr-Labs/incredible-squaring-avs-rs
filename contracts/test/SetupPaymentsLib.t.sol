@@ -38,7 +38,6 @@ pragma solidity ^0.8.12;
 //     IStrategy public strategy;
 //     address proxyAdmin;
 
-<<<<<<< HEAD
 //     string internal constant filePath = "test/mockData/scratch/payments.json";
 
 //     function setUp() public virtual override {
@@ -48,36 +47,16 @@ pragma solidity ^0.8.12;
 //         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
 //         coreConfigData = CoreDeploymentLib.readDeploymentConfigValues("test/mockData/config/core/", 1337); // TODO: Fix this to correct path
 //         coreDeployment = CoreDeploymentLib.deployContracts(deployer, proxyAdmin, coreConfigData);
-=======
-    function setUp() public virtual override {
-        Vm.Wallet memory AGGREGATOR_ADDR = vm.createWallet("AGGREGATOR_AGGR");
-        Vm.Wallet memory TASK_GENERATOR_ADDR = vm.createWallet("TASK_GENERATOR_ADDR");
-        Vm.Wallet memory ADMIN = vm.createWallet("ADMIN");
-        proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
-        coreConfigData = CoreDeploymentLib.readDeploymentConfigValues("test/mockData/config/core/", 1337); // TODO: Fix this to correct path
-        coreDeployment = CoreDeploymentLib.deployContracts(deployer, proxyAdmin, coreConfigData);
->>>>>>> master
 
 //         mockToken = new MockERC20();
 
 //         strategy = addStrategy(address(mockToken));
 //         quorum.strategies.push(StrategyParams({strategy: strategy, multiplier: 10_000}));
 
-<<<<<<< HEAD
 //         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
 //             proxyAdmin, coreDeployment, address(strategy), AGGREGATOR_ADDR.addr, TASK_GENERATOR_ADDR.addr, ADMIN.addr
 //         );
 //         labelContracts(coreDeployment, incredibleSquaringDeployment);
-=======
-        IncredibleSquaringDeploymentLib.IncredibleSquaringSetupConfig memory isConfig;
-        isConfig.aggregator_addr = AGGREGATOR_ADDR.addr;
-        isConfig.task_generator_addr = TASK_GENERATOR_ADDR.addr;
-
-        incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-            proxyAdmin, coreDeployment, address(strategy), isConfig, ADMIN.addr
-        );
-        labelContracts();
->>>>>>> master
 
 //         rewardsCoordinator = IRewardsCoordinator(coreDeployment.rewardsCoordinator);
 //         mockToken.mint(address(this), 100000);
@@ -98,23 +77,12 @@ pragma solidity ^0.8.12;
 //         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory earnerLeaves =
 //             SetupPaymentsLib.createEarnerLeaves(earners, tokenLeaves);
 
-<<<<<<< HEAD
 //         cheats.startPrank(address(0), address(0));
 //         SetupPaymentsLib.submitRoot(
 //             rewardsCoordinator, tokenLeaves, earnerLeaves, address(strategy), endTimestamp, NUM_EARNERS, 1, filePath
 //         );
 //         cheats.stopPrank();
 //     }
-=======
-        cheats.startPrank(address(0), address(0));
-
-        string memory filePath = "test/mockData/scratch/payments.json";
-        SetupPaymentsLib.submitRoot(
-            rewardsCoordinator, tokenLeaves, earnerLeaves, address(strategy), endTimestamp, NUM_EARNERS, 1, filePath
-        );
-        cheats.stopPrank();
-    }
->>>>>>> master
 
 //     function testWriteLeavesToJson() public {
 //         bytes32[] memory leaves = new bytes32[](2);

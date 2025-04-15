@@ -65,11 +65,7 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         isConfig.task_generator_addr = TASK_GENERATOR_ADDR.addr;
 
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
-<<<<<<< HEAD
             proxyAdmin, coreDeployment, address(strategy), iSquaringConfig, ADMIN.addr
-=======
-            proxyAdmin, coreDeployment, address(strategy), isConfig, ADMIN.addr
->>>>>>> master
         );
         labelContracts();
     }
@@ -85,7 +81,6 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         return newStrategy;
     }
 
-<<<<<<< HEAD
     function labelContracts(
         CoreDeploymentLib.DeploymentData memory coreDeploymentData,
         IncredibleSquaringDeploymentLib.DeploymentData memory incredibleSquaringDeploymentData
@@ -101,19 +96,5 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         vm.label(coreDeploymentData.strategyBeacon, "StrategyBeacon");
         vm.label(incredibleSquaringDeploymentData.incredibleSquaringServiceManager, "IncredibleSquaringServiceManager");
         vm.label(incredibleSquaringDeploymentData.stakeRegistry, "StakeRegistry");
-=======
-    function labelContracts() internal {
-        vm.label(coreDeployment.delegationManager, "DelegationManager");
-        vm.label(coreDeployment.avsDirectory, "AVSDirectory");
-        vm.label(coreDeployment.strategyManager, "StrategyManager");
-        vm.label(coreDeployment.eigenPodManager, "EigenPodManager");
-        vm.label(coreDeployment.rewardsCoordinator, "RewardsCoordinator");
-        vm.label(coreDeployment.eigenPodBeacon, "EigenPodBeacon");
-        vm.label(coreDeployment.pauserRegistry, "PauserRegistry");
-        vm.label(coreDeployment.strategyFactory, "StrategyFactory");
-        vm.label(coreDeployment.strategyBeacon, "StrategyBeacon");
-        vm.label(incredibleSquaringDeployment.incredibleSquaringServiceManager, "IncredibleSquaringServiceManager");
-        vm.label(incredibleSquaringDeployment.stakeRegistry, "StakeRegistry");
->>>>>>> master
     }
 }

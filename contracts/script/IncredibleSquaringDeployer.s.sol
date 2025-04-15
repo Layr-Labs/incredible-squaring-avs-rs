@@ -99,10 +99,7 @@ contract IncredibleSquaringDeployer is Script {
         configData = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
 
         erc20Mock = new MockERC20();
-<<<<<<< HEAD
         console.log(address(erc20Mock));
-=======
->>>>>>> master
         FundOperator.fund_operator(address(erc20Mock), isConfig.operator_addr, 15000e18);
         FundOperator.fund_operator(address(erc20Mock), isConfig.operator_2_addr, 30000e18);
         console.log(isConfig.operator_2_addr);

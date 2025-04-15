@@ -8,7 +8,6 @@ import {console2} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {IAVSDirectory} from "@eigenlayer/contracts/interfaces/IAVSDirectory.sol";
-<<<<<<< HEAD
 import {ISocketRegistry, SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
 import {
     ISlashingRegistryCoordinator,
@@ -16,10 +15,6 @@ import {
 } from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
 import {SlashingRegistryCoordinator} from "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
 import {IPermissionController} from "@eigenlayer/contracts/interfaces/IPermissionController.sol";
-=======
-import {ISocketRegistry} from "@eigenlayer-middleware/src/interfaces/ISocketRegistry.sol";
-import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
->>>>>>> master
 import {
     IncredibleSquaringServiceManager,
     IServiceManager,
@@ -35,30 +30,18 @@ import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {InstantSlasher} from "@eigenlayer-middleware/src/slashers/InstantSlasher.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
-<<<<<<< HEAD
 // import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol"; // todo: socket registry not available
 import {IAllocationManager} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
-=======
-import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
->>>>>>> master
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {CoreDeploymentLib} from "./CoreDeploymentLib.sol";
 
 import {
-<<<<<<< HEAD
     IBLSApkRegistry, IIndexRegistry, IStakeRegistry
 } from
 // ISocketRegistry
 "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
 import {IStakeRegistryTypes} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
 
-=======
-    RegistryCoordinator,
-    IBLSApkRegistry,
-    IIndexRegistry,
-    IStakeRegistry
-} from "@eigenlayer-middleware/src/RegistryCoordinator.sol";
->>>>>>> master
 import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 
@@ -120,15 +103,11 @@ library IncredibleSquaringDeploymentLib {
         result.slashingRegistryCoordinator = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
-<<<<<<< HEAD
         result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.slasher = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         OperatorStateRetriever operatorStateRetriever = new OperatorStateRetriever();
-=======
->>>>>>> master
         result.strategy = strategy;
-        result.socketRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
-        result.operatorStateRetriever = address(new OperatorStateRetriever());
+        result.operatorStateRetriever = address(operatorStateRetriever);
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
@@ -138,9 +117,7 @@ library IncredibleSquaringDeploymentLib {
                 IAllocationManager(core.allocationManager)
             )
         );
-        UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
 
-<<<<<<< HEAD
         address blsApkRegistryImpl =
             address(new BLSApkRegistry(ISlashingRegistryCoordinator(result.slashingRegistryCoordinator)));
         address indexRegistryimpl =
@@ -164,13 +141,6 @@ library IncredibleSquaringDeploymentLib {
                 MIDDLEWARE_VERSION
             )
         );
-=======
-        address blsApkRegistryImpl = address(new BLSApkRegistry(IRegistryCoordinator(result.registryCoordinator)));
-        UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
-
-        address indexRegistryimpl = address(new IndexRegistry(IRegistryCoordinator(result.registryCoordinator)));
-        UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
->>>>>>> master
 
         address[] memory pausers = new address[](2);
         pausers[0] = admin;
@@ -218,7 +188,6 @@ library IncredibleSquaringDeploymentLib {
             SlashingRegistryCoordinator.initialize, (admin, admin, admin, 0, result.incredibleSquaringServiceManager)
         );
 
-<<<<<<< HEAD
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
         UpgradeableProxyLib.upgrade(result.blsapkRegistry, blsApkRegistryImpl);
         UpgradeableProxyLib.upgrade(result.indexRegistry, indexRegistryimpl);
@@ -226,20 +195,6 @@ library IncredibleSquaringDeploymentLib {
             result.slashingRegistryCoordinator, slashingRegistryCoordinatorImpl, upgradeCall
         );
 
-=======
-        address registryCoordinatorImpl = address(
-            new RegistryCoordinator(
-                IServiceManager(result.incredibleSquaringServiceManager),
-                IStakeRegistry(result.stakeRegistry),
-                IBLSApkRegistry(result.blsapkRegistry),
-                IIndexRegistry(result.indexRegistry),
-                ISocketRegistry(result.socketRegistry)
-            )
-        );
-        address socketRegistryImpl = address(new SocketRegistry(IRegistryCoordinator(result.registryCoordinator)));
-        UpgradeableProxyLib.upgrade(result.socketRegistry, socketRegistryImpl);
-        UpgradeableProxyLib.upgradeAndCall(result.registryCoordinator, registryCoordinatorImpl, upgradeCall);
->>>>>>> master
         IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
@@ -249,7 +204,6 @@ library IncredibleSquaringDeploymentLib {
             IPermissionController(core.permissionController),
             IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
-<<<<<<< HEAD
 
         IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
@@ -275,19 +229,9 @@ library IncredibleSquaringDeploymentLib {
                 result.slasher,
                 result.incredibleSquaringServiceManager
             )
-=======
-        UpgradeableProxyLib.upgrade(
-            result.incredibleSquaringServiceManager, address(incredibleSquaringServiceManagerImpl)
-        );
-        IncredibleSquaringServiceManager(result.incredibleSquaringServiceManager).initialize(admin, admin);
-        bytes memory taskmanagerupgradecall = abi.encodeCall(
-            IncredibleSquaringTaskManager.initialize, (IPauserRegistry(address(pausercontract)), admin, admin)
->>>>>>> master
         );
         UpgradeableProxyLib.upgradeAndCall(
-            result.incredibleSquaringTaskManager,
-            address(new IncredibleSquaringTaskManager(IRegistryCoordinator(result.registryCoordinator), 30)),
-            (taskmanagerupgradecall)
+            result.incredibleSquaringTaskManager, address(incredibleSquaringTaskManagerImpl), (taskmanagerupgradecall)
         );
 
         UpgradeableProxyLib.upgrade(result.slasher, instantSlasherImpl);
