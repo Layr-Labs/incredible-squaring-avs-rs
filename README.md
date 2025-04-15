@@ -10,13 +10,9 @@ Basic repo demoing a simple AVS middleware with full EigenLayer integration, in 
 
 ## Running the example
 
-<<<<<<< HEAD
 ### Deploy the contracts
 
 First, start anvil in a separate terminal
-=======
-## Anvil 
->>>>>>> master
 
 ```sh
 anvil
@@ -99,7 +95,6 @@ If you want to check the balance of the claimer, you can run the following comma
 make claimer-account-token-balance
 ```
 
-<<<<<<< HEAD
 Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
 ### Using custom distribution for each operator
@@ -130,9 +125,8 @@ make claimer-account-token-balance
 
 Note that the claimer address is not passed by parameter, because in the script that address is hardcoded.
 
-## Testing
-=======
 ## Mainnet 
+
 We support mainnet deployment simulation of AVS contracts 
 
 1)  git submodule and copy env 
@@ -157,7 +151,6 @@ We support mainnet deployment simulation of AVS contracts
    ```
    
 ## Testing 
->>>>>>> master
 
 - To run unit tests(start anvil in a separate terminal)
 
@@ -193,7 +186,6 @@ The architecture of the AVS contains:
 - Operators
   - Square the number sent to the task manager by the task generator, sign it, and send it to the aggregator
 
-<<<<<<< HEAD
 ## Structure Documentation
 
 This PR has four main participants:
@@ -479,8 +471,6 @@ pub async fn start(&self) -> eyre::Result<()> {
 ```
 
 This code [sends a new task](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L66-L77) to `TaskManager` [every 10 seconds](https://github.com/Layr-Labs/incredible-squaring-avs-rs/blob/a9120b02d794076ea0d7dd643779c1ea590fd3b8/crates/task_generator/src/lib.rs#L85).
-=======
->>>>>>> master
 
 ## Default Configuration
 
