@@ -21,15 +21,16 @@ import {
 } from "../../../src/IncredibleSquaringServiceManager.sol";
 import {IncredibleSquaringTaskManager} from "../../../src/IncredibleSquaringTaskManager.sol";
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
-import {Quorum} from "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistryEventsAndErrors.sol";
+// import {Quorum} from "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistryEventsAndErrors.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
 import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
-import {IRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/IRegistryCoordinator.sol";
+import {ISlashingRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategyManager.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-
+import {IAllocationManager} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
+import {SlashingRegistryCoordinator} from "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
 import {
     RegistryCoordinator,
     IBLSApkRegistry,
@@ -40,6 +41,8 @@ import {PauserRegistry, IPauserRegistry} from "@eigenlayer/contracts/permissions
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 import {ISocketRegistry} from "@eigenlayer-middleware/src/interfaces/ISocketRegistry.sol";
 import {SocketRegistry} from "@eigenlayer-middleware/src/SocketRegistry.sol";
+import {ISlashingRegistryCoordinatorTypes} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
+import {IStakeRegistryTypes} from "@eigenlayer-middleware/src/interfaces/IStakeRegistry.sol";
 
 library MainnetISDeploymentLib {
     using stdJson for *;
@@ -98,7 +101,10 @@ library MainnetISDeploymentLib {
         // Deploy the implementation contracts, using the proxy contracts as inputs
         address stakeRegistryImpl = address(
             new StakeRegistry(
-                IRegistryCoordinator(result.registryCoordinator), IDelegationManager(core.delegationManager)
+                ISlashingRegistryCoordinator(result.registryCoordinator),
+                IDelegationManager(core.delegationManager),
+                IAVSDirectory(core.avsDirectory),
+                IAllocationManager(core.allocationManager)
             )
         );
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
@@ -122,7 +128,7 @@ library MainnetISDeploymentLib {
             new IRegistryCoordinator.OperatorSetParam[](numQuorums);
         uint256[] memory operator_params = isConfig.operatorParams;
         for (uint256 i = 0; i < numQuorums; i++) {
-            quorumsOperatorSetParams[i] = IRegistryCoordinator.OperatorSetParam({
+            quorumsOperatorSetParams[i] = ISlashingRegistryCoordinatorTypes.OperatorSetParam({
                 maxOperatorCount: uint32(operator_params[i]),
                 kickBIPsOfOperatorStake: uint16(operator_params[i + 1]),
                 kickBIPsOfTotalStake: uint16(operator_params[i + 2])
@@ -135,7 +141,7 @@ library MainnetISDeploymentLib {
         for (uint256 i = 0; i < numQuorums; i++) {
             quorumsStrategyParams[i] = new IStakeRegistry.StrategyParams[](numStrategies);
             for (uint256 j = 0; j < numStrategies; j++) {
-                quorumsStrategyParams[i][j] = IStakeRegistry.StrategyParams({
+                quorumsStrategyParams[i][j] = IStakeRegistryTypes.StrategyParams({
                     strategy: deployedStrategyArray[j],
                     // setting this to 1 ether since the divisor is also 1 ether
                     // therefore this allows an operator to register with even just 1 token
@@ -147,7 +153,7 @@ library MainnetISDeploymentLib {
         }
 
         bytes memory upgradeCall = abi.encodeCall(
-            RegistryCoordinator.initialize,
+            SlashingRegistryCoordinator.initialize,
             (
                 admin,
                 admin,

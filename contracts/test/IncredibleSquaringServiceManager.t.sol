@@ -49,6 +49,8 @@ contract IncredibleSquaringServiceManagerSetup is Test {
     function setUp() public virtual {
         deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.label(deployer, "Deployer");
+        Vm.Wallet memory AGGREGATOR_ADDR = vm.createWallet("AGGREGATOR_AGGR");
+        Vm.Wallet memory TASK_GENERATOR_ADDR = vm.createWallet("TASK_GENERATOR_ADDR");
         Vm.Wallet memory ADMIN = vm.createWallet("ADMIN");
         address proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
 
@@ -81,20 +83,17 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         return newStrategy;
     }
 
-    function labelContracts(
-        CoreDeploymentLib.DeploymentData memory coreDeploymentData,
-        IncredibleSquaringDeploymentLib.DeploymentData memory incredibleSquaringDeploymentData
-    ) internal {
-        vm.label(coreDeploymentData.delegationManager, "DelegationManager");
-        vm.label(coreDeploymentData.avsDirectory, "AVSDirectory");
-        vm.label(coreDeploymentData.strategyManager, "StrategyManager");
-        vm.label(coreDeploymentData.eigenPodManager, "EigenPodManager");
-        vm.label(coreDeploymentData.rewardsCoordinator, "RewardsCoordinator");
-        vm.label(coreDeploymentData.eigenPodBeacon, "EigenPodBeacon");
-        vm.label(coreDeploymentData.pauserRegistry, "PauserRegistry");
-        vm.label(coreDeploymentData.strategyFactory, "StrategyFactory");
-        vm.label(coreDeploymentData.strategyBeacon, "StrategyBeacon");
-        vm.label(incredibleSquaringDeploymentData.incredibleSquaringServiceManager, "IncredibleSquaringServiceManager");
-        vm.label(incredibleSquaringDeploymentData.stakeRegistry, "StakeRegistry");
+    function labelContracts() internal {
+        vm.label(coreDeployment.delegationManager, "DelegationManager");
+        vm.label(coreDeployment.avsDirectory, "AVSDirectory");
+        vm.label(coreDeployment.strategyManager, "StrategyManager");
+        vm.label(coreDeployment.eigenPodManager, "EigenPodManager");
+        vm.label(coreDeployment.rewardsCoordinator, "RewardsCoordinator");
+        vm.label(coreDeployment.eigenPodBeacon, "EigenPodBeacon");
+        vm.label(coreDeployment.pauserRegistry, "PauserRegistry");
+        vm.label(coreDeployment.strategyFactory, "StrategyFactory");
+        vm.label(coreDeployment.strategyBeacon, "StrategyBeacon");
+        vm.label(incredibleSquaringDeployment.incredibleSquaringServiceManager, "IncredibleSquaringServiceManager");
+        vm.label(incredibleSquaringDeployment.stakeRegistry, "StakeRegistry");
     }
 }

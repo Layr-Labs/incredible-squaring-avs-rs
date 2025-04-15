@@ -10,6 +10,7 @@ import {console2} from "forge-std/console2.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {stdJson} from "forge-std/StdJson.sol";
+import {IRewardsCoordinatorTypes} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 
 contract OperatorDirectedPayments is Script {
     using stdJson for string;
@@ -46,7 +47,7 @@ contract OperatorDirectedPayments is Script {
             new IRewardsCoordinator.OperatorReward[](operatorRewardConfig.operator_addr.length);
 
         for (uint256 i = 0; i < operator_reward.length; i++) {
-            operator_reward[i] = IRewardsCoordinator.OperatorReward({
+            operator_reward[i] = IRewardsCoordinatorTypes.OperatorReward({
                 operator: operatorRewardConfig.operator_addr[i],
                 amount: operatorRewardConfig.amount[i]
             });

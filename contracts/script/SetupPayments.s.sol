@@ -10,6 +10,7 @@ import {console2} from "forge-std/console2.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {stdJson} from "forge-std/StdJson.sol";
+import {IRewardsCoordinatorTypes} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
 
 interface Ownable {
     function owner() external view returns (address);
@@ -62,7 +63,7 @@ contract SetupPayments is Script {
         createAVSRewardsSubmissions(num_payments, amount_per_payment, duration, start_time);
         submitPaymentRoot(earners, uint32(block.timestamp - 1000), uint32(num_payments), uint32(amount_per_payment));
 
-        IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinator.EarnerTreeMerkleLeaf({
+        IRewardsCoordinator.EarnerTreeMerkleLeaf memory earnerLeaf = IRewardsCoordinatorTypes.EarnerTreeMerkleLeaf({
             earner: earners[index_to_prove],
             earnerTokenRoot: earner_token_roots[index_to_prove]
         });
