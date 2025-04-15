@@ -31,4 +31,3 @@ async-trait = "0.1.83"
 eigensdk.workspace = true
 
 [dev-dependencies]
-incredible-task-generator.workspace = true

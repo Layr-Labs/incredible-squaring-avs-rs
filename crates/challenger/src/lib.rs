@@ -72,13 +72,23 @@ impl ChallengerTaskProcessor for ChallengerTaskProcessorImpl {
         );
 
         if self.tasks.contains_key(&task_index) && !self.valid_task_response(task_index) {
-            dbg!("ENTRO A RAISE CHALLENGE");
             self.raise_challenge(task_index).await;
         }
     }
 }
 
 impl ChallengerTaskProcessorImpl {
+    /// Create a new challenger task processor
+    ///
+    /// # Arguments
+    ///
+    /// * `rpc_url` - The RPC URL
+    /// * `service_manager_addr` - The service manager address
+    /// * `signer` - The signer
+    ///
+    /// # Returns
+    ///
+    /// A new challenger task processor
     pub async fn new(rpc_url: String, service_manager_addr: Address, signer: String) -> Self {
         let avs_writer = AvsWriter::new(service_manager_addr, rpc_url.clone(), signer)
             .await
@@ -92,6 +102,15 @@ impl ChallengerTaskProcessorImpl {
         }
     }
 
+    /// Check if the task response is valid
+    ///
+    /// # Arguments
+    ///
+    /// * `task_index` - The task index
+    ///
+    /// # Returns
+    ///
+    /// True if the task response is valid, false otherwise
     fn valid_task_response(&self, task_index: u32) -> bool {
         let task = self.tasks.get(&task_index).unwrap();
         let num_to_square = task.numberToBeSquared;
@@ -103,8 +122,7 @@ impl ChallengerTaskProcessorImpl {
     }
 
     async fn raise_challenge(&self, task_index: u32) {
-        let raise_challenge_result = self
-            .avs_writer
+        self.avs_writer
             .raise_challenge(
                 self.tasks[&task_index].clone(),
                 self.task_responses[&task_index].task_response.0.clone(),
@@ -119,6 +137,15 @@ impl ChallengerTaskProcessorImpl {
             .unwrap();
     }
 
+    /// Get the non signing operator pub keys
+    ///
+    /// # Arguments
+    ///
+    /// * `log` - The log
+    ///
+    /// # Returns
+    ///
+    /// The non signing operator pub keys
     pub async fn get_non_signing_operator_pub_keys(
         &self,
         log: alloy::rpc::types::Log<TaskResponded>,

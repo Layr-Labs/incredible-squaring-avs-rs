@@ -6,7 +6,6 @@ use alloy::{
 use eigensdk::{
     aggregator::{Aggregator, AggregatorConfig},
     challenger::Challenger,
-    common::get_provider,
     crypto_bls::BlsKeyPair,
     logging::get_logger,
     nodeapi::{NodeApi, NodeInfo},
@@ -64,6 +63,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         info!("launching crates: incredible-squaring-avs-rs");
         incredible_metrics::new();
 
+        // Start the challenger
         let challenger_task_processor = ChallengerTaskProcessorImpl::new(
             avs.config.http_rpc_url(),
             avs.config.service_manager_addr()?,
@@ -71,8 +71,8 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         )
         .await;
 
-        let ws_rpc_url = avs.config.ws_rpc_url();
-        let challenger_service = challenger_task_processor
+        let mut challenger = Challenger::new(avs.config.ws_rpc_url(), challenger_task_processor);
+        let challenger_service = challenger
             .start_challenger()
             .map_err(|e| eyre::eyre!("Challenger error: {:?}", e));
 
