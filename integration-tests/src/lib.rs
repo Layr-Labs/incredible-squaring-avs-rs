@@ -6,7 +6,9 @@ mod tests {
     use eigensdk::aggregator::{Aggregator, AggregatorConfig};
     use eigensdk::common::get_provider;
     use eigensdk::crypto_bls::BlsKeyPair;
+    use eigensdk::logging::get_logger;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
+    use eigensdk::operator::Operator;
     use eigensdk::testing_utils::anvil_constants::{
         get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
         get_erc20_mock_strategy, get_permission_controller_address,
@@ -16,8 +18,7 @@ mod tests {
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
     use incredible_challenger::Challenger;
     use incredible_config::IncredibleConfig;
-    use incredible_operator::builder::OperatorBuilder;
-    use incredible_operator_2::builder::OperatorBuilder as Operator2Builder;
+    use incredible_operator::OperatorTaskProcessorImpl;
     use incredible_squaring_avs::commands::avs::{
         create_total_delegated_stake_quorum, modify_allocation_for_operator,
         register_for_operator_sets, register_operator_with_el_and_deposit_tokens_in_strategy,
@@ -28,10 +29,7 @@ mod tests {
         get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
     };
     use rust_bls_bn254::keystores::base_keystore::Keystore;
-    use std::{
-        sync::Arc,
-        time::{SystemTime, UNIX_EPOCH},
-    };
+    use std::time::{SystemTime, UNIX_EPOCH};
     const ANVIL_HTTP_URL: &str = "http://localhost:8545";
 
     const INCREDIBLE_CONFIG_FILE: &str = r#"
@@ -203,9 +201,8 @@ mod tests {
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
             .unwrap();
-        let ws_rpc_url = incredible_config.ws_rpc_url();
         tokio::spawn(async move {
-            aggregator_service.start(ws_rpc_url).await.unwrap();
+            aggregator_service.start().await.unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -249,7 +246,7 @@ mod tests {
         let key_pair = BlsKeyPair::new(fr_key).unwrap();
         register_for_operator_sets(
             incredible_config.operator_set_id().unwrap(),
-            key_pair,
+            key_pair.clone(),
             incredible_config.permission_controller_address().unwrap(),
             incredible_config.registry_coordinator_addr().unwrap(),
             get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,
@@ -263,12 +260,35 @@ mod tests {
         .await
         .unwrap();
 
-        let mut operator_builder = OperatorBuilder::build(incredible_config.clone())
-            .await
-            .unwrap();
+        let server_address = incredible_config.aggregator_ip_addr();
+        let http_rpc_url = incredible_config.http_rpc_url();
+        let registry_coordinator = incredible_config.registry_coordinator_addr().unwrap();
+        let operator_state_retriever = incredible_config.operator_state_retriever_addr().unwrap();
+        let operator_1_address = incredible_config.operator_address().unwrap();
+
+        let operator_task_processor = OperatorTaskProcessorImpl::new(
+            incredible_config
+                .operator_1_times_failing()
+                .unwrap_or_default(),
+        );
+
+        let operator = Operator::new(
+            &key_pair,
+            operator_1_address,
+            "FIRST OPERATOR",
+            get_logger(),
+            &incredible_config.ws_rpc_url(),
+            &http_rpc_url,
+            registry_coordinator,
+            operator_state_retriever,
+            server_address.clone(),
+            operator_task_processor.clone(),
+        )
+        .await
+        .unwrap();
 
         tokio::spawn(async move {
-            operator_builder.start_operator().await.unwrap();
+            operator.start().await.unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -381,12 +401,12 @@ mod tests {
         let task_processor = IncredibleTaskProcessor::new(incredible_config.clone())
             .await
             .unwrap();
+
         let aggregator_service = Aggregator::new(aggregator_config, task_processor)
             .await
             .unwrap();
-        let ws_rpc_url_clone = ws_rpc_url.clone();
         tokio::spawn(async move {
-            aggregator_service.start(ws_rpc_url_clone).await.unwrap();
+            aggregator_service.start().await.unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -432,7 +452,7 @@ mod tests {
         let key_pair = BlsKeyPair::new(fr_key).unwrap();
         register_for_operator_sets(
             incredible_config.operator_set_id().unwrap(),
-            key_pair,
+            key_pair.clone(),
             incredible_config.permission_controller_address().unwrap(),
             incredible_config.registry_coordinator_addr().unwrap(),
             get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,
@@ -446,16 +466,35 @@ mod tests {
         .await
         .unwrap();
 
-        let op_builder = OperatorBuilder::build(incredible_config.clone())
-            .await
-            .unwrap();
-        let client = Some(Arc::new(op_builder.client.clone()));
-        let mut operator_builder = Operator2Builder::build(incredible_config.clone(), client)
-            .await
-            .unwrap();
+        let server_address = incredible_config.aggregator_ip_addr();
+        let http_rpc_url = incredible_config.http_rpc_url();
+        let registry_coordinator = incredible_config.registry_coordinator_addr().unwrap();
+        let operator_state_retriever = incredible_config.operator_state_retriever_addr().unwrap();
+        let operator_2_address = incredible_config.operator_2_address().unwrap();
+
+        let operator_task_processor = OperatorTaskProcessorImpl::new(
+            incredible_config
+                .operator_2_times_failing()
+                .unwrap_or_default(),
+        );
+
+        let operator_2 = Operator::new(
+            &key_pair,
+            operator_2_address,
+            "SECOND OPERATOR",
+            get_logger(),
+            &ws_rpc_url,
+            &http_rpc_url,
+            registry_coordinator,
+            operator_state_retriever,
+            server_address,
+            operator_task_processor,
+        )
+        .await
+        .unwrap();
 
         tokio::spawn(async move {
-            operator_builder.start_operator().await.unwrap();
+            operator_2.start().await.unwrap();
         });
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;

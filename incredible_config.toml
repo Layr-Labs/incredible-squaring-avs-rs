@@ -45,7 +45,6 @@ operator_pvt_key = "0x9385907a38014b53604fd848bf907453f3b4f774db8ffa72b9960f06b2
 operator_to_avs_registration_sig_salt = "b345f720903a3ecfd59f3de456dd9d266c2ce540b05e8c909106962684d9afa3"
 quorum_number = "00"
 sig_expiry = "10"
-socket = "incredible-operator-2"
 
 
 [metrics_config]
