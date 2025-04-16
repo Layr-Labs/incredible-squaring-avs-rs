@@ -4462,6 +4462,7 @@ dependencies = [
  "eyre",
  "futures",
  "incredible-aggregator",
+ "incredible-bindings",
  "incredible-challenger",
  "incredible-config",
  "incredible-metrics",

@@ -29,6 +29,7 @@ incredible-challenger.workspace = true
 incredible-aggregator.workspace = true
 incredible-task-generator.workspace = true
 incredible-metrics.workspace = true
+incredible-bindings.workspace = true
 
 #tokio
 tokio.workspace = true

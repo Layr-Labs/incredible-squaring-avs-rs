@@ -2,13 +2,17 @@
 
 #[cfg(test)]
 mod tests {
+    use alloy::network::EthereumWallet;
     use alloy::primitives::{FixedBytes, U256};
+    use alloy::providers::ProviderBuilder;
+    use alloy::signers::local::PrivateKeySigner;
+    use alloy::transports::http::reqwest::Url;
     use eigensdk::aggregator::{Aggregator, AggregatorConfig};
-    use eigensdk::common::get_provider;
     use eigensdk::crypto_bls::BlsKeyPair;
     use eigensdk::logging::get_logger;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
     use eigensdk::operator::Operator;
+    use eigensdk::task_generator::TaskGenerator;
     use eigensdk::testing_utils::anvil_constants::{
         get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
         get_erc20_mock_strategy, get_permission_controller_address,
@@ -29,6 +33,7 @@ mod tests {
         get_incredible_squaring_strategy_address, get_incredible_squaring_task_manager,
     };
     use rust_bls_bn254::keystores::base_keystore::Keystore;
+    use std::str::FromStr;
     use std::time::{SystemTime, UNIX_EPOCH};
     const ANVIL_HTTP_URL: &str = "http://localhost:8545";
 
@@ -293,23 +298,40 @@ mod tests {
 
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
-        let task_generator = incredible_task_generator::TaskManager::new(
-            task_manager_address,
-            "http://localhost:8545".to_string(),
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
-            incredible_config.quorum_number().unwrap().to_string(),
-        );
-        task_generator
-            .create_new_task("2".parse().unwrap())
+        // Start the task generator service
+        let url = Url::parse(&incredible_config.http_rpc_url()).unwrap();
+        // TODO: REMOVE KEY
+        let signer = PrivateKeySigner::from_str(
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+        )
+        .unwrap();
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
+        let task_manager_contract = IncredibleSquaringTaskManager::new(task_manager_address, pr);
+        let task_manager_contract_clone = task_manager_contract.clone();
+
+        TaskGenerator::builder()
+            .with_iter(1..2)
+            .with_quorum(40, vec![0])
+            .run(move |i, quorum_threshold, quorums| {
+                let contract = task_manager_contract_clone.clone();
+                async move {
+                    contract
+                        .createNewTask(U256::from(i * i), quorum_threshold.into(), quorums.into())
+                        .send()
+                        .await
+                        .unwrap()
+                        .get_receipt()
+                        .await
+                        .unwrap();
+                    Ok(())
+                }
+            })
             .await
             .unwrap();
 
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
-        let task_manager_contract = IncredibleSquaringTaskManager::new(
-            task_manager_address,
-            get_provider("http://localhost:8545"),
-        );
         let latest_task_num = task_manager_contract
             .latestTaskNum()
             .call()
@@ -504,22 +526,41 @@ mod tests {
             challenger.start_challenger().await.unwrap();
         });
 
-        let task_generator = incredible_task_generator::TaskManager::new(
-            task_manager_address,
-            "http://localhost:8545".to_string(),
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
-            incredible_config.quorum_number().unwrap().to_string(),
-        );
-        task_generator
-            .create_new_task("2".parse().unwrap())
+        // Start the task generator service
+        let url = Url::parse(&incredible_config.http_rpc_url()).unwrap();
+        // TODO: REMOVE KEY
+        let signer = PrivateKeySigner::from_str(
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+        )
+        .unwrap();
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
+        let task_manager_contract = IncredibleSquaringTaskManager::new(task_manager_address, pr);
+        let task_manager_contract_clone = task_manager_contract.clone();
+
+        TaskGenerator::builder()
+            .with_iter(1..2)
+            .with_quorum(40, vec![0])
+            .run(move |i, quorum_threshold, quorums| {
+                let contract = task_manager_contract_clone.clone();
+                async move {
+                    contract
+                        .createNewTask(U256::from(i * i), quorum_threshold.into(), quorums.into())
+                        .send()
+                        .await
+                        .unwrap()
+                        .get_receipt()
+                        .await
+                        .unwrap();
+                    dbg!("SE CREO LA TAREA");
+                    Ok(())
+                }
+            })
             .await
             .unwrap();
+
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
-        let task_manager_contract = IncredibleSquaringTaskManager::new(
-            task_manager_address,
-            get_provider("http://localhost:8545"),
-        );
         let latest_task_num = task_manager_contract
             .latestTaskNum()
             .call()

@@ -1,20 +1,25 @@
 //! Builder module for the AVS. Starts all the services for the AVS using futures simulatenously.
+use alloy::{
+    network::EthereumWallet, primitives::U256, providers::ProviderBuilder,
+    signers::local::PrivateKeySigner, transports::http::reqwest::Url,
+};
 use eigensdk::{
     aggregator::{Aggregator, AggregatorConfig},
     crypto_bls::BlsKeyPair,
     logging::get_logger,
     nodeapi::{NodeApi, NodeInfo},
     operator::Operator,
+    task_generator::TaskGenerator,
 };
 use futures::TryFutureExt;
 use incredible_aggregator::IncredibleTaskProcessor;
+use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_challenger::Challenger;
 use incredible_config::IncredibleConfig;
 use incredible_operator::OperatorTaskProcessorImpl;
-use incredible_task_generator::TaskManager;
 use ntex::rt::System;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
-use std::{future::Future, time::Duration};
+use std::{future::Future, str::FromStr, time::Duration};
 use tracing::info;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
@@ -147,15 +152,42 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .start()
             .map_err(|e| eyre::eyre!("Operator 2 start error {e:?}"));
 
-        let task_manager = TaskManager::new(
-            avs.config.task_manager_addr()?,
-            avs.config.http_rpc_url(),
-            avs.config.task_manager_signer(),
-            avs.config.quorum_number()?.to_string(),
-        );
-        let task_spam_service = task_manager
-            .start()
-            .map_err(|e| eyre::eyre!("Task manager error {e:?}"));
+        // Start the task generator service
+        let url = Url::parse(&avs.config.http_rpc_url())?;
+        dbg!(&avs.config.task_manager_signer());
+        let signer = PrivateKeySigner::from_str(&avs.config.task_manager_signer())?;
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
+        let contract = IncredibleSquaringTaskManager::new(avs.config.task_manager_addr()?, pr);
+
+        let task_spam_service = TaskGenerator::builder()
+            .with_iter(0..)
+            .with_quorum(40, vec![0])
+            .with_interval(Duration::from_secs(10))
+            .run(move |i, quorum_threshold, quorums| {
+                let contract = contract.clone();
+                async move {
+                    info!("Creating task with index {i}");
+                    let number_to_be_squared = U256::from(i * i);
+                    contract
+                        .createNewTask(
+                            number_to_be_squared,
+                            quorum_threshold.into(),
+                            quorums.into(),
+                        )
+                        .send()
+                        .await
+                        .unwrap()
+                        .get_receipt()
+                        .await
+                        .unwrap();
+
+                    info!("Task {} created", i);
+                    Ok(())
+                }
+            })
+            .map_err(|e| eyre::eyre!("Task spam service error: {:?}", e));
+
         let node_info = NodeInfo::new("incredible-squaring", "v0.0.1");
         let node_api = NodeApi::new(node_info);
         let node_api_address = avs.config.node_api_port_address();

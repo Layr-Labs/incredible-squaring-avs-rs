@@ -180,7 +180,6 @@ impl TaskProcessor for IncredibleTaskProcessor {
             .or_default()
             .entry(response.digest())
             .or_insert(response.0.clone());
-
         Ok(response.digest())
     }
 
