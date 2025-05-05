@@ -22,6 +22,7 @@ metrics-util.workspace = true
 eigensdk.workspace = true
 
 #incredible
+incredible-bindings.workspace = true
 incredible-operator-2.workspace = true
 incredible-config.workspace = true
 incredible-operator.workspace = true
