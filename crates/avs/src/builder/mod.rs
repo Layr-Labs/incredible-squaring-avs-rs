@@ -6,12 +6,15 @@ use alloy::{
 use eigensdk::{
     aggregator::{Aggregator, AggregatorConfig},
     nodeapi::{NodeApi, NodeInfo},
+    task_processor::IndexingTaskProcessor,
 };
 use futures::TryFutureExt;
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_config::IncredibleConfig;
-use std::{future::Future, str::FromStr, sync::Arc};
+use std::{future::Future, str::FromStr, sync::Arc, time::Duration};
 use tracing::info;
+
+use crate::TaskManagerWrapper;
 /// Launch Avs trait
 pub trait LaunchAvs<T: Send + 'static> {
     /// Launch Avs
@@ -114,6 +117,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
         let task_manager_contract =
             IncredibleSquaringTaskManager::new(avs.config.task_manager_addr()?, pr);
+        let task_manager_wrapper = TaskManagerWrapper(task_manager_contract);
 
         // Launch aggregator
         let config_aggregator = AggregatorConfig {
@@ -124,10 +128,20 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             operator_state_retriever: avs.config.operator_state_retriever_addr()?,
         };
 
-        let aggregator = Aggregator::new(config_aggregator, task_manager_contract).await?;
-        let aggregator_service_with_rpc_client = aggregator
-            .start()
-            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+        let task_processor = IndexingTaskProcessor::new(
+            task_manager_wrapper,
+            Duration::from_secs(60),
+            Duration::from_secs(15),
+        );
+
+        let aggregator = Aggregator::new(config_aggregator, task_processor)
+            .await
+            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"))?;
+        tokio::spawn(async move {
+            let _ = aggregator
+                .start()
+                .map_err(|e| eyre::eyre!("Aggregator error {e:?}"));
+        });
 
         Ok(())
     }

@@ -18,6 +18,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
     BN254::{G1Point, G2Point},
 };
 
+#[derive(Debug, Clone)]
 pub struct TaskManagerWrapper<T, P, N>(pub IncredibleSquaringTaskManagerInstance<T, P, N>);
 
 impl<T, P, N> eigensdk::task_processor::task_manager::TaskManagerContract<T, P, N>
