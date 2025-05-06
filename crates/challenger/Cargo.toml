@@ -22,7 +22,6 @@ thiserror.workspace = true
 toml.workspace = true
 #incredible
 incredible-testing-utils.workspace = true
-incredible-chainio.workspace = true
 
 #eigensdk-rs
 eigensdk.workspace = true

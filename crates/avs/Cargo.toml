@@ -17,17 +17,16 @@ eyre.workspace = true
 tracing.workspace = true
 metrics.workspace = true
 metrics-util.workspace = true
+rust-bls-bn254.workspace = true
 
 # eigensdk-rs
 eigensdk.workspace = true
 
 #incredible
 incredible-bindings.workspace = true
-incredible-operator-2.workspace = true
 incredible-config.workspace = true
 incredible-operator.workspace = true
 incredible-challenger.workspace = true
-incredible-aggregator.workspace = true
 incredible-task-generator.workspace = true
 incredible-metrics.workspace = true
 

@@ -26,7 +26,6 @@ rust-bls-bn254.workspace = true
 
 #incredible
 incredible-metrics.workspace = true
-incredible-aggregator.workspace = true
 
 reqwest.workspace = true
 hex = {version =  "0.4.3" , features = ["alloc"]}

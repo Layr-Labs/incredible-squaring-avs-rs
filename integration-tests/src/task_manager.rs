@@ -1,6 +1,3 @@
-//! Starts all the services for the AVS using futures
-pub mod builder;
-
 use alloy::{
     contract::private::{Provider, Transport},
     network::Network,

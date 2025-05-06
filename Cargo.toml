@@ -1,6 +1,5 @@
 [workspace]
 members = [
-  "crates/aggregator",
   "crates/operator",
   "bin/incredible-squaring-avs",
   "crates/cli",
@@ -8,10 +7,8 @@ members = [
   "crates/bindings",
   "crates/avs",
   "crates/challenger",
-  "crates/chainio",
   "crates/testing-utils",
   "crates/task_generator",
-  "crates/operator_2",
   "integration-tests",
 ]
 
@@ -63,7 +60,6 @@ toml = "0.8"
 
 
 incredible-operator = { path = "crates/operator/", features = ["default"] }
-incredible-aggregator = { path = "crates/aggregator/" }
 incredible-squaring-avs = { path = "bin/incredible-squaring-avs/" }
 incredible-cli-runner = { path = "crates/cli/" }
 incredible-config = { path = "crates/config/" }
@@ -71,10 +67,8 @@ incredible-bindings = { path = "crates/bindings/" }
 incredible-metrics = { path = "crates/metrics/" }
 incredible-avs = { path = "crates/avs/" }
 incredible-challenger = { path = "crates/challenger/" }
-incredible-chainio = { path = "crates/chainio/" }
 incredible-testing-utils = { path = "crates/testing-utils/" }
 incredible-task-generator = { path = "crates/task_generator/" }
-incredible-operator-2 = { path = "crates/operator_2/", features = ["default"] }
 
 # eigensdk-rs 
 # eigensdk = { version = "=1.0.0-rc.0", features = ["full"] }
