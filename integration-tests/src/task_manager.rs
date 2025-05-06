@@ -6,7 +6,6 @@ use alloy::{
 use eigensdk::{
     challenger::{challenger_processor::TaskResponseMetadataSol, task_manager::TaskManagerError},
     task_processor::{task::Task, task_response::TaskResponse},
-    task_spammer::error::TaskSpammerError,
     types::operator::{QuorumNum, QuorumThresholdPercentage},
     utils::slashing::middleware::iblssignaturechecker::{
         IBLSSignatureCheckerTypes::NonSignerStakesAndSignature, BN254::G1Point as G1PointSDK,
@@ -37,6 +36,23 @@ where
     type Input = U256;
     type Output = U256;
     type NewTaskEvent = NewTaskCreated;
+
+    async fn create_new_task(
+        &self,
+        input: U256,
+        quorum_threshold: QuorumThresholdPercentage,
+        quorums: Vec<QuorumNum>,
+    ) -> Result<N::ReceiptResponse, TaskManagerError> {
+        Ok(self
+            .0
+            .createNewTask(input, quorum_threshold.into(), quorums.into())
+            .send()
+            .await
+            .unwrap()
+            .get_receipt()
+            .await
+            .unwrap())
+    }
 
     async fn respond_to_task(
         &self,
@@ -107,29 +123,6 @@ where
             .unwrap();
 
         Ok(())
-    }
-}
-
-impl<T, P, N> eigensdk::task_spammer::task_manager::TaskManagerContract<U256, T, P, N>
-    for TaskManagerWrapper<T, P, N>
-where
-    T: Transport + Clone + Send + Sync,
-    P: Provider<T, N>,
-    N: Network,
-{
-    async fn create_new_task(
-        &self,
-        input: U256,
-        quorum_threshold: QuorumThresholdPercentage,
-        quorums: Vec<QuorumNum>,
-    ) -> Result<N::ReceiptResponse, TaskSpammerError> {
-        Ok(self
-            .0
-            .createNewTask(input, quorum_threshold.into(), quorums.into())
-            .send()
-            .await?
-            .get_receipt()
-            .await?)
     }
 }
 

@@ -9,14 +9,14 @@ use eigensdk::{
     crypto_bls::BlsKeyPair,
     logging::get_logger,
     nodeapi::{NodeApi, NodeInfo},
-    operator::Operator,
+    operator::{config::OperatorConfig, with_failures, Operator},
     task_processor::IndexingTaskProcessor,
     task_spammer::TaskSpammerBuilder,
 };
 use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
 use incredible_challenger::is_response_correct;
 use incredible_config::IncredibleConfig;
-use incredible_operator::square;
+use incredible_operator::{square, square_with_failure};
 use ntex::rt::System;
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use std::{future::Future, str::FromStr, time::Duration};
@@ -163,22 +163,23 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let first_bls_key_pair = BlsKeyPair::new(fr_key)?;
         let first_operator_address = avs.config.operator_address()?;
 
-        let first_operator = Operator::new(
-            &first_bls_key_pair,
-            first_operator_address,
-            "FIRST OPERATOR NAME",
-            logger.clone(),
-            &ws_rpc_url,
-            &http_rpc_url,
-            registry_coordinator,
-            operator_state_retriever,
-            avs.config.aggregator_ip_addr().to_string(),
-        )
-        .await?;
+        let operator_config = OperatorConfig {
+            aggregator_ip_port: avs.config.aggregator_ip_addr().to_string(),
+            bls_key_pair: first_bls_key_pair,
+            operator_address: first_operator_address,
+            operator_name: "FIRST OPERATOR NAME".to_string(),
+            ws_rpc_url: ws_rpc_url.clone(),
+            http_rpc_url: http_rpc_url.clone(),
+            registry_coordinator_address: registry_coordinator,
+            operator_state_retriever_address: operator_state_retriever,
+        };
+
+        let first_operator = Operator::new(logger.clone(), operator_config).await?;
+        let response_logic = with_failures(square, square_with_failure, 100);
 
         let first_operator_handle = tokio::spawn(async move {
             first_operator
-                .start(square)
+                .start(response_logic)
                 .await
                 .map_err(|e| eyre::eyre!("Operator error {e:?}"))
         });
@@ -193,22 +194,23 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         let second_bls_key_pair = BlsKeyPair::new(fr_key)?;
         let second_operator_address = avs.config.operator_2_address()?;
 
-        let second_operator = Operator::new(
-            &second_bls_key_pair,
-            second_operator_address,
-            "SECOND OPERATOR NAME",
-            logger,
-            &ws_rpc_url,
-            &http_rpc_url,
-            registry_coordinator,
-            operator_state_retriever,
-            avs.config.aggregator_ip_addr().to_string(),
-        )
-        .await?;
+        let second_operator_config = OperatorConfig {
+            aggregator_ip_port: avs.config.aggregator_ip_addr().to_string(),
+            bls_key_pair: second_bls_key_pair,
+            operator_address: second_operator_address,
+            operator_name: "SECOND OPERATOR NAME".to_string(),
+            ws_rpc_url: ws_rpc_url.clone(),
+            http_rpc_url: http_rpc_url.clone(),
+            registry_coordinator_address: registry_coordinator,
+            operator_state_retriever_address: operator_state_retriever,
+        };
+        let second_operator = Operator::new(logger.clone(), second_operator_config).await?;
+
+        let response_logic = with_failures(square, square_with_failure, 10);
 
         let second_operator_handle = tokio::spawn(async move {
             second_operator
-                .start(square)
+                .start(response_logic)
                 .await
                 .map_err(|e| eyre::eyre!("Operator error {e:?}"))
         });
@@ -226,7 +228,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
             .with_quorum(50, vec![0])
             .with_interval(Duration::from_secs(10))
             .build()
-            .unwrap()
+            .map_err(|e| eyre::eyre!("Task spammer builder error {e:?}"))?
             .run()
             .await
             .map_err(|e| eyre::eyre!("Task spammer error {e:?}"))?;

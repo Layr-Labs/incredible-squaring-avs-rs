@@ -5,6 +5,7 @@ pub mod task_manager;
 
 #[cfg(test)]
 mod tests {
+    use crate::task_manager::TaskManagerWrapper;
     use alloy::network::EthereumWallet;
     use alloy::primitives::{FixedBytes, U256};
     use alloy::providers::ProviderBuilder;
@@ -15,6 +16,7 @@ mod tests {
     use eigensdk::crypto_bls::BlsKeyPair;
     use eigensdk::logging::get_logger;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
+    use eigensdk::operator::config::OperatorConfig;
     use eigensdk::operator::Operator;
     use eigensdk::task_processor::IndexingTaskProcessor;
     use eigensdk::task_spammer::TaskSpammerBuilder;
@@ -38,17 +40,13 @@ mod tests {
     use rust_bls_bn254::keystores::base_keystore::Keystore;
     use std::str::FromStr;
     use std::time::Duration;
-    use std::{
-        sync::Arc,
-        time::{SystemTime, UNIX_EPOCH},
-    };
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     /// Task Challenge Window Block : 100 blocks
     pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
     /// Block Time Seconds : 12 seconds
     pub const BLOCK_TIME_SECONDS: u32 = 12;
 
-    use crate::task_manager::TaskManagerWrapper;
     const ANVIL_HTTP_URL: &str = "http://localhost:8545";
 
     const INCREDIBLE_CONFIG_FILE: &str = r#"
@@ -237,6 +235,8 @@ mod tests {
         .await
         .unwrap();
 
+        // Launch AVS services
+
         let logger = get_logger();
         let http_rpc_url = incredible_config.http_rpc_url().to_string();
         let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
@@ -256,6 +256,7 @@ mod tests {
         incredible_config.set_signer(
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
         );
+
         // Create task manager contract instance
         let url = Url::parse(&incredible_config.http_rpc_url()).unwrap();
         let signer = PrivateKeySigner::from_str(&incredible_config.get_signer()).unwrap();
@@ -303,19 +304,19 @@ mod tests {
         let first_bls_key_pair = BlsKeyPair::new(fr_key).unwrap();
         let first_operator_address = incredible_config.operator_address().unwrap();
 
-        let first_operator = Operator::new(
-            &first_bls_key_pair,
-            first_operator_address,
-            "FIRST OPERATOR NAME",
-            logger.clone(),
-            &ws_rpc_url,
-            &http_rpc_url,
-            registry_coordinator,
-            operator_state_retriever,
-            incredible_config.aggregator_ip_addr().to_string(),
-        )
-        .await
-        .unwrap();
+        let operator_config = OperatorConfig {
+            aggregator_ip_port: incredible_config.aggregator_ip_addr().to_string(),
+            bls_key_pair: first_bls_key_pair,
+            operator_address: first_operator_address,
+            operator_name: "FIRST OPERATOR NAME".to_string(),
+            ws_rpc_url: ws_rpc_url.clone(),
+            http_rpc_url: http_rpc_url.clone(),
+            registry_coordinator_address: registry_coordinator,
+            operator_state_retriever_address: operator_state_retriever,
+        };
+        let first_operator = Operator::new(logger.clone(), operator_config)
+            .await
+            .unwrap();
 
         tokio::spawn(async move { first_operator.start(square).await });
 

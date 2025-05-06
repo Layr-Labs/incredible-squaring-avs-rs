@@ -20,6 +20,9 @@ pub fn is_response_correct(
     task: Task<U256>,
     task_response: TaskResponse<U256>,
 ) -> Result<bool, ChallengerError> {
+    dbg!("CHALLENGER: COMPROBANDO RESPUESTA");
     let square = task.input * task.input;
+    dbg!(&square);
+    dbg!("CHALLENGER: RESPUESTA COMPROBADA");
     Ok(square == task_response.response)
 }
