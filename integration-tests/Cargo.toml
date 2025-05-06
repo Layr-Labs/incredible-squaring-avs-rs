@@ -14,7 +14,6 @@ incredible-config = {path = "../crates/config/"}
 incredible-challenger = {path = "../crates/challenger/"}
 incredible-bindings = {path = "../crates/bindings/"}
 incredible-testing-utils = {path = "../crates/testing-utils/"}
-incredible-task-generator = {path = "../crates/task_generator/"}
 incredible-operator = {path = "../crates/operator/" , features = ["integration_tests"]}
 toml = "0.8"
 

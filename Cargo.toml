@@ -8,7 +8,6 @@ members = [
   "crates/avs",
   "crates/challenger",
   "crates/testing-utils",
-  "crates/task_generator",
   "integration-tests",
 ]
 
@@ -68,7 +67,6 @@ incredible-metrics = { path = "crates/metrics/" }
 incredible-avs = { path = "crates/avs/" }
 incredible-challenger = { path = "crates/challenger/" }
 incredible-testing-utils = { path = "crates/testing-utils/" }
-incredible-task-generator = { path = "crates/task_generator/" }
 
 # eigensdk-rs 
 # eigensdk = { version = "=1.0.0-rc.0", features = ["full"] }

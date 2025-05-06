@@ -25,6 +25,3 @@ incredible-testing-utils.workspace = true
 
 #eigensdk-rs
 eigensdk.workspace = true
-
-[dev-dependencies]
-incredible-task-generator.workspace = true

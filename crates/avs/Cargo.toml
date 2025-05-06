@@ -27,7 +27,6 @@ incredible-bindings.workspace = true
 incredible-config.workspace = true
 incredible-operator.workspace = true
 incredible-challenger.workspace = true
-incredible-task-generator.workspace = true
 incredible-metrics.workspace = true
 
 #tokio
