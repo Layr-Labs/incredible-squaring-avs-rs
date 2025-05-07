@@ -15,6 +15,7 @@ incredible-challenger = {path = "../crates/challenger/"}
 incredible-bindings = {path = "../crates/bindings/"}
 incredible-testing-utils = {path = "../crates/testing-utils/"}
 incredible-operator = {path = "../crates/operator/" , features = ["integration_tests"]}
+tracing = "0.1.40"
 toml = "0.8"
 
 # eigen-rs

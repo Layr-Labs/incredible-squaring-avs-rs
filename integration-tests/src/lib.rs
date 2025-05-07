@@ -12,25 +12,28 @@ mod tests {
     use alloy::signers::local::PrivateKeySigner;
     use alloy::transports::http::reqwest::Url;
     use eigensdk::aggregator::{Aggregator, AggregatorConfig};
+    use eigensdk::challenger::challenger_processor::IndexingChallengerProcessor;
+    use eigensdk::challenger::Challenger;
     use eigensdk::common::get_provider;
     use eigensdk::crypto_bls::BlsKeyPair;
     use eigensdk::logging::get_logger;
     use eigensdk::logging::{init_logger, log_level::LogLevel};
     use eigensdk::operator::config::OperatorConfig;
-    use eigensdk::operator::Operator;
+    use eigensdk::operator::{compute_with_failures, Operator};
     use eigensdk::task_processor::IndexingTaskProcessor;
     use eigensdk::task_spammer::TaskSpammerBuilder;
     use eigensdk::testing_utils::anvil_constants::{
         get_allocation_manager_address, get_avs_directory_address, get_delegation_manager_address,
-        get_permission_controller_address, get_rewards_coordinator_address,
-        get_strategy_manager_address,
+        get_erc20_mock_strategy, get_permission_controller_address,
+        get_rewards_coordinator_address, get_strategy_manager_address,
     };
     use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager;
+    use incredible_challenger::is_response_correct;
     use incredible_config::IncredibleConfig;
-    use incredible_operator::square;
+    use incredible_operator::{square, square_with_failure};
     use incredible_squaring_avs::commands::avs::{
         create_total_delegated_stake_quorum, modify_allocation_for_operator,
-        register_operator_with_el_and_deposit_tokens_in_strategy,
+        register_for_operator_sets, register_operator_with_el_and_deposit_tokens_in_strategy,
     };
     use incredible_testing_utils::{
         get_incredible_squaring_operator_state_retriever,
@@ -235,6 +238,28 @@ mod tests {
         .await
         .unwrap();
 
+        let keystore = Keystore::from_file(&incredible_config.bls_keystore_path())
+            .unwrap()
+            .decrypt(&incredible_config.bls_keystore_password())
+            .unwrap();
+        let fr_key: String = keystore.iter().map(|&value| value as char).collect();
+        let key_pair = BlsKeyPair::new(fr_key).unwrap();
+        register_for_operator_sets(
+            incredible_config.operator_set_id().unwrap(),
+            key_pair,
+            incredible_config.permission_controller_address().unwrap(),
+            incredible_config.registry_coordinator_addr().unwrap(),
+            get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,
+            incredible_config.operator_pvt_key(),
+            incredible_config.ecdsa_keystore_path(),
+            incredible_config.ecdsa_keystore_password(),
+            ANVIL_HTTP_URL,
+            incredible_config.service_manager_addr().unwrap(),
+            incredible_config.socket().to_string(),
+        )
+        .await
+        .unwrap();
+
         // Launch AVS services
 
         let logger = get_logger();
@@ -265,7 +290,7 @@ mod tests {
         let task_manager_contract = IncredibleSquaringTaskManager::new(task_manager_address, pr);
         let task_manager_wrapper_spammer = TaskManagerWrapper(task_manager_contract);
 
-        // ==================== Launch aggregator ====================
+        // Aggregator
         let config_aggregator = AggregatorConfig {
             http_rpc_url: http_rpc_url.clone(),
             ws_rpc_url: ws_rpc_url.clone(),
@@ -320,8 +345,9 @@ mod tests {
 
         tokio::spawn(async move { first_operator.start(square).await });
 
+        // Task spammer
         TaskSpammerBuilder::new(task_manager_wrapper_spammer)
-            .with_iter((0..).map(U256::from))
+            .with_iter((0..1).map(U256::from))
             .with_quorum(50, vec![0])
             .with_interval(Duration::from_secs(10))
             .build()
@@ -373,188 +399,262 @@ mod tests {
         aggregator_handle.abort();
     }
 
-    // async fn test_incredible_squaring_with_challenger() {
-    //     init_logger(LogLevel::Info);
-    //     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+    async fn test_incredible_squaring_with_challenger() {
+        init_logger(LogLevel::Info);
+        tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
-    //     let task_manager_address = get_incredible_squaring_task_manager().await;
+        let task_manager_address = get_incredible_squaring_task_manager().await;
 
-    //     let mut incredible_config: IncredibleConfig =
-    //         toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
-    //     incredible_config.set_aggregator_ip_address("127.0.0.1:8082".to_string());
-    //     incredible_config.set_registry_coordinator_addr(
-    //         get_incredible_squaring_registry_coordinator()
-    //             .await
-    //             .to_string(),
-    //     );
-    //     incredible_config.set_delegation_manager_addr(
-    //         get_delegation_manager_address(ANVIL_HTTP_URL.to_string())
-    //             .await
-    //             .to_string(),
-    //     );
-    //     incredible_config.set_erc20_mock_strategy_address(
-    //         get_erc20_mock_strategy(ANVIL_HTTP_URL.to_string())
-    //             .await
-    //             .to_string(),
-    //     );
-    //     incredible_config.set_permission_controller_address(
-    //         get_permission_controller_address(ANVIL_HTTP_URL.to_string())
-    //             .await
-    //             .to_string(),
-    //     );
-    //     incredible_config.set_allocation_manager_address(
-    //         get_allocation_manager_address(ANVIL_HTTP_URL.to_string())
-    //             .await
-    //             .to_string(),
-    //     );
-    //     incredible_config.set_service_manager_address(
-    //         get_incredible_squaring_service_manager().await.to_string(),
-    //     );
-    //     incredible_config.set_operator_state_retriever(
-    //         get_incredible_squaring_operator_state_retriever()
-    //             .await
-    //             .to_string(),
-    //     );
+        let mut incredible_config: IncredibleConfig =
+            toml::from_str(INCREDIBLE_CONFIG_FILE).unwrap();
+        incredible_config.set_aggregator_ip_address("127.0.0.1:8082".to_string());
+        incredible_config.set_registry_coordinator_addr(
+            get_incredible_squaring_registry_coordinator()
+                .await
+                .to_string(),
+        );
+        incredible_config.set_delegation_manager_addr(
+            get_delegation_manager_address(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
+        incredible_config.set_erc20_mock_strategy_address(
+            get_erc20_mock_strategy(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
+        incredible_config.set_permission_controller_address(
+            get_permission_controller_address(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
+        incredible_config.set_allocation_manager_address(
+            get_allocation_manager_address(ANVIL_HTTP_URL.to_string())
+                .await
+                .to_string(),
+        );
+        incredible_config.set_service_manager_address(
+            get_incredible_squaring_service_manager().await.to_string(),
+        );
+        incredible_config.set_operator_state_retriever(
+            get_incredible_squaring_operator_state_retriever()
+                .await
+                .to_string(),
+        );
 
-    //     create_total_delegated_stake_quorum(
-    //         get_incredible_squaring_strategy_address().await,
-    //         incredible_config.registry_coordinator_addr().unwrap(),
-    //         incredible_config.operator_pvt_key(),
-    //         incredible_config.ecdsa_keystore_path(),
-    //         incredible_config.ecdsa_keystore_password(),
-    //         ANVIL_HTTP_URL,
-    //     )
-    //     .await
-    //     .unwrap();
+        create_total_delegated_stake_quorum(
+            get_incredible_squaring_strategy_address().await,
+            incredible_config.registry_coordinator_addr().unwrap(),
+            incredible_config.operator_pvt_key(),
+            incredible_config.ecdsa_keystore_path(),
+            incredible_config.ecdsa_keystore_password(),
+            ANVIL_HTTP_URL,
+        )
+        .await
+        .unwrap();
 
-    //     register_operator_with_el_and_avs(
-    //         incredible_config.operator_2_pvt_key(),
-    //         incredible_config.ecdsa_keystore_2_path(),
-    //         incredible_config.ecdsa_keystore_2_password(),
-    //         incredible_config.operator_2_token_amount().unwrap(),
-    //     )
-    //     .await;
+        register_operator_with_el_and_avs(
+            incredible_config.operator_2_pvt_key(),
+            incredible_config.ecdsa_keystore_2_path(),
+            incredible_config.ecdsa_keystore_2_password(),
+            incredible_config.operator_2_token_amount().unwrap(),
+        )
+        .await;
 
-    //     modify_allocation_for_operator(
-    //         incredible_config.operator_set_id().unwrap(),
-    //         get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,
-    //         incredible_config.operator_2_pvt_key(),
-    //         incredible_config.ecdsa_keystore_2_path(),
-    //         incredible_config.ecdsa_keystore_2_password(),
-    //         ANVIL_HTTP_URL,
-    //         incredible_config.service_manager_addr().unwrap(),
-    //         [get_incredible_squaring_strategy_address().await].to_vec(),
-    //         [100].to_vec(),
-    //     )
-    //     .await
-    //     .unwrap();
+        modify_allocation_for_operator(
+            incredible_config.operator_set_id().unwrap(),
+            get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,
+            incredible_config.operator_2_pvt_key(),
+            incredible_config.ecdsa_keystore_2_path(),
+            incredible_config.ecdsa_keystore_2_password(),
+            ANVIL_HTTP_URL,
+            incredible_config.service_manager_addr().unwrap(),
+            [get_incredible_squaring_strategy_address().await].to_vec(),
+            [100].to_vec(),
+        )
+        .await
+        .unwrap();
 
-    //     let keystore = Keystore::from_file(&incredible_config.bls_keystore_2_path())
-    //         .unwrap()
-    //         .decrypt(&incredible_config.bls_keystore_2_password())
-    //         .unwrap();
-    //     let fr_key: String = keystore.iter().map(|&value| value as char).collect();
-    //     let key_pair = BlsKeyPair::new(fr_key).unwrap();
-    //     register_for_operator_sets(
-    //         incredible_config.operator_set_id().unwrap(),
-    //         key_pair,
-    //         incredible_config.permission_controller_address().unwrap(),
-    //         incredible_config.registry_coordinator_addr().unwrap(),
-    //         get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,
-    //         incredible_config.operator_2_pvt_key(),
-    //         incredible_config.ecdsa_keystore_2_path(),
-    //         incredible_config.ecdsa_keystore_2_password(),
-    //         ANVIL_HTTP_URL,
-    //         incredible_config.service_manager_addr().unwrap(),
-    //         incredible_config.socket().to_string(),
-    //     )
-    //     .await
-    //     .unwrap();
+        let keystore = Keystore::from_file(&incredible_config.bls_keystore_2_path())
+            .unwrap()
+            .decrypt(&incredible_config.bls_keystore_2_password())
+            .unwrap();
+        let fr_key: String = keystore.iter().map(|&value| value as char).collect();
+        let key_pair = BlsKeyPair::new(fr_key).unwrap();
+        register_for_operator_sets(
+            incredible_config.operator_set_id().unwrap(),
+            key_pair,
+            incredible_config.permission_controller_address().unwrap(),
+            incredible_config.registry_coordinator_addr().unwrap(),
+            get_allocation_manager_address(ANVIL_HTTP_URL.to_string()).await,
+            incredible_config.operator_2_pvt_key(),
+            incredible_config.ecdsa_keystore_2_path(),
+            incredible_config.ecdsa_keystore_2_password(),
+            ANVIL_HTTP_URL,
+            incredible_config.service_manager_addr().unwrap(),
+            incredible_config.socket().to_string(),
+        )
+        .await
+        .unwrap();
 
-    //     let op_builder = OperatorBuilder::build(incredible_config.clone())
-    //         .await
-    //         .unwrap();
-    //     let client = Some(Arc::new(op_builder.client.clone()));
-    //     let mut operator_builder = Operator2Builder::build(incredible_config.clone(), client)
-    //         .await
-    //         .unwrap();
+        let logger = get_logger();
+        let http_rpc_url = incredible_config.http_rpc_url().to_string();
+        let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
+        let registry_coordinator = incredible_config.registry_coordinator_addr().unwrap();
+        let operator_state_retriever = incredible_config.operator_state_retriever_addr().unwrap();
 
-    //     tokio::spawn(async move {
-    //         operator_builder.start_operator().await.unwrap();
-    //     });
+        // Create task manager contract instance for aggregator
+        let url = Url::parse(&incredible_config.http_rpc_url()).unwrap();
+        let signer = PrivateKeySigner::from_str(&incredible_config.get_signer()).unwrap();
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
+        let task_manager_contract = IncredibleSquaringTaskManager::new(task_manager_address, pr);
+        let task_manager_wrapper = TaskManagerWrapper(task_manager_contract);
 
-    //     let ws_rpc_url = incredible_config.ws_rpc_url().to_string();
+        // Create task manager contract instance for task spammer
+        // Task spammer uses a different signer than the aggregator
+        incredible_config.set_signer(
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
+        );
 
-    //     let config_clone = incredible_config.clone();
-    //     let aggregator_handle =
-    //         tokio::spawn(
-    //             async move { Aggregator::new(config_clone).await?.start(ws_rpc_url).await },
-    //         );
+        // Create task manager contract instance
+        let url = Url::parse(&incredible_config.http_rpc_url()).unwrap();
+        let signer = PrivateKeySigner::from_str(&incredible_config.get_signer()).unwrap();
+        let wallet = EthereumWallet::new(signer);
+        let pr = ProviderBuilder::new().wallet(wallet).on_http(url);
+        let task_manager_contract = IncredibleSquaringTaskManager::new(task_manager_address, pr);
+        let task_manager_wrapper_spammer = TaskManagerWrapper(task_manager_contract);
 
-    //     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        // Aggregator
+        let config_aggregator = AggregatorConfig {
+            http_rpc_url: http_rpc_url.clone(),
+            ws_rpc_url: ws_rpc_url.clone(),
+            server_address: incredible_config.aggregator_ip_addr().to_string(),
+            registry_coordinator,
+            operator_state_retriever,
+        };
 
-    //     let mut challenger = Challenger::build(incredible_config.clone()).await.unwrap();
-    //     tokio::spawn(async move {
-    //         challenger.start_challenger().await.unwrap();
-    //     });
+        let time_to_expiry = tokio::time::Duration::from_secs(
+            (TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into(),
+        );
 
-    //     let task_generator = incredible_task_generator::TaskManager::new(
-    //         task_manager_address,
-    //         "http://localhost:8545".to_string(),
-    //         "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
-    //         incredible_config.quorum_number().unwrap().to_string(),
-    //     );
-    //     task_generator
-    //         .create_new_task("2".parse().unwrap())
-    //         .await
-    //         .unwrap();
-    //     tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+        let aggregator_task_processor = IndexingTaskProcessor::new(
+            task_manager_wrapper.clone(),
+            time_to_expiry,
+            Duration::from_secs(5),
+        );
 
-    //     let task_manager_contract = IncredibleSquaringTaskManager::new(
-    //         task_manager_address,
-    //         get_provider("http://localhost:8545"),
-    //     );
-    //     let latest_task_num = task_manager_contract
-    //         .latestTaskNum()
-    //         .call()
-    //         .await
-    //         .unwrap()
-    //         ._0;
+        let aggregator = Aggregator::new(config_aggregator, aggregator_task_processor)
+            .await
+            .map_err(|e| eyre::eyre!("Aggregator error {e:?}"))
+            .unwrap();
+        let aggregator_handle = tokio::spawn(async move {
+            aggregator
+                .start()
+                .await
+                .map_err(|e| eyre::eyre!("Aggregator error {e:?}"))
+        });
 
-    //     let task_hash = task_manager_contract
-    //         .allTaskHashes(latest_task_num - 1)
-    //         .call()
-    //         .await
-    //         .unwrap()
-    //         ._0;
-    //     assert_ne!(FixedBytes::<32>::default(), task_hash);
+        // Challenger
+        let challenger_task_processor =
+            IndexingChallengerProcessor::new(task_manager_wrapper.clone(), is_response_correct);
+        let mut challenger = Challenger::new(
+            http_rpc_url.clone(),
+            ws_rpc_url.clone(),
+            challenger_task_processor,
+        );
+        tokio::spawn(async move {
+            challenger
+                .start_challenger()
+                .await
+                .map_err(|e| eyre::eyre!("Challenger error {e:?}"))
+        });
 
-    //     tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+        // Second operator
+        let keystore = Keystore::from_file(&incredible_config.bls_keystore_2_path())
+            .unwrap()
+            .decrypt(&incredible_config.bls_keystore_2_password())
+            .unwrap();
+        let fr_key: String = keystore.iter().map(|&value| value as char).collect();
+        let second_bls_key_pair = BlsKeyPair::new(fr_key).unwrap();
+        let second_operator_address = incredible_config.operator_2_address().unwrap();
 
-    //     let response_hash = task_manager_contract
-    //         .allTaskResponses(latest_task_num - 1)
-    //         .call()
-    //         .await
-    //         .unwrap()
-    //         ._0;
-    //     assert_ne!(FixedBytes::<32>::default(), response_hash);
+        let operator_config = OperatorConfig {
+            aggregator_ip_port: incredible_config.aggregator_ip_addr().to_string(),
+            bls_key_pair: second_bls_key_pair,
+            operator_address: second_operator_address,
+            operator_name: "SECOND OPERATOR NAME".to_string(),
+            ws_rpc_url: ws_rpc_url.clone(),
+            http_rpc_url: http_rpc_url.clone(),
+            registry_coordinator_address: registry_coordinator,
+            operator_state_retriever_address: operator_state_retriever,
+        };
+        let second_operator = Operator::new(logger.clone(), operator_config)
+            .await
+            .unwrap();
 
-    //     let is_challenge_success = task_manager_contract
-    //         .taskSuccesfullyChallenged(latest_task_num - 1)
-    //         .call()
-    //         .await
-    //         .unwrap()
-    //         ._0;
+        let response_logic = compute_with_failures(square, square_with_failure, 100);
 
-    //     assert!(is_challenge_success);
+        tokio::spawn(async move { second_operator.start(response_logic).await });
 
-    //     assert!(!aggregator_handle.is_finished());
-    //     aggregator_handle.abort();
-    // }
+        // Task spammer
+        TaskSpammerBuilder::new(task_manager_wrapper_spammer)
+            .with_iter((0..1).map(U256::from))
+            .with_quorum(50, vec![0])
+            .with_interval(Duration::from_secs(10))
+            .build()
+            .unwrap()
+            .run()
+            .await
+            .unwrap();
+
+        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+
+        let task_manager_contract = IncredibleSquaringTaskManager::new(
+            task_manager_address,
+            get_provider("http://localhost:8545"),
+        );
+        let latest_task_num = task_manager_contract
+            .latestTaskNum()
+            .call()
+            .await
+            .unwrap()
+            ._0;
+
+        let task_hash = task_manager_contract
+            .allTaskHashes(latest_task_num - 1)
+            .call()
+            .await
+            .unwrap()
+            ._0;
+        assert_ne!(FixedBytes::<32>::default(), task_hash);
+
+        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+
+        let response_hash = task_manager_contract
+            .allTaskResponses(latest_task_num - 1)
+            .call()
+            .await
+            .unwrap()
+            ._0;
+        assert_ne!(FixedBytes::<32>::default(), response_hash);
+
+        let is_challenge_success = task_manager_contract
+            .taskSuccesfullyChallenged(latest_task_num - 1)
+            .call()
+            .await
+            .unwrap()
+            ._0;
+
+        assert!(is_challenge_success);
+
+        assert!(!aggregator_handle.is_finished());
+        aggregator_handle.abort();
+    }
 
     #[tokio::test]
     async fn run_tests_in_order() {
         test_incredible_squaring_without_challenger().await;
-        // test_incredible_squaring_with_challenger().await;
+        test_incredible_squaring_with_challenger().await;
     }
 }

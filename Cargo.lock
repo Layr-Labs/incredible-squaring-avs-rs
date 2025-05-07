@@ -4531,6 +4531,7 @@ dependencies = [
  "serial_test",
  "tokio",
  "toml",
+ "tracing",
 ]
 
 [[package]]

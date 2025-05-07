@@ -1,6 +1,6 @@
 use alloy::{
     contract::private::{Provider, Transport},
-    network::Network,
+    network::{Network, ReceiptResponse},
     primitives::U256,
 };
 use eigensdk::{
@@ -21,6 +21,7 @@ use incredible_bindings::incrediblesquaringtaskmanager::{
     },
     BN254::{G1Point, G2Point},
 };
+use tracing::{error, info};
 
 #[derive(Debug, Clone)]
 /// Wrapper for the task manager contract.
@@ -146,6 +147,11 @@ where
         task_response_metadata: TaskResponseMetadataSol,
         pubkeys_of_non_signing_operators: Vec<G1PointSDK>,
     ) -> Result<(), TaskManagerError> {
+        info!(
+            "Raising challenge for task index {:?}",
+            task_response.task_index
+        );
+
         let contract_task = ContractTask {
             numberToBeSquared: task.input,
             taskCreatedBlock: task.task_created_block,
@@ -168,7 +174,8 @@ where
             .map(|p| G1Point { X: p.X, Y: p.Y })
             .collect();
 
-        self.0
+        let _ = self
+            .0
             .raiseAndResolveChallenge(
                 contract_task,
                 contract_response,
@@ -180,7 +187,16 @@ where
             .unwrap()
             .get_receipt()
             .await
-            .unwrap();
+            .inspect(|receipt| {
+                info!(
+                    "Raise and resolve challenge for index {:?} tx_hash: {:?}",
+                    task_response.task_index,
+                    receipt.transaction_hash()
+                )
+            })
+            .inspect_err(|e| {
+                error!("Error raising and resolving challenge: {:?}", e);
+            });
 
         Ok(())
     }
