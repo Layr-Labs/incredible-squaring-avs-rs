@@ -9,7 +9,7 @@ use eigensdk::{
     crypto_bls::BlsKeyPair,
     logging::get_logger,
     nodeapi::{NodeApi, NodeInfo},
-    operator::{config::OperatorConfig, with_failures, Operator},
+    operator::{compute_with_failures, config::OperatorConfig, Operator},
     task_processor::IndexingTaskProcessor,
     task_spammer::TaskSpammerBuilder,
 };
@@ -175,7 +175,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         };
 
         let first_operator = Operator::new(logger.clone(), operator_config).await?;
-        let response_logic = with_failures(square, square_with_failure, 100);
+        let response_logic = compute_with_failures(square, square_with_failure, 100);
 
         let first_operator_handle = tokio::spawn(async move {
             first_operator
@@ -206,7 +206,7 @@ impl LaunchAvs<AvsBuilder> for DefaultAvsLauncher {
         };
         let second_operator = Operator::new(logger.clone(), second_operator_config).await?;
 
-        let response_logic = with_failures(square, square_with_failure, 10);
+        let response_logic = compute_with_failures(square, square_with_failure, 10);
 
         let second_operator_handle = tokio::spawn(async move {
             second_operator

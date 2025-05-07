@@ -12,7 +12,6 @@ workspace = true
 
 [dependencies]
 alloy.workspace = true
-serde.workspace = true
 eyre.workspace = true
 tracing.workspace = true
 metrics.workspace = true
@@ -34,9 +33,6 @@ tokio.workspace = true
 
 #futures
 futures = "0.3.30"
-
-#thiserror
-thiserror.workspace = true
 
 clap.workspace = true
 ntex = { version = "2.0", features = ["tokio"] }

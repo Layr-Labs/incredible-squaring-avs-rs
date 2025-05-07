@@ -4363,8 +4363,6 @@ dependencies = [
  "metrics-util",
  "ntex",
  "rust-bls-bn254 0.1.0",
- "serde",
- "thiserror 2.0.7",
  "tokio",
  "tracing",
 ]
@@ -4383,15 +4381,6 @@ version = "0.0.1-alpha"
 dependencies = [
  "alloy",
  "eigensdk",
- "eyre",
- "futures-util",
- "incredible-bindings",
- "incredible-config",
- "incredible-testing-utils",
- "thiserror 2.0.7",
- "tokio",
- "toml",
- "tracing",
 ]
 
 [[package]]
@@ -4442,25 +4431,9 @@ name = "incredible-operator"
 version = "0.0.1-alpha"
 dependencies = [
  "alloy",
- "ark-ec 0.5.0",
- "ark-ff 0.5.0",
  "eigensdk",
- "eyre",
- "futures-util",
- "hex",
  "incredible-bindings",
- "incredible-config",
  "incredible-metrics",
- "incredible-testing-utils",
- "rand_core 0.6.4",
- "reqwest 0.12.9",
- "rust-bls-bn254 0.1.0",
- "serde_json",
- "tempfile",
- "thiserror 2.0.7",
- "tokio",
- "toml",
- "tracing",
 ]
 
 [[package]]

@@ -14,6 +14,8 @@ use incredible_bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskMa
 ///
 /// * `TaskResponse<U256>` - The task response
 pub fn square(event: NewTaskCreated) -> Result<TaskResponse<U256>, OperatorError> {
+    incredible_metrics::increment_num_tasks_received();
+
     let square = event.task.numberToBeSquared * event.task.numberToBeSquared;
     Ok(TaskResponse {
         task_index: event.taskIndex,
@@ -31,6 +33,8 @@ pub fn square(event: NewTaskCreated) -> Result<TaskResponse<U256>, OperatorError
 ///
 /// * `Result<TaskResponse<U256>, OperatorError>` - The task response with a value of 28
 pub fn square_with_failure(event: NewTaskCreated) -> Result<TaskResponse<U256>, OperatorError> {
+    incredible_metrics::increment_num_tasks_received();
+
     Ok(TaskResponse {
         task_index: event.taskIndex,
         response: U256::from(28),
