@@ -1710,7 +1710,7 @@ struct Task { uint256 numberToBeSquared; uint32 taskCreatedBlock; bytes quorumNu
 struct TaskResponse { uint32 referenceTaskIndex; uint256 numberSquared; }
 ```*/
     #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
-    #[derive(Clone)]
+    #[derive(Clone, serde::Serialize, serde::Deserialize)]
     pub struct TaskResponse {
         #[allow(missing_docs)]
         pub referenceTaskIndex: u32,
