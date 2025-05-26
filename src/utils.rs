@@ -1,6 +1,6 @@
-use eigensdk::logging::{log_level::LogLevel, tracing_logger::TracingLogger};
+use eigensdk::logging::{log_level::LogLevel, logger::Logger, tracing_logger::TracingLogger};
 use serde::de::DeserializeOwned;
-use std::{fs, path::Path};
+use std::{fs, path::Path, sync::Arc};
 use thiserror::Error;
 use tracing_subscriber::EnvFilter;
 
@@ -30,7 +30,7 @@ where
     toml::from_str(&s).map_err(UtilsError::Toml)
 }
 
-pub fn create_logger(level: LogLevel) -> TracingLogger {
+pub fn create_logger(level: LogLevel) -> Arc<dyn Logger> {
     let tracing_level = match level {
         LogLevel::Fatal => tracing::Level::ERROR,
         LogLevel::Error => tracing::Level::ERROR,
@@ -49,8 +49,8 @@ pub fn create_logger(level: LogLevel) -> TracingLogger {
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    TracingLogger {
+    Arc::new(TracingLogger {
         level,
         ..Default::default()
-    }
+    })
 }

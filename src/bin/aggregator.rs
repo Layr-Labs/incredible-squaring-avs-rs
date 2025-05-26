@@ -9,11 +9,10 @@ use alloy::signers::local::PrivateKeySigner;
 use alloy::transports::http::reqwest::Url;
 use eigensdk::aggregator::task_processor::IndexingTaskProcessor;
 use eigensdk::aggregator::{Aggregator, AggregatorConfig};
-use eigensdk::logging::get_logger;
 use eigensdk::logging::init_logger;
 use eigensdk::logging::log_level::LogLevel;
 use incredible_squaring::bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::IncredibleSquaringTaskManagerInstance;
-use incredible_squaring::utils::load_config;
+use incredible_squaring::utils::{create_logger, load_config};
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -25,7 +24,7 @@ async fn main() {
 
     // 2. Create the aggregator configuration from the toml file
     let config: AggregatorConfig = load_config("./src/config/squaring-aggregator.toml").unwrap();
-    let logger = get_logger();
+    let logger = create_logger(LogLevel::Info);
 
     // 3. Create the task manager instance
     let signer = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";

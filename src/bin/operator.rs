@@ -4,16 +4,15 @@
 
 use alloy::primitives::U256;
 use eigensdk::logging::log_level::LogLevel;
-use eigensdk::logging::{get_logger, init_logger};
 use eigensdk::operator::{config::OperatorConfig, Operator};
 use eigensdk::task_manager::response_calculator::response_calculator_from_fn;
 use eigensdk::testing_utils::task_processor::failing_response_calculator;
+use incredible_squaring::utils::create_logger;
 use incredible_squaring::{square, utils::load_config, ISTaskManager};
 
 #[tokio::main]
 async fn main() {
-    init_logger(LogLevel::Info);
-    let logger = get_logger();
+    let logger = create_logger(LogLevel::Info);
 
     // 1. Define your types for the task manager (we do this in `ISTaskManager`: lib.rs)
 
