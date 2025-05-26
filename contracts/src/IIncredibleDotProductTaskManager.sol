@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import "@eigenlayer-middleware/src/libraries/BN254.sol";
 import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
 
-interface IIncredibleSquaringTaskManager {
+interface IIncredibleDotProductTaskManager {
     // EVENTS
     event NewTaskCreated(uint32 indexed taskIndex, Task task);
 
@@ -18,10 +18,10 @@ interface IIncredibleSquaringTaskManager {
 
     // STRUCTS
     struct Task {
-        uint256 numberToBeSquared;
+        DotProductInput pointsToMultiply;
         uint32 taskCreatedBlock;
         // task submitter decides on the criteria for a task to be completed
-        // note that this does not mean the task was "correctly" answered (i.e. the number was squared correctly)
+        // note that this does not mean the task was "correctly" answered (i.e. the product was calculated correctly)
         //      this is for the challenge logic to verify
         // task is completed (and contract will accept its TaskResponse) when each quorumNumbers specified here
         // are signed by at least quorumThresholdPercentage of the operators
@@ -36,21 +36,29 @@ interface IIncredibleSquaringTaskManager {
         // Can be obtained by the operator from the event NewTaskCreated.
         uint32 referenceTaskIndex;
         // This is just the response that the operator has to compute by itself.
-        uint256 numberSquared;
+        uint256 result;
     }
 
     // Extra information related to taskResponse, which is filled inside the contract.
     // It thus cannot be signed by operators, so we keep it in a separate struct than TaskResponse
     // This metadata is needed by the challenger, so we emit it in the TaskResponded event
     struct TaskResponseMetadata {
-        uint32 taskResponsedBlock;
+        uint32 taskRespondedBlock;
         bytes32 hashOfNonSigners;
+    }
+
+    struct DotProductInput {
+        uint256[] X;
+        uint256[] Y;
     }
 
     // FUNCTIONS
     // NOTE: this function creates new task.
-    function createNewTask(uint256 numberToBeSquared, uint32 quorumThresholdPercentage, bytes calldata quorumNumbers)
-        external;
+    function createNewTask(
+        IIncredibleDotProductTaskManager.DotProductInput calldata points,
+        uint32 quorumThresholdPercentage,
+        bytes calldata quorumNumbers
+    ) external;
 
     /// @notice Returns the current 'taskNumber' for the middleware
     function taskNumber() external view returns (uint32);

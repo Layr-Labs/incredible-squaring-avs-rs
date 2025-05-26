@@ -2,50 +2,54 @@
 pragma solidity ^0.8.9;
 
 import "@eigenlayer/contracts/libraries/BytesLib.sol";
-import "./IIncredibleSquaringTaskManager.sol";
+import "./IIncredibleDotProductTaskManager.sol";
 import "@eigenlayer-middleware/src/ServiceManagerBase.sol";
-import {IAllocationManager, IAllocationManagerTypes} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
+import {
+    IAllocationManager,
+    IAllocationManagerTypes
+} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 // import {IAVSRegistrar} from "@eigenlayer/contracts/interfaces/IAVSRegistrar.sol";
 import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
-import {ISlashingRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
+import {ISlashingRegistryCoordinator} from
+    "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
 
 /**
- * @title Primary entrypoint for procuring services from IncredibleSquaring.
+ * @title Primary entrypoint for procuring services from IncredibleDotProduct.
  * @author Layr Labs, Inc.
  */
-contract IncredibleSquaringServiceManager is ServiceManagerBase {
+contract IncredibleDotProductServiceManager is ServiceManagerBase {
     using BytesLib for bytes;
 
-    IIncredibleSquaringTaskManager public immutable incredibleSquaringTaskManager;
+    IIncredibleDotProductTaskManager public immutable incredibleDotProductTaskManager;
 
     /// @notice when applied to a function, ensures that the function is only callable by the `registryCoordinator`.
-    modifier onlyIncredibleSquaringTaskManager() {
+    modifier onlyIncredibleDotProductTaskManager() {
         require(
-            msg.sender == address(incredibleSquaringTaskManager),
-            "onlyIncredibleSquaringTaskManager: not from credible squaring task manager"
+            msg.sender == address(incredibleDotProductTaskManager),
+            "onlyIncredibleDotProductTaskManager: not from credible Dot Product task manager"
         );
         _;
     }
 
     constructor(
         IAVSDirectory _avsDirectory,
-        ISlashingRegistryCoordinator _slashingRegistryCoordinator,
+        ISlashingRegistryCoordinator _registryCoordinator,
         IStakeRegistry _stakeRegistry,
         address rewards_coordinator,
         IAllocationManager allocationManager,
         IPermissionController _permissionController,
-        IIncredibleSquaringTaskManager _incredibleSquaringTaskManager
+        IIncredibleDotProductTaskManager _incredibleDotProductTaskManager
     )
         ServiceManagerBase(
             _avsDirectory,
             IRewardsCoordinator(rewards_coordinator),
-            _slashingRegistryCoordinator,
+            _registryCoordinator,
             _stakeRegistry,
             _permissionController,
             allocationManager
         )
     {
-        incredibleSquaringTaskManager = _incredibleSquaringTaskManager;
+        incredibleDotProductTaskManager = _incredibleDotProductTaskManager;
     }
 
     function initialize(address initialOwner, address rewardsInitiator) external initializer {

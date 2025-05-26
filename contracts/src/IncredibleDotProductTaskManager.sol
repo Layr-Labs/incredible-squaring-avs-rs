@@ -6,24 +6,26 @@ import "@openzeppelin-upgrades/contracts/access/OwnableUpgradeable.sol";
 import "@eigenlayer/contracts/permissions/Pausable.sol";
 import "@eigenlayer-middleware/src/interfaces/IServiceManager.sol";
 import {BLSApkRegistry} from "@eigenlayer-middleware/src/BLSApkRegistry.sol";
-import {SlashingRegistryCoordinator} from "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
-import {ISlashingRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
+import {SlashingRegistryCoordinator} from
+    "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
+import {ISlashingRegistryCoordinator} from
+    "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
 import {BLSSignatureChecker} from "@eigenlayer-middleware/src/BLSSignatureChecker.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 import {InstantSlasher} from "@eigenlayer-middleware/src/slashers/InstantSlasher.sol";
 import "@eigenlayer-middleware/src/libraries/BN254.sol";
 // import {IStrategy} from "@eigenlayer/contracts/interfaces/IStrategy.sol";
-import "./IIncredibleSquaringTaskManager.sol";
+import "./IIncredibleDotProductTaskManager.sol";
 import {IAllocationManagerTypes} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 import {OperatorSet} from "@eigenlayer/contracts/libraries/OperatorSetLib.sol";
 
-contract IncredibleSquaringTaskManager is
+contract IncredibleDotProductTaskManager is
     Initializable,
     OwnableUpgradeable,
     Pausable,
     BLSSignatureChecker,
     OperatorStateRetriever,
-    IIncredibleSquaringTaskManager
+    IIncredibleDotProductTaskManager
 {
     using BN254 for BN254.G1Point;
 
@@ -32,7 +34,7 @@ contract IncredibleSquaringTaskManager is
     uint32 public immutable TASK_RESPONSE_WINDOW_BLOCK;
     uint32 public constant TASK_CHALLENGE_WINDOW_BLOCK = 100;
     uint256 internal constant _THRESHOLD_DENOMINATOR = 100;
-    uint256 public constant WADS_TO_SLASH = 100000000000000000; // 10%
+    uint256 public constant WADS_TO_SLASH = 100_000_000_000_000_000; // 10%
 
     /* STORAGE */
     // The latest task index
@@ -49,11 +51,11 @@ contract IncredibleSquaringTaskManager is
 
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
 
-    address public serviceManager;
     address public aggregator;
     address public generator;
     address public instantSlasher;
     address public allocationManager;
+    address public serviceManager;
 
     /* MODIFIERS */
     modifier onlyAggregator() {
@@ -69,10 +71,10 @@ contract IncredibleSquaringTaskManager is
     }
 
     constructor(
-        ISlashingRegistryCoordinator _slashingRegistryCoordinator,
+        ISlashingRegistryCoordinator _registryCoordinator,
         IPauserRegistry _pauserRegistry,
         uint32 _taskResponseWindowBlock
-    ) BLSSignatureChecker(_slashingRegistryCoordinator) Pausable(_pauserRegistry) {
+    ) BLSSignatureChecker(_registryCoordinator) Pausable(_pauserRegistry) {
         TASK_RESPONSE_WINDOW_BLOCK = _taskResponseWindowBlock;
     }
 
@@ -94,13 +96,14 @@ contract IncredibleSquaringTaskManager is
 
     /* FUNCTIONS */
     // NOTE: this function creates new task, assigns it a taskId
-    function createNewTask(uint256 numberToBeSquared, uint32 quorumThresholdPercentage, bytes calldata quorumNumbers)
-        external
-        onlyTaskGenerator
-    {
+    function createNewTask(
+        IIncredibleDotProductTaskManager.DotProductInput calldata points,
+        uint32 quorumThresholdPercentage,
+        bytes calldata quorumNumbers
+    ) external onlyTaskGenerator {
         // create a new task struct
         Task memory newTask;
-        newTask.numberToBeSquared = numberToBeSquared;
+        newTask.pointsToMultiply = points;
         newTask.taskCreatedBlock = uint32(block.number);
         newTask.quorumThresholdPercentage = quorumThresholdPercentage;
         newTask.quorumNumbers = quorumNumbers;
@@ -155,9 +158,11 @@ contract IncredibleSquaringTaskManager is
             );
         }
 
-        TaskResponseMetadata memory taskResponseMetadata = TaskResponseMetadata(uint32(block.number), hashOfNonSigners);
+        TaskResponseMetadata memory taskResponseMetadata =
+            TaskResponseMetadata(uint32(block.number), hashOfNonSigners);
         // updating the storage with task responsea
-        allTaskResponses[taskResponse.referenceTaskIndex] = keccak256(abi.encode(taskResponse, taskResponseMetadata));
+        allTaskResponses[taskResponse.referenceTaskIndex] =
+            keccak256(abi.encode(taskResponse, taskResponseMetadata));
 
         // emitting event
         emit TaskResponded(taskResponse, taskResponseMetadata);
@@ -174,11 +179,14 @@ contract IncredibleSquaringTaskManager is
         BN254.G1Point[] memory pubkeysOfNonSigningOperators
     ) external {
         uint32 referenceTaskIndex = taskResponse.referenceTaskIndex;
-        uint256 numberToBeSquared = task.numberToBeSquared;
+        IIncredibleDotProductTaskManager.DotProductInput memory pointsToMultiply = task.pointsToMultiply;
         // some logical checks
-        require(allTaskResponses[referenceTaskIndex] != bytes32(0), "Task hasn't been responded to yet");
         require(
-            allTaskResponses[referenceTaskIndex] == keccak256(abi.encode(taskResponse, taskResponseMetadata)),
+            allTaskResponses[referenceTaskIndex] != bytes32(0), "Task hasn't been responded to yet"
+        );
+        require(
+            allTaskResponses[referenceTaskIndex]
+                == keccak256(abi.encode(taskResponse, taskResponseMetadata)),
             "Task response does not match the one recorded in the contract"
         );
         require(
@@ -187,13 +195,18 @@ contract IncredibleSquaringTaskManager is
         );
 
         require(
-            uint32(block.number) <= taskResponseMetadata.taskResponsedBlock + TASK_CHALLENGE_WINDOW_BLOCK,
+            uint32(block.number)
+                <= taskResponseMetadata.taskRespondedBlock + TASK_CHALLENGE_WINDOW_BLOCK,
             "The challenge period for this task has already expired."
         );
 
         // // logic for checking whether challenge is valid or not
-        uint256 actualSquaredOutput = numberToBeSquared * numberToBeSquared;
-        bool isResponseCorrect = (actualSquaredOutput == taskResponse.numberSquared);
+        uint256 totalSum = 0;
+        for (uint256 index = 0; index < pointsToMultiply.X.length; index++) {
+            totalSum = totalSum + (pointsToMultiply.X[index] * pointsToMultiply.Y[index]);
+        }
+
+        bool isResponseCorrect = (totalSum == taskResponse.result);
         // // if response was correct, no slashing happens so we return
         if (isResponseCorrect == true) {
             emit TaskChallengedUnsuccessfully(referenceTaskIndex, msg.sender);
@@ -201,7 +214,8 @@ contract IncredibleSquaringTaskManager is
         }
 
         // get the list of hash of pubkeys of operators who weren't part of the task response submitted by the aggregator
-        bytes32[] memory hashesOfPubkeysOfNonSigningOperators = new bytes32[](pubkeysOfNonSigningOperators.length);
+        bytes32[] memory hashesOfPubkeysOfNonSigningOperators =
+            new bytes32[](pubkeysOfNonSigningOperators.length);
         for (uint256 i = 0; i < pubkeysOfNonSigningOperators.length; i++) {
             hashesOfPubkeysOfNonSigningOperators[i] = pubkeysOfNonSigningOperators[i].hashG1Point();
         }
@@ -219,15 +233,18 @@ contract IncredibleSquaringTaskManager is
         );
 
         // get the address of operators who didn't sign
-        address[] memory addressOfNonSigningOperators = new address[](pubkeysOfNonSigningOperators.length);
+        address[] memory addressOfNonSigningOperators =
+            new address[](pubkeysOfNonSigningOperators.length);
         for (uint256 i = 0; i < pubkeysOfNonSigningOperators.length; i++) {
-            addressOfNonSigningOperators[i] =
-                BLSApkRegistry(address(blsApkRegistry)).pubkeyHashToOperator(hashesOfPubkeysOfNonSigningOperators[i]);
+            addressOfNonSigningOperators[i] = BLSApkRegistry(address(blsApkRegistry))
+                .pubkeyHashToOperator(hashesOfPubkeysOfNonSigningOperators[i]);
         }
 
         // get the list of all operators who were active when the task was initialized
         Operator[][] memory allOperatorInfo = getOperatorState(
-            ISlashingRegistryCoordinator(address(registryCoordinator)), task.quorumNumbers, task.taskCreatedBlock
+            ISlashingRegistryCoordinator(address(registryCoordinator)),
+            task.quorumNumbers,
+            task.taskCreatedBlock
         );
         // first for loop iterate over quorums
         for (uint256 i = 0; i < allOperatorInfo.length; i++) {
@@ -236,7 +253,6 @@ contract IncredibleSquaringTaskManager is
                 // get the operator address
                 bytes32 operatorID = allOperatorInfo[i][j].operatorId;
                 address operatorAddress = blsApkRegistry.getOperatorFromPubkeyHash(operatorID);
-
                 // check whether the operator was a signer for the task
                 bool wasSigningOperator = true;
                 for (uint256 k = 0; k < addressOfNonSigningOperators.length; k++) {
@@ -246,18 +262,17 @@ contract IncredibleSquaringTaskManager is
                         break;
                     }
                 }
-
                 if (wasSigningOperator == true) {
                     OperatorSet memory operatorset =
                         OperatorSet({avs: serviceManager, id: uint8(task.quorumNumbers[i])});
-                    IStrategy[] memory istrategy =
-                        IAllocationManager(allocationManager).getStrategiesInOperatorSet(operatorset);
+                    IStrategy[] memory istrategy = IAllocationManager(allocationManager)
+                        .getStrategiesInOperatorSet(operatorset);
                     uint256[] memory wadsToSlash = new uint256[](istrategy.length);
                     for (uint256 z = 0; z < wadsToSlash.length; z++) {
                         wadsToSlash[z] = WADS_TO_SLASH;
                     }
-                    IAllocationManagerTypes.SlashingParams memory slashingparams = IAllocationManagerTypes
-                        .SlashingParams({
+                    IAllocationManagerTypes.SlashingParams memory slashingparams =
+                    IAllocationManagerTypes.SlashingParams({
                         operator: operatorAddress,
                         operatorSetId: uint8(task.quorumNumbers[i]),
                         strategies: istrategy,
