@@ -3,6 +3,7 @@
 //! to set up an operator.
 
 use alloy::primitives::U256;
+use clap::Parser;
 use eigensdk::logging::log_level::LogLevel;
 use eigensdk::operator::{config::OperatorConfig, Operator};
 use eigensdk::task_manager::response_calculator::response_calculator_from_fn;
@@ -10,14 +11,23 @@ use eigensdk::testing_utils::task_processor::failing_response_calculator;
 use incredible_squaring::utils::create_logger;
 use incredible_squaring::{square, utils::load_config, ISTaskManager};
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct OperatorArgs {
+    #[arg(short = 'c', long = "config-path", value_name = "FILE")]
+    config_path: String,
+}
+
 #[tokio::main]
 async fn main() {
     let logger = create_logger(LogLevel::Info);
 
+    let args = OperatorArgs::parse();
+
     // 1. Define your types for the task manager (we do this in `ISTaskManager`: lib.rs)
 
     // 2. Create the `OperatorConfig`
-    let config: OperatorConfig = load_config("./src/config/squaring-operator.toml").unwrap();
+    let config: OperatorConfig = load_config(args.config_path).unwrap();
 
     // 3. Create the logic to compute the task (we do this in `square`: lib.rs)
 

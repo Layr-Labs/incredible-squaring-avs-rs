@@ -17,6 +17,7 @@ alloy = { version = "0.13", features = [
     "rlp",
     "json-rpc",
 ] }
+clap = { version = "4.5", features = ["derive"] }
 eigensdk = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "v2-dev-2", features = ["full"] }
 thiserror = "1.0"
 tokio = { version = "1.41", features = ["test-util", "full", "sync"] }
