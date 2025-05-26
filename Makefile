@@ -15,6 +15,22 @@ create-quorum:
 
 deploy-el-and-avs-contracts: deploy-eigenlayer deploy-avs deploy-uam-permissions create-quorum
 
+__START__: ## How to start the different components
+
+CONFIG ?= src/config/squaring-operator.toml
+
+start-aggregator:
+	cargo run --bin incredible-squaring-aggregator
+
+start-challenger:
+	cargo run --bin incredible-squaring-challenger
+
+start-operator:
+	cargo run --bin incredible-squaring-operator -- -c $(CONFIG)
+
+start-task-spammer:
+	cargo run --bin incredible-squaring-task-spammer
+
 __TESTING__: ##
 
 reset_anvil:

@@ -76,35 +76,41 @@ make deploy-el-and-avs-contracts
 Start the aggregator:
 
 ```bash
-cargo run --bin incredible-squaring-aggregator
+make start-aggregator
 ```
 
-Start the first operator in a third terminal:
+Start the first operator with the default configuration in a separate terminal:
 
 ```bash
-cargo run --bin incredible-squaring-operator
+make start-operator
 ```
 
-Start the second operator in a fourth terminal:
+Start the second operator with a different configuration in a separate terminal:
 
 ```bash
-cargo run --bin incredible-squaring-operator-2
+make start-operator CONFIG=src/config/squaring-operator-2.toml
 ```
 
 The Operator will first check whether it is already registered on EigenLayer. If not, it will attempt to register automatically. To enable registration, create an [OperatorRegistrationConfig] and include it in the [OperatorConfig] struct.
 
 The operator will produce invalid results often because it use `failing_response_calculator` method, which has a failure rate of 60% and returns `U256::from(42)` as the response.
 
-These failures result in slashing once they're challenged. To see this in action, start the challenger in a fifth terminal with:
+These failures result in slashing once they're challenged. To see this in action, start the challenger in a separate terminal with:
 
 ```bash
-cargo run --bin incredible-squaring-challenger
+make start-challenger
 ```
 
 To start the cycle, start the task spammer in a separate terminal:
 
 ``` bash
-cargo run --bin incredible-squaring-task-spammer
+make start-task-spammer
+```
+
+If you want to spawn more operators, create a new configuration file based on the existing one and use the following command passing the path to the new configuration file:
+
+```bash
+make start-operator CONFIG=OPERATOR_CONFIG.toml
 ```
 
 ## Creating and Claiming Distributions
