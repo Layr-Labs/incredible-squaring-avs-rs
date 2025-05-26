@@ -61,9 +61,11 @@ contract SetupDistributions is Script, Test {
         deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.label(deployer, "Deployer");
 
-        coreDeployment = CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
-        incredibleSquaringDeployment =
-            IncredibleSquaringDeploymentLib.readDeploymentJson("script/deployments/incredible-squaring/", block.chainid);
+        coreDeployment =
+            CoreDeploymentLib.readDeploymentJson("script/deployments/core/", block.chainid);
+        incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.readDeploymentJson(
+            "script/deployments/incredible-squaring/", block.chainid
+        );
 
         rewardsCoordinator = RewardsCoordinator(coreDeployment.rewardsCoordinator);
 
@@ -97,7 +99,9 @@ contract SetupDistributions is Script, Test {
         uint256 nonce = rewardsCoordinator.getDistributionRootsLength();
         amountPerPayment = uint32(amountPerPayment * (nonce + 1));
 
-        createOperatorDirectedAVSRewardsSubmissions(numPayments, amountPerPayment, startTimestamp, DURATION);
+        createOperatorDirectedAVSRewardsSubmissions(
+            numPayments, amountPerPayment, startTimestamp, DURATION
+        );
         vm.stopBroadcast();
         vm.startBroadcast(deployer);
         earners = _getEarners(deployer);
@@ -127,15 +131,24 @@ contract SetupDistributions is Script, Test {
         amountPerPayment = uint32(amountPerPayment * nonce);
 
         vm.startBroadcast(deployer);
-        earnerLeaves = _getEarnerLeaves(_getEarners(deployer), amountPerPayment, incredibleSquaringDeployment.strategy);
-        processClaim(filePath, indexToProve, recipient, earnerLeaves[indexToProve], amountPerPayment);
+        earnerLeaves = _getEarnerLeaves(
+            _getEarners(deployer), amountPerPayment, incredibleSquaringDeployment.strategy
+        );
+        processClaim(
+            filePath, indexToProve, recipient, earnerLeaves[indexToProve], amountPerPayment
+        );
         vm.stopBroadcast();
     }
 
-    function createAVSRewardsSubmissions(uint256 numPayments, uint256 amountPerPayment, uint32 startTimestamp) public {
+    function createAVSRewardsSubmissions(
+        uint256 numPayments,
+        uint256 amountPerPayment,
+        uint32 startTimestamp
+    ) public {
         MockERC20(incredibleSquaringDeployment.token).mint(deployer, amountPerPayment * numPayments);
         MockERC20(incredibleSquaringDeployment.token).increaseAllowance(
-            incredibleSquaringDeployment.incredibleSquaringServiceManager, amountPerPayment * numPayments
+            incredibleSquaringDeployment.incredibleSquaringServiceManager,
+            amountPerPayment * numPayments
         );
         uint32 duration = rewardsCoordinator.MAX_REWARDS_DURATION();
 
@@ -157,7 +170,8 @@ contract SetupDistributions is Script, Test {
     ) public {
         MockERC20(incredibleSquaringDeployment.token).mint(deployer, amountPerPayment * numPayments);
         MockERC20(incredibleSquaringDeployment.token).increaseAllowance(
-            incredibleSquaringDeployment.incredibleSquaringServiceManager, amountPerPayment * numPayments
+            incredibleSquaringDeployment.incredibleSquaringServiceManager,
+            amountPerPayment * numPayments
         );
         address[] memory operators = new address[](2);
         operators[0] = operator1;
@@ -223,13 +237,16 @@ contract SetupDistributions is Script, Test {
         );
     }
 
-    function _getEarnerLeaves(address[] memory earners, uint32 amountPerPayment, address strategy)
-        internal
-        view
-        returns (IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory)
-    {
+    function _getEarnerLeaves(
+        address[] memory earners,
+        uint32 amountPerPayment,
+        address strategy
+    ) internal view returns (IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory) {
         bytes32[] memory tokenLeaves = SetupDistributionsLib.createTokenLeaves(
-            IRewardsCoordinator(coreDeployment.rewardsCoordinator), NUM_TOKEN_EARNINGS, amountPerPayment, strategy
+            IRewardsCoordinator(coreDeployment.rewardsCoordinator),
+            NUM_TOKEN_EARNINGS,
+            amountPerPayment,
+            strategy
         );
 
         IRewardsCoordinator.EarnerTreeMerkleLeaf[] memory earnerLeaves =
@@ -238,7 +255,9 @@ contract SetupDistributions is Script, Test {
         return earnerLeaves;
     }
 
-    function _getEarners(address deployer) internal pure returns (address[] memory) {
+    function _getEarners(
+        address deployer
+    ) internal pure returns (address[] memory) {
         address[] memory earners = new address[](NUM_EARNERS);
         for (uint256 i = 0; i < earners.length; i++) {
             earners[i] = deployer;
