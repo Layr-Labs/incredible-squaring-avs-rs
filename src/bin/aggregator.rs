@@ -9,17 +9,19 @@ use alloy::signers::local::PrivateKeySigner;
 use alloy::transports::http::reqwest::Url;
 use eigensdk::aggregator::task_processor::IndexingTaskProcessor;
 use eigensdk::aggregator::{Aggregator, AggregatorConfig};
-use eigensdk::logging::init_logger;
 use eigensdk::logging::log_level::LogLevel;
 use incredible_squaring::bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::IncredibleSquaringTaskManagerInstance;
 use incredible_squaring::utils::{create_logger, load_config};
 use std::str::FromStr;
 use std::time::Duration;
 
+/// Task Challenge Window Block : 100 blocks
+pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
+/// Block Time Seconds : 12 seconds
+pub const BLOCK_TIME_SECONDS: u32 = 12;
+
 #[tokio::main]
 async fn main() {
-    init_logger(LogLevel::Info);
-
     // 1. Define your types for the task manager (we do this in `ISTaskManager`: lib.rs)
 
     // 2. Create the aggregator configuration from the toml file
@@ -35,9 +37,12 @@ async fn main() {
     let provider = ProviderBuilder::new().wallet(wallet).on_http(url);
     let contract = IncredibleSquaringTaskManagerInstance::new(task_manager_address, provider);
 
+    let time_to_expiry =
+        tokio::time::Duration::from_secs((TASK_CHALLENGE_WINDOW_BLOCK * BLOCK_TIME_SECONDS).into());
+
     // 4. Create the task processor
     let task_processor =
-        IndexingTaskProcessor::new(contract, Duration::from_secs(60), Duration::from_secs(15));
+        IndexingTaskProcessor::new(contract, time_to_expiry, Duration::from_secs(5));
 
     // 5. Create and start the aggregator
     let aggregator = Aggregator::new(config, task_processor, logger)

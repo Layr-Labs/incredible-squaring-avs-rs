@@ -26,7 +26,7 @@ async fn main() {
     let response_calculator = response_calculator_from_fn(square);
 
     // 5. Use the `failing_response_calculator` with the wrong `Output` type and a given failure rate
-    let logic = failing_response_calculator(response_calculator, || U256::from(42), 60);
+    let logic = failing_response_calculator(response_calculator, || U256::from(42), 100);
 
     // 6. Initialize the operator
     let operator = Operator::new(logger, config).await.unwrap();

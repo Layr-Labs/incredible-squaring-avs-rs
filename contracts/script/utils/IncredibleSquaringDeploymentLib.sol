@@ -18,11 +18,11 @@ import {SlashingRegistryCoordinator} from
     "@eigenlayer-middleware/src/SlashingRegistryCoordinator.sol";
 import {IPermissionController} from "@eigenlayer/contracts/interfaces/IPermissionController.sol";
 import {
-    IncredibleDotProductServiceManager,
+    IncredibleSquaringServiceManager,
     IServiceManager,
-    IIncredibleDotProductTaskManager
-} from "../../src/IncredibleDotProductServiceManager.sol";
-import {IncredibleDotProductTaskManager} from "../../src/IncredibleDotProductTaskManager.sol";
+    IIncredibleSquaringTaskManager
+} from "../../src/IncredibleSquaringServiceManager.sol";
+import {IncredibleSquaringTaskManager} from "../../src/IncredibleSquaringTaskManager.sol";
 import {IDelegationManager} from "@eigenlayer/contracts/interfaces/IDelegationManager.sol";
 // import {Quorum} from "@eigenlayer-middleware/src/interfaces/IECDSAStakeRegistryEventsAndErrors.sol";
 import {UpgradeableProxyLib} from "./UpgradeableProxyLib.sol";
@@ -51,7 +51,7 @@ import {
 } from "@eigenlayer/contracts/permissions/PauserRegistry.sol";
 import {OperatorStateRetriever} from "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 
-library IncredibleDotProductDeploymentLib {
+library IncredibleSquaringDeploymentLib {
     using stdJson for *;
     using Strings for *;
     using UpgradeableProxyLib for address;
@@ -60,8 +60,8 @@ library IncredibleDotProductDeploymentLib {
     string internal constant MIDDLEWARE_VERSION = "v1.4.0-testnet-holesky";
 
     struct DeploymentData {
-        address incredibleDotProductServiceManager;
-        address incredibleDotProductTaskManager;
+        address incredibleSquaringServiceManager;
+        address incredibleSquaringTaskManager;
         address slashingRegistryCoordinator;
         address operatorStateRetriever;
         address blsapkRegistry;
@@ -74,7 +74,7 @@ library IncredibleDotProductDeploymentLib {
         address slasher;
     }
 
-    struct IncredibleDotProductSetupConfig {
+    struct IncredibleSquaringSetupConfig {
         uint256 numQuorums;
         uint256[] operatorParams;
         address operator_addr;
@@ -92,7 +92,7 @@ library IncredibleDotProductDeploymentLib {
         address proxyAdmin,
         CoreDeploymentLib.DeploymentData memory core,
         address strategy,
-        IncredibleDotProductSetupConfig memory idpConfig,
+        IncredibleSquaringSetupConfig memory isConfig,
         address admin
     ) internal returns (DeploymentData memory) {
         /// read EL deployment address
@@ -104,9 +104,9 @@ library IncredibleDotProductDeploymentLib {
 
         // First, deploy upgradeable proxy contracts that will point to the implementations.
         OperatorStateRetriever operatorStateRetriever = new OperatorStateRetriever();
-        result.incredibleDotProductServiceManager = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
+        result.incredibleSquaringServiceManager = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.stakeRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
-        result.incredibleDotProductTaskManager = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
+        result.incredibleSquaringTaskManager = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.slashingRegistryCoordinator = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.blsapkRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
         result.indexRegistry = UpgradeableProxyLib.setUpEmptyProxy(proxyAdmin);
@@ -134,13 +134,13 @@ library IncredibleDotProductDeploymentLib {
             new InstantSlasher(
                 IAllocationManager(core.allocationManager),
                 ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
-                result.incredibleDotProductTaskManager
+                result.incredibleSquaringTaskManager
             )
         );
         console2.log("pauser_registry");
         console2.log(coredata.pauserRegistry);
         console2.log("service_manager");
-        console2.log(result.incredibleDotProductServiceManager);
+        console2.log(result.incredibleSquaringServiceManager);
         console2.log("stake_registry");
         console2.log(result.stakeRegistry);
         console2.log("bls_apk_registry");
@@ -151,10 +151,6 @@ library IncredibleDotProductDeploymentLib {
         console2.log(core.avsDirectory);
         console2.log("pauser_registry");
         console2.log(coredata.pauserRegistry);
-        console2.log("operator_state_retriever");
-        console2.log(result.operatorStateRetriever);
-        console2.log("task_manager");
-        console2.log(result.incredibleDotProductTaskManager);
 
         address slashingRegistryCoordinatorImpl = address(
             new SlashingRegistryCoordinator(
@@ -177,10 +173,10 @@ library IncredibleDotProductDeploymentLib {
         deployedStrategyArray[0] = IStrategy(strategy);
         uint256 numStrategies = deployedStrategyArray.length;
 
-        uint256 numQuorums = idpConfig.numQuorums;
+        uint256 numQuorums = isConfig.numQuorums;
         ISlashingRegistryCoordinatorTypes.OperatorSetParam[] memory quorumsOperatorSetParams =
             new ISlashingRegistryCoordinatorTypes.OperatorSetParam[](numQuorums);
-        uint256[] memory operator_params = idpConfig.operatorParams;
+        uint256[] memory operator_params = isConfig.operatorParams;
 
         for (uint256 i = 0; i < numQuorums; i++) {
             quorumsOperatorSetParams[i] = ISlashingRegistryCoordinatorTypes.OperatorSetParam({
@@ -212,7 +208,7 @@ library IncredibleDotProductDeploymentLib {
         look_ahead_period[0] = 0;
         bytes memory upgradeCall = abi.encodeCall(
             SlashingRegistryCoordinator.initialize,
-            (admin, admin, admin, 0, result.incredibleDotProductServiceManager)
+            (admin, admin, admin, 0, result.incredibleSquaringServiceManager)
         );
 
         UpgradeableProxyLib.upgrade(result.stakeRegistry, stakeRegistryImpl);
@@ -223,44 +219,44 @@ library IncredibleDotProductDeploymentLib {
         );
         console2.log("allocation_manager");
         console2.log(core.allocationManager);
-        IncredibleDotProductServiceManager incredibleDotProductServiceManagerImpl = new IncredibleDotProductServiceManager(
+        IncredibleSquaringServiceManager incredibleSquaringServiceManagerImpl = new IncredibleSquaringServiceManager(
             (IAVSDirectory(avsdirectory)),
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
             IStakeRegistry(result.stakeRegistry),
             core.rewardsCoordinator,
             IAllocationManager(core.allocationManager),
             IPermissionController(core.permissionController),
-            IIncredibleDotProductTaskManager(result.incredibleDotProductTaskManager)
+            IIncredibleSquaringTaskManager(result.incredibleSquaringTaskManager)
         );
         console2.log("allocation_manager");
         console2.log(core.allocationManager);
-        IncredibleDotProductTaskManager incredibleDotProductTaskManagerImpl = new IncredibleDotProductTaskManager(
+        IncredibleSquaringTaskManager incredibleSquaringTaskManagerImpl = new IncredibleSquaringTaskManager(
             ISlashingRegistryCoordinator(result.slashingRegistryCoordinator),
             IPauserRegistry(address(pausercontract)),
             30
         );
         bytes memory servicemanagerupgradecall =
-            abi.encodeCall(IncredibleDotProductServiceManager.initialize, (admin, admin));
+            abi.encodeCall(IncredibleSquaringServiceManager.initialize, (admin, admin));
         UpgradeableProxyLib.upgradeAndCall(
-            result.incredibleDotProductServiceManager,
-            address(incredibleDotProductServiceManagerImpl),
+            result.incredibleSquaringServiceManager,
+            address(incredibleSquaringServiceManagerImpl),
             servicemanagerupgradecall
         );
 
         bytes memory taskmanagerupgradecall = abi.encodeCall(
-            IncredibleDotProductTaskManager.initialize,
+            IncredibleSquaringTaskManager.initialize,
             (
                 admin,
-                idpConfig.aggregator_addr,
-                idpConfig.task_generator_addr,
+                isConfig.aggregator_addr,
+                isConfig.task_generator_addr,
                 core.allocationManager,
                 result.slasher,
-                result.incredibleDotProductServiceManager
+                result.incredibleSquaringServiceManager
             )
         );
         UpgradeableProxyLib.upgradeAndCall(
-            result.incredibleDotProductTaskManager,
-            address(incredibleDotProductTaskManagerImpl),
+            result.incredibleSquaringTaskManager,
+            address(incredibleSquaringTaskManagerImpl),
             (taskmanagerupgradecall)
         );
 
@@ -279,17 +275,17 @@ library IncredibleDotProductDeploymentLib {
     function readDeploymentJson(
         uint256 chainId
     ) internal returns (DeploymentData memory) {
-        return readDeploymentJson("script/deployments/incredible-dot-product/", chainId);
+        return readDeploymentJson("script/deployments/incredible-squaring/", chainId);
     }
 
-    function readIncredibleDotProductConfigJson(
+    function readIncredibleSquaringConfigJson(
         string memory directoryPath
-    ) internal returns (IncredibleDotProductSetupConfig memory) {
+    ) internal returns (IncredibleSquaringSetupConfig memory) {
         string memory fileName = string.concat(directoryPath, ".json");
         require(vm.exists(fileName), "Deployment file does not exist");
         string memory json = vm.readFile(fileName);
 
-        IncredibleDotProductSetupConfig memory data;
+        IncredibleSquaringSetupConfig memory data;
         data.numQuorums = json.readUint(".num_quorums");
         data.operatorParams = json.readUintArray(".operator_params");
         data.aggregator_addr = json.readAddress(".aggregator_addr");
@@ -315,10 +311,10 @@ library IncredibleDotProductDeploymentLib {
         string memory json = vm.readFile(fileName);
 
         DeploymentData memory data;
-        data.incredibleDotProductServiceManager =
-            json.readAddress(".addresses.incredibleDotProductServiceManager");
-        data.incredibleDotProductTaskManager =
-            json.readAddress(".addresses.incredibleDotProductTaskManager");
+        data.incredibleSquaringServiceManager =
+            json.readAddress(".addresses.incredibleSquaringServiceManager");
+        data.incredibleSquaringTaskManager =
+            json.readAddress(".addresses.incredibleSquaringTaskManager");
         data.slashingRegistryCoordinator = json.readAddress(".addresses.registryCoordinator");
         data.operatorStateRetriever = json.readAddress(".addresses.operatorStateRetriever");
         data.stakeRegistry = json.readAddress(".addresses.stakeRegistry");
@@ -333,7 +329,7 @@ library IncredibleDotProductDeploymentLib {
     function writeDeploymentJson(
         DeploymentData memory data
     ) internal {
-        writeDeploymentJson("script/deployments/incredible-dot-product/", block.chainid, data);
+        writeDeploymentJson("script/deployments/incredible-squaring/", block.chainid, data);
     }
 
     function writeDeploymentJson(
@@ -342,7 +338,7 @@ library IncredibleDotProductDeploymentLib {
         DeploymentData memory data
     ) internal {
         address proxyAdmin =
-            address(UpgradeableProxyLib.getProxyAdmin(data.incredibleDotProductServiceManager));
+            address(UpgradeableProxyLib.getProxyAdmin(data.incredibleSquaringServiceManager));
 
         string memory deploymentData = _generateDeploymentJson(data, proxyAdmin);
 
@@ -377,12 +373,12 @@ library IncredibleDotProductDeploymentLib {
         return string.concat(
             '{"proxyAdmin":"',
             proxyAdmin.toHexString(),
-            '","incredibleDotProductServiceManager":"',
-            data.incredibleDotProductServiceManager.toHexString(),
-            '","incredibleDotProductServiceManagerImpl":"',
-            data.incredibleDotProductServiceManager.getImplementation().toHexString(),
-            '","incredibleDotProductTaskManager":"',
-            data.incredibleDotProductTaskManager.toHexString(),
+            '","incredibleSquaringServiceManager":"',
+            data.incredibleSquaringServiceManager.toHexString(),
+            '","incredibleSquaringServiceManagerImpl":"',
+            data.incredibleSquaringServiceManager.getImplementation().toHexString(),
+            '","incredibleSquaringTaskManager":"',
+            data.incredibleSquaringTaskManager.toHexString(),
             '","registryCoordinator":"',
             data.slashingRegistryCoordinator.toHexString(),
             '","blsapkRegistry":"',

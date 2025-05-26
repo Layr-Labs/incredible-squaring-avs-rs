@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@eigenlayer/contracts/libraries/BytesLib.sol";
-import "./IIncredibleDotProductTaskManager.sol";
+import "./IIncredibleSquaringTaskManager.sol";
 import "@eigenlayer-middleware/src/ServiceManagerBase.sol";
 import {
     IAllocationManager,
@@ -14,19 +14,19 @@ import {ISlashingRegistryCoordinator} from
     "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
 
 /**
- * @title Primary entrypoint for procuring services from IncredibleDotProduct.
+ * @title Primary entrypoint for procuring services from IncredibleSquaring.
  * @author Layr Labs, Inc.
  */
-contract IncredibleDotProductServiceManager is ServiceManagerBase {
+contract IncredibleSquaringServiceManager is ServiceManagerBase {
     using BytesLib for bytes;
 
-    IIncredibleDotProductTaskManager public immutable incredibleDotProductTaskManager;
+    IIncredibleSquaringTaskManager public immutable incredibleSquaringTaskManager;
 
     /// @notice when applied to a function, ensures that the function is only callable by the `registryCoordinator`.
-    modifier onlyIncredibleDotProductTaskManager() {
+    modifier onlyIncredibleSquaringTaskManager() {
         require(
-            msg.sender == address(incredibleDotProductTaskManager),
-            "onlyIncredibleDotProductTaskManager: not from credible Dot Product task manager"
+            msg.sender == address(incredibleSquaringTaskManager),
+            "onlyIncredibleSquaringTaskManager: not from credible squaring task manager"
         );
         _;
     }
@@ -38,7 +38,7 @@ contract IncredibleDotProductServiceManager is ServiceManagerBase {
         address rewards_coordinator,
         IAllocationManager allocationManager,
         IPermissionController _permissionController,
-        IIncredibleDotProductTaskManager _incredibleDotProductTaskManager
+        IIncredibleSquaringTaskManager _incredibleSquaringTaskManager
     )
         ServiceManagerBase(
             _avsDirectory,
@@ -49,7 +49,7 @@ contract IncredibleDotProductServiceManager is ServiceManagerBase {
             allocationManager
         )
     {
-        incredibleDotProductTaskManager = _incredibleDotProductTaskManager;
+        incredibleSquaringTaskManager = _incredibleSquaringTaskManager;
     }
 
     function initialize(address initialOwner, address rewardsInitiator) external initializer {

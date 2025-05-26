@@ -3,9 +3,7 @@ cache/
 out/
 
 # Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
+/broadcast/**
 
 # Docs
 docs/
@@ -13,4 +11,5 @@ docs/
 # Dotenv file
 .env
 
+# Not sure what this folder is for.. so removing for now
 data/
