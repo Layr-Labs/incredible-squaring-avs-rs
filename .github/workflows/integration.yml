@@ -21,7 +21,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run cargo check
-        run: cargo check --workspace --all-features --all-targets --exclude incredible-bindings
+        run: cargo check --workspace --all-features --all-targets
 
   lint:
     name: Run Lints
