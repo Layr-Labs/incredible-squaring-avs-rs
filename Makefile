@@ -28,12 +28,18 @@ start_docker:
 	sleep 2
 
 clippy:
-	cargo clippy --workspace --lib --examples --tests --benches --all-features
+	cargo clippy --workspace
 
 fmt: 
 	cargo fmt
 	cd contracts && forge fmt
 	cd ..
+
+integration-tests:
+	$(MAKE) reset_anvil
+	$(MAKE) start_docker
+	$(MAKE) deploy-el-and-avs-contracts
+	cargo test --test integration_test
 
 __BINDINGS__: ##
 
@@ -56,12 +62,8 @@ TOKEN_ADDRESS=$(shell jq -r '.addresses.token' contracts/script/deployments/incr
 
 create-avs-distributions-root:
 	cd contracts && \
-	forge script script/SetupDistributions.s.sol:SetupDistributions \
-		--rpc-url http://localhost:8545 \
-		--broadcast \
-		--sig "runAVSRewards()" \
-		-v \
-		--sender ${SENDER_ADDR}
+		forge script script/SetupDistributions.s.sol --rpc-url http://localhost:8545 \
+			--broadcast --sig "runAVSRewards()" -v --sender ${SENDER_ADDR}
 
 create-operator-directed-distributions-root:
 	cd contracts && \
