@@ -22,7 +22,7 @@ thiserror = "1.0"
 tokio = { version = "1.41", features = ["test-util", "full", "sync"] }
 toml = "0.8"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["json"] }
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
 serde = { version = "1.0", features = ["derive"] }
 
 [lib]
@@ -39,6 +39,10 @@ path = "src/bin/challenger.rs"
 [[bin]]
 name = "incredible-squaring-operator"
 path = "src/bin/operator.rs"
+
+[[bin]]
+name = "incredible-squaring-operator-2"
+path = "src/bin/operator_2.rs"
 
 [[bin]]
 name = "incredible-squaring-task-spammer"

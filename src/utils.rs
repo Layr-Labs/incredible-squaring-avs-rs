@@ -1,9 +1,11 @@
+use eigensdk::logging::{log_level::LogLevel, tracing_logger::TracingLogger};
 use serde::de::DeserializeOwned;
 use std::{fs, path::Path};
 use thiserror::Error;
+use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, Error)]
-pub enum ConfigError {
+pub enum UtilsError {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
     #[error("Toml error: {0}")]
@@ -18,12 +20,37 @@ pub enum ConfigError {
 ///
 /// # Returns
 ///
-/// * `Result<T, ConfigError>` - The config struct
-pub fn load_config<P, T>(path: P) -> Result<T, ConfigError>
+/// * `Result<T, UtilsError>` - The config struct
+pub fn load_config<P, T>(path: P) -> Result<T, UtilsError>
 where
     P: AsRef<Path>,
     T: DeserializeOwned,
 {
     let s = fs::read_to_string(&path)?;
-    toml::from_str(&s).map_err(ConfigError::Toml)
+    toml::from_str(&s).map_err(UtilsError::Toml)
+}
+
+pub fn create_logger(level: LogLevel) -> TracingLogger {
+    let tracing_level = match level {
+        LogLevel::Fatal => tracing::Level::ERROR,
+        LogLevel::Error => tracing::Level::ERROR,
+        LogLevel::Warn => tracing::Level::WARN,
+        LogLevel::Info => tracing::Level::INFO,
+        LogLevel::Debug => tracing::Level::DEBUG,
+        LogLevel::Trace => tracing::Level::TRACE,
+    };
+
+    // Disable tarpc logging
+    let mut filter = EnvFilter::new("tarpc=off");
+    // Set the default level for all other loggers
+    filter = filter.add_directive(tracing_level.into());
+
+    let subscriber = tracing_subscriber::fmt().with_env_filter(filter).finish();
+
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
+    TracingLogger {
+        level,
+        ..Default::default()
+    }
 }
