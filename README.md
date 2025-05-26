@@ -79,9 +79,9 @@ Start the aggregator:
 make start-aggregator
 ```
 
-For operators, you can set the failure rate to simulate a failing operator. The default failure rate is 30%.
+For operators, you can set the configuration file and the failure rate to simulate a failing operator.
 
-Start the first operator with the default configuration in a separate terminal:
+Start the first operator with the default values:
 
 ```bash
 make start-operator
