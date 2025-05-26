@@ -18,6 +18,7 @@ deploy-el-and-avs-contracts: deploy-eigenlayer deploy-avs deploy-uam-permissions
 __START__: ## How to start the different components
 
 CONFIG ?= src/config/squaring-operator.toml
+FAILURE_RATE ?= 30
 
 start-aggregator:
 	cargo run --bin incredible-squaring-aggregator
@@ -26,7 +27,7 @@ start-challenger:
 	cargo run --bin incredible-squaring-challenger
 
 start-operator:
-	cargo run --bin incredible-squaring-operator -- -c $(CONFIG)
+	cargo run --bin incredible-squaring-operator -- -c $(CONFIG) -f $(FAILURE_RATE)
 
 start-task-spammer:
 	cargo run --bin incredible-squaring-task-spammer

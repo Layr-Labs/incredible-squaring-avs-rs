@@ -16,6 +16,8 @@ use incredible_squaring::{square, utils::load_config, ISTaskManager};
 struct OperatorArgs {
     #[arg(short = 'c', long = "config-path", value_name = "FILE")]
     config_path: String,
+    #[arg(short = 'f', long = "failure-rate", value_name = "RATE")]
+    failure_rate: u32,
 }
 
 #[tokio::main]
@@ -35,7 +37,8 @@ async fn main() {
     let response_calculator = response_calculator_from_fn(square);
 
     // 5. Use the `failing_response_calculator` with the wrong `Output` type and a given failure rate
-    let logic = failing_response_calculator(response_calculator, || U256::from(42), 30);
+    let logic =
+        failing_response_calculator(response_calculator, || U256::from(42), args.failure_rate);
 
     // 6. Initialize the operator
     let operator = Operator::new(logger, config).await.unwrap();

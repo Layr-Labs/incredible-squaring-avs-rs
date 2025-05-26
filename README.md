@@ -79,6 +79,8 @@ Start the aggregator:
 make start-aggregator
 ```
 
+For operators, you can set the failure rate to simulate a failing operator. The default failure rate is 30%.
+
 Start the first operator with the default configuration in a separate terminal:
 
 ```bash
@@ -88,7 +90,7 @@ make start-operator
 Start the second operator with a different configuration in a separate terminal:
 
 ```bash
-make start-operator CONFIG=src/config/squaring-operator-2.toml
+make start-operator CONFIG=src/config/squaring-operator-2.toml FAILURE_RATE=60
 ```
 
 The Operator will first check whether it is already registered on EigenLayer. If not, it will attempt to register automatically. To enable registration, create an [OperatorRegistrationConfig] and include it in the [OperatorConfig] struct.
