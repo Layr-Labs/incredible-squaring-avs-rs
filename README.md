@@ -109,10 +109,10 @@ To start the cycle, start the task spammer in a separate terminal:
 make start-task-spammer
 ```
 
-If you want to spawn more operators, create a new configuration file based on the existing one and use the following command passing the path to the new configuration file:
+If you want to spawn more operators, create a new configuration file based on the existing one and use the following command passing the path to the new configuration file and the failure rate:
 
 ```bash
-make start-operator CONFIG=OPERATOR_CONFIG.toml
+make start-operator CONFIG=OPERATOR_CONFIG.toml FAILURE_RATE=100
 ```
 
 ## Creating and Claiming Distributions
