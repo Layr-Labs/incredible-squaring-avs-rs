@@ -2,7 +2,7 @@ use eigensdk::crypto_bls::Signature;
 use eigensdk::types::operator::OperatorId;
 use incredible_bindings::incrediblesquaringtaskmanager::IIncredibleSquaringTaskManager::TaskResponse;
 use serde::{Deserialize, Serialize};
-// use alloy::sol_types::SolCall;
+
 /// Signed Task Response
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignedTaskResponse {

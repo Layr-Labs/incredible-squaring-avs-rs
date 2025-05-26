@@ -909,15 +909,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "arbitrary"
-version = "1.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dde20b3d026af13f561bdd0f15edf01fc734f0dafcedbaf42bba506a9517f223"
-dependencies = [
- "derive_arbitrary",
-]
-
-[[package]]
 name = "ark-bn254"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1865,11 +1856,10 @@ dependencies = [
 
 [[package]]
 name = "c-kzg"
-version = "2.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e7e3c397401eb76228c89561cf22f85f41c95aa799ee9d860de3ea1cbc728fc"
+checksum = "7318cfa722931cb5fe0838b98d3ce5621e75f6a6408abc21721d80de9223f2e4"
 dependencies = [
- "arbitrary",
  "blst",
  "cc",
  "glob",
@@ -2360,17 +2350,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "derive_arbitrary"
-version = "1.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30542c1ad912e0e3d22a1935c290e12e8a29d704a420177a31faad4a601a0800"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.100",
-]
-
-[[package]]
 name = "derive_more"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2552,9 +2531,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-client-avsregistry"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be4b46406877f7f57dd7bd5a6afbbda0f74d82e837ed381298126c5eba9a36ba"
+checksum = "11c8c58dbe58a681e63f53db7cc707b38288aac3452dd070cf9a5b3ecf9d7ac0"
 dependencies = [
  "alloy",
  "ark-ff 0.5.0",
@@ -2572,9 +2551,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-client-elcontracts"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "efacb9095392d8fb440eb7808ffc4c23fd6c1baa7a76958fc0534ce677fb3cd9"
+checksum = "65e5312fae940c476a3889f288d082813fe55cd9dc74956abb87d32ee407272f"
 dependencies = [
  "alloy",
  "eigen-common",
@@ -2588,9 +2567,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-client-eth"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eaaedec99b4f828cf3c43c9eda671a2016984c7772078206ba45eb1eea8f2463"
+checksum = "78fbe42170d4d58b78e21d67003f4626c1cee9f85e16acff07fc5fa9ade137d2"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2603,9 +2582,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-client-fireblocks"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc8eb4d1fe14e2cfdb19c6746b3449a090b7deaf16ff7cb8a2ff89b8bfeffdea"
+checksum = "38156c77722b41353169bd145646d50792fafa51bdf2d9e8939f4a56e4207002"
 dependencies = [
  "alloy",
  "chrono",
@@ -2624,9 +2603,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-common"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f24e5650d10805b2d6331c0cb92db6e8e4ee08ed08766e5b684ee4503be13d9"
+checksum = "912b7ffb6d776d9531730206edde38c7ce0488d2f43a1fdd3d81dd40b7ce8167"
 dependencies = [
  "alloy",
  "url",
@@ -2634,9 +2613,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-crypto-bls"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c6edc5a1398336b3f77a164d9abb56b03eb4a031cb4cd5a63f17148cb764484"
+checksum = "ff9868e9cf0444ac898c3c9bcc88ddfe03bb55f19fd9b91e78400ffb9010c0e6"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2652,9 +2631,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-crypto-bn254"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c0729fde1454d4574020b1b1848364bd6bfbdb6f4c0159d38742647f72ecc9e"
+checksum = "5a15fd29180d08a1e145faa055c7d8143a126e0befb97acfd15b03eef59bc77d"
 dependencies = [
  "ark-bn254 0.5.0",
  "ark-ec 0.5.0",
@@ -2664,9 +2643,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-logging"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83dd94ccad9d216b8566541c8e0acd51ca9b3a22a8ef5b2f88fa80abae4beb9c"
+checksum = "fd67112ed0d2ffce18e0430163c374bcac768d73a5124218a078cc86db24975a"
 dependencies = [
  "ctor",
  "once_cell",
@@ -2676,9 +2655,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-metrics"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6210a153172d3212c993f5b534c457f5ac288dd088485e6251ba2c68c50c8b7"
+checksum = "eb82205abd22809f288ac24934c05c0dfb54ef9175ece20ffd17d764c8db0443"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2688,9 +2667,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-metrics-collectors-economic"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57a45c765372b38745146eb239e56918baf19cf5c7b63c45dee8673da3b25430"
+checksum = "33f4c21bb91be2bd42cb3f91ce529d4f34a3694990438dc11bdaebf6bdf407db"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2704,9 +2683,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-metrics-collectors-rpc-calls"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45cb0987c6e086807a04c70321a2819a297400461881f849d70267492d473b95"
+checksum = "9664326bd14e77d5126ea0421ed66bd255acd68fea9d41812b47992aa786b861"
 dependencies = [
  "eigen-logging",
  "metrics",
@@ -2714,9 +2693,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-nodeapi"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b55d0774a11596df21cd969440bb319d8861ec6608c83b135c65e4832b92ed5b"
+checksum = "39c07c9048092e6103abaf98e34e362f3d4218b4004f55fc599a47ad423858d1"
 dependencies = [
  "ntex",
  "serde",
@@ -2727,9 +2706,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-services-avsregistry"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a6224b2dcbfe052dca19d5717218d56188515a7635ec7722cf8e8a37dca04ea"
+checksum = "8ca10ebd715eec4e0782f72878b636749712c8fa60756d1ec8172a15b846c150"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2744,9 +2723,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-services-blsaggregation"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3d032ee157d562b7d71dbcca8b4689b54b8f41feddf0557a3157327a67c8e94"
+checksum = "486f623ce57c4bbce992f0d3200d90963358b9408de9697c2b156d68d4d47521"
 dependencies = [
  "alloy",
  "ark-bn254 0.5.0",
@@ -2767,9 +2746,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-services-operatorsinfo"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be4396f119a1d3a8588be2ec9218b5002e4e288c1d0330b82a49329327e26637"
+checksum = "4cb7d5c7200fa6dd807c13195419fc6bec52ed36d997a73ab0c25e27acec443c"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2789,9 +2768,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-signer"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43a3929f81e887b097c18d619ddc21f798f59eee21fd2008139760e5240b874c"
+checksum = "bd99b66962cd23f60b468b359817e33a582125e9965e2af65c3dfdca86a8c1a4"
 dependencies = [
  "alloy",
  "async-trait",
@@ -2804,9 +2783,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-testing-utils"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d19e90918a8c84e025da0cfeb6f9f428ca74c18c29b90b6dae9bd599b3eeba35"
+checksum = "5c9226084ef2f7e9accf0466ab62759ad348789cf3a04f3fea866cb71cd1119e"
 dependencies = [
  "alloy",
  "eigen-client-avsregistry",
@@ -2823,9 +2802,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-types"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d072e9052d57c7f39b169115fcca64f4ab1201bde768c93ea026c734f322b1fb"
+checksum = "16fce7eaae9537a7e000f5da3ceb530a27a1c4045a7491787f4c91ff32b02bc3"
 dependencies = [
  "alloy",
  "ark-ff 0.5.0",
@@ -2843,9 +2822,9 @@ dependencies = [
 
 [[package]]
 name = "eigen-utils"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acbd724ef6f5e961197518e3ee3d7a37cb7cc7bd157fb31bea8da62a77b9aa15"
+checksum = "dd76099f8e5cb3ddb41e94a1a5ef3edf3348cc6acd6a60d83cfa5954ea6924a3"
 dependencies = [
  "alloy",
  "regex",
@@ -2854,9 +2833,9 @@ dependencies = [
 
 [[package]]
 name = "eigensdk"
-version = "1.0.0-rc.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "122b32c39a32fc37aff3039bbd1af80c61681afafc362b1005a92f0e981e9ef5"
+checksum = "05f3e4f2f6df55c244ec6c6b073ac9247e4114fbf3b0888472f353e5f07941f2"
 dependencies = [
  "eigen-client-avsregistry",
  "eigen-client-elcontracts",
