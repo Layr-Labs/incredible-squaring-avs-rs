@@ -7,7 +7,7 @@ async fn spawn_aggregator() -> tokio::process::Child {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
-        .expect("Could not spawn binary")
+        .expect("Could not spawn aggregator binary")
 }
 
 async fn spawn_challenger() -> tokio::process::Child {
@@ -16,7 +16,7 @@ async fn spawn_challenger() -> tokio::process::Child {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
-        .expect("Could not spawn binary")
+        .expect("Could not spawn challenger binary")
 }
 
 async fn spawn_operator(config_path: &str, failure_rate: u32) -> tokio::process::Child {
@@ -37,7 +37,7 @@ async fn spawn_operator(config_path: &str, failure_rate: u32) -> tokio::process:
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
-        .expect("Could not spawn binary")
+        .expect("Could not spawn operator binary")
 }
 
 async fn spawn_task_spammer() -> tokio::process::Child {
@@ -49,7 +49,7 @@ async fn spawn_task_spammer() -> tokio::process::Child {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
-        .expect("Could not spawn binary")
+        .expect("Could not spawn task spammer binary")
 }
 pub mod integration_test {
     use std::str::FromStr;
