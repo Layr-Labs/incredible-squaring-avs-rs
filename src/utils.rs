@@ -30,6 +30,16 @@ where
     toml::from_str(&s).map_err(UtilsError::Toml)
 }
 
+/// Creates a logger with the given level
+/// This will disable tarpc logging and set the default level for all other loggers
+///
+/// # Arguments
+///
+/// * `level` - The level of the logger
+///
+/// # Returns
+///
+/// * `Arc<dyn Logger>` - The logger
 pub fn create_logger(level: LogLevel) -> Arc<dyn Logger> {
     let tracing_level = match level {
         LogLevel::Fatal => tracing::Level::ERROR,
