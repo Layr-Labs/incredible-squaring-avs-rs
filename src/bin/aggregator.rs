@@ -48,5 +48,5 @@ async fn main() {
     let aggregator = Aggregator::new(config, task_processor, logger)
         .await
         .unwrap();
-    aggregator.start().await.unwrap();
+    aggregator.run().await.unwrap();
 }
