@@ -8,6 +8,20 @@ This example is a basic proposal of AVS, where the input and output type are `U2
 - [Docker](https://www.docker.com/) - for tests
 - [jq](https://jqlang.org/download/) - for rewards examples
 
+## Architecture
+
+The architecture of the AVS contains:
+
+- [EigenLayer core](https://github.com/Layr-Labs/eigenlayer-contracts/) contracts
+- AVS contracts
+  - [ServiceManager](contracts/src/IncredibleSquaringServiceManager.sol) which will eventually contain slashing logic but for M2 is just a placeholder.
+  - [TaskManager](contracts/src/IncredibleSquaringTaskManager.sol) which contains [task creation](contracts/src/IncredibleSquaringTaskManager.sol#L83) and [task response](contracts/src/IncredibleSquaringTaskManager.sol#L102) logic. Calls `fulfillSlashingRequest` to the `Slasher` contract using the `raiseAndResolveChallenge` function .
+  - Set of [registry contracts](https://github.com/Layr-Labs/eigenlayer-middleware) to manage operators opted in to this avs
+- [Aggregator](./src/bin/aggregator.rs): The aggregator does not have much business logic, as the core functionality is delegated to the `IndexingTaskProcessor`, which is the standard implementation that the SDK provides.If you want to implement a custom task processor, you need to implement the `TaskProcessor` trait.
+- [Challenger](./src/bin/challenger.rs): The challenger business logic lies in the task response validation. To validate the response, the challenger first calculates the response with the same function as the operator and then compares it with the received response, raising a challenge if they differ. The example is based on the `IndexingChallengerProcessor` implementation. If you want to implement a custom challenger processor, you need to implement the `ChallengerTaskProcessor` trait.
+- [Operator](./src/bin/operator.rs): The operator responds to tasks using the `FunctionResponseCalculator` struct that implements `ResponseCalculator` trait. This struct must define a `compute_response` method to generate the task output. In thix example, we have two operators responding to tasks.
+- [Task spammer](./src/bin/task_spammer.rs): The task spammer logic lies in an iterator that generates the inputs for the spammer to dispatch at the SDK level.
+
 ## Structure
 
 ### Types
@@ -35,20 +49,6 @@ The task response type is:
 ```
 
 The `numberSquared` field represents the result of the squaring operation with the received number to square.
-
-## Architecture
-
-The architecture of the AVS contains:
-
-- [EigenLayer core](https://github.com/Layr-Labs/eigenlayer-contracts/tree/master) contracts
-- AVS contracts
-  - [ServiceManager](contracts/src/IncredibleSquaringServiceManager.sol) which will eventually contain slashing logic but for M2 is just a placeholder.
-  - [TaskManager](contracts/src/IncredibleSquaringTaskManager.sol) which contains [task creation](contracts/src/IncredibleSquaringTaskManager.sol#L83) and [task response](contracts/src/IncredibleSquaringTaskManager.sol#L102) logic. Calls `fulfillSlashingRequest` to the [Slasher] contract using the `raiseAndResolveChallenge` function .
-  - Set of [registry contracts](https://github.com/Layr-Labs/eigenlayer-middleware) to manage operators opted in to this avs
-- [Aggregator](./src/bin/aggregator.rs): The aggregator does not have much business logic, as the core functionality is delegated to the `IndexingTaskProcessor`, which is the standard implementation that the SDK provides.If you want to implement a custom task processor, you need to implement the `TaskProcessor` trait.
-- [Challenger](./src/bin/challenger.rs): The challenger business logic lies in the task response validation. To validate the response, the challenger first calculates the response with the same function as the operator and then compares it with the received response, raising a challenge if they differ. The example is based on the `IndexingChallengerProcessor` implementation. If you want to implement a custom challenger processor, you need to implement the `ChallengerTaskProcessor` trait.
-- [Operator](./src/bin/operator.rs): The operator responds to tasks using the `FunctionResponseCalculator` struct that implements `ResponseCalculator` trait. This struct must define a `compute_response` method to generate the task output. In thix example, we have two operators responding to tasks.
-- [Task spammer](./src/bin/task-spammer.rs): The task spammer logic lies in an iterator that generates the inputs for the spammer to dispatch at the SDK level.
 
 ## Running the example
 
@@ -189,7 +189,6 @@ make integration-tests
 
 ## Default Configuration
 
-- Metrics http endpoint - `http://localhost:9001/metrics`
 - Aggregator Rpc endpoint - `127.0.0.1:8080`
 - Operator1 - `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` (anvil's 0 index key)
 - Operator2 - `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` (anvil's 1 index key)
