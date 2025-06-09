@@ -41,6 +41,6 @@ async fn main() {
         failing_response_calculator(response_calculator, || U256::from(42), args.failure_rate);
 
     // 6. Initialize the operator
-    let operator = Operator::new(logger, config).await.unwrap();
-    operator.start::<ISTaskManager>(logic).await.unwrap();
+    let operator = Operator::new(logger, config, logic).await.unwrap();
+    operator.run::<ISTaskManager>().await.unwrap();
 }
