@@ -63,7 +63,7 @@ pub mod integration_test {
     use super::*;
 
     // This test spawns the aggregator, challenger, two operators, and a task spammer.
-    // The operators are configured to fail 30% and 99% of the time, respectively.
+    // The operators are configured to fail 30% and 100% of the time, respectively.
     // So when checking `taskSuccesfullyChallenged`, we expect it to be true.
     #[tokio::test]
     async fn test_integration() {
@@ -71,7 +71,7 @@ pub mod integration_test {
             spawn_aggregator().await,
             spawn_challenger().await,
             spawn_operator("src/config/squaring-operator.toml", 30).await,
-            spawn_operator("src/config/squaring-operator-2.toml", 99).await,
+            spawn_operator("src/config/squaring-operator-2.toml", 100).await,
             spawn_task_spammer().await,
         ];
 
