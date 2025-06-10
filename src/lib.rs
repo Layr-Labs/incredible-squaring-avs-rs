@@ -8,8 +8,7 @@
 //! To learn how to implement each module, refer to the corresponding binary files.
 //! Each file contains step-by-step instructions for setting up the module.
 //!
-//! For more details about the example logic and how to run it, see the
-//! [README](https://github.com/Layr-Labs/eigensdk-rs/blob/v2-dev-2/examples/incredible-squaring/README.md).
+//! For more details about the example logic and how to run it, see the README.md file.
 
 use alloy::primitives::B256;
 use alloy::primitives::U256;

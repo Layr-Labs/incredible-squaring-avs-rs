@@ -53,7 +53,6 @@ fmt:
 	cd ..
 
 integration-tests:
-	$(MAKE) reset_anvil
 	$(MAKE) start_docker
 	$(MAKE) deploy-el-and-avs-contracts
 	cargo test --test integration_test

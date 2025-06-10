@@ -1,3 +1,5 @@
+//! Utility functions for the incredible squaring example.
+
 use eigensdk::logging::{log_level::LogLevel, logger::Logger, tracing_logger::TracingLogger};
 use serde::de::DeserializeOwned;
 use std::{fs, path::Path, sync::Arc};
