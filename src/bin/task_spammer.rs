@@ -9,6 +9,7 @@ use alloy::{
     signers::local::PrivateKeySigner,
     transports::http::reqwest::Url,
 };
+use clap::Parser;
 use eigensdk::{
     logging::{init_logger, log_level::LogLevel},
     task_spammer::TaskSpammerBuilder,
@@ -23,9 +24,31 @@ const SIGNER: &str = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073df
 /// Task Manager Address
 const TASK_MANAGER_ADDRESS: &str = "0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3";
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct TaskSpammerArgs {
+    /// The number of tasks to spam
+    #[arg(
+        short = 'n',
+        long = "number-of-tasks",
+        value_name = "NUMBER_OF_TASKS",
+        default_value = "100"
+    )]
+    number_of_tasks: u32,
+    /// The interval between spamming tasks in seconds
+    #[arg(
+        short = 'i',
+        long = "interval",
+        value_name = "INTERVAL",
+        default_value = "10"
+    )]
+    interval: u64,
+}
+
 #[tokio::main]
 async fn main() {
     init_logger(LogLevel::Info);
+    let args = TaskSpammerArgs::parse();
     // 1. Define your types for the task manager (we do this in `ISTaskManager`: lib.rs)
 
     // 2. Create the task manager instance
@@ -36,9 +59,9 @@ async fn main() {
     let contract = IncredibleSquaringTaskManagerInstance::new(task_manager_address, provider);
 
     TaskSpammerBuilder::new(contract) // (3) Initialize the `TaskSpammerBuilder`
-        .with_iter((0..).map(U256::from)) // (4) Define an iterator
+        .with_iter((0..args.number_of_tasks).map(U256::from)) // (4) Define an iterator
         .with_quorum(50, vec![0]) // (5) Set the quorum and threshold percentage
-        .with_interval(Duration::from_secs(10)) // (6) Set the interval to wait between spamming tasks
+        .with_interval(Duration::from_secs(args.interval)) // (6) Set the interval to wait between spamming tasks
         .build() // (7) Build the `TaskSpammer`
         .unwrap()
         .run() // (7) Run the `TaskSpammer`
