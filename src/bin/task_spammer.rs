@@ -9,7 +9,10 @@ use alloy::{
     signers::local::PrivateKeySigner,
     transports::http::reqwest::Url,
 };
-use eigensdk::task_spammer::TaskSpammerBuilder;
+use eigensdk::{
+    logging::{init_logger, log_level::LogLevel},
+    task_spammer::TaskSpammerBuilder,
+};
 use incredible_squaring::bindings::incrediblesquaringtaskmanager::IncredibleSquaringTaskManager::IncredibleSquaringTaskManagerInstance;
 use std::{str::FromStr, time::Duration};
 
@@ -22,6 +25,7 @@ const TASK_MANAGER_ADDRESS: &str = "0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3";
 
 #[tokio::main]
 async fn main() {
+    init_logger(LogLevel::Info);
     // 1. Define your types for the task manager (we do this in `ISTaskManager`: lib.rs)
 
     // 2. Create the task manager instance
