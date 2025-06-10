@@ -15,10 +15,14 @@ use incredible_squaring::utils::{create_logger, load_config};
 use std::str::FromStr;
 use std::time::Duration;
 
-/// Task Challenge Window Block : 100 blocks
-pub const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
 /// Block Time Seconds : 12 seconds
-pub const BLOCK_TIME_SECONDS: u32 = 12;
+const BLOCK_TIME_SECONDS: u32 = 12;
+/// Signer
+const SIGNER: &str = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";
+/// Task Challenge Window Block : 100 blocks
+const TASK_CHALLENGE_WINDOW_BLOCK: u32 = 100;
+/// Task Manager Address
+const TASK_MANAGER_ADDRESS: &str = "0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3";
 
 #[tokio::main]
 async fn main() {
@@ -29,11 +33,9 @@ async fn main() {
     let logger = create_logger(LogLevel::Info);
 
     // 3. Create the task manager instance
-    let signer = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";
-    let task_manager_address =
-        Address::from_str("0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3").unwrap();
+    let task_manager_address = Address::from_str(TASK_MANAGER_ADDRESS).unwrap();
     let url = Url::parse(&config.http_rpc_url).unwrap();
-    let wallet = EthereumWallet::new(PrivateKeySigner::from_str(signer).unwrap());
+    let wallet = EthereumWallet::new(PrivateKeySigner::from_str(SIGNER).unwrap());
     let provider = ProviderBuilder::new().wallet(wallet).on_http(url);
     let contract = IncredibleSquaringTaskManagerInstance::new(task_manager_address, provider);
 

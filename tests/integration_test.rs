@@ -1,10 +1,14 @@
 use std::process::Stdio;
 use tokio::process::Command as TokioCommand;
 
-const SIGNER: &str = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";
-const TASK_MANAGER_ADDRESS: &str = "0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3";
+/// Anvil RPC URL
 const ANVIL_URL: &str = "http://localhost:8545";
+/// Signer
+const SIGNER: &str = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";
+/// Task Manager Address
+const TASK_MANAGER_ADDRESS: &str = "0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3";
 
+/// Spawns the aggregator binary
 async fn spawn_aggregator() -> tokio::process::Child {
     TokioCommand::new("cargo")
         .args(["run", "--bin", "incredible-squaring-aggregator"])
@@ -14,6 +18,7 @@ async fn spawn_aggregator() -> tokio::process::Child {
         .expect("Could not spawn aggregator binary")
 }
 
+/// Spawns the challenger binary
 async fn spawn_challenger() -> tokio::process::Child {
     TokioCommand::new("cargo")
         .args(["run", "--bin", "incredible-squaring-challenger"])
@@ -23,6 +28,7 @@ async fn spawn_challenger() -> tokio::process::Child {
         .expect("Could not spawn challenger binary")
 }
 
+/// Spawns the operator binary
 async fn spawn_operator(config_path: &str, failure_rate: u32) -> tokio::process::Child {
     // Wait 5 seconds to let the aggregator start
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -44,6 +50,7 @@ async fn spawn_operator(config_path: &str, failure_rate: u32) -> tokio::process:
         .expect("Could not spawn operator binary")
 }
 
+/// Spawns the task spammer binary
 async fn spawn_task_spammer() -> tokio::process::Child {
     // Wait until operators are spawned
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;

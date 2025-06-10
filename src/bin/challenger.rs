@@ -21,6 +21,11 @@ use incredible_squaring::{
 };
 use std::str::FromStr;
 
+/// Task Manager Address
+const TASK_MANAGER_ADDRESS: &str = "0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3";
+/// Signer
+const SIGNER: &str = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+
 #[tokio::main]
 async fn main() {
     init_logger(LogLevel::Info);
@@ -33,11 +38,9 @@ async fn main() {
     // 3. Create the logic to compute the task (we do this in `square`: lib.rs)
 
     // 4. Initialize the task manager instance from your bindings
-    let signer = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-    let task_manager_address =
-        Address::from_str("0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3").unwrap();
+    let task_manager_address = Address::from_str(TASK_MANAGER_ADDRESS).unwrap();
     let url = Url::parse(&config.http_rpc_url).unwrap();
-    let wallet = EthereumWallet::new(PrivateKeySigner::from_str(signer).unwrap());
+    let wallet = EthereumWallet::new(PrivateKeySigner::from_str(SIGNER).unwrap());
     let provider = ProviderBuilder::new().wallet(wallet).on_http(url);
     let contract = IncredibleSquaringTaskManagerInstance::new(task_manager_address, provider);
 
