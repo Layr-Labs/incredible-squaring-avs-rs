@@ -42,7 +42,7 @@ async fn spawn_operator(config_path: &str, failure_rate: u32) -> tokio::process:
             "-c",
             config_path,
             "-f",
-            failure_rate.to_string().as_str(),
+            &failure_rate.to_string(),
         ])
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
@@ -50,13 +50,20 @@ async fn spawn_operator(config_path: &str, failure_rate: u32) -> tokio::process:
         .expect("Could not spawn operator binary")
 }
 
-/// Spawns the task spammer binary
-async fn spawn_task_spammer() -> tokio::process::Child {
+/// Spawns the task spammer binary with the given number of tasks
+async fn spawn_task_spammer(number_of_tasks: u32) -> tokio::process::Child {
     // Wait until operators are spawned
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
     TokioCommand::new("cargo")
-        .args(["run", "--bin", "incredible-squaring-task-spammer"])
+        .args([
+            "run",
+            "--bin",
+            "incredible-squaring-task-spammer",
+            "--",
+            "-n",
+            &number_of_tasks.to_string(),
+        ])
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
@@ -73,17 +80,69 @@ pub mod integration_test {
 
     use super::*;
 
+    // This test waits for the task spammer to complete executing 3 tasks
+    // and then verifies that all 3 tasks have been responded to in the contract
+    #[tokio::test]
+    async fn test_integration_wait_for_completion() {
+        let mut children = vec![
+            spawn_aggregator().await,
+            spawn_challenger().await,
+            spawn_operator("src/config/squaring-operator.toml", 0).await,
+        ];
+        let mut task_spammer_handle = spawn_task_spammer(3).await;
+
+        // Wait for the task spammer to complete
+        task_spammer_handle.wait().await.unwrap();
+
+        // Wait a bit more for the operators to process the final tasks
+        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+
+        // Terminate the other processes
+        for child in &mut children {
+            let _ = child.kill().await;
+        }
+
+        // Verify the responses in IncredibleSquaringTaskManager
+        let task_manager_address = Address::from_str(TASK_MANAGER_ADDRESS).unwrap();
+        let url = Url::parse(ANVIL_URL).unwrap();
+        let wallet = EthereumWallet::new(PrivateKeySigner::from_str(SIGNER).unwrap());
+        let provider = ProviderBuilder::new().wallet(wallet).on_http(url);
+        let task_manager_contract =
+            IncredibleSquaringTaskManagerInstance::new(task_manager_address, provider);
+
+        let latest_task_num = task_manager_contract
+            .latestTaskNum()
+            .call()
+            .await
+            .unwrap()
+            ._0;
+
+        assert_eq!(latest_task_num, 3);
+
+        // Verify that the 3 most recent tasks have valid responses
+        for task_index in 0..latest_task_num {
+            let response_hash = task_manager_contract
+                .allTaskResponses(task_index)
+                .call()
+                .await
+                .unwrap()
+                ._0;
+
+            assert_ne!(FixedBytes::<32>::default(), response_hash,);
+        }
+    }
+
     // This test spawns the aggregator, challenger, two operators, and a task spammer.
     // The operators are configured to fail 30% and 100% of the time, respectively.
     // So when checking `taskSuccesfullyChallenged`, we expect it to be true.
     #[tokio::test]
-    async fn test_integration() {
+    async fn test_integration_challenge_success() {
         let mut children = vec![
             spawn_aggregator().await,
             spawn_challenger().await,
             spawn_operator("src/config/squaring-operator.toml", 30).await,
             spawn_operator("src/config/squaring-operator-2.toml", 100).await,
-            spawn_task_spammer().await,
+            spawn_task_spammer(1).await,
         ];
 
         // Wait 15 seconds to let operators respond to tasks
