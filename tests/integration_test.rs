@@ -94,9 +94,6 @@ pub mod integration_test {
         // Wait for the task spammer to complete
         task_spammer_handle.wait().await.unwrap();
 
-        // Wait a bit more for the operators to process the final tasks
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-
         // Terminate the other processes
         for child in &mut children {
             let _ = child.kill().await;
@@ -136,7 +133,7 @@ pub mod integration_test {
     // The operators are configured to fail 30% and 100% of the time, respectively.
     // So when checking `taskSuccesfullyChallenged`, we expect it to be true.
     #[tokio::test]
-    async fn test_integration_challenge_success() {
+    async fn test_wrong_response_is_challenged() {
         let mut children = vec![
             spawn_aggregator().await,
             spawn_challenger().await,
@@ -145,7 +142,7 @@ pub mod integration_test {
             spawn_task_spammer(1).await,
         ];
 
-        // Wait 15 seconds to let operators respond to tasks
+        // Wait 10 seconds to let operators respond to tasks
         tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
         for child in &mut children {

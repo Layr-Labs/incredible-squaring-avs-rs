@@ -55,7 +55,7 @@ fmt:
 integration-tests:
 	$(MAKE) start_docker
 	$(MAKE) deploy-el-and-avs-contracts
-	cargo test --test integration_test
+	cargo test --test integration_test -- --test-threads=1
 
 __BINDINGS__: ##
 
