@@ -1,6 +1,10 @@
 use std::process::Stdio;
 use tokio::process::Command as TokioCommand;
 
+const SIGNER: &str = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";
+const TASK_MANAGER_ADDRESS: &str = "0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3";
+const ANVIL_URL: &str = "http://localhost:8545";
+
 async fn spawn_aggregator() -> tokio::process::Child {
     TokioCommand::new("cargo")
         .args(["run", "--bin", "incredible-squaring-aggregator"])
@@ -83,11 +87,9 @@ pub mod integration_test {
         }
 
         // Check responses in IncredibleSquaringTaskManager
-        let signer = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";
-        let task_manager_address =
-            Address::from_str("0x2bdcc0de6be1f7d2ee689a0342d76f52e8efaba3").unwrap();
-        let url = Url::parse("http://localhost:8545").unwrap();
-        let wallet = EthereumWallet::new(PrivateKeySigner::from_str(signer).unwrap());
+        let task_manager_address = Address::from_str(TASK_MANAGER_ADDRESS).unwrap();
+        let url = Url::parse(ANVIL_URL).unwrap();
+        let wallet = EthereumWallet::new(PrivateKeySigner::from_str(SIGNER).unwrap());
         let provider = ProviderBuilder::new().wallet(wallet).on_http(url);
         let task_manager_contract =
             IncredibleSquaringTaskManagerInstance::new(task_manager_address, provider);
