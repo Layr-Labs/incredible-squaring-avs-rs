@@ -21,7 +21,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run cargo check
-        run: cargo check --workspace --all-features --all-targets --exclude incredible-bindings
+        run: cargo check --workspace --all-features --all-targets
 
   lint:
     name: Run Lints
@@ -55,11 +55,6 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@1.86
-        with:
-          toolchain: stable
-
-      - name: Install nightly Rust
-        run: rustup toolchain install nightly
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -77,8 +72,6 @@ jobs:
 
       - name: docker
         uses: docker-practice/actions-setup-docker@master
-      - name: Run unit tests
-        run: make tests
 
       - name: Run Integration tests
-        run: make integration_tests
+        run: make integration-tests

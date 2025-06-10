@@ -15,4 +15,4 @@ cd "$parent_path"
 root_dir=$(realpath "$parent_path/../..")
 
 cd "$root_dir/contracts"
-forge script script/UAMPermissions.s.sol --rpc-url $RPC_URL --broadcast --slow --private-key $PRIVATE_KEY
+forge script script/CreateQuorum.s.sol --rpc-url $RPC_URL --broadcast --slow --private-key $PRIVATE_KEY

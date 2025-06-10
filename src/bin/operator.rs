@@ -1,0 +1,46 @@
+//! This example shows how to initialize an operator and start processing tasks.
+//! Follow the [`eigen-operator` crate documentation`](https://github.com/Layr-Labs/eigensdk-rs/blob/v2-dev-2/crates/operator/src/lib.rs#L1-L131)
+//! to set up an operator.
+
+use alloy::primitives::U256;
+use clap::Parser;
+use eigensdk::logging::log_level::LogLevel;
+use eigensdk::operator::{config::OperatorConfig, Operator};
+use eigensdk::task_manager::response_calculator::response_calculator_from_fn;
+use eigensdk::testing_utils::task_processor::failing_response_calculator;
+use incredible_squaring::utils::create_logger;
+use incredible_squaring::{square, utils::load_config, ISTaskManager};
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct OperatorArgs {
+    #[arg(short = 'c', long = "config-path", value_name = "FILE")]
+    config_path: String,
+    #[arg(short = 'f', long = "failure-rate", value_name = "RATE")]
+    failure_rate: u32,
+}
+
+#[tokio::main]
+async fn main() {
+    let logger = create_logger(LogLevel::Info);
+
+    let args = OperatorArgs::parse();
+
+    // 1. Define your types for the task manager (we do this in `ISTaskManager`: lib.rs)
+
+    // 2. Create the `OperatorConfig`
+    let config: OperatorConfig = load_config(args.config_path).unwrap();
+
+    // 3. Create the logic to compute the task (we do this in `square`: lib.rs)
+
+    // 4. Build the `ResponseCalculator` with the computation function
+    let response_calculator = response_calculator_from_fn(square);
+
+    // 5. Use the `failing_response_calculator` with the wrong `Output` type and a given failure rate
+    let logic =
+        failing_response_calculator(response_calculator, || U256::from(42), args.failure_rate);
+
+    // 6. Initialize the operator
+    let operator = Operator::new(logger, config, logic).await.unwrap();
+    operator.run::<ISTaskManager>().await.unwrap();
+}

@@ -1,7 +1,5 @@
 PHONY: deploy-el-and-avs-contracts
 PHONY: reset-anvil
-PHONY: integration-tests
-
 
 deploy-avs:
 	./contracts/anvil/deploy-avs.sh
@@ -12,7 +10,27 @@ deploy-eigenlayer:
 deploy-uam-permissions:
 	./contracts/anvil/uam-permissions.sh
 
-deploy-el-and-avs-contracts: deploy-eigenlayer deploy-avs deploy-uam-permissions
+create-quorum:
+	./contracts/anvil/create-quorum.sh
+
+deploy-el-and-avs-contracts: deploy-eigenlayer deploy-avs deploy-uam-permissions create-quorum
+
+__START__: ## How to start the different components
+
+CONFIG ?= src/config/squaring-operator.toml
+FAILURE_RATE ?= 30
+
+start-aggregator:
+	cargo run --bin incredible-squaring-aggregator
+
+start-challenger:
+	cargo run --bin incredible-squaring-challenger
+
+start-operator:
+	cargo run --bin incredible-squaring-operator -- -c $(CONFIG) -f $(FAILURE_RATE)
+
+start-task-spammer:
+	cargo run --bin incredible-squaring-task-spammer
 
 __TESTING__: ##
 
@@ -20,40 +38,28 @@ reset_anvil:
 	-docker stop anvil
 	-docker rm anvil 
 
-
 start_docker:
 	$(MAKE) reset_anvil
 	docker run -d --name anvil -p 8545:8545 --entrypoint anvil \
 		ghcr.io/foundry-rs/foundry:latest --host 0.0.0.0
 	sleep 2
 
-tests:
-	$(MAKE) start_docker
-	$(MAKE) deploy-el-and-avs-contracts
-	cargo test --workspace --exclude incredible-bindings
-
-pr:
-	$(MAKE) tests
-	$(MAKE) clippy
-	cargo fmt -- --check
-
 clippy:
-	cargo clippy --workspace --lib --examples --tests --benches --all-features --exclude incredible-bindings
-
-integration_tests:
-	$(MAKE) start_docker
-	$(MAKE) deploy-el-and-avs-contracts
-	cargo test  --manifest-path ./integration-tests/Cargo.toml  -- --nocapture
+	cargo clippy --workspace
 
 fmt: 
 	cargo fmt
 	cd contracts && forge fmt
 	cd ..
 
+integration-tests:
+	$(MAKE) start_docker
+	$(MAKE) deploy-el-and-avs-contracts
+	cargo test --test integration_test -- --test-threads=1
 
 __BINDINGS__: ##
 
-RUST_BINDINGS_PATH:=crates/bindings/src
+RUST_BINDINGS_PATH:=src/bindings
 
 generate-bindings:
 	cd contracts && forge build --force --skip test --skip script

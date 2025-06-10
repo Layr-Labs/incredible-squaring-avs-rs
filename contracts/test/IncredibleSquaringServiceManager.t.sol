@@ -52,13 +52,18 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         Vm.Wallet memory ADMIN = vm.createWallet("ADMIN");
         address proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
 
-        coreConfigData = CoreDeploymentLib.readDeploymentConfigValues("test/mockData/config/core/", 1337);
+        coreConfigData =
+            CoreDeploymentLib.readDeploymentConfigValues("test/mockData/config/core/", 1337);
         coreDeployment = CoreDeploymentLib.deployContracts(deployer, proxyAdmin, coreConfigData);
-        iSquaringConfig = IncredibleSquaringDeploymentLib.readIncredibleSquaringConfigJson("incredible_squaring_config");
+        iSquaringConfig = IncredibleSquaringDeploymentLib.readIncredibleSquaringConfigJson(
+            "incredible_squaring_config"
+        );
         mockToken = new MockERC20();
 
         IStrategy strategy = addStrategy(address(mockToken));
-        quorum.strategies.push(IECDSAStakeRegistryTypes.StrategyParams({strategy: strategy, multiplier: 10_000}));
+        quorum.strategies.push(
+            IECDSAStakeRegistryTypes.StrategyParams({strategy: strategy, multiplier: 10_000})
+        );
 
         incredibleSquaringDeployment = IncredibleSquaringDeploymentLib.deployContracts(
             proxyAdmin, coreDeployment, address(strategy), iSquaringConfig, ADMIN.addr
@@ -66,7 +71,9 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         labelContracts(coreDeployment, incredibleSquaringDeployment);
     }
 
-    function addStrategy(address token) public returns (IStrategy) {
+    function addStrategy(
+        address token
+    ) public returns (IStrategy) {
         if (tokenToStrategy[token] != IStrategy(address(0))) {
             return tokenToStrategy[token];
         }
@@ -90,7 +97,10 @@ contract IncredibleSquaringServiceManagerSetup is Test {
         vm.label(coreDeploymentData.pauserRegistry, "PauserRegistry");
         vm.label(coreDeploymentData.strategyFactory, "StrategyFactory");
         vm.label(coreDeploymentData.strategyBeacon, "StrategyBeacon");
-        vm.label(incredibleSquaringDeploymentData.incredibleSquaringServiceManager, "IncredibleSquaringServiceManager");
+        vm.label(
+            incredibleSquaringDeploymentData.incredibleSquaringServiceManager,
+            "IncredibleSquaringServiceManager"
+        );
         vm.label(incredibleSquaringDeploymentData.stakeRegistry, "StakeRegistry");
     }
 }

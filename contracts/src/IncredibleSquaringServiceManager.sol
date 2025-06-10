@@ -4,10 +4,14 @@ pragma solidity ^0.8.9;
 import "@eigenlayer/contracts/libraries/BytesLib.sol";
 import "./IIncredibleSquaringTaskManager.sol";
 import "@eigenlayer-middleware/src/ServiceManagerBase.sol";
-import {IAllocationManager, IAllocationManagerTypes} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
+import {
+    IAllocationManager,
+    IAllocationManagerTypes
+} from "@eigenlayer/contracts/interfaces/IAllocationManager.sol";
 // import {IAVSRegistrar} from "@eigenlayer/contracts/interfaces/IAVSRegistrar.sol";
 import {IRewardsCoordinator} from "@eigenlayer/contracts/interfaces/IRewardsCoordinator.sol";
-import {ISlashingRegistryCoordinator} from "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
+import {ISlashingRegistryCoordinator} from
+    "@eigenlayer-middleware/src/interfaces/ISlashingRegistryCoordinator.sol";
 
 /**
  * @title Primary entrypoint for procuring services from IncredibleSquaring.
@@ -29,7 +33,7 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
 
     constructor(
         IAVSDirectory _avsDirectory,
-        ISlashingRegistryCoordinator _slashingRegistryCoordinator,
+        ISlashingRegistryCoordinator _registryCoordinator,
         IStakeRegistry _stakeRegistry,
         address rewards_coordinator,
         IAllocationManager allocationManager,
@@ -39,7 +43,7 @@ contract IncredibleSquaringServiceManager is ServiceManagerBase {
         ServiceManagerBase(
             _avsDirectory,
             IRewardsCoordinator(rewards_coordinator),
-            _slashingRegistryCoordinator,
+            _registryCoordinator,
             _stakeRegistry,
             _permissionController,
             allocationManager

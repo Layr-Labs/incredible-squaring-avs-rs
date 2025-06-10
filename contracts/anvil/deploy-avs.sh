@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -e
+
 RPC_URL=http://localhost:8545
-PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 
 # cd to the directory of this script so that this can be run from anywhere
 parent_path=$(
@@ -10,7 +12,8 @@ parent_path=$(
 )
 cd "$parent_path"
 
-cd ../
-forge script script/IncredibleSquaringDeployer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY -vvv --broadcast --slow
+root_dir=$(realpath "$parent_path/../..")
 
-forge script script/ContractsRegistry.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
+# Deploy Contracts
+cd "$root_dir/contracts"
+forge script script/IncredibleSquaringDeployer.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --slow
