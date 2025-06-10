@@ -8,15 +8,7 @@ homepage = ""
 license = "Business Source License 1.1"
 
 [dependencies]
-alloy = { version = "0.13", features = [
-    "sol-types",
-    "contract",
-    "full",
-    "signer-aws",
-    "signer-keystore",
-    "rlp",
-    "json-rpc",
-] }
+alloy = { version = "0.13", features = ["full", "signer-keystore"] }
 clap = { version = "4.5", features = ["derive"] }
 eigensdk = { git = "https://github.com/Layr-Labs/eigensdk-rs", branch = "v2-dev-2", features = ["full"] }
 thiserror = "1.0"
