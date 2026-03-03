@@ -28,7 +28,7 @@ incredible-aggregator = { path = "../crates/aggregator/" }
 toml = "0.8"
 
 [dev-dependencies]
-tokio = { version = "1.21", default-features = false }
+tokio = { version = "1.43", default-features = false }
 eyre = "0.6.12"
 incredible-squaring-avs = { path = "../bin/incredible-squaring-avs/" }
 eigen-testing-utils = { git = "https://github.com/layr-labs/eigensdk-rs", rev = "834b9c7" }
